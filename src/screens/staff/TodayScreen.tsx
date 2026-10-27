@@ -2,154 +2,100 @@
 import * as React from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { TODAY, fmt, relative, urgency } from "@/lib/dates";
-import { clientById, clientsFor, incDone, overdueFilings } from "@/data/staff-clients";
-import { queueFor, tasksFor, INBOX, APPROVALS, type StaffTask } from "@/data/staff-tasks";
+import { TODAY, fmt, relative } from "@/lib/dates";
+import { clientsFor, overdueFilings } from "@/data/staff-clients";
+import { tasksFor, APPROVALS, type StaffTask } from "@/data/staff-tasks";
 import { managerRows } from "@/data/staff-team";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
-import { Tabs } from "@/components/ui/Tabs";
-import { Bar } from "@/components/ui/Bar";
 import { Select } from "@/components/ui/Select";
+import { useUndoToast } from "@/components/ui/UndoToast";
 import { GreetingCard } from "@/components/cards/GreetingCard";
-import { SectionCard, ListRow, HeadLink, Empty } from "@/components/cards/SectionCard";
+import { SectionCard, HeadLink } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
-import { ClientDot, ClientName, TaskChip, base, clientHref, personOf, practiceStats, taskHref, type StaffPortal } from "./parts";
+import { ClientName, TaskChip, base, clientHref, personOf, taskHref, type StaffPortal } from "./parts";
 import { ApprovalsCard, ClientsGrid, ManagersGrid } from "./grids";
+import { ClientSelect } from "./filters";
+import {
+  ActionQueue,
+  ClientsFilings,
+  ComplianceHealth,
+  DecisionsCard,
+  InboxCard,
+  PhaseProgress,
+  PracticeAreas,
+  PracticeStrip,
+  ScopeSelect,
+  TaskStatusCard,
+  ThisWeek,
+  WaitingOnClient,
+  inScope,
+  todayStats,
+  type Scope,
+} from "./today-parts";
 
-type Stage = "all" | "incorporating" | "compliance";
+// Staff Today. Old sources: reference/old-screens/s/lead/Main.dc.html (and TodayBefore, TodayAfter: the same page with
+// every client incorporating or every client in compliance; here the scope select shows each variant), TodayPhone.dc.html,
+// s/mgr/Main.dc.html (Team tasks, Task status, Approvals), reference/old-patch/admin/Main.dc.html.
 
-function stageOf(t: StaffTask) {
-  return clientById(t.client)?.stage ?? "compliance";
-}
-
-function ActionQueue({ portal }: { portal: StaffPortal }) {
-  const [stage, setStage] = React.useState<Stage>("all");
-  const all = queueFor(portal);
-  const rows = all.filter((t) => stage === "all" || stageOf(t) === stage);
-  const cols: Column<StaffTask>[] = [
-    { key: "client", label: "Client", width: 190, render: (t) => <ClientName id={t.client} short /> },
-    { key: "title", label: "Task", render: (t) => <span className="font-semibold">{t.title}</span> },
-    { key: "code", label: "Step", width: 90, render: (t) => t.code ?? "" },
-    { key: "owner", label: "Owner", width: 120 },
-    { key: "due", label: "Due", width: 80, render: (t) => <span className={urgency(t.due) === "bad" && t.status !== "Done" ? "font-semibold text-bad" : undefined}>{fmt(t.due)}</span> },
-    { key: "status", label: "Status", width: 130, render: (t) => <TaskChip status={t.status} /> },
-  ];
-  return (
-    <DataGrid
-      title="Action queue"
-      meta={`${rows.length} open`}
-      columns={cols}
-      rows={rows}
-      rowKey={(t) => t.id}
-      rowHref={(t) => taskHref(portal, t)}
-      pageSize={8}
-      filters={
-        <Tabs
-          items={[
-            { key: "all", label: "All", count: all.length },
-            { key: "incorporating", label: "Incorporating", count: all.filter((t) => stageOf(t) === "incorporating").length },
-            { key: "compliance", label: "Compliance", count: all.filter((t) => stageOf(t) === "compliance").length },
-          ]}
-          value={stage}
-          onChange={(k) => setStage(k as Stage)}
-        />
-      }
-    />
-  );
-}
-
-function TeamTasks({ portal }: { portal: StaffPortal }) {
-  const all = tasksFor(portal).filter((t) => t.status !== "Done");
+function TeamTasks({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
+  const all = tasksFor(portal).filter((t) => t.status !== "Done" && inScope(scope, t.client));
   const [lead, setLead] = React.useState("");
   const [status, setStatus] = React.useState("");
+  const [client, setClient] = React.useState("");
   const leads = [...new Set(all.map((t) => t.owner))];
-  const rows = all.filter((t) => (!lead || t.owner === lead) && (!status || t.status === status)).sort((a, b) => a.due.getTime() - b.due.getTime());
+  const rows = all.filter((t) => (!lead || t.owner === lead) && (!status || t.status === status) && (!client || t.client === client)).sort((a, b) => a.due.getTime() - b.due.getTime());
+  const any = lead || status || client;
   // C-0031: one status mark per row, no checkbox.
   const cols: Column<StaffTask>[] = [
     { key: "title", label: "Task", render: (t) => <span className="font-semibold">{t.title}</span> },
     { key: "client", label: "Client", width: 170, render: (t) => <ClientName id={t.client} short /> },
     { key: "owner", label: "Project lead", width: 130 },
-    { key: "due", label: "Due", width: 80, render: (t) => fmt(t.due) },
+    { key: "due", label: "Due", width: 80, render: (t) => <span className={t.due < TODAY ? "font-semibold text-bad" : undefined}>{fmt(t.due)}</span> },
     { key: "status", label: "Status", width: 130, render: (t) => <TaskChip status={t.status} /> },
   ];
   return (
     <DataGrid
       title="Team tasks"
+      meta={String(rows.length)}
       columns={cols}
       rows={rows}
       rowKey={(t) => t.id}
       rowHref={(t) => taskHref(portal, t)}
       pageSize={8}
+      empty="No tasks match these filters"
       filters={
         <>
           <Select value={lead} onChange={(e) => setLead(e.target.value)} options={[{ value: "", label: "All leads" }, ...leads.map((l) => ({ value: l, label: l }))]} aria-label="Project lead" />
+          <ClientSelect clients={clientsFor(portal).filter((c) => inScope(scope, c.id))} value={client} onChange={setClient} />
           <Select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
             options={[{ value: "", label: "All statuses" }, ...["Overdue", "Due this week", "In progress", "With client", "Not started"].map((s) => ({ value: s, label: s }))]}
             aria-label="Status"
           />
+          {any && (
+            <Button
+              variant="link"
+              size="sm"
+              onClick={() => {
+                setLead("");
+                setStatus("");
+                setClient("");
+              }}
+            >
+              Clear
+            </Button>
+          )}
         </>
       }
     />
   );
 }
 
-function PhaseProgress({ portal }: { portal: StaffPortal }) {
-  const inc = clientsFor(portal).filter((c) => c.stage === "incorporating");
-  return (
-    <SectionCard title="Phase progress" meta={`${inc.length} incorporating`} flush>
-      {inc.length === 0 ? (
-        <Empty />
-      ) : (
-        inc.map((c) => {
-          const done = incDone(c);
-          return (
-            <ListRow key={c.id} href={clientHref(portal, c.id)} className="grid grid-cols-[minmax(0,1fr)_64px] gap-3 md:grid-cols-[minmax(0,220px)_minmax(0,1fr)_56px]">
-              <span className="flex min-w-0 items-center gap-2 font-semibold">
-                <ClientDot tone={c.tone} />
-                <span className="truncate">{c.short}</span>
-                <span className="hidden truncate text-12.5 font-normal text-muted md:inline">{c.step}</span>
-              </span>
-              <Bar pct={Math.round((done / 25) * 100)} tone={c.health === "Stuck" || c.health === "Overdue" ? "bad" : "accent"} className="hidden md:block" />
-              <span className="text-right text-12.5 text-muted">
-                <b className="font-semibold text-ink">{done}</b>/25
-              </span>
-            </ListRow>
-          );
-        })
-      )}
-    </SectionCard>
-  );
-}
-
-function Inbox({ portal }: { portal: StaffPortal }) {
-  const rows = INBOX[portal];
-  return (
-    <SectionCard title="Inbox" meta={`${rows.filter((r) => r.unread).length} new`} flush right={<HeadLink href={`${base(portal)}/email`}>Email ›</HeadLink>}>
-      {rows.map((r) => {
-        const c = clientById(r.client);
-        return (
-          <ListRow key={r.id} href={clientHref(portal, r.client)} className="items-start">
-            {c && <ClientDot tone={c.tone} className="mt-1.5" />}
-            <span className="min-w-0 flex-1">
-              <span className={r.unread ? "block truncate font-semibold" : "block truncate"}>{r.text}</span>
-              <span className="block truncate text-12.5 text-muted">
-                {c?.short} · {r.from}
-              </span>
-            </span>
-            <span className="flex-none font-mono text-12 text-muted">{r.time}</span>
-          </ListRow>
-        );
-      })}
-    </SectionCard>
-  );
-}
-
-function OverdueFilings({ portal }: { portal: StaffPortal }) {
-  const rows: AttentionRow[] = overdueFilings(clientsFor(portal)).map((o, i) => ({
+function OverdueFilings({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
+  const rows: AttentionRow[] = overdueFilings(clientsFor(portal).filter((c) => inScope(scope, c.id))).map((o, i) => ({
     id: o.id,
     date: o.due,
     title: `${o.name} · ${o.period}`,
@@ -159,6 +105,7 @@ function OverdueFilings({ portal }: { portal: StaffPortal }) {
     action: i === 0 ? { label: "Open", href: clientHref(portal, o.client.id) } : undefined,
     href: i === 0 ? undefined : clientHref(portal, o.client.id),
   }));
+  if (rows.length === 0) return null;
   return (
     <SectionCard title="Overdue filings" meta={String(rows.length)} flush right={<HeadLink href={`${base(portal)}/compliances/filings`}>Filings ›</HeadLink>}>
       <AttentionList rows={rows} />
@@ -167,6 +114,12 @@ function OverdueFilings({ portal }: { portal: StaffPortal }) {
 }
 
 export function TodayScreen({ portal }: { portal: StaffPortal }) {
+  const [scope, setScope] = React.useState<Scope>("all");
+  const toast = useUndoToast();
+  const cl = clientsFor(portal);
+  const showInc = scope !== "compliance" && cl.some((c) => c.stage === "incorporating");
+  const showCmp = scope !== "incorporating" && cl.some((c) => c.stage === "compliance");
+
   return (
     <div className="grid grid-cols-1 gap-5">
       <GreetingCard
@@ -174,28 +127,39 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
         eyebrow="Good morning"
         name={personOf(portal)}
         actions={
-          <Button variant="onNavyPrimary" asChild>
-            <Link href={`${base(portal)}/work`}>
-              <Plus size={16} strokeWidth={1.5} /> New task
-            </Link>
-          </Button>
+          <>
+            <ScopeSelect portal={portal} value={scope} onChange={setScope} />
+            <Button variant="onNavyPrimary" asChild>
+              <Link href={`${base(portal)}/work`}>
+                <Plus size={16} strokeWidth={1.5} /> New task
+              </Link>
+            </Button>
+          </>
         }
-        stats={practiceStats(portal)}
+        stats={todayStats(portal, scope)}
       />
+      {portal === "admin" ? <PracticeAreas portal={portal} /> : <PracticeStrip portal={portal} />}
       <Cols>
         <Col>
-          <ActionQueue portal={portal} />
-          {portal === "manager" && <TeamTasks portal={portal} />}
-          {portal === "admin" && <ClientsGrid portal={portal} rows={clientsFor(portal)} />}
+          <ThisWeek portal={portal} scope={scope} />
+          <ActionQueue portal={portal} scope={scope} />
+          {portal === "manager" && <TeamTasks portal={portal} scope={scope} />}
+          {portal === "admin" && <ClientsGrid portal={portal} title="Clients · where each one is" rows={cl.filter((c) => inScope(scope, c.id))} />}
+          {showInc && <PhaseProgress portal={portal} scope={scope} />}
+          {showCmp && <ClientsFilings portal={portal} scope={scope} />}
           {portal === "admin" && <ManagersGrid rows={managerRows()} />}
-          <PhaseProgress portal={portal} />
         </Col>
         <Col>
-          {portal !== "lead" && <ApprovalsCard items={APPROVALS[portal]} portal={portal} />}
-          <Inbox portal={portal} />
-          <OverdueFilings portal={portal} />
+          {portal === "manager" && <ApprovalsCard items={APPROVALS.manager} portal={portal} />}
+          {portal === "admin" && <DecisionsCard portal={portal} notify={toast.show} />}
+          {portal !== "lead" && <TaskStatusCard portal={portal} scope={scope} />}
+          <InboxCard portal={portal} scope={scope} notify={toast.show} />
+          <WaitingOnClient portal={portal} scope={scope} notify={toast.show} />
+          {showCmp && <ComplianceHealth portal={portal} scope={scope} />}
+          {showCmp && <OverdueFilings portal={portal} scope={scope} />}
         </Col>
       </Cols>
+      {toast.node}
     </div>
   );
 }

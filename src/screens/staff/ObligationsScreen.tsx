@@ -1,28 +1,48 @@
 "use client";
 import * as React from "react";
+import Link from "next/link";
 import { Calendar } from "lucide-react";
 import { TODAY, daysFrom, fmt, relative, urgency } from "@/lib/dates";
-import { AREAS, FREQUENCIES, OB_STATUS_BAR, OB_STATUS_TONE, type ObStatus } from "@/data/compliance";
+import { AREAS, AREA_TONE, FREQUENCIES, OB_STATUS_TONE, type ObStatus } from "@/data/compliance";
 import { clientById } from "@/data/staff-clients";
 import { complianceClients, obligationsFor, staffObHref, type StaffObligation } from "@/data/staff-compliance";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
+import { Chip, Tag } from "@/components/ui/Chip";
+import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
-import { TileGrid, type Tile, type TileGroup } from "@/components/cards/TileGrid";
+import { type Tile, type TileGroup } from "@/components/cards/TileGrid";
+import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
 import { StackedBar } from "@/components/cards/StackedBar";
-import { ClientDot, type StaffPortal } from "./parts";
+import { ClientDot, ClientName, type StaffPortal } from "./parts";
+import { FoldingGroups, KeyHint, PortalLink, useListKeys } from "./comp-parts";
 import { ClientSelect, identityTag } from "./filters";
 
-const STATUSES: ObStatus[] = ["Filed", "In progress", "Waiting on client", "Overdue", "Upcoming"];
+type Fil = "" | ObStatus | "soon";
+// The old number strip is gone (C-0018). Its five states stay as one compact filter (R-10).
+const FILTERS: Array<{ value: Fil; label: string }> = [
+  { value: "", label: "All states" },
+  { value: "Overdue", label: "Overdue" },
+  { value: "soon", label: "Due in 15 days" },
+  { value: "Waiting on client", label: "Waiting on client" },
+  { value: "In progress", label: "In progress" },
+  { value: "Filed", label: "Filed" },
+  { value: "Upcoming", label: "Upcoming" },
+];
 
 export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
   const [view, setView] = React.useState("freq");
   const [client, setClient] = React.useState("");
   const [sent, setSent] = React.useState<Record<string, true>>({});
-  const obs = obligationsFor(portal, client);
+  const [fil, setFil] = React.useState<Fil>("");
+  const listRef = React.useRef<HTMLElement>(null);
+  const filterRef = React.useRef<HTMLSpanElement>(null);
+  useListKeys(listRef, filterRef);
+  const all = obligationsFor(portal, client);
+  const soon = (o: (typeof all)[number]) => o.status !== "Filed" && daysFrom(o.due) >= 0 && daysFrom(o.due) <= 15;
+  const obs = all.filter((o) => !fil || (fil === "soon" ? soon(o) : o.status === fil));
 
   // R-35: the tag carries the client name in its identity colour.
   const tile = (o: StaffObligation): Tile => {
@@ -43,7 +63,7 @@ export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
       ? FREQUENCIES.map((f) => ({ label: f, tiles: obs.filter((o) => o.frequency === f).map(tile) }))
       : AREAS.map((a) => ({ label: a, tiles: obs.filter((o) => o.area === a).map(tile) }));
 
-  const due: AttentionRow[] = obs
+  const due: AttentionRow[] = all
     .filter((o) => o.status !== "Filed" && daysFrom(o.due) <= 15)
     .sort((a, b) => a.due.getTime() - b.due.getTime())
     .slice(0, 10)
@@ -61,42 +81,76 @@ export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
       };
     });
 
-  const waiting = obs.filter((o) => o.owner === "client" && o.status !== "Filed").sort((a, b) => a.due.getTime() - b.due.getTime());
+  const waiting = all.filter((o) => o.owner === "client" && o.status !== "Filed").sort((a, b) => a.due.getTime() - b.due.getTime());
+
+  const tabs = [
+    { key: "freq", label: "By frequency" },
+    { key: "law", label: "By law" },
+    { key: "list", label: "List" },
+  ];
+  const head = (
+    <>
+      <span ref={filterRef} className="inline-flex">
+        <ClientSelect clients={complianceClients(portal)} value={client} onChange={setClient} />
+      </span>
+      <Select aria-label="State" value={fil} onChange={(e) => setFil(e.target.value as Fil)} options={FILTERS} />
+      {(fil || client) && (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            setFil("");
+            setClient("");
+          }}
+        >
+          Clear
+        </Button>
+      )}
+      <Tabs items={tabs} value={view} onChange={setView} className="hidden sm:inline-flex" />
+    </>
+  );
+  // Old staff list columns: obligation, client, law, last filed, status, next due.
+  const listCols: Column<StaffObligation>[] = [
+    {
+      key: "name",
+      label: "Obligation",
+      render: (o) => (
+        <span className="flex items-center gap-1.5 font-semibold">
+          {o.name}
+          <PortalLink area={o.area} />
+        </span>
+      ),
+    },
+    { key: "client", label: "Client", width: 150, render: (o) => <ClientName id={o.client} short /> },
+    { key: "law", label: "Law", width: 150, render: (o) => <Tag tone={AREA_TONE[o.area]}>{o.law}</Tag> },
+    { key: "last", label: "Last filed", width: 100, render: (o) => (o.lastFiled ? fmt(o.lastFiled) : "-") },
+    { key: "status", label: "Status", width: 132, render: (o) => <Chip tone={OB_STATUS_TONE[o.status]} fixed>{o.status}</Chip> },
+    { key: "due", label: "Next due", width: 90, render: (o) => <span className={o.status === "Overdue" ? "font-semibold text-bad" : undefined} title={`Late: ${o.penalty}`}>{fmt(o.due)}</span> },
+  ];
 
   return (
     <Cols>
       <Col>
-        <SectionCard
-          title="Obligations"
-          meta={<span className="hidden sm:inline">{obs.length}</span>}
-          flush
-          right={
-            <>
-              <ClientSelect clients={complianceClients(portal)} value={client} onChange={setClient} />
-              <Tabs
-                items={[
-                  { key: "freq", label: "By frequency" },
-                  { key: "law", label: "By law" },
-                ]}
-                value={view}
-                onChange={setView}
-                className="hidden sm:inline-flex"
-              />
-            </>
-          }
-        >
-          <div className="border-b border-line-soft px-4 py-2.5 sm:hidden">
-            <Tabs
-              items={[
-                { key: "freq", label: "By frequency" },
-                { key: "law", label: "By law" },
-              ]}
-              value={view}
-              onChange={setView}
-            />
-          </div>
-          <TileGrid groups={groups} />
-        </SectionCard>
+        <section ref={listRef} className="min-w-0">
+          {view === "list" ? (
+            <div className="grid gap-3">
+              <div className="sm:hidden">
+                <Tabs items={tabs} value={view} onChange={setView} />
+              </div>
+              <DataGrid title="Obligations" meta={`${obs.length}`} columns={listCols} rows={obs} rowKey={(o) => o.id} rowHref={(o) => staffObHref(portal, o.id)} rowLate={(o) => o.status === "Overdue"} filters={head} pageSize={12} footer={<KeyHint />} />
+            </div>
+          ) : (
+            <SectionCard title="Obligations" meta={<span className="hidden sm:inline">{obs.length}</span>} flush right={<div className="flex flex-wrap items-center justify-end gap-2">{head}</div>}>
+              <div className="border-b border-line-soft px-4 py-2.5 sm:hidden">
+                <Tabs items={tabs} value={view} onChange={setView} />
+              </div>
+              <FoldingGroups groups={groups} />
+              <div className="border-t border-line-soft px-4 py-2 md:px-5">
+                <KeyHint />
+              </div>
+            </SectionCard>
+          )}
+        </section>
       </Col>
       <Col>
         <SectionCard title="Due in the next 15 days" icon={{ Icon: Calendar, tone: "teal" }} flush>
@@ -112,9 +166,9 @@ export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
                 <ListRow key={o.id}>
                   <ClientDot tone={c.tone} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">
+                    <Link href={staffObHref(portal, o.id)} className="block truncate font-semibold hover:underline">
                       {c.short} · {o.name}
-                    </span>
+                    </Link>
                     <span className="block truncate text-12.5 text-muted">{o.needs[0]}</span>
                   </span>
                   {sent[o.id] ? (
@@ -130,7 +184,14 @@ export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
           )}
         </SectionCard>
         <SectionCard title="Progress flow">
-          <StackedBar segments={STATUSES.map((s) => ({ label: s, value: obs.filter((o) => o.status === s).length, tone: OB_STATUS_BAR[s] }))} />
+          <StackedBar
+            segments={[
+              { label: "Data from client", value: all.filter((o) => o.status === "Waiting on client" || o.status === "Overdue").length, tone: "warn" },
+              { label: "Prepared", value: all.filter((o) => o.status === "In progress").length, tone: "accent" },
+              { label: "Filed", value: all.filter((o) => o.status === "Filed").length, tone: "ok" },
+              { label: "Upcoming", value: all.filter((o) => o.status === "Upcoming").length, tone: "idle" },
+            ]}
+          />
         </SectionCard>
       </Col>
     </Cols>

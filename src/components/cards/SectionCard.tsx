@@ -21,25 +21,28 @@ export interface SectionCardProps {
   bodyClassName?: string;
   children?: React.ReactNode;
   id?: string;
+  /** Small element before the title text, after the tile: a client colour dot (R-35). */
+  titleLead?: React.ReactNode;
 }
 
 /** R-15, R-16: white card, 1 px line, 10 px corners, 52 px head with a tinted icon tile. */
-export function SectionCard({ title, meta, right, icon, flush, bare, className, bodyClassName, children, id }: SectionCardProps) {
+export const SectionCard = React.forwardRef<HTMLElement, SectionCardProps>(function SectionCard({ title, meta, right, icon, flush, bare, className, bodyClassName, children, id, titleLead }, ref) {
   const { Icon, tone } = icon ?? iconFor(title);
   return (
-    <section id={id} className={cn("min-w-0 overflow-hidden rounded-lg border border-line bg-surface", className)} aria-label={title}>
+    <section ref={ref} id={id} className={cn("min-w-0 overflow-hidden rounded-lg border border-line bg-surface", className)} aria-label={title}>
       {!bare && (
-        <header className="flex min-h-head items-center gap-2.5 border-b border-line-soft px-4 py-2 md:px-5">
+        <header className="flex min-h-head flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-line-soft px-4 py-2 md:px-5">
           <IconTile Icon={Icon} tone={tone} />
+          {titleLead}
           <h2 className="min-w-0 truncate text-14.5 font-semibold">{title}</h2>
           {meta && <span className="truncate text-12.5 text-muted">{meta}</span>}
-          {right && <div className="ml-auto flex min-w-0 flex-none items-center gap-2">{right}</div>}
+          {right && <div className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">{right}</div>}
         </header>
       )}
       <div className={cn(!flush && "px-4 py-4 md:px-5", bodyClassName)}>{children}</div>
     </section>
   );
-}
+});
 
 /** Empty list body (R-05: no filler sentences). */
 export function Empty({ children = "None" }: { children?: React.ReactNode }) {

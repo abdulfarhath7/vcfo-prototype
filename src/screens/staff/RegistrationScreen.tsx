@@ -1,24 +1,35 @@
 "use client";
 import * as React from "react";
-import { List, Upload } from "lucide-react";
-import { fmt, relative, urgency } from "@/lib/dates";
+import Link from "next/link";
+import { Download, List, Upload } from "lucide-react";
+import { TODAY, fmt, relative, urgency } from "@/lib/dates";
 import { REGULATOR_LABEL, REGULATOR_TONE, REG_STATUS_TONE, type RegStatus } from "@/data/registrations";
 import { clientById } from "@/data/staff-clients";
-import { staffObHref, staffObligation, staffRegistration } from "@/data/staff-compliance";
+import { clientDetails, sbcFields, staffObHref, staffObligation, staffRegistration } from "@/data/staff-compliance";
+import type { ThreadStep } from "@/components/cards/Thread";
 import { SBC } from "@/data/people";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Chip, OwnerChip, Tag } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
-import { SectionCard } from "@/components/cards/SectionCard";
+import { SectionCard, ListRow } from "@/components/cards/SectionCard";
 import { Thread } from "@/components/cards/Thread";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
-import { RecordHead, ItemDocsCard, HoldsCard } from "@/screens/client/parts";
+import { RecordHead, HoldsCard } from "@/screens/client/parts";
+import { AssistCard, FromClientCard, NextStepButton, NoteCard, PeopleOnIt, REVIEW_REG, ReviewCard, SbcFieldsCard, kbHref, useNextStep, withReview } from "./comp-parts";
 import { ClientName, clientHref, type StaffPortal } from "./parts";
 
 /** Actions wrap on phones instead of running off the card. */
 const WRAP = "flex max-w-[calc(100vw-4rem)] flex-wrap items-center justify-end gap-2";
 const STATUSES: RegStatus[] = ["Not started", "In progress", "Waiting on client", "Granted"];
+
+function advance(steps: ThreadStep[], done: number, by: string): ThreadStep[] {
+  return steps.map((s, i): ThreadStep => {
+    if (i < done) return s.state === "done" ? s : { ...s, state: "done", date: TODAY, by: `Done by ${by}`, note: undefined };
+    if (i === done) return s.state === "current" ? s : { ...s, state: "current", by };
+    return { ...s, state: "upcoming" };
+  });
+}
 
 export function RegistrationScreen({ portal, id }: { portal: StaffPortal; id: string }) {
   const r = staffRegistration(id)!;
@@ -29,7 +40,11 @@ export function RegistrationScreen({ portal, id }: { portal: StaffPortal; id: st
   const [reminded, setReminded] = React.useState(false);
   const [uploaded, setUploaded] = React.useState(false);
 
-  const done = r.steps.filter((s) => s.state === "done").length;
+  const next = useNextStep(r.steps.length, r.steps.filter((s) => s.state === "done").length);
+  const granted = status === "Granted";
+  const steps = advance(r.steps, granted ? r.steps.length : next.done, r.by);
+  const done = steps.filter((s) => s.state === "done").length;
+  const starts = r.obligations.map((oid) => staffObligation(`${c.id}-${oid}`)).filter((o) => !!o);
   const person = SBC.find((p) => p.name === r.by);
   const owner = status === "Waiting on client" ? "client" : "sbc";
 
@@ -52,6 +67,7 @@ export function RegistrationScreen({ portal, id }: { portal: StaffPortal; id: st
             <Tag tone={REGULATOR_TONE[r.regulator]}>{REGULATOR_LABEL[r.regulator]}</Tag>
             <Chip tone={REG_STATUS_TONE[status]}>{status}</Chip>
             {r.nextLabel && status === r.status && <span className="text-12.5 text-muted">{r.nextLabel}</span>}
+            <PeopleOnIt client={c.id} />
           </>
         }
         action={
@@ -82,6 +98,11 @@ export function RegistrationScreen({ portal, id }: { portal: StaffPortal; id: st
                     Send reminder
                   </Button>
                 ))}
+              {granted && (
+                <Button size="sm">
+                  <Download size={16} strokeWidth={1.5} /> Download certificate
+                </Button>
+              )}
               {status !== "Granted" &&
                 (uploaded ? (
                   <Chip tone="prog">Uploaded</Chip>
@@ -97,6 +118,7 @@ export function RegistrationScreen({ portal, id }: { portal: StaffPortal; id: st
           )
         }
         facts={[
+          { k: "Steps", v: `${done} of ${steps.length} done` },
           { k: r.idLabel ?? "Number", v: r.idValue ?? "-", mono: true },
           { k: r.status === "Granted" ? "Granted" : "Started", v: r.granted ? fmt(r.granted) : r.started ? fmt(r.started) : "-" },
           { k: "Renewal", v: r.renewal },
@@ -104,10 +126,17 @@ export function RegistrationScreen({ portal, id }: { portal: StaffPortal; id: st
       />
       <Cols>
         <Col>
-          <SectionCard title="Thread" meta={`${done} of ${r.steps.length} done`} icon={{ Icon: List, tone: "blue" }}>
-            <Thread steps={r.steps} />
+          <SectionCard
+            title="Thread"
+            meta={`${done} of ${steps.length} done`}
+            icon={{ Icon: List, tone: "blue" }}
+            right={!granted ? <NextStepButton busy={next.busy} disabled={done >= steps.length} onClick={next.run} /> : undefined}
+          >
+            <Thread steps={steps} />
           </SectionCard>
-          <ItemDocsCard docs={r.docs} />
+          {!granted && <AssistCard portalName={r.authority} form={r.form} onFiled={next.run} />}
+          <FromClientCard docs={withReview(r.docs, status === "Waiting on client")} details={clientDetails("reg", r.regId)} confirmedBy={`Confirmed by ${c.short} on 24 Sep`} client={c.id} />
+          <SbcFieldsCard rows={sbcFields("reg", r.regId, granted, r.idLabel, r.idValue)} locked={granted} />
         </Col>
         <Col>
           <HoldsCard
@@ -118,6 +147,24 @@ export function RegistrationScreen({ portal, id }: { portal: StaffPortal; id: st
               { k: "Typical time", v: r.typical },
             ]}
           />
+          <NoteCard title="About" link={{ label: "Read the SBC SOP", href: kbHref(portal) }}>
+            {r.about}
+          </NoteCard>
+          <NoteCard title="Applies because">{`Applies to ${c.short} because: ${r.why.toLowerCase()}. Rule: ${r.rule}.`}</NoteCard>
+          {starts.length > 0 && (
+            <SectionCard title="What it starts" meta={String(starts.length)} flush>
+              {starts.map((o) => (
+                <ListRow key={o.id}>
+                  <Link href={staffObHref(portal, o.id)} className="min-w-0 flex-1 truncate font-semibold hover:underline">
+                    {o.name}
+                  </Link>
+                  <span className="flex-none text-12.5 text-muted">{o.frequency}</span>
+                </ListRow>
+              ))}
+            </SectionCard>
+          )}
+          <NoteCard title="Renewal">{r.renewal !== "None" ? `${r.renewal}. Reminders at 60, 30 and 7 days.` : "None"}</NoteCard>
+          <ReviewCard items={REVIEW_REG} initial={granted ? 4 : done > 1 ? 2 : 0} />
           <SectionCard title="Coming up" flush>
             <AttentionList rows={coming} />
           </SectionCard>

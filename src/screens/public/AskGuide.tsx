@@ -1,0 +1,133 @@
+"use client";
+import * as React from "react";
+import Link from "next/link";
+import { X } from "lucide-react";
+import { GUIDE, GUIDE_HELLO } from "./content";
+
+type Msg = { id: number; who: "bot" | "me"; text?: string; q?: number; typing?: boolean };
+
+/** Ask VCFO quick answers on the landing page: a fixed text button (R-04, no mascot) and a small panel. */
+export function AskGuide({ onDemo }: { onDemo: () => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [log, setLog] = React.useState<Msg[]>([]);
+  const [asked, setAsked] = React.useState<Set<number>>(new Set());
+  const pill = React.useRef<HTMLButtonElement>(null);
+  const panel = React.useRef<HTMLDivElement>(null);
+  const logRef = React.useRef<HTMLDivElement>(null);
+  const seq = React.useRef(1);
+
+  React.useEffect(() => {
+    if (!open) return;
+    panel.current?.querySelector<HTMLElement>(".lp-guide-qs button, .lp-guide-x")?.focus();
+  }, [open]);
+
+  React.useEffect(() => {
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
+  }, [log]);
+
+  const show = () => {
+    if (!log.length) setLog([{ id: seq.current++, who: "bot", text: GUIDE_HELLO }]);
+    setOpen(true);
+  };
+  const hide = () => {
+    setOpen(false);
+    requestAnimationFrame(() => pill.current?.focus({ preventScroll: true }));
+  };
+  const ask = (i: number) => {
+    setAsked((s) => new Set(s).add(i));
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const me: Msg = { id: seq.current++, who: "me", text: GUIDE[i].q };
+    const bot: Msg = { id: seq.current++, who: "bot", q: i, typing: !reduce };
+    setLog((l) => [...l, me, bot]);
+    if (!reduce) setTimeout(() => setLog((l) => l.map((m) => (m.id === bot.id ? { ...m, typing: false } : m))), 320);
+  };
+  const scrollTo = (sec: string) => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById(sec)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  };
+  const left = GUIDE.map((g, i) => ({ g, i })).filter(({ i }) => !asked.has(i));
+
+  return (
+    <div className="lp-guide">
+      {open ? (
+        <div
+          ref={panel}
+          className="lp-guide-panel"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="lp-guide-t"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              e.stopPropagation();
+              hide();
+            }
+          }}
+        >
+          <div className="lp-guide-head">
+            <div>
+              <b id="lp-guide-t">Ask VCFO</b>
+              <span>Quick answers about the product</span>
+            </div>
+            <button type="button" className="lp-guide-x" aria-label="Close Ask VCFO" onClick={hide}>
+              <X size={18} strokeWidth={1.5} />
+            </button>
+          </div>
+          <div ref={logRef} className="lp-guide-log" aria-live="polite">
+            {log.map((m) => {
+              if (m.typing)
+                return (
+                  <div key={m.id} className="lp-msg bot typing" aria-hidden>
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                );
+              if (m.q === undefined)
+                return (
+                  <div key={m.id} className={`lp-msg ${m.who}`}>
+                    {m.text}
+                  </div>
+                );
+              const g = GUIDE[m.q];
+              return (
+                <div key={m.id} className="lp-msg bot">
+                  {g.a}
+                  <div className="acts">
+                    <button type="button" className="lp-btn lined sm" onClick={() => scrollTo(g.sec)}>
+                      Show me
+                    </button>
+                    {g.href && (
+                      <Link className="lp-btn lined sm" href={g.href}>
+                        Open the screen
+                      </Link>
+                    )}
+                    <button type="button" className={`lp-btn sm ${g.sales ? "navy" : "lined"}`} onClick={onDemo}>
+                      Book a demo
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="lp-guide-qs" role="group" aria-label="Suggested questions">
+            {left.length ? (
+              left.map(({ g, i }) => (
+                <button key={g.q} type="button" onClick={() => ask(i)}>
+                  {g.q}
+                </button>
+              ))
+            ) : (
+              <button type="button" className="lp-btn navy sm" onClick={onDemo}>
+                Book a demo
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <button ref={pill} type="button" className="lp-guide-pill" aria-expanded={false} onClick={show}>
+          Ask VCFO
+        </button>
+      )}
+    </div>
+  );
+}

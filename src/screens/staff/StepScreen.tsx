@@ -1,83 +1,149 @@
 "use client";
 import * as React from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import { List, Send } from "lucide-react";
+import { Check, Copy, List, Send, Upload } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { TODAY, d, fmt } from "@/lib/dates";
-import { STEPS, stepTone } from "@/data/incorporation";
+import { STEPS, PHASES, stepTone, type StepStatus } from "@/data/incorporation";
 import { clientById } from "@/data/staff-clients";
-import { CLIENT_PEOPLE } from "@/data/people";
+import { CONTACTS } from "@/data/staff-clients";
+import { stepState, stepHistory, stepForm, assistText, fieldTone, type FormField, type FieldState } from "@/data/staff-steps";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Chip, OwnerChip } from "@/components/ui/Chip";
-import { FileBadge, fileType } from "@/components/ui/FileBadge";
-import { Input } from "@/components/ui/Input";
-import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
+import { Field, Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
+import { Tabs } from "@/components/ui/Tabs";
+import { useUndoToast } from "@/components/ui/UndoToast";
+import { SectionCard, ListRow, Empty, HeadLink } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { Thread, type ThreadStep } from "@/components/cards/Thread";
-import { identityTile, ClientDot, personOf, type StaffPortal } from "./parts";
+import { identityTile, ClientDot, personOf, stepHrefFor, clientHref, type StaffPortal } from "./parts";
+import { AboutStepPanel } from "./step-parts";
 
-type DocState = "Accepted" | "Submitted" | "Asked" | "Sent back";
-
-interface StepDoc {
-  id: string;
-  name: string;
-  file?: string;
-  state: DocState;
-  date: Date;
-  note?: string;
-}
-
-const docTone: Record<DocState, "ok" | "prog" | "warn" | "bad"> = { Accepted: "ok", Submitted: "prog", Asked: "warn", "Sent back": "bad" };
-
-// Step 7 (Registered office address) ported from reference/old-screens/s/lead/Step.dc.html. Dates move back 10 days.
-const STEP7_DOCS: StepDoc[] = [
-  { id: "sd1", name: "Rent agreement", file: "rent-agreement-2026.pdf", state: "Accepted", date: d(2026, 9, 30) },
-  { id: "sd2", name: "NOC from owner", file: "noc-unsigned.pdf", state: "Submitted", date: d(2026, 10, 4), note: "Signature missing" },
-  { id: "sd3", name: "Utility bill, under 2 months", state: "Asked", date: d(2026, 10, 1) },
-];
-
-const STEP7_THREAD: ThreadStep[] = [
-  { id: "th1", title: "Documents asked from the client", state: "done", date: d(2026, 9, 29), by: "Bharath" },
-  { id: "th2", title: "Address details and rent agreement accepted", state: "done", date: d(2026, 9, 30), by: "Bharath" },
-  { id: "th3", title: "NOC uploaded without signature", state: "done", date: d(2026, 10, 4), by: "Rohan Kumar", owner: "client" },
-  { id: "th4", title: "Utility bill and signed NOC", state: "current", date: TODAY, owner: "client", note: "Asked 5 days ago" },
-  { id: "th5", title: "SBC review", state: "upcoming", owner: "sbc" },
-  { id: "th6", title: "Step complete", state: "upcoming" },
-];
+// Ported from reference/old-screens/s/lead/Step.dc.html (lead, manager and admin share it). Dates move back 10 days.
 
 const STEP7_NOTES = [
   { id: "n1", who: "Bharath", date: d(2026, 10, 4), text: "Ask for a fresh bill if it is older than 15 Aug." },
   { id: "n2", who: "Pranay", date: d(2026, 10, 2), text: "Bill must show the same address as the agreement." },
 ];
 
-function genericDocs(names: string[] | undefined, done: boolean): StepDoc[] {
-  return (names ?? []).map((n, i) => ({ id: `g${i}`, name: n.replace(/\.[a-z]+$/i, ""), file: /\./.test(n) ? n : undefined, state: done ? "Accepted" : i === 0 ? "Submitted" : "Asked", date: d(2026, 10, 1 + i) }));
-}
+const dot: Record<FieldState, string> = { Accepted: "bg-ok-mid", Review: "bg-accent", Asked: "bg-warn-mid", "Not asked": "bg-line" };
+const iso = (x?: Date) => (x ? `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}` : "");
+const fromIso = (s: string) => {
+  const [y, m, dd] = s.split("-").map(Number);
+  return new Date(y, m - 1, dd);
+};
 
-function genericThread(done: boolean, owner: ThreadStep["owner"], lead: string): ThreadStep[] {
-  return [
-    { id: "g1", title: "Step opened", state: "done", date: d(2026, 9, 28), by: lead },
-    { id: "g2", title: "Documents asked", state: "done", date: d(2026, 9, 29), by: lead },
-    { id: "g3", title: owner === "client" ? "Client uploads" : "SBC works the step", state: done ? "done" : "current", date: done ? d(2026, 10, 2) : TODAY, owner },
-    { id: "g4", title: "Review", state: done ? "done" : "upcoming", date: done ? d(2026, 10, 3) : undefined, owner: "sbc" },
-    { id: "g5", title: "Step complete", state: done ? "done" : "upcoming", date: done ? d(2026, 10, 3) : undefined },
-  ];
+function FieldRow({ f, onChange, onState, onRemind }: { f: FormField; onChange: (v: string) => void; onState: (s: FieldState, note?: string) => void; onRemind: () => void }) {
+  const fileRef = React.useRef<HTMLInputElement>(null);
+  return (
+    <ListRow className="flex-wrap items-start md:flex-nowrap">
+      <i className={cn("mt-1.5 h-2.5 w-2.5 flex-none rounded-full", dot[f.state])} aria-hidden />
+      <span className="grid min-w-0 flex-1 gap-1">
+        <b className="font-semibold">
+          {f.label}
+          {f.required && f.state !== "Accepted" && <span className="text-bad"> *</span>}
+        </b>
+        {f.kind === "text" ? (
+          <Input value={f.value} onChange={(e) => onChange(e.target.value)} aria-label={f.label} className="h-8 text-13" disabled={f.state === "Accepted"} />
+        ) : f.value ? (
+          <span className="truncate text-12.5 text-muted">
+            <span className="font-mono">{f.value}</span>
+            {f.note && <span className="text-bad"> · {f.note}</span>}
+          </span>
+        ) : (
+          <span className="text-12.5 text-muted">
+            Drop a file or{" "}
+            <button type="button" className="font-semibold text-accent hover:underline" onClick={() => fileRef.current?.click()}>
+              browse
+            </button>
+            {f.note && <span> · {f.note}</span>}
+            <input
+              ref={fileRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  onChange(file.name);
+                  onState("Review");
+                }
+              }}
+            />
+          </span>
+        )}
+      </span>
+      <span className="flex flex-none flex-wrap items-center gap-1.5">
+        <Chip tone={fieldTone[f.state]} fixed>
+          {f.state === "Asked" ? `Asked${f.note?.match(/\d+/) ? ` · ${f.note.match(/\d+/)![0]}d` : ""}` : f.state}
+        </Chip>
+        <span className="w-[52px] text-right font-mono text-12 text-muted">{f.date ? fmt(f.date) : ""}</span>
+        {f.state === "Asked" && (
+          <Button size="sm" variant="outline" onClick={onRemind}>
+            Send reminder
+          </Button>
+        )}
+        {f.state === "Review" && (
+          <>
+            <Button size="sm" variant="soft" onClick={() => onState("Accepted")}>
+              Accept
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => onState("Asked", "Sent back")}>
+              Reject
+            </Button>
+          </>
+        )}
+        {f.state === "Accepted" && f.kind === "file" && (
+          <Upload size={14} strokeWidth={1.5} className="text-faint" aria-hidden />
+        )}
+      </span>
+    </ListRow>
+  );
 }
 
 function StepView({ portal, id, n }: { portal: StaffPortal; id: string; n: number }) {
   const c = clientById(id);
   const step = STEPS.find((s) => s.n === n);
-  const isStep7 = id === "northwind" && step?.n === 7;
-  const done = step?.status === "Completed";
-  const [docs, setDocs] = React.useState<StepDoc[]>(() => (isStep7 ? STEP7_DOCS : genericDocs(step?.docs, done)));
-  const [notes, setNotes] = React.useState(isStep7 ? STEP7_NOTES : []);
+  const base = c && step ? stepState(c, n) : undefined;
+  const toast = useUndoToast();
+  const [status, setStatus] = React.useState<StepStatus>(base?.status ?? "Upcoming");
+  const [win, setWin] = React.useState({ from: base?.from, to: base?.to });
+  const [editWin, setEditWin] = React.useState<{ from: string; to: string } | null>(null);
+  const [fields, setFields] = React.useState<FormField[]>(() => (c && step ? stepForm(c, n) : []));
+  const [dirty, setDirty] = React.useState(false);
+  const [history, setHistory] = React.useState<ThreadStep[]>(() => (c && step ? stepHistory(c, n) : []));
+  const [notes, setNotes] = React.useState(id === "northwind" && n === 7 ? STEP7_NOTES : []);
   const [draft, setDraft] = React.useState("");
   const [reminded, setReminded] = React.useState(false);
+  const [tab, setTab] = React.useState("forms");
+  const [about, setAbout] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
 
   if (!c || !step) return <SectionCard title="Step">{<Empty>No step</Empty>}</SectionCard>;
+  const done = status === "Completed";
   const owner = step.by ?? (step.owner === "client" ? c.short : step.owner === "mca" ? "MCA" : c.lead);
-  const holder = step.owner === "client" ? CLIENT_PEOPLE[0].name : step.owner === "mca" ? "MCA" : owner;
-  const setState = (id: string, state: DocState) => setDocs(docs.map((x) => (x.id === id ? { ...x, state, date: TODAY } : x)));
+  const holder = step.owner === "client" ? CONTACTS[c.id]?.name ?? c.short : step.owner === "mca" ? "MCA" : owner;
+  const filed = fields.filter((f) => f.state === "Accepted");
+  const toFile = fields.filter((f) => f.state !== "Accepted");
+  const phaseSteps = STEPS.filter((s) => s.phase === step.phase);
+  const phase = PHASES[step.phase - 1];
+  const states = phaseSteps.map((s) => stepState(c, s.n).status);
+  const docsReady = states.filter((x) => x === "Completed").length;
+  const docsWaiting = states.filter((x) => x === "Waiting" || x === "Sent back").length;
+  const docsNeed = states.length - docsReady - docsWaiting;
+
+  const patch = (fid: string, p: Partial<FormField>) => {
+    setFields((fs) => fs.map((x) => (x.id === fid ? { ...x, ...p } : x)));
+    setDirty(true);
+  };
+  const log = (title: string, owner?: ThreadStep["owner"]) =>
+    setHistory((h) => {
+      const doneRows = h.filter((x) => x.state === "done");
+      const rest = h.filter((x) => x.state !== "done");
+      return [...doneRows, { id: `l${Date.now()}`, title, state: "done", date: TODAY, by: personOf(portal), owner }, ...rest];
+    });
 
   return (
     <div className="grid grid-cols-1 gap-5">
@@ -85,84 +151,168 @@ function StepView({ portal, id, n }: { portal: StaffPortal; id: string; n: numbe
         title={`Step ${step.n} · ${step.title}`}
         icon={{ Icon: List, tone: identityTile[c.tone] }}
         meta={
-          <span className="inline-flex items-center gap-1.5">
+          <Link href={clientHref(portal, c.id)} className="inline-flex items-center gap-1.5 hover:underline">
             <ClientDot tone={c.tone} />
             {c.short}
-          </span>
+          </Link>
+        }
+        right={
+          <Button size="sm" variant="outline" onClick={() => setAbout(true)}>
+            About this step
+          </Button>
         }
       >
         <KeyValue
           cols={3}
           rows={[
-            { k: "Status", v: <Chip tone={stepTone[step.status]}>{step.status}</Chip> },
+            { k: "Status", v: <Chip tone={stepTone[status]}>{status}</Chip> },
             { k: "Owner", v: <OwnerChip owner={step.owner} label={step.owner === "client" ? c.short : undefined} /> },
             { k: "Works it", v: owner },
-            { k: "Due", v: step.due ? fmt(step.due) : step.done ? `Done ${fmt(step.done)}` : "" },
+            {
+              k: "Window",
+              v: (
+                <span className="inline-flex items-center gap-2">
+                  <span className="font-mono text-12.5">
+                    {win.from ? fmt(win.from) : ""} to {win.to ? fmt(win.to) : ""}
+                  </span>
+                  {!done && (
+                    <Button size="sm" variant="link" onClick={() => setEditWin({ from: iso(win.from), to: iso(win.to) })}>
+                      Edit
+                    </Button>
+                  )}
+                </span>
+              ),
+            },
             { k: "Typical time", v: step.time },
-            { k: "Phase", v: `Phase ${step.phase}` },
+            { k: "Phase", v: `Phase ${step.phase} · ${phase.short}` },
           ]}
         />
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line-soft pt-3">
+          <HeadLink href={`/${portal}/documents`}>Open in document pack ›</HeadLink>
+          <Button
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            onClick={() => {
+              try {
+                void navigator.clipboard?.writeText(assistText(c, n));
+              } catch {}
+              setCopied(true);
+              window.setTimeout(() => setCopied(false), 1500);
+            }}
+          >
+            {copied ? <Check size={14} strokeWidth={1.5} /> : <Copy size={14} strokeWidth={1.5} />} {copied ? "Copied" : "Copy for Assist"}
+          </Button>
+        </div>
       </SectionCard>
 
       <Cols>
         <Col>
           <SectionCard
-            title="Documents"
-            meta={`${docs.filter((x) => x.state === "Accepted").length} of ${docs.length} accepted`}
+            title={tab === "forms" ? "Forms" : "Activity"}
+            meta={tab === "forms" ? `${filed.length} of ${fields.length} filed` : `${history.filter((h) => h.state !== "upcoming").length} events`}
             flush
             right={
-              <Button size="sm" variant="primary" onClick={() => setDocs([...docs, { id: `r${docs.length}`, name: "New document", state: "Asked", date: TODAY }])}>
-                Request
-              </Button>
+              <Tabs
+                items={[
+                  { key: "forms", label: "Forms", count: fields.length },
+                  { key: "activity", label: "Activity", count: history.filter((h) => h.state !== "upcoming").length },
+                ]}
+                value={tab}
+                onChange={setTab}
+              />
             }
           >
-            {docs.length === 0 ? (
-              <Empty />
-            ) : (
-              docs.map((x) => (
-                <ListRow key={x.id} className="flex-wrap md:flex-nowrap">
-                  <FileBadge type={x.file ? fileType(x.file) : "PDF"} className={x.file ? undefined : "opacity-40"} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">{x.name}</span>
-                    <span className="block truncate text-12.5 text-muted">
-                      {x.file && <span className="font-mono">{x.file}</span>}
-                      {x.file && <span className="mx-1.5 text-faint">·</span>}
-                      {fmt(x.date)}
-                      {x.note && <span className="text-bad"> · {x.note}</span>}
-                    </span>
+            {tab === "forms" ? (
+              <>
+                {fields.length === 0 && <Empty />}
+                {filed.length > 0 && <h3 className="bg-raised px-4 py-1.5 font-mono text-11.5 text-muted md:px-5">FILED · {filed.length}</h3>}
+                {filed.map((f) => (
+                  <FieldRow key={f.id} f={f} onChange={(v) => patch(f.id, { value: v })} onState={(st, note) => patch(f.id, { state: st, note, date: TODAY })} onRemind={() => toast.show(`Reminder sent for ${f.label}`)} />
+                ))}
+                {toFile.length > 0 && <h3 className="border-t border-line-soft bg-raised px-4 py-1.5 font-mono text-11.5 text-muted md:px-5">TO FILE · {toFile.length}</h3>}
+                {toFile.map((f) => (
+                  <FieldRow
+                    key={f.id}
+                    f={f}
+                    onChange={(v) => patch(f.id, { value: v })}
+                    onState={(st, note) => {
+                      patch(f.id, { state: st, note, date: TODAY });
+                      if (st === "Accepted") log(`${f.label} accepted`, "sbc");
+                      if (note === "Sent back") log(`${f.label} sent back`, "sbc");
+                    }}
+                    onRemind={() => {
+                      patch(f.id, { note: "Reminder sent today" });
+                      toast.show(`Reminder sent to ${holder} for ${f.label}`);
+                    }}
+                  />
+                ))}
+                <footer className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
+                  <span className="mr-auto inline-flex items-center gap-1.5 text-12.5 text-muted">
+                    <i className={cn("h-1.5 w-1.5 rounded-full", dirty ? "bg-warn-mid" : "bg-ok-mid")} aria-hidden />
+                    {dirty ? "Unsaved changes" : "Draft saved"}
                   </span>
-                  <Chip tone={docTone[x.state]} fixed>
-                    {x.state}
-                  </Chip>
-                  {x.state === "Submitted" && (
-                    <span className="flex flex-none gap-1.5">
-                      <Button size="sm" variant="ghost" onClick={() => setState(x.id, "Sent back")}>
-                        Send back
-                      </Button>
-                      <Button size="sm" variant="soft" onClick={() => setState(x.id, "Accepted")}>
-                        Approve
-                      </Button>
-                    </span>
+                  <Button size="sm" variant="outline" disabled={!dirty} onClick={() => setDirty(false)}>
+                    Save
+                  </Button>
+                  {!done && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        log("Form sent to the client to fill", "client");
+                        toast.show(`${CONTACTS[c.id]?.name ?? c.short} can fill the form now`);
+                      }}
+                    >
+                      Request client to fill
+                    </Button>
                   )}
-                </ListRow>
-              ))
+                  {!done && portal === "lead" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        log(`Approval asked from ${c.manager}`, "sbc");
+                        toast.show(`Approval asked from ${c.manager}`);
+                      }}
+                    >
+                      Request manager approval
+                    </Button>
+                  )}
+                  {!done && (
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => {
+                        setFields(fields.map((f) => (f.state === "Accepted" ? f : { ...f, state: "Accepted", date: TODAY, note: undefined })));
+                        setStatus("Completed");
+                        setDirty(false);
+                        setHistory((h) => [...h.filter((x) => x.state === "done"), { id: "fin", title: "Step complete", state: "done", date: TODAY, by: personOf(portal) }]);
+                        toast.show(`Step ${n} marked complete`);
+                      }}
+                    >
+                      Mark all complete
+                    </Button>
+                  )}
+                </footer>
+              </>
+            ) : (
+              <div className="px-4 py-4 md:px-5">
+                <Thread steps={history} />
+              </div>
             )}
           </SectionCard>
 
-          <SectionCard title="Step history">
-            <Thread steps={isStep7 ? STEP7_THREAD : genericThread(done, step.owner, c.lead)} />
-          </SectionCard>
-
-          <SectionCard title="Notes" flush>
-            {notes.map((n) => (
-              <ListRow key={n.id} className="items-start">
-                <span className="w-[64px] flex-none font-mono text-12 text-muted">{fmt(n.date)}</span>
-                <span className="min-w-0 flex-1">{n.text}</span>
-                <span className="flex-none text-12.5 text-muted">{n.who}</span>
+          <SectionCard title="Notes" meta={notes.length ? String(notes.length) : undefined} flush>
+            {notes.map((x) => (
+              <ListRow key={x.id} className="items-start">
+                <span className="w-[64px] flex-none font-mono text-12 text-muted">{fmt(x.date)}</span>
+                <span className="min-w-0 flex-1">{x.text}</span>
+                <span className="flex-none text-12.5 text-muted">{x.who}</span>
               </ListRow>
             ))}
             <form
-              className="flex items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5"
+              className="flex items-center gap-2 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5"
               onSubmit={(e) => {
                 e.preventDefault();
                 if (!draft.trim()) return;
@@ -182,7 +332,7 @@ function StepView({ portal, id, n }: { portal: StaffPortal; id: string; n: numbe
               reminded ? (
                 <Chip tone="ok">Reminder sent</Chip>
               ) : (
-                <Button size="sm" variant="primary" onClick={() => setReminded(true)} disabled={done}>
+                <Button size="sm" variant="primary" onClick={() => setReminded(true)} disabled={done || status === "Upcoming"}>
                   <Send size={14} strokeWidth={1.5} /> Send reminder
                 </Button>
               )
@@ -191,16 +341,86 @@ function StepView({ portal, id, n }: { portal: StaffPortal; id: string; n: numbe
             <KeyValue
               cols={1}
               rows={[
-                { k: "Holder", v: done ? "Nobody" : holder },
-                { k: "Side", v: done ? "" : step.owner === "client" ? c.short : step.owner === "mca" ? "MCA" : "SBC" },
-                { k: "Since", v: done ? "" : fmt(d(2026, 10, 1)) },
-                { k: "Days", v: done ? "" : String(c.id === "northwind" ? 5 : c.days) },
-                { k: "Last reminder", v: reminded ? fmt(TODAY) : done ? "" : fmt(d(2026, 10, 3)) },
+                { k: "Holder", v: done ? "Nobody" : status === "Upcoming" ? "Not open yet" : holder },
+                { k: "Side", v: done || status === "Upcoming" ? "" : step.owner === "client" ? c.short : step.owner === "mca" ? "MCA" : "SBC" },
+                { k: "Since", v: done || status === "Upcoming" ? "" : win.from ? fmt(win.from) : "" },
+                { k: "Days", v: done || status === "Upcoming" ? "" : String(c.days) },
+                { k: "Last reminder", v: reminded ? fmt(TODAY) : done || status === "Upcoming" ? "" : fmt(d(2026, 10, 3)) },
               ]}
             />
           </SectionCard>
+
+          <SectionCard title={phase.name} meta={`${states.filter((x) => x === "Completed").length} of ${phaseSteps.length}`} flush>
+            {phaseSteps.map((s, i) => {
+              const st = states[i];
+              const cur = s.n === n;
+              return (
+                <ListRow key={s.n} href={stepHrefFor(portal, c.id, s.n)} className={cn("py-2", cur && "bg-warn-soft hover:bg-warn-soft")}>
+                  <span
+                    className={cn(
+                      "grid h-5 w-5 flex-none place-items-center rounded-full text-11 font-bold",
+                      st === "Completed" ? "bg-ok-mid text-white" : st === "Upcoming" ? "text-faint shadow-[inset_0_0_0_1.5px_var(--line)]" : "bg-btn text-white",
+                    )}
+                  >
+                    {st === "Completed" ? <Check size={11} strokeWidth={2.4} /> : s.n}
+                  </span>
+                  <span className={cn("min-w-0 flex-1 truncate", cur && "font-semibold")}>{s.title}</span>
+                  <span className="flex-none text-12 text-muted">{s.owner === "client" ? "Client" : s.owner === "mca" ? "MCA" : "Project lead"}</span>
+                </ListRow>
+              );
+            })}
+          </SectionCard>
+
+          <SectionCard title={`${phase.short} documents`} flush right={<HeadLink href={`/${portal}/documents`}>Open document pack ›</HeadLink>}>
+            <div className="flex flex-wrap gap-2 px-4 py-3 md:px-5">
+              <Chip tone="ok">{docsReady} ready</Chip>
+              <Chip tone="warn">{docsNeed} need inputs</Chip>
+              <Chip tone="prog">{docsWaiting} waiting</Chip>
+            </div>
+          </SectionCard>
         </Col>
       </Cols>
+
+      <AboutStepPanel open={about} onOpenChange={setAbout} n={n} />
+      <Modal
+        open={!!editWin}
+        onOpenChange={(v) => !v && setEditWin(null)}
+        size="sm"
+        title="Edit the window"
+        sub={`Step ${n} · ${c.short}`}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setEditWin(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                if (editWin) {
+                  setWin({ from: editWin.from ? fromIso(editWin.from) : win.from, to: editWin.to ? fromIso(editWin.to) : win.to });
+                  log(`Window moved to ${editWin.to ? fmt(fromIso(editWin.to)) : ""}`, "sbc");
+                  toast.show("Window saved. The client sees the new date.");
+                }
+                setEditWin(null);
+              }}
+            >
+              Save
+            </Button>
+          </>
+        }
+      >
+        {editWin && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="From">
+              <Input type="date" value={editWin.from} onChange={(e) => setEditWin({ ...editWin, from: e.target.value })} />
+            </Field>
+            <Field label="To">
+              <Input type="date" value={editWin.to} onChange={(e) => setEditWin({ ...editWin, to: e.target.value })} />
+            </Field>
+          </div>
+        )}
+      </Modal>
+      {toast.node}
     </div>
   );
 }

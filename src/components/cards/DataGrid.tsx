@@ -131,7 +131,7 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
                     …
                   </span>
                 ) : (
-                  <button key={p} type="button" onClick={() => setPage(p)} aria-current={p === cur ? "page" : undefined} className={cn("h-7 min-w-7 rounded-sm px-1.5 font-semibold", p === cur ? "bg-navy text-white" : "hover:bg-raised")}>
+                  <button key={p} type="button" onClick={() => setPage(p)} aria-current={p === cur ? "page" : undefined} className={cn("h-7 min-w-7 rounded-sm px-1.5 font-semibold", p === cur ? "bg-btn text-white" : "hover:bg-raised")}>
                     {p}
                   </button>
                 ),

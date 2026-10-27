@@ -8,6 +8,7 @@ const colours = [
   "navy", "navy-2", "navy-tint", "navy-ink", "navy-faint", "navy-line", "navy-hover", "navy-on",
   "accent", "accent-soft", "accent-line", "ok", "ok-soft", "ok-mid", "warn", "warn-soft", "warn-mid",
   "bad", "bad-soft", "bad-mid", "violet", "violet-soft", "teal", "teal-soft", "idle", "idle-soft", "brand",
+  "scrim", "btn", "btn-hover",
 ];
 
 const twMerge = extendTailwindMerge({

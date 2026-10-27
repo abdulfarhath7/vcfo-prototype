@@ -25,7 +25,28 @@ export interface StepTime {
   longestClient: string;
 }
 
+export interface Kpi {
+  label: string;
+  value: number;
+  /** Change against the previous period: "+1", "−1". */
+  delta: string;
+  /** True when the change is good news. */
+  good: boolean;
+}
+
+export interface MonthRate {
+  m: string;
+  /** Compliance completion rate, %. */
+  rate: number;
+  /** Average days past the statutory due date. */
+  delay: number;
+}
+
 export interface Analytics {
+  /** Counts only (R-37). */
+  kpis: Kpi[];
+  /** Last 12 months, oldest first: completion rate and filing delay. */
+  rates: MonthRate[];
   /** Last 12 months, oldest first. */
   filings: MonthFilings[];
   /** Last 8 weeks, oldest first. */
@@ -40,6 +61,19 @@ const WEEKS = ["17 Aug", "24 Aug", "31 Aug", "7 Sep", "14 Sep", "21 Sep", "28 Se
 const FIRM_TOTAL = [118, 121, 126, 119, 142, 131, 128, 133, 137, 135, 140, 96];
 const ON_TIME = [86, 84, 89, 87, 82, 90, 88, 91, 93, 90, 96, 97];
 const FIRM_STEPS = [41, 38, 46, 52, 44, 49, 57, 34];
+// Average filing delay in days, Nov to Oct. May to Oct come from the old chart (4.2 to 1.3).
+const DELAY = [5.1, 4.8, 5.3, 4.6, 6.0, 4.9, 4.2, 3.4, 3.0, 2.2, 1.6, 1.3];
+
+/** Completion-rate target and delay benchmark from the old Analytics page. */
+export const RATE_TARGET = 95;
+export const DELAY_BENCHMARK = 2;
+
+// Old KPI strip (lead): Projects 8 (+1), Steps completed 126 (+18), Waiting on client 6 (+2), Overdue steps 3 (−1).
+const KPIS: Record<StaffPortal, Array<[string, number, string, boolean]>> = {
+  lead: [["Projects", 8, "+1", true], ["Steps completed", 126, "+18", true], ["Waiting on client", 6, "+2", false], ["Overdue steps", 3, "−1", true]],
+  manager: [["Projects", 8, "+1", true], ["Steps completed", 284, "+31", true], ["Waiting on client", 11, "+3", false], ["Overdue steps", 6, "−2", true]],
+  admin: [["Projects", 14, "+2", true], ["Steps completed", 512, "+57", true], ["Waiting on client", 19, "+4", false], ["Overdue steps", 9, "−3", true]],
+};
 
 const SCALE: Record<StaffPortal, number> = { admin: 1, manager: 0.48, lead: 0.2 };
 
@@ -80,7 +114,9 @@ function build(portal: StaffPortal): Analytics {
       { id: "s8", step: "Share certificates (SH-1)", median: 3, longest: 4, longestClient: "Saffron" },
     ],
   }[portal];
-  return { filings, steps, stepTime };
+  const kpis = KPIS[portal].map(([label, value, delta, good]) => ({ label, value, delta, good }));
+  const rates = MONTHS.map((m, i) => ({ m, rate: ON_TIME[i], delay: DELAY[i] }));
+  return { kpis, rates, filings, steps, stepTime };
 }
 
 export const ANALYTICS: Record<StaffPortal, Analytics> = { lead: build("lead"), manager: build("manager"), admin: build("admin") };

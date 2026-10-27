@@ -37,6 +37,8 @@ const config: Config = {
       idle: { DEFAULT: v("idle"), soft: v("idle-soft") },
       brand: v("brand"),
       scrim: v("scrim"),
+      btn: v("btn"),
+      "btn-hover": v("btn-hover"),
     },
     fontFamily: {
       sans: ["var(--font-sans)", "system-ui", "sans-serif"],

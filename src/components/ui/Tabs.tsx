@@ -35,7 +35,7 @@ export function Tabs({
             className={cn(
               "inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm px-2.5 font-semibold transition-colors",
               size === "sm" ? "h-[26px] text-12.5" : "h-[30px] text-13",
-              on ? "bg-navy text-white" : "text-muted hover:text-ink",
+              on ? "bg-btn text-white" : "text-muted hover:text-ink",
             )}
           >
             {t.label}

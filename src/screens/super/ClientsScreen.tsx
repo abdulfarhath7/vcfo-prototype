@@ -1,70 +1,139 @@
 "use client";
 import * as React from "react";
+import { UserPlus } from "lucide-react";
 import { fmt, urgency } from "@/lib/dates";
 import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
+import { PhaseBar } from "@/components/ui/PhaseBar";
+import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { AREAS, FIRM_CLIENTS, HEALTH_TONE, MANAGERS, stageLabel, stageTone, type FirmClient } from "@/data/super";
+import { ADMINS, HEALTH_ORDER, PHASE_NAMES, PHASE_TOTALS, adminOf, codeOf, holderOf, phasesOf, progressOf } from "@/data/super-firm";
 import { ClientName, clientHref, opts } from "./parts";
+import { AssignDialog, useAssignments } from "./assign";
 
-const columns: Column<FirmClient>[] = [
-  { key: "client", label: "Client", render: (c) => <ClientName client={c} sub={c.step} className="max-w-[300px]" /> },
-  {
-    key: "stage",
-    label: "Stage",
-    width: 124,
-    render: (c) => (
-      <Chip fixed tone={stageTone(c)}>
-        {stageLabel(c)}
-      </Chip>
-    ),
-  },
-  { key: "area", label: "Area" },
-  { key: "manager", label: "Manager", className: "whitespace-nowrap" },
-  { key: "lead", label: "Project lead", className: "whitespace-nowrap" },
-  { key: "next", label: "Next date", width: 96, render: (c) => <span className={cn("whitespace-nowrap", urgency(c.next) === "bad" && "font-semibold text-bad")}>{fmt(c.next)}</span> },
-  { key: "overdue", label: "Overdue", align: "right", width: 84, render: (c) => <span className={c.overdue ? "font-semibold text-bad" : "text-faint"}>{c.overdue}</span> },
-  {
-    key: "health",
-    label: "Health",
-    width: 124,
-    render: (c) => (
-      <Chip fixed tone={HEALTH_TONE[c.health]}>
-        {c.health}
-      </Chip>
-    ),
-  },
-];
+// Ported from reference/old-screens/s/super/Clients.dc.html: every column, the Admin, Manager and Stage filters,
+// the row count, Clear, the empty state and "Assign client".
 
 export function ClientsScreen() {
-  const [stage, setStage] = React.useState("");
+  const { managerOf } = useAssignments();
+  const [admin, setAdmin] = React.useState("");
   const [manager, setManager] = React.useState("");
+  const [stage, setStage] = React.useState("");
   const [area, setArea] = React.useState("");
-  const rows = FIRM_CLIENTS.filter((c) => (!stage || stageLabel(c) === stage) && (!manager || c.manager === manager) && (!area || c.area === area));
+  const [assignOpen, setAssignOpen] = React.useState(false);
+  const toast = useUndoToast();
+
+  const adminRow = ADMINS.find((a) => a.name === admin);
+  const managers = MANAGERS.map((m) => m.name).filter((m) => !adminRow || adminRow.managers.includes(m));
+  const rows = FIRM_CLIENTS.filter((c) => {
+    const m = managerOf(c);
+    return (!admin || adminOf(m) === admin) && (!manager || m === manager) && (!stage || stageLabel(c) === stage) && (!area || c.area === area);
+  }).sort((a, b) => HEALTH_ORDER[a.health] - HEALTH_ORDER[b.health] || a.name.localeCompare(b.name));
+  const any = !!(admin || manager || stage || area);
+
+  const columns: Column<FirmClient>[] = [
+    { key: "client", label: "Client", render: (c) => <ClientName client={c} className="max-w-[240px]" /> },
+    {
+      key: "now",
+      label: "Now at",
+      render: (c) => (
+        <span className="block min-w-0 max-w-[240px]">
+          <span className="block truncate font-semibold">{c.step}</span>
+          <span className="block truncate text-12 text-muted">
+            <span className="font-mono">{codeOf(c)}</span> · {c.lead} · {holderOf(c)}
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: "progress",
+      label: "Progress",
+      width: 150,
+      render: (c) => (
+        <span className="flex items-center gap-2">
+          <PhaseBar done={phasesOf(c)} totals={PHASE_TOTALS} names={PHASE_NAMES} className="w-24" />
+          <span className="text-12.5 text-muted">{progressOf(c)}%</span>
+        </span>
+      ),
+    },
+    { key: "admin", label: "Admin", className: "whitespace-nowrap", render: (c) => adminOf(managerOf(c)) },
+    { key: "manager", label: "Manager", className: "whitespace-nowrap", render: (c) => managerOf(c) },
+    {
+      key: "stage",
+      label: "Stage",
+      width: 124,
+      render: (c) => (
+        <Chip fixed tone={stageTone(c)}>
+          {stageLabel(c)}
+        </Chip>
+      ),
+    },
+    { key: "next", label: "Next", width: 76, render: (c) => <span className={cn("whitespace-nowrap", urgency(c.next) === "bad" && "font-semibold text-bad")}>{fmt(c.next)}</span> },
+    {
+      key: "health",
+      label: "Health",
+      width: 124,
+      render: (c) => (
+        <Chip fixed tone={HEALTH_TONE[c.health]}>
+          {c.health}
+        </Chip>
+      ),
+    },
+  ];
 
   return (
-    <DataGrid
-      title="All clients"
-      columns={columns}
-      rows={rows}
-      rowKey={(c) => c.id}
-      rowHref={(c) => clientHref(c.id)}
-      filters={
-        <>
-          <Select aria-label="Stage" value={stage} onChange={(e) => setStage(e.target.value)} options={opts("All stages", ["Incorporating", "Compliance"])} />
-          <Select
-            aria-label="Manager"
-            value={manager}
-            onChange={(e) => setManager(e.target.value)}
-            options={opts(
-              "All managers",
-              MANAGERS.map((m) => m.name),
+    <>
+      <DataGrid
+        title="All clients"
+        meta={`${rows.length} of ${FIRM_CLIENTS.length}`}
+        columns={columns}
+        rows={rows}
+        rowKey={(c) => c.id}
+        rowHref={(c) => clientHref(c.id)}
+        pageSize={17}
+        empty="No client matches these filters"
+        filters={
+          <>
+            <Select
+              aria-label="Admin"
+              value={admin}
+              onChange={(e) => {
+                setAdmin(e.target.value);
+                setManager("");
+              }}
+              options={opts(
+                "All admins",
+                ADMINS.map((a) => a.name),
+              )}
+            />
+            <Select aria-label="Manager" value={manager} onChange={(e) => setManager(e.target.value)} options={opts("All managers", managers)} />
+            <Select aria-label="Stage" value={stage} onChange={(e) => setStage(e.target.value)} options={opts("All stages", ["Incorporating", "Compliance"])} />
+            <Select aria-label="Area" value={area} onChange={(e) => setArea(e.target.value)} options={opts("All areas", AREAS)} />
+            {any && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setAdmin("");
+                  setManager("");
+                  setStage("");
+                  setArea("");
+                }}
+              >
+                Clear
+              </Button>
             )}
-          />
-          <Select aria-label="Area" value={area} onChange={(e) => setArea(e.target.value)} options={opts("All areas", AREAS)} />
-        </>
-      }
-    />
+            <Button size="sm" variant="primary" onClick={() => setAssignOpen(true)}>
+              <UserPlus size={14} strokeWidth={1.5} /> Assign client
+            </Button>
+          </>
+        }
+      />
+      <AssignDialog open={assignOpen} onOpenChange={setAssignOpen} onDone={(m) => toast.show(m)} />
+      {toast.node}
+    </>
   );
 }

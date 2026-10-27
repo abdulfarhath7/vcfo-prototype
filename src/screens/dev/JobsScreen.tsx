@@ -1,13 +1,13 @@
 "use client";
 import * as React from "react";
-import { TODAY } from "@/lib/dates";
-import { JOBS, JOB_TONE, stamp, type Job } from "@/data/dev";
+import { JOBS, JOB_FAILURES, JOB_RUNS, JOB_TONE, QUEUE_FACTS, stamp, type Job } from "@/data/dev";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
-import { CloseButton, LogLines, PickCell, RowPicker, logAudit, pickedRow, rowTag, useRevealRef } from "./parts";
+import { KeyValue } from "@/components/cards/KeyValue";
+import { CloseButton, LogLines, PickCell, SettingRow, SwitchRow, logAudit, nowToday, useRevealRef, useSwitch } from "./parts";
 
 export function JobsScreen() {
   const [rows, setRows] = React.useState<Job[]>(JOBS);
@@ -17,10 +17,11 @@ export function JobsScreen() {
 
   const pick = (id: string) => setPicked((p) => (p === id ? null : id));
 
+  const [retried, setRetried] = React.useState<Record<string, boolean>>({});
+  const [paused] = useSwitch("jobs-pause", false, "Pause all jobs");
+
   const runNow = (j: Job) => {
-    const n = new Date();
-    const t = new Date(TODAY);
-    t.setHours(n.getHours(), n.getMinutes(), n.getSeconds());
+    const t = nowToday();
     setRows((rs) => rs.map((x) => (x.id === j.id ? { ...x, status: "Running", lastRun: t, duration: "-", log: [{ at: t, level: "info", text: "Started by Farhath (Run now)" }] } : x)));
     setPicked(j.id);
     logAudit("Run job", j.name);
@@ -46,7 +47,16 @@ export function JobsScreen() {
         </span>
       ),
     },
-    { key: "cron", label: "Schedule", mono: true, render: (j) => <span className="whitespace-nowrap">{j.cron}</span> },
+    {
+      key: "cron",
+      label: "Schedule",
+      render: (j) => (
+        <span className="block whitespace-nowrap">
+          {JOB_RUNS[j.id] ?? j.cron}
+          <span className="block font-mono text-12 text-muted">{j.cron}</span>
+        </span>
+      ),
+    },
     { key: "last", label: "Last run", mono: true, render: (j) => <span className="whitespace-nowrap">{j.lastRun ? stamp(j.lastRun) : "-"}</span> },
     { key: "dur", label: "Duration", render: (j) => <span className="whitespace-nowrap">{j.duration}</span> },
     { key: "status", label: "Status", width: 124, render: (j) => <Chip fixed tone={JOB_TONE[j.status]}>{j.status}</Chip> },
@@ -57,7 +67,7 @@ export function JobsScreen() {
       label: "",
       width: 1,
       render: (j) => (
-        <Button size="sm" onClick={() => runNow(j)} disabled={j.status === "Running"}>
+        <Button size="sm" onClick={(e) => { e.stopPropagation(); runNow(j); }} disabled={j.status === "Running" || paused}>
           Run now
         </Button>
       ),
@@ -66,13 +76,14 @@ export function JobsScreen() {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <RowPicker onPick={pick}>
-        <DataGrid
+      <DataGrid
           title="Scheduled jobs"
+          meta={paused ? "Paused" : "Inngest · times in IST"}
           columns={columns}
           rows={shown}
           rowKey={(j) => j.id}
-          rowClass={(j) => `cursor-pointer ${rowTag(j.id)} ${picked === j.id ? pickedRow : ""}`}
+          onRowClick={(j) => pick(j.id)}
+          selectedKey={picked ?? undefined}
           filters={
             <Tabs
               items={[
@@ -86,7 +97,6 @@ export function JobsScreen() {
             />
           }
         />
-      </RowPicker>
       {cur && (
         <div ref={reveal}>
           <SectionCard title="Run log" meta={`${cur.name} · ${cur.lastRun ? stamp(cur.lastRun) : "-"}`} flush right={<CloseButton onClick={() => setPicked(null)} />}>
@@ -94,6 +104,44 @@ export function JobsScreen() {
           </SectionCard>
         </div>
       )}
+      <SectionCard title="Recent failures" meta="Last 7 days" flush>
+        {JOB_FAILURES.map((f) => {
+          const j = rows.find((x) => x.id === f.job);
+          const name = j?.name ?? f.job;
+          return (
+            <SettingRow key={f.id} label={`${name} · ${stamp(f.at)}`} hint={f.cause}>
+              <Chip tone={f.status === "Failed" ? "bad" : "warn"}>{f.status}</Chip>
+              {retried[f.id] ? (
+                <Chip tone="prog">Queued again</Chip>
+              ) : (
+                <Button
+                  size="sm"
+                  disabled={paused}
+                  onClick={() => {
+                    setRetried((r) => ({ ...r, [f.id]: true }));
+                    logAudit("Retry job", `${name} from ${stamp(f.at)}`, "Done", f.status, "Queued again");
+                  }}
+                >
+                  Retry
+                </Button>
+              )}
+            </SettingRow>
+          );
+        })}
+      </SectionCard>
+      <SectionCard title="Queue" flush>
+        <div className="px-4 py-4 md:px-5">
+          <KeyValue
+            cols={3}
+            rows={[
+              ...QUEUE_FACTS.slice(0, 1),
+              { k: "Running now", v: counts.running ? `${counts.running} · ${rows.filter((j) => j.status === "Running").map((j) => j.name).join(", ")}` : "0" },
+              ...QUEUE_FACTS.slice(1),
+            ]}
+          />
+        </div>
+        <SwitchRow k="jobs-pause" initial={false} label="Pause all jobs" hint="For a maintenance window. Reminders wait until resumed." />
+      </SectionCard>
     </div>
   );
 }

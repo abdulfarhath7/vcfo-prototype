@@ -11,7 +11,9 @@ const columns: Column<AuditEntry>[] = [
   { key: "time", label: "Time", mono: true, render: (a) => <span className="whitespace-nowrap">{stamp(a.at)}</span> },
   { key: "actor", label: "Actor", render: (a) => <span className="whitespace-nowrap font-semibold">{a.actor}</span> },
   { key: "action", label: "Action", render: (a) => <span className="whitespace-nowrap">{a.action}</span> },
-  { key: "target", label: "Target", render: (a) => <span className="block min-w-[220px]">{a.target}</span> },
+  { key: "target", label: "Change", render: (a) => <span className="block min-w-[220px]">{a.target}</span> },
+  { key: "before", label: "Before", mono: true, render: (a) => <span className="block min-w-[90px] break-words text-muted">{a.before ?? "-"}</span> },
+  { key: "after", label: "After", mono: true, render: (a) => <span className="block min-w-[90px] break-words">{a.after ?? "-"}</span> },
   { key: "result", label: "Result", width: 124, render: (a) => <Chip fixed tone={RESULT_TONE[a.result]}>{a.result}</Chip> },
 ];
 
@@ -41,6 +43,7 @@ export function AuditScreen() {
   return (
     <DataGrid
       title="Audit log"
+      meta="Newest first · kept 8 years"
       columns={columns}
       rows={rows}
       rowKey={(a) => a.id}

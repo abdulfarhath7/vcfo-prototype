@@ -242,3 +242,184 @@ export function registrationsFor(portal: StaffPortal, client = ""): StaffRegistr
 }
 
 export const staffRegistration = (key: string) => STAFF_REGISTRATIONS.find((r) => r.id === key);
+
+/* ---------- Registrations grid (clients × registration types) ---------- */
+// Old staff Register view "Grid": one row per client, one cell per registration type.
+// From reference/old-screens/s/lead/Register.dc.html and the codes in staff-clients.ts.
+
+export type CellState = RegStatus;
+
+const CODE_ALL: Record<string, RegStatus> = { d: "Granted", p: "In progress", w: "Waiting on client", n: "Not started", x: "Not needed" };
+
+export const REG_GRID_COLS: Array<{ id: string; label: string }> = [
+  { id: "gst", label: "GST" },
+  { id: "lut", label: "LUT" },
+  { id: "epf", label: "EPF" },
+  { id: "esi", label: "ESI" },
+  { id: "pt", label: "PT" },
+  { id: "se", label: "Shops" },
+  { id: "msme", label: "MSME" },
+  { id: "iec", label: "IEC" },
+  { id: "tm", label: "Trademark" },
+];
+
+export interface RegGridRow {
+  client: string;
+  cells: Array<{ regId: string; status: RegStatus; key?: string }>;
+}
+
+export function regGridFor(portal: StaffPortal, client = ""): RegGridRow[] {
+  return myClients(portal)
+    .filter((c) => !client || c.id === client)
+    .map((c) => ({
+      client: c.id,
+      cells: [...(REG_CODES[c.id] ?? "nnnnnnnnn")].map((code, i) => {
+        const key = `${c.id}-${REG_IDS[i]}`;
+        return { regId: REG_IDS[i], status: CODE_ALL[code] ?? "Not started", key: staffRegistration(key) ? key : undefined };
+      }),
+    }));
+}
+
+/** Registrations set to "Not needed" for a client, with the reason. */
+export interface NotNeeded {
+  id: string;
+  client: string;
+  regId: string;
+  name: string;
+  authority: string;
+  reason: string;
+}
+
+const NOT_NEEDED_WHY: Record<string, string> = {
+  lut: "No exports",
+  iec: "No imports or exports",
+  tm: "No brand to protect yet",
+  esi: "No staff under ₹21,000 a month",
+  se: "Works from a co-working space",
+  msme: "Turnover above the limit",
+};
+
+export function notNeededFor(portal: StaffPortal, client = ""): NotNeeded[] {
+  return regGridFor(portal, client).flatMap((row) =>
+    row.cells
+      .filter((c) => c.status === "Not needed")
+      .map((c) => {
+        const r = REGISTRATIONS.find((x) => x.id === c.regId)!;
+        return { id: `${row.client}-${c.regId}`, client: row.client, regId: c.regId, name: r.name, authority: r.authority, reason: NOT_NEEDED_WHY[c.regId] ?? "Set by the manager" };
+      }),
+  );
+}
+
+/** Registrations not started yet: incorporating clients wait for the certificate. */
+export function notStartedFor(portal: StaffPortal, client = ""): NotNeeded[] {
+  return regGridFor(portal, client).flatMap((row) =>
+    row.cells
+      .filter((c) => c.status === "Not started")
+      .map((c) => {
+        const r = REGISTRATIONS.find((x) => x.id === c.regId)!;
+        return { id: `${row.client}-${c.regId}-ns`, client: row.client, regId: c.regId, name: r.name, authority: r.authority, reason: "After the certificate" };
+      }),
+  );
+}
+
+/** Renewal dates of granted registrations. Old RENEW list: LUT 31 Mar, Shops 1 Dec, IEC profile 30 Jun. */
+const RENEW_ON: Record<string, [string, Date]> = {
+  lut: ["LUT for FY 2027-28", d(2027, 3, 31)],
+  se: ["Shops and Establishment renewal", d(2026, 12, 1)],
+  iec: ["IEC profile update", d(2027, 6, 30)],
+  msme: ["Udyam yearly update", d(2027, 4, 30)],
+};
+
+export interface Renewal {
+  id: string;
+  /** Staff registration key. */
+  key: string;
+  client: string;
+  title: string;
+  authority: string;
+  date: Date;
+}
+
+export function renewalsFor(portal: StaffPortal, client = ""): Renewal[] {
+  return registrationsFor(portal, client)
+    .filter((r) => r.status === "Granted" && RENEW_ON[r.regId])
+    .map((r) => ({ id: `${r.id}-ren`, key: r.id, client: r.client, title: RENEW_ON[r.regId][0], authority: r.authority, date: RENEW_ON[r.regId][1] }))
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+/* ---------- Record page extras: "From the client" details and "Filled by SBC" ---------- */
+// Values from reference/old-screens/s/lead/regcat.js. Dates move to our 6 Oct "today".
+
+const REG_DETAILS: Record<string, Array<[string, string]>> = {
+  gst: [["Principal place of business", "Plot 14, Road 2, Banjara Hills, Hyderabad 500034"], ["Business activities", "Software development and IT services"], ["Top HSN or SAC codes", "998314, 998313"], ["Signatory mobile for OTP", "+91 98450 12345"]],
+  lut: [["Financial year", "2026-27"], ["Witness 1", "Mei Tanaka, Hyderabad"], ["Witness 2", "Arvind Rao, Hyderabad"]],
+  pt: [["Employees by salary band", "12 above ₹25,000"], ["First salary month", "October 2026"]],
+  epf: [["Date the first employee joined", "1 Oct 2026"], ["Employees", "12"], ["Wage structure", "Basic 50% of CTC"]],
+  esi: [["Employees", "12"], ["Employees up to ₹21,000 a month", "3"]],
+  se: [["Category", "Commercial establishment · IT"], ["Employees", "9 men, 3 women"], ["Working hours", "9:30 am to 6:30 pm, Mon to Fri"]],
+  msme: [["NIC codes", "62011, 62013"], ["Employees", "12"]],
+  iec: [["Preferred sector", "IT services"]],
+  tm: [["Mark", "Word mark"], ["Classes", "9 and 42"], ["First use", "Proposed to be used"]],
+};
+
+const REG_SBC: Record<string, Array<[string, string]>> = {
+  gst: [["TRN", "272600000123TRN"], ["ARN", "AA360926012345X"], ["Jurisdiction", "State · Hyderabad Ward 12"]],
+  lut: [["ARN", "AD361025004471L"], ["Acknowledged", "3 Oct 2026"]],
+  pt: [["PTRC number", "Applied 4 Oct"], ["PTEC number", "Applied 4 Oct"]],
+  epf: [["Establishment code", "APHYD2954118000"], ["Coverage date", "1 Oct 2026"]],
+  esi: [["Employer code", "53001234560001001"]],
+  se: [["Registration number", "Applied 5 Oct"]],
+  msme: [["Udyam number", "UDYAM-TS-03-0123456"]],
+  iec: [["IEC number", "Applied 6 Oct"]],
+  tm: [["Application number", "-"]],
+};
+
+const OB_SBC: Record<string, Array<[string, string]>> = {
+  gstr1: [["ARN", "-"], ["B2B invoices", "14"]],
+  gstr3b: [["Challan (PMT-06)", "-"]],
+  "tds-pay": [["Challan 281 (CIN)", "-"]],
+  "pf-esi": [["TRRN", "-"], ["ESI challan", "-"]],
+  "tds-24q": [["Token number", "-"]],
+  "tds-26q": [["Token number", "-"]],
+  "adv-tax": [["Challan", "-"]],
+  aoc4: [["SRN", "-"]],
+  mgt7: [["SRN", "-"]],
+};
+
+/** Details the client gave, and the date the client confirmed them. */
+export function clientDetails(kind: "reg" | "ob", baseId: string, period?: string): Array<[string, string]> {
+  if (kind === "ob") return [["Period", period ?? "-"], ["Prepared from", "Tally export uploaded 3 Oct"]];
+  return REG_DETAILS[baseId] ?? [["Details", "From the company questionnaire"]];
+}
+
+/** Values SBC fills: TRN, ARN, challan numbers. Blank until the step that sets them is done. */
+export function sbcFields(kind: "reg" | "ob", baseId: string, done: boolean, idLabel?: string, idValue?: string): Array<[string, string]> {
+  const base = (kind === "reg" ? REG_SBC[baseId] : OB_SBC[baseId]) ?? [["Reference", "-"]];
+  const rows = base.map(([k, v]): [string, string] => [k, done ? (v === "-" ? (idValue ?? "On file") : v) : v.startsWith("Applied") ? v : "-"]);
+  if (idLabel && !rows.some(([k]) => k === idLabel)) rows.push([idLabel, done ? idValue ?? "On file" : "-"]);
+  return rows;
+}
+
+/* ---------- Calendar: year projection ---------- */
+
+const MONTH_STEP: Record<string, number> = { Monthly: 1, Quarterly: 3, "Half-yearly": 6, Annual: 12 };
+
+/**
+ * Events for FY 2026-27 (Apr 2026 to Mar 2027). September to November come from the calendar.
+ * Other months repeat each obligation by its frequency: past dates are filed, later dates are upcoming.
+ */
+export function yearEventsFor(portal: StaffPortal, client = ""): StaffEvent[] {
+  const real = calendarFor(portal, client);
+  const inReal = (date: Date) => date >= d(2026, 9, 1) && date <= d(2026, 11, 30);
+  const extra: StaffEvent[] = [];
+  for (const o of obligationsFor(portal, client)) {
+    const step = MONTH_STEP[o.frequency];
+    if (!step) continue;
+    for (let k = -12; k <= 12; k += step) {
+      const date = new Date(o.due.getFullYear(), o.due.getMonth() + k, o.due.getDate());
+      if (date < d(2026, 4, 1) || date > d(2027, 3, 31) || inReal(date)) continue;
+      extra.push({ id: `${o.id}-y${k}`, date, title: o.name, kind: o.area, status: date < TODAY ? "Filed" : "Upcoming", client: o.client, obKey: o.id });
+    }
+  }
+  return [...real.filter((e) => e.date >= d(2026, 4, 1)), ...extra].sort((a, b) => a.date.getTime() - b.date.getTime());
+}

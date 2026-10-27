@@ -156,3 +156,30 @@ export function overdueFilings(clients: StaffClient[]) {
     .flatMap((c) => obligationsOf(c).filter((o) => o.status === "Overdue").map((o) => ({ ...o, client: c })))
     .sort((a, b) => a.due.getTime() - b.due.getTime());
 }
+
+/** Client contact (login) per client. Ported from reference/old-screens/s/lead/Clients.dc.html. */
+export interface ClientContact {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+export const CONTACTS: Record<string, ClientContact> = {
+  northwind: { name: "Rohan Kumar", email: "rohan@northwind.in", phone: "+91 98111 22334" },
+  zenith: { name: "Lars Becker", email: "lars@zenith.example", phone: "+49 151 2345 6789" },
+  arcadia: { name: "Jonas Weber", email: "jonas@arcadia.example", phone: "+49 160 9876 5432" },
+  bluefin: { name: "Amara Okafor", email: "amara@bluefin.example", phone: "+44 7700 900123" },
+  corvid: { name: "Mei Tanaka", email: "mei@corvid.example", phone: "+81 90 1234 5678" },
+  delta: { name: "Daniel Ortiz", email: "daniel@delta.example", phone: "+1 415 555 0142" },
+  ember: { name: "Sofia Moreau", email: "sofia@ember.example", phone: "+44 7700 900456" },
+  fjord: { name: "Elena Rossi", email: "elena@fjord.example", phone: "+39 333 123 4567" },
+  saffron: { name: "Kavya Reddy", email: "kavya@saffron.in", phone: "+91 98480 12121" },
+  monsoon: { name: "Ishaan Verma", email: "ishaan@monsoon.in", phone: "+91 98480 23232" },
+  indigo: { name: "Ravi Shankar", email: "ravi@indigo.in", phone: "+91 98480 34343" },
+  banyan: { name: "Ananya Das", email: "ananya@banyan.in", phone: "+91 98480 45454" },
+  coral: { name: "Neha Pillai", email: "neha@coral.in", phone: "+91 98480 56565" },
+  quartz: { name: "Vivek Rao", email: "vivek@quartz.in", phone: "+91 98480 67676" },
+};
+
+/** Sort order for the Clients grid: worst health first (old admin Clients). */
+export const HEALTH_ORDER: Record<Health, number> = { Stuck: 0, Overdue: 1, "Due this week": 2, "With client": 3, "In progress": 4, "Not started": 5 };

@@ -10,7 +10,7 @@ export const barFill: Record<BarTone, string> = {
   violet: "bg-violet",
   teal: "bg-teal",
   idle: "bg-faint",
-  navy: "bg-navy",
+  navy: "bg-btn",
 };
 
 /** 6 px progress bar on a hairline track. */

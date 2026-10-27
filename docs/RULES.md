@@ -22,6 +22,7 @@ Sources: the owner's feedback (26 and 27 Oct 2026), `reference/design-book-v1.5.
 | navy | #15263B | #15263B | Sidebar, greeting band, main buttons, table heads, picked tab |
 | navy-2 | #1B3049 | #1B3049 | Greeting band gradient start, button hover |
 | navy-tint | #EEF2F8 | #1F2935 | Light table heads (not used for e-Filing grid) |
+| btn | #15263B / hover #1B3049 | #2B4766 / hover #335378 | Main buttons and the picked tab. Dark mode lifts navy so it shows on the slate surface. |
 | accent | #2563A8 / soft #E6EFFA | #6FA3E0 | Links, current step, "in progress" |
 | ok | #1E7F55 / soft #E2F3EA / mid #46A87A | #8FDCB4 | Done, filed |
 | warn | #A35F00 / soft #FCEFD8 / mid #E3A040 | #F2C27A | Due soon, client owns it |

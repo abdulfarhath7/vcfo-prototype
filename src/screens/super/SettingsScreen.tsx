@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { BellRing, Building2, Check, KeyRound, Minus, Plug } from "lucide-react";
+import { BellRing, Building2, Check, KeyRound, Minus, Palette, Plug, Target, UserPlus } from "lucide-react";
 import { TODAY, fmt } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Cols, Col } from "@/components/shell/Page";
@@ -12,9 +12,32 @@ import { SectionCard, ListRow } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { ActivityList, type ActivityRow } from "@/components/cards/ActivityList";
+import { Avatar } from "@/components/ui/Avatar";
+import { Modal } from "@/components/ui/Modal";
+import { BRAND_COLOURS, PEOPLE, ROLE_TONE, SERVICE_TARGETS, type Person } from "@/data/super-firm";
 import { FIRM_PROFILE, HOLIDAYS, INTEGRATIONS, INTEGRATION_TONE, REMINDER_RULES, ROLE_PERMS, type Holiday, type Integration, type RolePerm } from "@/data/super";
 
 type Perm = "view" | "edit" | "approve";
+
+// Firm settings. The first build had profile, working calendar, roles, reminders and integrations.
+// Ported from reference/old-patch/super/Settings.dc.html: "People and roles" with Add person, "Service targets", "Branding".
+// The old service catalogue carried fees and was not shown on the old page; it stays out. The old page had no billing plan.
+
+const ROLES: Person["role"][] = ["Admin", "Manager", "Project lead"];
+
+/** Label and value rows that switch to inputs while editing. Saves on Done and logs each change. */
+function EditableKV({ rows, editing, onChange }: { rows: Array<{ k: string; v: string; mono?: boolean }>; editing: boolean; onChange: (i: number, v: string) => void }) {
+  if (!editing) return <KeyValue cols={1} wrap rows={rows} />;
+  return (
+    <div className="grid gap-3">
+      {rows.map((r, i) => (
+        <Field key={r.k} label={r.k}>
+          <Input value={r.v} className={cn(r.mono && "font-mono text-13")} onChange={(e) => onChange(i, e.target.value)} />
+        </Field>
+      ))}
+    </div>
+  );
+}
 
 /** R-40: a risky change asks first, in place. */
 function ConfirmRow({ text, label, onConfirm, onCancel }: { text: string; label: string; onConfirm: () => void; onCancel: () => void }) {
@@ -48,6 +71,21 @@ export function SettingsScreen() {
   const [editing, setEditing] = React.useState(false);
   const before = React.useRef(FIRM_PROFILE);
 
+  // People and roles.
+  const [people, setPeople] = React.useState<Person[]>(PEOPLE);
+  const [adding, setAdding] = React.useState(false);
+  const [draft, setDraft] = React.useState({ name: "", email: "", role: "Project lead" as Person["role"], reportsTo: "Pranay" });
+
+  // Service targets and branding: edit in place.
+  const [targets, setTargets] = React.useState(SERVICE_TARGETS);
+  const [editTargets, setEditTargets] = React.useState(false);
+  const [brand, setBrand] = React.useState([
+    { k: "Firm name", v: "SBC" },
+    { k: "Portal address", v: "app.sbctrack.in", mono: true },
+    { k: "Client emails sent from", v: "updates@sbcllp.in", mono: true },
+  ]);
+  const [editBrand, setEditBrand] = React.useState(false);
+
   // Working calendar.
   const [week, setWeek] = React.useState("Mon to Sat");
   const [holidays, setHolidays] = React.useState<Holiday[]>(HOLIDAYS);
@@ -62,6 +100,25 @@ export function SettingsScreen() {
   // Integrations: disconnect is risky.
   const [ints, setInts] = React.useState<Integration[]>(INTEGRATIONS);
   const [askInt, setAskInt] = React.useState<string | null>(null);
+
+  const peopleCols: Column<Person>[] = [
+    {
+      key: "name",
+      label: "Name",
+      render: (p) => (
+        <span className="flex min-w-0 items-center gap-2.5">
+          <Avatar name={p.name} size={24} />
+          <span className="min-w-0">
+            <span className="block truncate font-semibold">{p.name}</span>
+            <span className="block truncate font-mono text-12 text-muted">{p.email}</span>
+          </span>
+        </span>
+      ),
+    },
+    { key: "role", label: "Role", width: 124, render: (p) => <Chip fixed tone={ROLE_TONE[p.role]}>{p.role}</Chip> },
+    { key: "reportsTo", label: "Reports to", className: "whitespace-nowrap", render: (p) => p.reportsTo || <span className="text-faint">–</span> },
+  ];
+  const bosses = people.filter((p) => (draft.role === "Admin" ? p.role === "Super admin" : draft.role === "Manager" ? p.role === "Admin" : p.role === "Manager")).map((p) => p.name);
 
   const holidayCols: Column<Holiday>[] = [
     { key: "date", label: "Date", width: 80, className: "whitespace-nowrap", render: (h) => fmt(h.date) },
@@ -114,6 +171,19 @@ export function SettingsScreen() {
   return (
     <Cols>
       <Col>
+        <DataGrid
+          title="People and roles"
+          meta={String(people.length)}
+          columns={peopleCols}
+          rows={people}
+          rowKey={(p) => p.id}
+          pageSize={8}
+          filters={
+            <Button size="sm" variant="primary" onClick={() => setAdding(true)}>
+              <UserPlus size={14} strokeWidth={1.5} /> Add person
+            </Button>
+          }
+        />
         <SectionCard
           title="Firm profile"
           icon={{ Icon: Building2, tone: "blue" }}
@@ -191,6 +261,52 @@ export function SettingsScreen() {
       </Col>
 
       <Col>
+        <SectionCard
+          title="Service targets"
+          icon={{ Icon: Target, tone: "teal" }}
+          right={
+            <Button
+              size="sm"
+              variant={editTargets ? "primary" : "outline"}
+              onClick={() => {
+                if (editTargets) targets.forEach((t, i) => t.v !== SERVICE_TARGETS[i].v && note(`Service target: ${t.k.toLowerCase()} set to ${t.v}`));
+                setEditTargets(!editTargets);
+              }}
+            >
+              {editTargets ? "Done" : "Edit"}
+            </Button>
+          }
+        >
+          <EditableKV rows={targets} editing={editTargets} onChange={(i, v) => setTargets((all) => all.map((x, j) => (j === i ? { ...x, v } : x)))} />
+        </SectionCard>
+
+        <SectionCard
+          title="Branding"
+          icon={{ Icon: Palette, tone: "violet" }}
+          right={
+            <Button
+              size="sm"
+              variant={editBrand ? "primary" : "outline"}
+              onClick={() => {
+                if (editBrand) note("Branding updated");
+                setEditBrand(!editBrand);
+              }}
+            >
+              {editBrand ? "Done" : "Edit"}
+            </Button>
+          }
+        >
+          <EditableKV rows={brand} editing={editBrand} onChange={(i, v) => setBrand((all) => all.map((x, j) => (j === i ? { ...x, v } : x)))} />
+          <div className="mt-3">
+            <div className="text-12 text-muted">Brand colours</div>
+            <div className="mt-1.5 flex items-center gap-2">
+              {BRAND_COLOURS.map((b) => (
+                <span key={b.name} title={b.name} aria-label={b.name} className={cn("h-6 w-6 rounded-sm border border-line", b.cls)} />
+              ))}
+            </div>
+          </div>
+        </SectionCard>
+
         <SectionCard title="Reminder rules" flush icon={{ Icon: BellRing, tone: "amber" }}>
           {rules.map((r) => (
             <ListRow key={r.id}>
@@ -254,6 +370,58 @@ export function SettingsScreen() {
           <ActivityList rows={log} />
         </SectionCard>
       </Col>
+      <Modal
+        open={adding}
+        onOpenChange={setAdding}
+        title="Add person"
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setAdding(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              disabled={!draft.name.trim() || !draft.email.trim()}
+              onClick={() => {
+                setPeople((all) => [...all, { id: `p${Date.now()}`, name: draft.name.trim(), email: draft.email.trim(), role: draft.role, reportsTo: draft.reportsTo }]);
+                note(`Invite sent: ${draft.name.trim()} as ${draft.role.toLowerCase()}`);
+                setDraft({ name: "", email: "", role: "Project lead", reportsTo: "Pranay" });
+                setAdding(false);
+              }}
+            >
+              Send invite
+            </Button>
+          </>
+        }
+      >
+        <div className="grid gap-4">
+          <Field label="Name">
+            <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+          </Field>
+          <Field label="Work email">
+            <Input type="email" className="font-mono text-13" value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} placeholder="name@sbcllp.in" />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Role">
+              <Select
+                aria-label="Role"
+                size="md"
+                value={draft.role}
+                onChange={(e) => {
+                  const role = e.target.value as Person["role"];
+                  setDraft({ ...draft, role, reportsTo: role === "Admin" ? "Mithilesh" : role === "Manager" ? "Krishna" : "Pranay" });
+                }}
+                options={ROLES.map((r) => ({ value: r, label: r }))}
+                className="w-full [&>select]:w-full"
+              />
+            </Field>
+            <Field label="Reports to">
+              <Select aria-label="Reports to" size="md" value={draft.reportsTo} onChange={(e) => setDraft({ ...draft, reportsTo: e.target.value })} options={bosses.map((b) => ({ value: b, label: b }))} className="w-full [&>select]:w-full" />
+            </Field>
+          </div>
+        </div>
+      </Modal>
     </Cols>
   );
 }

@@ -3,6 +3,7 @@ import { STEPS, type Step } from "@/data/incorporation";
 import { docType, type ItemDoc } from "@/data/registrations";
 import { fileType } from "@/components/ui/FileBadge";
 import type { ThreadStep } from "@/components/cards/Thread";
+import { STEP_CAPTURES } from "@/data/incorporation-detail";
 
 // Step page content. Steps 7, 8 and 10 are ported from reference/old-screens/s/home/v7p_step.dc.html and
 // s/inc/step.html. Other steps use a generic thread built from src/data/incorporation.ts.
@@ -95,6 +96,20 @@ function genericDocs(s: Step): ItemDoc[] {
 }
 
 const RICH: Record<number, Omit<StepDetail, "step" | "about" | "forms">> = {
+  6: {
+    thread: [
+      { id: "s6-1", title: "Answers filled", state: "done", date: d(2026, 9, 24), by: "Bharath", note: "From Northwind's cap table" },
+      { id: "s6-2", title: "Approved by SBC's manager", state: "done", date: d(2026, 9, 25), by: "Pranay" },
+      { id: "s6-3", title: "Approved by Northwind", state: "done", date: d(2026, 9, 26), by: "Rohan Kumar", owner: "client" },
+    ],
+    docs: [{ id: "s6d1", name: "Capital structure sheet", type: "XLSX", from: "sbc", fromLabel: "SBC", status: "Accepted", date: d(2026, 9, 26) }],
+    details: [
+      { k: "Authorised capital", v: "₹10,00,000" },
+      { k: "Paid-up capital", v: "₹1,00,000" },
+      { k: "Face value", v: "₹10 · 10,000 shares" },
+      { k: "Shareholding", v: "Northwind Inc. 9,999 · nominee 1" },
+    ],
+  },
   7: {
     thread: [
       { id: "s7-1", title: "Started", state: "done", date: d(2026, 10, 2), by: "Rohan Kumar" },
@@ -162,6 +177,41 @@ const RICH: Record<number, Omit<StepDetail, "step" | "about" | "forms">> = {
     ],
   },
 };
+
+/** Section name of the answers card (old X[n].tab). */
+export const STEP_SECTION: Record<number, string> = { 5: "Name approval", 6: "Capital structure", 7: "Registered office", 8: "Directors", 9: "Subscribers", 10: "KYC and DSC" };
+
+export interface AnswerRow {
+  k: string;
+  hint?: string;
+  v: string;
+  /** Value is a file in the vault. */
+  fileId?: string;
+}
+
+/** Rows of the answers card: rich details, step 5 approval rows, or what the step captures. Ends with Remarks. */
+export function stepAnswers(n: number): AnswerRow[] {
+  const sd = stepDetail(n);
+  if (!sd) return [];
+  const s = sd.step;
+  let rows: AnswerRow[];
+  if (n === 5 && s.done) {
+    rows = [
+      { k: "Approved company name", v: "Northwind Technologies India Private Limited" },
+      { k: "Name approval date", v: "24 September 2026" },
+      { k: "Name approval expiry date", v: "14 October 2026" },
+      { k: "MCA name approval letter", v: "Name_Approval_Letter.pdf", fileId: "f8" },
+    ];
+  } else if (sd.details.length) {
+    rows = sd.details.map((x) => ({ k: x.k, v: x.v }));
+  } else {
+    const caps = STEP_CAPTURES[n] ?? [[s.title]];
+    const f = (x: Date) => `${x.getDate()} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][x.getMonth()]}`;
+    rows = caps.map(([k, hint]) => ({ k, hint, v: s.status === "Completed" && s.done ? `Provided · ${f(s.done)}` : "-" }));
+  }
+  if (!rows.some((r) => /^remarks/i.test(r.k))) rows.push({ k: "Remarks (optional)", v: "-" });
+  return rows;
+}
 
 export function stepDetail(n: number): StepDetail | undefined {
   const step = STEPS.find((s) => s.n === n);

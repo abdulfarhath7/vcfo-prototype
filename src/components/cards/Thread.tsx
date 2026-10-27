@@ -10,6 +10,8 @@ export interface ThreadStep {
   date?: Date;
   by?: string;
   owner?: Owner;
+  /** Chip text when the owner is an authority other than MCA: "GSTN", "EPFO". */
+  ownerLabel?: string;
   note?: string;
 }
 
@@ -37,7 +39,7 @@ export function Thread({ steps, className }: { steps: ThreadStep[]; className?: 
             <div className="min-w-0 pt-px">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className={cn("text-13.5", s.state === "current" ? "font-semibold" : "font-medium")}>{s.title}</span>
-                {s.owner && <OwnerChip owner={s.owner} className="h-5 w-auto px-2 text-11.5" />}
+                {s.owner && <OwnerChip owner={s.owner} label={s.ownerLabel} className="h-5 w-auto px-2 text-11.5" />}
                 {s.state !== "upcoming" && s.date && <span className="ml-auto text-12.5 text-muted">{fmt(s.date)}</span>}
               </div>
               {(s.by || s.note) && s.state !== "upcoming" && (

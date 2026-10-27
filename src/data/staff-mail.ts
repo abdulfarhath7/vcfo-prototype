@@ -110,3 +110,47 @@ export const MAIL_ADDRESS: Record<StaffPortal, string> = {
   manager: "pranay@sbc.example",
   admin: "krishna@sbc.example",
 };
+
+/* ---------- Recipients for the "To" picker ---------- */
+// From reference/old-screens/s/lead/Email.dc.html: client contacts, SBC team members and two groups.
+
+export interface Recipient {
+  id: string;
+  name: string;
+  email: string;
+  /** "client" people carry a client id; "team" people are SBC staff. */
+  kind: "client" | "team";
+  client?: string;
+  /** Second line in the picker: client short name or the SBC role. */
+  org: string;
+}
+
+export const RECIPIENTS: Recipient[] = [
+  { id: "rohan", name: "Rohan Kumar", email: "rohan@northwind.example", kind: "client", client: "northwind", org: "Northwind" },
+  { id: "meera-i", name: "Meera Iyer", email: "meera@northwind.example", kind: "client", client: "northwind", org: "Northwind" },
+  { id: "anita", name: "Anita Shah", email: "anita@zenithfoods.example", kind: "client", client: "zenith", org: "Zenith" },
+  { id: "vikram", name: "Vikram Iyer", email: "vikram@arcadiarealty.example", kind: "client", client: "arcadia", org: "Arcadia" },
+  { id: "mei", name: "Mei Tanaka", email: "mei@corvid.example", kind: "client", client: "corvid", org: "Corvid" },
+  { id: "sana", name: "Sana Qureshi", email: "sana@bluefin.example", kind: "client", client: "bluefin", org: "Bluefin" },
+  { id: "kiran", name: "Kiran Rao", email: "kiran@deltaedu.example", kind: "client", client: "delta", org: "Delta" },
+  { id: "isha", name: "Isha Menon", email: "isha@emberstudios.example", kind: "client", client: "ember", org: "Ember" },
+  { id: "omar", name: "Omar Khan", email: "omar@fjordmarine.example", kind: "client", client: "fjord", org: "Fjord" },
+  { id: "pranay", name: "Pranay", email: "pranay@sbc.example", kind: "team", org: "Manager" },
+  { id: "bharath", name: "Bharath", email: "bharath@sbc.example", kind: "team", org: "Project lead" },
+  { id: "divya", name: "Divya", email: "divya@sbc.example", kind: "team", org: "Project lead" },
+  { id: "meera-n", name: "Meera Nair", email: "meera.nair@sbc.example", kind: "team", org: "Project lead" },
+  { id: "krishna", name: "Krishna", email: "krishna@sbc.example", kind: "team", org: "Admin" },
+];
+
+export interface RecipientGroup {
+  id: string;
+  name: string;
+  /** Who the group sends to, for the chip title. */
+  members: string;
+}
+
+export const GROUPS: RecipientGroup[] = [
+  { id: "all-teams", name: "All teams", members: "Every SBC project lead and manager" },
+  { id: "all-clients", name: "All clients", members: "The primary contact of each client" },
+  { id: "my-team", name: "My team", members: "Pranay, Bharath, Divya, Meera Nair" },
+];

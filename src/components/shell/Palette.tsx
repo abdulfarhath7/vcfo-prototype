@@ -1,46 +1,91 @@
 "use client";
 import * as React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { navFor, type NavItem, type Portal } from "@/data/nav";
+import { cn } from "@/lib/cn";
+import { barFill } from "@/components/ui/Bar";
+import { searchRecords, type SearchRecord } from "@/data/search-index";
+import type { Portal } from "@/data/nav";
 
-function flatten(items: NavItem[], trail: string[] = []): Array<{ label: string; href: string }> {
-  return items.flatMap((it) => {
-    const t = [...trail, it.label];
-    if (it.kids) return flatten(it.kids, t);
-    return it.href ? [{ label: t.join(" · "), href: it.href }] : [];
-  });
-}
-
-/** Search palette (Ctrl K). Searches pages and sample records. */
+/** Search palette (Ctrl K). Groups: clients, steps, filings, obligations, registrations, documents, knowledge bank, pages. ↑ ↓ move, Enter opens, Esc closes. */
 export function Palette({ portal, onClose }: { portal: Portal; onClose: () => void }) {
+  const router = useRouter();
   const [q, setQ] = React.useState("");
-  const pages = React.useMemo(() => flatten(navFor(portal, false)), [portal]);
-  const hits = pages.filter((p) => p.label.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
+  const [cur, setCur] = React.useState(0);
+  const groups = React.useMemo(() => searchRecords(portal, q), [portal, q]);
+  const flat = React.useMemo(() => groups.flatMap((g) => g.hits), [groups]);
 
-  React.useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  React.useEffect(() => setCur(0), [q]);
 
+  const go = React.useCallback(
+    (r: SearchRecord | undefined) => {
+      if (!r) return;
+      router.push(r.href);
+      onClose();
+    },
+    [router, onClose],
+  );
+
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") onClose();
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setCur((c) => Math.min(flat.length - 1, c + 1));
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setCur((c) => Math.max(0, c - 1));
+    }
+    if (e.key === "Enter") go(flat[cur]);
+  };
+
+  const starts = groups.reduce<number[]>((acc, g, gi) => [...acc, gi === 0 ? 0 : acc[gi - 1] + groups[gi - 1].hits.length], []);
   return (
     <div className="fixed inset-0 z-50 bg-scrim p-4 pt-[12vh]" onClick={onClose} role="dialog" aria-modal="true" aria-label="Search">
-      <div className="mx-auto max-w-[560px] overflow-hidden rounded-lg border border-line bg-surface shadow-pop" onClick={(e) => e.stopPropagation()}>
+      <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border border-line bg-surface shadow-pop" onClick={(e) => e.stopPropagation()} onKeyDown={onKey}>
         <div className="flex h-12 items-center gap-2.5 border-b border-line-soft px-4">
           <Search size={16} strokeWidth={1.5} className="text-muted" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search pages, clients, steps, filings" className="h-full flex-1 bg-transparent text-14 outline-none placeholder:text-faint" />
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search clients, steps, filings, documents" className="h-full flex-1 bg-transparent text-14 outline-none placeholder:text-faint" aria-label="Search" />
           <kbd className="rounded-sm border border-line px-1.5 font-mono text-11 text-muted">Esc</kbd>
         </div>
-        <ul className="max-h-[50vh] overflow-y-auto py-1.5">
-          {hits.map((h) => (
-            <li key={h.href}>
-              <Link href={h.href} onClick={onClose} className="flex h-9 items-center px-4 text-13.5 hover:bg-raised">
-                {h.label}
-              </Link>
-            </li>
+        <div className="max-h-[56vh] overflow-y-auto py-1.5" role="listbox">
+          {groups.length === 0 && <p className="px-4 py-3 text-13 text-faint">No match</p>}
+          {groups.map((g, gi) => (
+            <div key={g.group}>
+              <p className="px-4 pb-1 pt-2 text-11.5 font-semibold text-faint">{g.group}</p>
+              {g.hits.map((h, hi) => {
+                const idx = starts[gi] + hi;
+                const on = idx === cur;
+                return (
+                  <button
+                    key={h.id}
+                    type="button"
+                    role="option"
+                    aria-selected={on}
+                    onMouseEnter={() => setCur(idx)}
+                    onClick={() => go(h)}
+                    className={cn("flex h-10 w-full items-center gap-2.5 px-4 text-left", on ? "bg-navy-tint" : "hover:bg-raised")}
+                  >
+                    {h.tone && <i className={cn("h-2 w-2 flex-none rounded-full", barFill[h.tone])} aria-hidden />}
+                    <span className="min-w-0 flex-1 truncate text-13.5">
+                      <span className="font-semibold">{h.title}</span>
+                      {h.sub && <span className="ml-2 text-12.5 text-muted">{h.sub}</span>}
+                    </span>
+                    {h.mono && <span className="flex-none font-mono text-12 text-muted">{h.mono}</span>}
+                  </button>
+                );
+              })}
+            </div>
           ))}
-        </ul>
+        </div>
+        <div className="flex items-center gap-3 border-t border-line-soft px-4 py-2 text-11.5 text-faint">
+          <span>
+            <kbd className="font-mono">↑ ↓</kbd> move
+          </span>
+          <span>
+            <kbd className="font-mono">Enter</kbd> open
+          </span>
+        </div>
       </div>
     </div>
   );

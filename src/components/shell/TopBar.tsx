@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import { crumbFor, type Portal } from "@/data/nav";
 import { useTheme } from "./ThemeProvider";
 import { Palette } from "./Palette";
+import { StaffBellMenu } from "./StaffBellMenu";
 
 function IconBtn({ label, onClick, href, children, dot, count }: { label: string; onClick?: () => void; href?: string; children: React.ReactNode; dot?: boolean; count?: number }) {
   const cls = "relative grid h-9 w-9 place-items-center rounded-md border border-line bg-surface text-ink-2 hover:bg-raised";
@@ -77,12 +78,18 @@ export function TopBar({ portal, incorporated, onMenu, updatesBase }: { portal: 
         <span className="hidden md:inline">Search clients, steps, filings</span>
         <kbd className="ml-auto hidden rounded-sm border border-line px-1.5 font-mono text-11 font-medium text-muted md:inline">Ctrl K</kbd>
       </button>
-      <IconBtn label="Announcements" href={`${updatesBase}/announcements`}>
-        <Megaphone size={16} strokeWidth={1.5} />
-      </IconBtn>
-      <IconBtn label="Notifications, 3 new" href={`${updatesBase}/notifications`} count={3}>
-        <Bell size={16} strokeWidth={1.5} />
-      </IconBtn>
+      {portal === "lead" || portal === "manager" || portal === "admin" ? (
+        <StaffBellMenu portal={portal} />
+      ) : (
+        <>
+          <IconBtn label="Announcements" href={`${updatesBase}/announcements`}>
+            <Megaphone size={16} strokeWidth={1.5} />
+          </IconBtn>
+          <IconBtn label="Notifications, 3 new" href={`${updatesBase}/notifications`} count={3}>
+            <Bell size={16} strokeWidth={1.5} />
+          </IconBtn>
+        </>
+      )}
       <IconBtn label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} onClick={toggle}>
         {theme === "dark" ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
       </IconBtn>

@@ -82,3 +82,24 @@ export function ganttOf(c: StaffClient): { start: Date; end: Date; ticks: Date[]
   ];
   return { start, end, ticks, rows };
 }
+
+/** Notes on the client record (old Overview "Notes 3" tab). */
+export interface RecordNote {
+  id: string;
+  who: string;
+  date: Date;
+  text: string;
+}
+
+export function notesOf(c: StaffClient): RecordNote[] {
+  if (c.id === "northwind")
+    return [
+      { id: "n1", who: "Bharath", date: d(2026, 10, 4), text: "Ask for a fresh utility bill if it is older than 15 Aug." },
+      { id: "n2", who: "Pranay", date: d(2026, 10, 2), text: "Bill must show the same address as the rent agreement." },
+      { id: "n3", who: "Bharath", date: d(2026, 9, 26), text: "Rohan prefers calls after 4 pm IST." },
+    ];
+  return [
+    { id: "n1", who: c.lead, date: d(2026, 10, 5), text: `${c.step}: ${c.pendingWith === "Client" ? "client asked for one more week" : "SBC works it this week"}.` },
+    { id: "n2", who: c.manager, date: d(2026, 9, 30), text: "Monthly review done. Dates set for October." },
+  ];
+}

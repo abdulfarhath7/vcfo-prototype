@@ -91,3 +91,23 @@ export const UNASSIGNED: Unassigned[] = [
   { id: "lotus", name: "Lotus Dental Pvt Ltd", service: "Incorporation", won: "Won 2 days ago" },
   { id: "veda", name: "Veda Organics LLP", service: "Registrations", won: "Won today" },
 ];
+
+/** Escalations the admin owns (manager-level items of kind Escalation in reference/old-screens/s/admin/data.js MTASKS). */
+export interface Escalation {
+  id: string;
+  client: string;
+  title: string;
+  manager: string;
+  lead: string;
+  /** Days open. */
+  age: number;
+}
+
+export const ESCALATIONS: Escalation[] = [
+  { id: "e1", client: "delta", title: "Bank account delay", manager: "Pranay", lead: "Divya", age: 4 },
+  { id: "e2", client: "monsoon", title: "MCA remarks on SPICe+ unanswered", manager: "Priya Raman", lead: "Kabir Sethi", age: 6 },
+  { id: "e3", client: "banyan", title: "RUN name rejected, resubmission pending", manager: "Arjun Mehta", lead: "Nikhil Jain", age: 8 },
+];
+
+/** Clients a manager can run well (data.js CAP). */
+export const CAPACITY = 10;

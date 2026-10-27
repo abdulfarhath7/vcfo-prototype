@@ -28,8 +28,8 @@ export function rupees(n: number) {
 
 // ---------- Connections ----------
 
-export type ConnStatus = "Connected" | "Needs re-auth" | "Offline";
-export const CONN_TONE: Record<ConnStatus, ChipTone> = { Connected: "ok", "Needs re-auth": "warn", Offline: "bad" };
+export type ConnStatus = "Connected" | "Needs re-auth" | "Offline" | "Not connected";
+export const CONN_TONE: Record<ConnStatus, ChipTone> = { Connected: "ok", "Needs re-auth": "warn", Offline: "bad", "Not connected": "idle" };
 
 export interface ConnEvent {
   at: Date;
@@ -50,10 +50,14 @@ export interface Connection {
   authExpires: Date | null;
   /** False when the service signs with an IAM role and no key is stored. */
   hasKey: boolean;
+  /** Masked secret, shown in the detail. */
+  secret?: string;
   endpoint: string;
   scopes: string[];
   webhook?: string;
   events: ConnEvent[];
+  /** Settings and health lines for a connection without a full detail spec (dev-connections.ts). */
+  lines?: string[];
 }
 
 const HOOK = "https://app.sbctrack.in/api/webhooks";
@@ -195,6 +199,8 @@ export const CONNECTIONS: Connection[] = [
     authExpires: at(3, 31, 0, 0, 0, 2027),
     hasKey: true,
     endpoint: "app.leegality.com/api/v3.1",
+    secret: "lgl_live_•••• 7e20",
+    lines: ["Board resolutions and engagement letters", "DSC signing through the extension for MCA forms", "Signature pack: 40 left"],
     scopes: ["document:create", "document:sign", "document:read"],
     webhook: `${HOOK}/leegality`,
     events: [
@@ -237,6 +243,8 @@ export const CONNECTIONS: Connection[] = [
     authExpires: at(2, 20, 0, 0, 0, 2027),
     hasKey: true,
     endpoint: "http://tally-pc.local:9000",
+    secret: "vk_live_tc81 ••••",
+    lines: ["Tally Prime and Zoho Books", "Pushes invoices and receipts nightly at 23:00", "The office PC was offline on 3 Oct; 6 invoices are waiting"],
     scopes: ["invoices:write", "receipts:write"],
     events: [
       { at: at(10, 5, 23, 0), text: "Tally push skipped: connector offline", chip: "Offline", tone: "bad" },
@@ -307,6 +315,180 @@ export const CONNECTIONS: Connection[] = [
       { at: at(10, 5, 16, 41), text: "Release 2026.10.05 created", chip: "Info", tone: "idle" },
     ],
   },
+  {
+    id: "hooks",
+    name: "Webhooks and API keys",
+    provider: "For other systems",
+    kind: "Platform",
+    status: "Connected",
+    account: "2 keys · 3 webhooks",
+    lastSync: at(10, 6, 9, 0),
+    authExpires: null,
+    hasKey: true,
+    endpoint: "app.sbctrack.in/api/v1",
+    scopes: ["filing.filed", "step.completed", "invoice.paid"],
+    events: [
+      { at: at(10, 6, 9, 0), text: "Partner dashboard key used: read clients", chip: "OK", tone: "ok" },
+      { at: at(10, 6, 2, 10), text: "invoice.paid to tally-pc.local failed 3 times", chip: "Failed", tone: "bad" },
+      { at: at(10, 5, 17, 2), text: "step.completed delivered to partners.sbcllp.in", chip: "OK", tone: "ok" },
+      { at: at(10, 5, 16, 40), text: "filing.filed delivered to partners.sbcllp.in", chip: "OK", tone: "ok" },
+      { at: at(10, 3, 23, 0), text: "Tally connector key used: 4 invoices", chip: "OK", tone: "ok" },
+    ],
+  },
+  {
+    id: "google",
+    name: "Google Workspace",
+    provider: "Gmail, Calendar, Drive",
+    kind: "Workspace",
+    status: "Not connected",
+    account: "Not connected",
+    lastSync: at(10, 6, 0, 0),
+    authExpires: null,
+    hasKey: false,
+    endpoint: "www.googleapis.com",
+    scopes: ["gmail.send", "calendar.events", "drive.readonly"],
+    events: [],
+    lines: ["Optional: for clients and staff on Google", "Calendar sync and Drive import of documents"],
+  },
+  {
+    id: "gsp",
+    name: "GST API",
+    provider: "GST Suvidha Provider (GSP)",
+    kind: "Government portals",
+    status: "Not connected",
+    account: "Not connected",
+    lastSync: at(10, 6, 0, 0),
+    authExpires: null,
+    hasKey: false,
+    endpoint: "gsp.example.in/gst/v1.1",
+    scopes: ["gstr1:file", "gstr3b:file", "gstr2b:read"],
+    events: [],
+    lines: ["Would file GSTR-1 and 3B and pull 2B without the portal", "Needs a GSP contract and each client's consent"],
+  },
+  {
+    id: "eri",
+    name: "Income-tax ERI API",
+    provider: "e-Return Intermediary",
+    kind: "Government portals",
+    status: "Not connected",
+    account: "Application in progress",
+    lastSync: at(10, 6, 0, 0),
+    authExpires: null,
+    hasKey: false,
+    endpoint: "eportal.incometax.gov.in/iec/eri",
+    scopes: ["itr:prefill", "itr:file", "itr:status"],
+    events: [],
+    lines: ["SBC holds the ERI documentation", "Would prefill and file ITRs for consenting clients"],
+  },
+  {
+    id: "digi",
+    name: "DigiLocker",
+    provider: "Issued documents",
+    kind: "Government portals",
+    status: "Not connected",
+    account: "Not connected",
+    lastSync: at(10, 6, 0, 0),
+    authExpires: null,
+    hasKey: false,
+    endpoint: "api.digitallocker.gov.in/public/oauth2",
+    scopes: ["pan:read", "aadhaar:read", "driving_licence:read"],
+    events: [],
+    lines: ["Pull PAN, Aadhaar and driving licence with consent", "Cuts KYC uploads at onboarding"],
+  },
+];
+
+/** Connect steps for a service that is not connected yet. */
+export interface ConnectStep {
+  label: string;
+  kind: "signin" | "input" | "consent";
+  /** Input: field label. Sign-in: button label. */
+  field?: string;
+  placeholder?: string;
+  /** Consent: one checkbox each. */
+  items?: string[];
+}
+
+export const CONNECT_STEPS: Record<string, ConnectStep[]> = {
+  google: [
+    { label: "Sign in as a Google Workspace admin", kind: "signin", field: "Sign in with Google" },
+    { label: "Grant access", kind: "consent", items: ["Send mail as staff (gmail.send)", "Read and write calendars (calendar.events)", "Read Drive files picked by staff (drive.readonly)"] },
+  ],
+  gsp: [
+    { label: "Enter the GSP contract", kind: "input", field: "GSP API user", placeholder: "sbcllp_gsp_01" },
+    { label: "Enter the API key", kind: "input", field: "API key", placeholder: "Paste the key" },
+    { label: "Confirm client consent", kind: "consent", items: ["Each client signs the GSP consent before filing", "OTP from the GST portal on each first use"] },
+  ],
+  eri: [
+    { label: "Enter the ERI user ID", kind: "input", field: "ERI user ID", placeholder: "ERIP012345" },
+    { label: "Upload the signed ERI agreement", kind: "signin", field: "Pick the PDF" },
+    { label: "Confirm client consent", kind: "consent", items: ["Each client adds SBC as ERI on the e-Filing portal", "Prefill and filing only after the client approves"] },
+  ],
+  digi: [
+    { label: "Enter the partner client ID", kind: "input", field: "Client ID", placeholder: "SBC-DL-0001" },
+    { label: "Sign in to the DigiLocker partner portal", kind: "signin", field: "Sign in to DigiLocker" },
+    { label: "Pick documents", kind: "consent", items: ["PAN card", "Aadhaar", "Driving licence"] },
+  ],
+};
+
+// ---------- Services and incidents (overview) ----------
+
+export type SvcStatus = "Working" | "Needs attention" | "Down";
+export const SVC_TONE: Record<SvcStatus, ChipTone> = { Working: "ok", "Needs attention": "warn", Down: "bad" };
+
+export interface Service {
+  id: string;
+  name: string;
+  what: string;
+  status: SvcStatus;
+  /** Uptime over 30 days, percent. */
+  uptime: number;
+  /** p95 response time in ms. 0: not measured. */
+  p95: number;
+  note: string;
+}
+
+export const SERVICES: Service[] = [
+  { id: "web", name: "Web app", what: "AWS App Runner · ap-south-1", status: "Working", uptime: 99.98, p95: 210, note: "Version 2026.10.05 · 2 instances" },
+  { id: "db", name: "Database", what: "Amazon RDS Postgres 16", status: "Working", uptime: 99.99, p95: 12, note: "4.2 GB of 20 GB" },
+  { id: "store", name: "File storage", what: "Amazon S3", status: "Working", uptime: 100, p95: 48, note: "38 GB · 21,406 files" },
+  { id: "jobs", name: "Background jobs", what: "Inngest", status: "Needs attention", uptime: 99.7, p95: 0, note: "1 job failed in 24 hours" },
+  { id: "email", name: "Email", what: "Amazon SES", status: "Working", uptime: 99.95, p95: 340, note: "98.6% delivered this week" },
+  { id: "wa", name: "WhatsApp", what: "AWS End User Messaging", status: "Needs attention", uptime: 99.4, p95: 900, note: "3 templates waiting for Meta approval" },
+  { id: "m365", name: "Microsoft 365", what: "Outlook and Teams", status: "Needs attention", uptime: 99.9, p95: 420, note: "Teams webhook token expires in 9 days" },
+  { id: "ai", name: "Ask VCFO", what: "Claude API", status: "Working", uptime: 99.9, p95: 2100, note: "1,842 answers this month" },
+  { id: "ext", name: "Portal extension", what: "VCFO Assist (MCA and GST)", status: "Working", uptime: 99.5, p95: 0, note: "6 browsers active" },
+];
+
+export interface Incident {
+  id: string;
+  date: Date;
+  what: string;
+  where: string;
+  length: string;
+  status: "Resolved" | "Open";
+}
+
+export const INCIDENTS: Incident[] = [
+  { id: "i1", date: at(10, 4), what: "MCA portal timed out for VCFO Assist", where: "Portal extension", length: "38 minutes", status: "Resolved" },
+  { id: "i2", date: at(10, 2), what: "3 WhatsApp templates waiting for Meta approval", where: "WhatsApp", length: "open 4 days", status: "Open" },
+  { id: "i3", date: at(9, 29), what: "Amazon SES throttled sending", where: "Email", length: "12 minutes", status: "Resolved" },
+  { id: "i4", date: at(9, 24), what: "Deploy 2026.09.24 rolled back", where: "Web app", length: "4 minutes", status: "Resolved" },
+];
+
+export interface Environment {
+  id: string;
+  name: string;
+  address: string;
+  version: string;
+  commit: string;
+  deployed: Date | null;
+  by: string;
+}
+
+export const ENVIRONMENTS: Environment[] = [
+  { id: "prod", name: "Production", address: "app.sbctrack.in", version: "2026.10.05", commit: "6c26d7e", deployed: at(10, 5, 16, 40), by: "Farhath" },
+  { id: "stg", name: "Staging", address: "staging.sbctrack.in", version: "2026.10.06-rc1", commit: "a41be09", deployed: at(10, 6, 11, 20), by: "Farhath" },
+  { id: "local", name: "Local", address: "localhost:3000", version: "design/design-system", commit: "uncommitted", deployed: null, by: "Farhath" },
 ];
 
 // ---------- Jobs ----------
@@ -475,6 +657,39 @@ export const JOBS: Job[] = [
   },
 ];
 
+/** Plain schedule for each job, times in IST. */
+export const JOB_RUNS: Record<string, string> = {
+  deadline: "Daily 08:00",
+  overdue: "Daily 09:30",
+  "wa-nudges": "Every 2 hours",
+  "outlook-sync": "Every 15 minutes",
+  "portal-sync": "Every 30 minutes",
+  tally: "Nightly 23:00",
+  "monthly-reports": "1st of the month 08:00",
+  "partner-report": "1st of the month 07:00",
+  backup: "Daily 02:00",
+};
+
+export interface JobFailure {
+  id: string;
+  job: string;
+  at: Date;
+  cause: string;
+  status: "Failed" | "Skipped";
+}
+
+export const JOB_FAILURES: JobFailure[] = [
+  { id: "f1", job: "wa-nudges", at: at(10, 6, 12, 0), cause: "Template deadline_1d not approved; 14 messages not sent", status: "Failed" },
+  { id: "f2", job: "tally", at: at(10, 5, 23, 0), cause: "Connector on the office PC did not answer", status: "Skipped" },
+  { id: "f3", job: "portal-sync", at: at(10, 4, 10, 30), cause: "MCA V3 portal timed out; next run succeeded", status: "Failed" },
+];
+
+export const QUEUE_FACTS = [
+  { k: "App", v: "vcfo-suite-prod on Inngest Cloud", mono: true },
+  { k: "Waiting", v: "0" },
+  { k: "Retries", v: "3 times, up to 1 hour apart" },
+];
+
 // ---------- Logs ----------
 
 export type LogLevel = "Error" | "Warn" | "Info";
@@ -487,26 +702,29 @@ export interface LogRow {
   service: string;
   message: string;
   requestId: string;
+  /** Expanded text of the log line. */
+  detail: string;
 }
 
-const LOG_SEED: Array<[LogLevel, string, string]> = [
-  ["Error", "WhatsApp", "Template deadline_1d rejected: not approved yet"],
-  ["Error", "Web app", "Portal credentials failed to decrypt: CREDENTIALS_ENCRYPTION_KEY not set"],
-  ["Info", "Microsoft 365", "Calendar sync: 18 calendars, 4 changes"],
-  ["Warn", "Email", "Soft bounce: accounts@halcyonfin.example (mailbox full)"],
-  ["Info", "Ask VCFO", "Answer for Northwind in 2.1 s"],
-  ["Info", "Portal extension", "Portal sync: 31 forms tracked"],
-  ["Info", "Payments", "Webhook invoice.paid received: INV-2026-0418"],
-  ["Info", "Web app", "GET /client/home 200 in 184 ms"],
-  ["Warn", "Ask VCFO", "Rate limit reached, retried after 2 s"],
-  ["Info", "Jobs", "Overdue sweep finished: 4 alerts sent"],
-  ["Info", "Web app", "POST /api/documents 201 in 412 ms"],
-  ["Warn", "Portal extension", "MCA V3 timed out, retried"],
-  ["Info", "Jobs", "Deadline reminders: 61 sent, 0 failed"],
-  ["Error", "Web app", "PDF preview out of memory: AOC-4 draft, 48 MB"],
-  ["Info", "Email", "Delivery: 61 of 61 reminders delivered"],
-  ["Warn", "Accounting", "Tally push skipped: connector offline"],
-  ["Warn", "Microsoft 365", "Teams webhook token expires on 15 Oct"],
+const LOG_SEED: Array<[LogLevel, string, string, string]> = [
+  ["Error", "WhatsApp", "Template deadline_1d rejected: not approved yet", "Send blocked for 14 recipients. The template waits for Meta approval (submitted 4 Oct)."],
+  ["Error", "Web app", "Portal credentials failed to decrypt: CREDENTIALS_ENCRYPTION_KEY not set", "CREDENTIALS_ENCRYPTION_KEY is not set on App Runner. Every portal credential read throws in production."],
+  ["Info", "Microsoft 365", "Calendar sync: 18 calendars, 4 changes", "2 filing dates moved, 2 client meetings added. No conflicts."],
+  ["Warn", "Email", "Soft bounce: accounts@halcyonfin.example (mailbox full)", "Mailbox full. SES retries for 12 hours."],
+  ["Info", "Ask VCFO", "Answer for Northwind in 2.1 s", "Question about the GSTR-3B due date. 1,240 tokens. Client data only."],
+  ["Info", "Portal extension", "Portal sync: 31 forms tracked", "MCA V3: 24 forms. GST portal: 7 returns. 2 status changes."],
+  ["Info", "Payments", "Webhook invoice.paid received: INV-2026-0418", "Aurora Paints paid INV-2026-0418 (₹52,500) by UPI."],
+  ["Info", "Web app", "GET /client/home 200 in 184 ms", "Signed-in client Rohan Kumar. Cache hit for the incorporation timeline."],
+  ["Warn", "Ask VCFO", "Rate limit reached, retried after 2 s", "429 from api.anthropic.com. The retry succeeded."],
+  ["Info", "Jobs", "Overdue sweep finished: 4 alerts sent", "SMS to Coral Studios, Ember Textiles, Kestrel Health and Brightwave Robotics."],
+  ["Info", "Web app", "POST /api/documents 201 in 412 ms", "14 files from Northwind. Stored in sbc-vcfo-prod."],
+  ["Warn", "Portal extension", "MCA V3 timed out, retried", "No answer from MCA V3 after 30 s. The second try worked."],
+  ["Info", "Jobs", "Deadline reminders: 61 sent, 0 failed", "7-day: 22, 3-day: 18, 1-day: 21."],
+  ["Error", "Web app", "PDF preview out of memory: AOC-4 draft, 48 MB", "The preview worker stopped at 512 MB. The file still downloads."],
+  ["Info", "Email", "Delivery: 61 of 61 reminders delivered", "Configuration set vcfo-prod. 0 complaints."],
+  ["Warn", "Accounting", "Tally push skipped: connector offline", "The office PC running the Tally connector did not answer. 6 invoices are waiting."],
+  ["Warn", "Microsoft 365", "Teams webhook token expires on 15 Oct", "Renew it in the Teams channel settings and paste the new URL here."],
+  ["Info", "Deploys", "Version 2026.10.05 is live", "Deployed by Farhath from main (commit 6c26d7e). No migrations."],
 ];
 
 function hex(seed: number) {
@@ -521,17 +739,17 @@ function hex(seed: number) {
 
 /** 50 rows, newest first, from 6 Oct 12:31 backwards. */
 export const LOGS: LogRow[] = Array.from({ length: 50 }, (_, i) => {
-  const [level, service, message] = LOG_SEED[i % LOG_SEED.length];
+  const [level, service, message, detail] = LOG_SEED[i % LOG_SEED.length];
   const t = new Date(at(10, 6, 12, 31, 8).getTime() - i * (11 * 60 + 37) * 1000);
-  return { id: `l${i}`, at: t, level, service, message, requestId: `req_${hex(i + 101)}` };
+  return { id: `l${i}`, at: t, level, service, message, detail, requestId: `req_${hex(i + 101)}` };
 });
 
 export const LOG_SERVICES = Array.from(new Set(LOG_SEED.map((s) => s[1]))).sort();
 
 // ---------- Messages ----------
 
-export type Channel = "Email" | "WhatsApp" | "Teams";
-export const CHANNEL_TONE: Record<Channel, ChipTone> = { Email: "prog", WhatsApp: "ok", Teams: "violet" };
+export type Channel = "Email" | "WhatsApp" | "SMS" | "Teams";
+export const CHANNEL_TONE: Record<Channel, ChipTone> = { Email: "prog", WhatsApp: "ok", SMS: "teal", Teams: "violet" };
 
 export type MsgStatus = "Delivered" | "Read" | "Sent" | "Queued" | "Failed";
 export const MSG_TONE: Record<MsgStatus, ChipTone> = { Delivered: "ok", Read: "ok", Sent: "prog", Queued: "idle", Failed: "bad" };
@@ -597,6 +815,18 @@ export const TEMPLATES: Record<string, Template> = {
     from: "VCFO bot",
     body: "Escalation: Bluefin step 4 (Name approval) has been stuck for 3 days. Owner: Bharath.",
   },
+  otp_login: {
+    id: "otp_login",
+    channel: "SMS",
+    from: "SBCLLP",
+    body: "481 205 is your VCFO Suite sign-in code. It works for 10 minutes. Do not share it. - SBC LLP",
+  },
+  overdue_alert: {
+    id: "overdue_alert",
+    channel: "SMS",
+    from: "SBCLLP",
+    body: "SBC LLP: PF return for September was due on 5 Oct and is not filed. Open app.sbctrack.in to act. - SBC LLP",
+  },
   invoice_link: {
     id: "invoice_link",
     channel: "WhatsApp",
@@ -637,6 +867,10 @@ const M: Array<[number, number, Channel, string, string, MsgStatus, number, stri
   [7, 45, "Email", "rohan@northwind.example", "doc_request_v3", "Read", 0],
   [7, 40, "Email", "founders@bluefin.example", "doc_request_v3", "Delivered", 0],
   [7, 12, "Email", "admin@emberstudios.example", "doc_request_v3", "Failed", 3, "Hard bounce: address does not exist"],
+  [9, 30, "SMS", "+91 98860 •••• 20 · Coral", "overdue_alert", "Delivered", 0],
+  [9, 30, "SMS", "+91 94480 •••• 63 · Ember", "overdue_alert", "Delivered", 0],
+  [9, 12, "SMS", "+91 99860 •••• 07 · Farhath", "otp_login", "Delivered", 0],
+  [9, 2, "SMS", "+91 90360 •••• 88 · Kestrel", "otp_login", "Failed", 1, "DND number: promotional block. Sign-in codes go on the transactional route."],
 ];
 
 export const MESSAGES: Message[] = M.map(([h, min, channel, to, template, status, retries, error], i) => ({
@@ -649,6 +883,110 @@ export const MESSAGES: Message[] = M.map(([h, min, channel, to, template, status
   retries,
   error,
 }));
+
+/** Which channel each event goes on. */
+export interface Route {
+  id: string;
+  message: string;
+  when: string;
+  channel: Channel;
+  from: string;
+  template: string;
+  status: "Approved" | "Waiting for approval";
+  to: string;
+  sent7d: number;
+  /** Delivered, percent. 0 when nothing was sent. */
+  delivered: number;
+}
+
+const R: Array<[string, string, Channel, string, string, Route["status"], string, number, number]> = [
+  ["Document request", "When a step needs a client file", "Email", "updates@sbcllp.in", "doc_request_v3", "Approved", "Client contact", 142, 99.3],
+  ["Document request reminder", "2 days after the request, if still missing", "WhatsApp", "+91 80 4718 2290", "doc_nudge_hi_en", "Approved", "Client contact", 61, 97.8],
+  ["Step reminder", "Day before a step is due", "Email", "updates@sbcllp.in", "step_due_v2", "Approved", "Client and project lead", 88, 99.0],
+  ["Deadline reminder", "7, 3 and 1 days before a filing", "Email", "reminders@sbcllp.in", "deadline_v4", "Approved", "Client contact", 214, 98.4],
+  ["Deadline reminder (WhatsApp)", "1 day before a filing", "WhatsApp", "+91 80 4718 2290", "deadline_1d", "Waiting for approval", "Client contact", 0, 0],
+  ["Overdue alert", "The morning after a missed date", "SMS", "SBCLLP", "overdue_alert", "Approved", "Client and manager", 9, 100],
+  ["Filing confirmation", "When a return is filed", "Email", "updates@sbcllp.in", "filed_ack_v2", "Approved", "Client contact", 57, 99.6],
+  ["Monthly client report", "1st of the month, 08:00", "Email", "reports@sbcllp.in", "monthly_report", "Approved", "Client directors", 0, 0],
+  ["Sign-in code", "When someone signs in", "SMS", "SBCLLP", "otp_login", "Approved", "The person signing in", 412, 99.8],
+  ["Staff daily digest", "Every working day, 09:00", "Teams", "#compliance-alerts", "digest_card", "Approved", "Project leads and managers", 5, 100],
+  ["Escalation to admin", "A step stuck for 3 days", "Teams", "#incorporations", "escalation_card", "Approved", "Admin and manager", 7, 100],
+  ["Partner report", "1st of the month, 07:00", "Email", "reports@sbcllp.in", "partner_report", "Approved", "Mithilesh and partners", 0, 0],
+  ["Payment link", "With each invoice", "WhatsApp", "+91 80 4718 2290", "invoice_link", "Waiting for approval", "Client accounts contact", 0, 0],
+];
+
+export const ROUTES: Route[] = R.map(([message, when, channel, from, template, status, to, sent7d, delivered], i) => ({ id: `r${i}`, message, when, channel, from, template, status, to, sent7d, delivered }));
+
+/** Addresses a route can send from, per channel. */
+export const SENDERS: Record<Channel, string[]> = {
+  Email: ["updates@sbcllp.in", "reminders@sbcllp.in", "reports@sbcllp.in", "noreply@sbcllp.in"],
+  WhatsApp: ["+91 80 4718 2290"],
+  SMS: ["SBCLLP"],
+  Teams: ["#compliance-alerts", "#incorporations", "#partners"],
+};
+
+export interface DomainRecord {
+  id: string;
+  record: string;
+  status: "Passing" | "Needs a change";
+  value: string;
+}
+
+export const DOMAIN: DomainRecord[] = [
+  { id: "spf", record: "SPF", status: "Passing", value: "v=spf1 include:amazonses.com ~all" },
+  { id: "dkim", record: "DKIM", status: "Passing", value: "3 CNAME records verified" },
+  { id: "dmarc", record: "DMARC", status: "Needs a change", value: "p=none · move to quarantine" },
+  { id: "rp", record: "Return path", status: "Passing", value: "bounce.sbcllp.in" },
+];
+
+export type TplStatus = "Approved" | "Waiting" | "Registered" | "In the app";
+export const TPL_TONE: Record<TplStatus, ChipTone> = { Approved: "ok", Waiting: "warn", Registered: "ok", "In the app": "idle" };
+
+export interface ChannelTemplate {
+  id: string;
+  name: string;
+  channel: "WhatsApp" | "SMS" | "Email";
+  language: string;
+  category: string;
+  status: TplStatus;
+  /** Waiting since, for a template Meta has not approved yet. */
+  since?: Date;
+  lastUsed: Date | null;
+  sent7d: number;
+  usedFor: string;
+  body: string;
+}
+
+const T: Array<[string, ChannelTemplate["channel"], string, string, TplStatus, Date | null, number, string, string, Date?]> = [
+  ["doc_nudge_hi_en", "WhatsApp", "en, hi", "Utility", "Approved", at(10, 6, 12, 0), 61, "Document request reminder", "SBC LLP: {{count}} documents for step {{step}} are still missing. Upload them here: {{link}}. Reply STOP to opt out."],
+  ["step_due_wa", "WhatsApp", "en", "Utility", "Approved", at(10, 6, 9, 0), 38, "Step reminder", "SBC LLP: step {{step}} ({{name}}) is due on {{date}}. Open {{link}} to act."],
+  ["filed_ack_wa", "WhatsApp", "en", "Utility", "Approved", at(10, 5, 15, 0), 22, "Filing confirmation", "SBC LLP: we filed {{form}} for {{period}}. ARN {{arn}}. The acknowledgement is in Documents."],
+  ["welcome_client", "WhatsApp", "en", "Utility", "Approved", at(10, 2, 11, 0), 3, "Onboarding", "Welcome to SBC LLP. Your portal is ready at {{link}}. Reply STOP to opt out."],
+  ["deadline_1d", "WhatsApp", "en", "Utility", "Waiting", null, 0, "Deadline reminder (WhatsApp)", "SBC LLP: {{form}} for {{period}} is due tomorrow, {{date}}. Reply STOP to opt out.", at(10, 4)],
+  ["invoice_link", "WhatsApp", "en", "Utility", "Waiting", null, 0, "Payment link", "SBC LLP: invoice {{invoice}} for {{amount}} is ready. Pay here: {{link}}. Reply STOP to opt out.", at(10, 4)],
+  ["registration_granted", "WhatsApp", "en", "Utility", "Waiting", null, 0, "Registration granted", "SBC LLP: {{registration}} for {{company}} is granted. The certificate is in Documents.", at(10, 5)],
+  ["otp_login", "SMS", "en", "Transactional", "Registered", at(10, 6, 9, 12), 412, "Sign-in codes", "{{code}} is your VCFO Suite sign-in code. It works for 10 minutes. Do not share it. - SBC LLP"],
+  ["overdue_alert", "SMS", "en", "Transactional", "Registered", at(10, 6, 9, 30), 9, "The morning after a missed date", "SBC LLP: {{form}} for {{period}} was due on {{date}} and is not filed. Open app.sbctrack.in to act. - SBC LLP"],
+  ["wa_fallback_doc", "SMS", "en", "Transactional", "Registered", at(10, 5, 12, 0), 8, "WhatsApp document reminder, when WhatsApp fails", "SBC LLP: {{count}} documents for step {{step}} are still missing. Upload at {{link}} - SBC LLP"],
+  ["wa_fallback_due", "SMS", "en", "Transactional", "Registered", at(10, 5, 9, 0), 6, "WhatsApp step reminder, when WhatsApp fails", "SBC LLP: step {{step}} is due on {{date}}. Open {{link}} - SBC LLP"],
+  ["filed_sms", "SMS", "en", "Transactional", "Registered", null, 0, "Filing confirmation", "SBC LLP: {{form}} for {{period}} is filed. ARN {{arn}} - SBC LLP"],
+  ["payment_sms", "SMS", "en", "Transactional", "Registered", null, 0, "Payment received", "SBC LLP: we received {{amount}} for {{invoice}}. Thank you. - SBC LLP"],
+  ["doc_request_v3", "Email", "en", "System", "In the app", at(10, 6, 7, 45), 142, "Document request", "Dear {{name}},\n\nWe need these documents to file step {{step}} ({{step_name}}):\n{{list}}\n\nUpload them on the portal under Documents.\n\nSBC LLP"],
+  ["step_due_v2", "Email", "en", "System", "In the app", at(10, 6, 8, 0), 88, "Step reminder", "Dear {{name}},\n\nStep {{step}} ({{step_name}}) is due on {{date}}. Review it on the portal.\n\nSBC LLP"],
+  ["deadline_v4", "Email", "en", "System", "In the app", at(10, 6, 8, 1), 214, "Deadline reminder", "Dear {{name}},\n\n{{form}} for {{period}} is due on {{date}}. Send the documents by {{cutoff}} so we can file on time.\n\nSBC LLP"],
+  ["filed_ack_v2", "Email", "en", "System", "In the app", at(10, 6, 11, 2), 57, "Filing confirmation", "Dear {{name}},\n\nWe filed {{form}} for {{period}} on {{date}}. ARN {{arn}}. The acknowledgement is in Documents.\n\nSBC LLP"],
+  ["monthly_report", "Email", "en", "System", "In the app", at(10, 1, 8, 0), 0, "Monthly client report", "Dear {{name}},\n\nYour report for {{month}} is attached: filings, open items and what is next.\n\nSBC LLP"],
+  ["partner_report", "Email", "en", "System", "In the app", at(10, 1, 7, 0), 0, "Partner report", "Partner report for {{month}}: clients, filings, overdue items and fees."],
+];
+
+export const CHANNEL_TEMPLATES: ChannelTemplate[] = T.map(([name, channel, language, category, status, lastUsed, sent7d, usedFor, body, since]) => ({ id: name, name, channel, language, category, status, lastUsed, sent7d, usedFor, body, since }));
+
+/** Failed in the last 24 hours, by cause. */
+export const MSG_FAILS = [
+  { id: "mf1", what: "WhatsApp · deadline_1d", cause: "Template waiting for Meta approval", n: 14 },
+  { id: "mf2", what: "Email · soft bounce", cause: "accounts@halcyonfin.example mailbox full (retrying)", n: 1 },
+  { id: "mf3", what: "SMS · DND number", cause: "Promotional block on one number; sign-in codes still go", n: 0 },
+];
 
 // ---------- Deploys ----------
 
@@ -694,6 +1032,37 @@ export const MIGRATIONS: Migration[] = [
   { id: "0043_message_routes", status: "Pending", what: "Message routing in the database" },
 ];
 
+/** Release notes per version. */
+export const RELEASE_NOTES: Record<string, string[]> = {
+  "2026.10.06-rc1": ["Developer console redesign in the e-Filing style", "Connection detail with every setting", "Feature flags table"],
+  "2026.10.05": ["Large-file splits for uploads over 25 MB", "Settings: account page for staff", "Fix: calendar sync skipped all-day events"],
+  "2026.10.02": ["Client portal home split into cards", "Faster document list (412 ms to 180 ms)"],
+  "2026.10.01": ["Migration 0041 firm people and roles", "Deploy stopped: the migration timed out after 120 s"],
+  "2026.09.28": ["Firm people page", "Admin forms for managers and leads"],
+  "2026.09.24": ["Calendar sync rewrite", "Rolled back: sync wrote duplicate events for 2 staff"],
+  "2026.09.23": ["WhatsApp reminders, outbound only", "Opt-out word STOP"],
+};
+
+export interface Flag {
+  id: string;
+  name: string;
+  env: Env;
+  on: boolean;
+  who: string;
+  by: string;
+  at: Date;
+}
+
+export const FLAGS: Flag[] = [
+  { id: "ask_vcfo", name: "Ask VCFO in the client portal", env: "Production", on: true, who: "Everyone", by: "Farhath", at: at(9, 23, 12, 45) },
+  { id: "wa_nudges", name: "WhatsApp reminders", env: "Production", on: true, who: "Clients who opted in", by: "Farhath", at: at(9, 23, 12, 50) },
+  { id: "wa_deadline", name: "WhatsApp deadline reminders", env: "Production", on: false, who: "Waiting for template approval", by: "Farhath", at: at(9, 29, 10, 0) },
+  { id: "pay_links", name: "Payment links on invoices", env: "Production", on: true, who: "Everyone", by: "Mithilesh", at: at(9, 15, 11, 30) },
+  { id: "super_admin", name: "Super admin portal", env: "Production", on: true, who: "Mithilesh", by: "Farhath", at: at(10, 3, 10, 12) },
+  { id: "gsp_filing", name: "GST filing through a GSP", env: "Production", on: false, who: "Not connected yet", by: "Farhath", at: at(9, 2, 9, 0) },
+  { id: "dev_console_v2", name: "New developer console", env: "Staging", on: true, who: "Developers", by: "Farhath", at: at(10, 6, 11, 22) },
+];
+
 // ---------- Access ----------
 
 export interface ApiKey {
@@ -707,19 +1076,26 @@ export interface ApiKey {
   /** Our own key: it can be revoked. A provider key can only be rotated. */
   own: boolean;
   missing?: boolean;
+  /** Where the value is kept. */
+  where: string;
+  /** Seed data that must be removed before launch: the action is Purge. */
+  purge?: boolean;
 }
 
 export const API_KEYS: ApiKey[] = [
-  { id: "k-enc", name: "CREDENTIALS_ENCRYPTION_KEY", prefix: "Not set", scope: "Portal credentials", created: null, expires: null, lastUsed: null, own: false, missing: true },
-  { id: "k-teams", name: "Teams webhook URL", prefix: "webhookb2/7c2e", scope: "Teams channel", created: at(7, 15), expires: at(10, 15), lastUsed: at(10, 6, 12, 15), own: false },
-  { id: "k-pd", name: "Partner dashboard", prefix: "vk_live_pd3a", scope: "Read", created: at(9, 2), expires: at(3, 2, 0, 0, 0, 2027), lastUsed: at(10, 6, 9, 0), own: true },
-  { id: "k-tally", name: "Tally connector", prefix: "vk_live_tc81", scope: "Write invoices", created: at(8, 20), expires: at(2, 20, 0, 0, 0, 2027), lastUsed: at(10, 3, 23, 0), own: true },
-  { id: "k-ext", name: "VCFO Assist extension", prefix: "vk_live_ex42", scope: "Read portals", created: at(9, 1), expires: at(3, 1, 0, 0, 0, 2027), lastUsed: at(10, 6, 12, 24), own: true },
-  { id: "k-ai", name: "ANTHROPIC_API_KEY", prefix: "sk-ant-…9c1d", scope: "Ask VCFO", created: at(10, 1), expires: null, lastUsed: at(10, 6, 12, 30), own: false },
-  { id: "k-rzp", name: "Razorpay key secret", prefix: "rzp_live_…3KfQ", scope: "Payments", created: at(8, 20), expires: null, lastUsed: at(10, 6, 10, 2), own: false },
-  { id: "k-msg91", name: "MSG91 auth key", prefix: "…91ae", scope: "SMS", created: at(7, 2), expires: at(6, 23, 0, 0, 0, 2027), lastUsed: at(10, 6, 11, 50), own: false },
-  { id: "k-graph", name: "Microsoft Graph client secret", prefix: "…8Q~d", scope: "Mail and calendars", created: at(8, 14), expires: at(2, 4, 0, 0, 0, 2027), lastUsed: at(10, 6, 12, 15), own: false },
-  { id: "k-rds", name: "RDS master password", prefix: "Secrets Manager", scope: "Database", created: at(9, 1), expires: at(11, 11), lastUsed: at(10, 6, 2, 0), own: false },
+  { id: "k-enc", name: "CREDENTIALS_ENCRYPTION_KEY", prefix: "Not set", scope: "Portal credentials", created: null, expires: null, lastUsed: null, where: "App Runner", own: false, missing: true },
+  { id: "k-teams", name: "Teams webhook URL", prefix: "webhookb2/7c2e", scope: "Teams channel", created: at(7, 15), expires: at(10, 15), lastUsed: at(10, 6, 12, 15), where: "Secrets Manager", own: false },
+  { id: "k-pd", name: "Partner dashboard", prefix: "vk_live_pd3a", scope: "Read", created: at(9, 2), expires: at(3, 2, 0, 0, 0, 2027), lastUsed: at(10, 6, 9, 0), where: "Database", own: true },
+  { id: "k-tally", name: "Tally connector", prefix: "vk_live_tc81", scope: "Write invoices", created: at(8, 20), expires: at(2, 20, 0, 0, 0, 2027), lastUsed: at(10, 3, 23, 0), where: "Database", own: true },
+  { id: "k-ext", name: "VCFO Assist extension", prefix: "vk_live_ex42", scope: "Read portals", created: at(9, 1), expires: at(3, 1, 0, 0, 0, 2027), lastUsed: at(10, 6, 12, 24), where: "Database", own: true },
+  { id: "k-ai", name: "ANTHROPIC_API_KEY", prefix: "sk-ant-…9c1d", scope: "Ask VCFO", created: at(10, 1), expires: null, lastUsed: at(10, 6, 12, 30), where: "Secrets Manager", own: false },
+  { id: "k-rzp", name: "Razorpay key secret", prefix: "rzp_live_…3KfQ", scope: "Payments", created: at(8, 20), expires: null, lastUsed: at(10, 6, 10, 2), where: "Secrets Manager", own: false },
+  { id: "k-msg91", name: "MSG91 auth key", prefix: "…91ae", scope: "SMS", created: at(7, 2), expires: at(6, 23, 0, 0, 0, 2027), lastUsed: at(10, 6, 11, 50), where: "Secrets Manager", own: false },
+  { id: "k-graph", name: "Microsoft Graph client secret", prefix: "…8Q~d", scope: "Mail and calendars", created: at(8, 14), expires: at(2, 4, 0, 0, 0, 2027), lastUsed: at(10, 6, 12, 15), where: "Secrets Manager", own: false },
+  { id: "k-auth", name: "AUTH_SECRET", prefix: "••••b3e1", scope: "Sign-in sessions", created: at(9, 2), expires: null, lastUsed: at(10, 6, 12, 31), where: "Secrets Manager", own: false },
+  { id: "k-resend", name: "RESEND_API_KEY (fallback)", prefix: "re_…4f2a", scope: "Email fallback", created: at(6, 12), expires: null, lastUsed: at(9, 29, 14, 2), where: "Secrets Manager", own: false },
+  { id: "k-demo", name: "Demo user passwords", prefix: "Seed data", scope: "6 demo accounts", created: null, expires: null, lastUsed: at(10, 4, 16, 0), where: "Database", own: false, purge: true },
+  { id: "k-rds", name: "RDS master password", prefix: "Secrets Manager", scope: "Database", created: at(9, 1), expires: at(11, 11), lastUsed: at(10, 6, 2, 0), where: "Secrets Manager", own: false },
 ];
 
 export interface ConsoleUser {
@@ -735,6 +1111,60 @@ export const CONSOLE_USERS: ConsoleUser[] = [
   { id: "u-mithilesh", name: "Mithilesh", role: "Super admin", twoFactor: "On", lastSignIn: at(10, 5, 18, 40) },
   { id: "u-krishna", name: "Krishna", role: "Admin, read only", twoFactor: "Off", lastSignIn: at(10, 2, 11, 5) },
   { id: "u-bot", name: "Deploy bot", role: "Service account", twoFactor: "Not used", lastSignIn: at(10, 5, 16, 36) },
+];
+
+/** Sign-in methods: people who used each in the last 30 days. */
+export const SIGNIN = [
+  { id: "pw", label: "Email and password", n: 22, who: "Clients and staff" },
+  { id: "ms", label: "Microsoft 365", n: 14, who: "Staff on sbcllp.in" },
+  { id: "otp", label: "OTP by SMS", n: 31, who: "Required for staff, optional for clients" },
+];
+
+export interface Session {
+  id: string;
+  person: string;
+  role: string;
+  device: string;
+  browser: string;
+  place: string;
+  since: Date;
+  active: string;
+  you?: boolean;
+}
+
+export const SESSIONS: Session[] = [
+  { id: "s1", person: "Farhath", role: "Developer", device: "Linux laptop", browser: "Firefox 131", place: "Bengaluru", since: at(10, 6, 9, 12), active: "Now", you: true },
+  { id: "s2", person: "Mithilesh", role: "Super admin", device: "Mac", browser: "Chrome 129", place: "Bengaluru", since: at(10, 6, 8, 40), active: "Now" },
+  { id: "s3", person: "Krishna", role: "Admin", device: "Windows PC", browser: "Edge 129", place: "Bengaluru", since: at(10, 6, 9, 5), active: "4 min ago" },
+  { id: "s4", person: "Pranay", role: "Manager", device: "Windows PC", browser: "Chrome 129", place: "Bengaluru", since: at(10, 6, 9, 30), active: "12 min ago" },
+  { id: "s5", person: "Bharath", role: "Project lead", device: "Android phone", browser: "Chrome 129", place: "Bengaluru", since: at(10, 6, 10, 2), active: "31 min ago" },
+  { id: "s6", person: "Rohan Kumar", role: "Client", device: "iPhone", browser: "Safari 18", place: "Pune", since: at(10, 6, 11, 20), active: "1 h ago" },
+  { id: "s7", person: "Pranay", role: "Manager", device: "Android phone", browser: "Chrome 129", place: "Bengaluru", since: at(10, 5, 19, 10), active: "Yesterday" },
+];
+
+export const ROLES = [
+  { id: "super", role: "Super admin", people: 1, can: "Everything, firm settings, every client" },
+  { id: "admin", role: "Admin", people: 1, can: "Every client, managers, firm settings" },
+  { id: "manager", role: "Manager", people: 3, can: "Their leads' clients, approvals" },
+  { id: "lead", role: "Project lead", people: 6, can: "Their own clients and work" },
+  { id: "client", role: "Client", people: 14, can: "Their own company only" },
+  { id: "dev", role: "Developer", people: 1, can: "This console; no client data" },
+];
+
+export interface ServiceAccount {
+  id: string;
+  name: string;
+  kind: string;
+  can: string;
+  lastUsed: Date;
+}
+
+export const SERVICE_ACCOUNTS: ServiceAccount[] = [
+  { id: "sa-bot", name: "Deploy bot", kind: "GitHub Actions", can: "Deploy staging and production", lastUsed: at(10, 5, 16, 36) },
+  { id: "sa-ar", name: "vcfo-apprunner", kind: "IAM role", can: "SES, S3, WhatsApp, Secrets Manager", lastUsed: at(10, 6, 12, 31) },
+  { id: "sa-inngest", name: "vcfo-suite-prod", kind: "Inngest signing key", can: "Run scheduled jobs", lastUsed: at(10, 6, 12, 30) },
+  { id: "sa-tally", name: "Tally connector", kind: "API key", can: "Write invoices and receipts", lastUsed: at(10, 3, 23, 0) },
+  { id: "sa-ext", name: "VCFO Assist extension", kind: "API key", can: "Read portal status", lastUsed: at(10, 6, 12, 24) },
 ];
 
 export interface ConsoleSetting {
@@ -769,17 +1199,19 @@ export interface ServiceCost {
   /** 1 to 6 Sep, the same days. */
   lastMonth: number;
   group: "Claude API" | "App Runner" | "Database" | "Messaging" | "Other";
+  /** Monthly budget in rupees. */
+  budget: number;
 }
 
 export const COSTS: ServiceCost[] = [
-  { service: "Claude API (Ask VCFO)", thisMonth: 3790, lastMonth: 3120, group: "Claude API" },
-  { service: "App Runner", thisMonth: 1960, lastMonth: 1900, group: "App Runner" },
-  { service: "RDS Postgres", thisMonth: 1480, lastMonth: 1480, group: "Database" },
-  { service: "WhatsApp messages", thisMonth: 640, lastMonth: 510, group: "Messaging" },
-  { service: "Error tracking (Sentry)", thisMonth: 440, lastMonth: 440, group: "Other" },
-  { service: "SMS (MSG91)", thisMonth: 420, lastMonth: 430, group: "Messaging" },
-  { service: "S3 storage", thisMonth: 380, lastMonth: 350, group: "Other" },
-  { service: "Email (SES)", thisMonth: 90, lastMonth: 85, group: "Messaging" },
+  { service: "Claude API (Ask VCFO)", thisMonth: 3790, lastMonth: 3120, group: "Claude API", budget: 40000 },
+  { service: "App Runner", thisMonth: 1960, lastMonth: 1900, group: "App Runner", budget: 12000 },
+  { service: "RDS Postgres", thisMonth: 1480, lastMonth: 1480, group: "Database", budget: 8000 },
+  { service: "WhatsApp messages", thisMonth: 640, lastMonth: 510, group: "Messaging", budget: 4000 },
+  { service: "Error tracking (Sentry)", thisMonth: 440, lastMonth: 440, group: "Other", budget: 2500 },
+  { service: "SMS (MSG91)", thisMonth: 420, lastMonth: 430, group: "Messaging", budget: 2500 },
+  { service: "S3 storage", thisMonth: 380, lastMonth: 350, group: "Other", budget: 3000 },
+  { service: "Email (SES)", thisMonth: 90, lastMonth: 85, group: "Messaging", budget: 1000 },
 ];
 
 export const COST_TOTAL = COSTS.reduce((a, c) => a + c.thisMonth, 0);
@@ -792,6 +1224,73 @@ export const COST_MONTHS = [
   { month: "Jul", total: 40600 },
   { month: "Aug", total: 42800 },
   { month: "Sep", total: 44700 },
+];
+
+export const COST_BUDGET = COSTS.reduce((a, c) => a + c.budget, 0);
+
+/** Volumes this month. */
+export const VOLUME = [
+  { k: "Emails sent", v: "1,408", sub: "This month" },
+  { k: "WhatsApp messages", v: "612", sub: "This month" },
+  { k: "SMS", v: "1,290", sub: "Mostly sign-in codes" },
+  { k: "Ask VCFO answers", v: "1,842", sub: "3.1 M tokens" },
+];
+
+export interface DbTable {
+  id: string;
+  name: string;
+  rows: number;
+  size: string;
+  growth: string;
+  vacuumed: Date;
+}
+
+export const DB_TABLES: DbTable[] = [
+  { id: "t1", name: "audit_log", rows: 1284112, size: "1.4 GB", growth: "+38,200 a week", vacuumed: at(10, 6, 2, 30) },
+  { id: "t2", name: "messages", rows: 412880, size: "620 MB", growth: "+4,100 a week", vacuumed: at(10, 6, 2, 30) },
+  { id: "t3", name: "documents", rows: 21406, size: "410 MB", growth: "+620 a week", vacuumed: at(10, 5, 2, 30) },
+  { id: "t4", name: "log_events", rows: 980214, size: "880 MB", growth: "+52,000 a week", vacuumed: at(10, 6, 2, 30) },
+  { id: "t5", name: "steps", rows: 18240, size: "96 MB", growth: "+310 a week", vacuumed: at(10, 4, 2, 30) },
+  { id: "t6", name: "filings", rows: 9812, size: "74 MB", growth: "+140 a week", vacuumed: at(10, 4, 2, 30) },
+  { id: "t7", name: "obligations", rows: 6230, size: "38 MB", growth: "+60 a week", vacuumed: at(10, 3, 2, 30) },
+  { id: "t8", name: "invoices", rows: 4188, size: "22 MB", growth: "+45 a week", vacuumed: at(10, 3, 2, 30) },
+  { id: "t9", name: "clients", rows: 48, size: "2 MB", growth: "+1 a week", vacuumed: at(10, 1, 2, 30) },
+  { id: "t10", name: "users", rows: 112, size: "1 MB", growth: "+2 a week", vacuumed: at(10, 1, 2, 30) },
+];
+
+export interface Backup {
+  id: string;
+  name: string;
+  at: Date;
+  size: string;
+  kind: "Daily" | "Before deploy" | "Manual";
+  status: "Available" | "Restore tested";
+}
+
+export const BACKUPS: Backup[] = [
+  { id: "bk1", name: "vcfo-prod-2026-10-06", at: at(10, 6, 2, 3), size: "4.2 GB", kind: "Daily", status: "Available" },
+  { id: "bk2", name: "vcfo-prod-pre-2026.10.05", at: at(10, 5, 16, 36), size: "4.2 GB", kind: "Before deploy", status: "Available" },
+  { id: "bk3", name: "vcfo-prod-2026-10-05", at: at(10, 5, 2, 3), size: "4.1 GB", kind: "Daily", status: "Available" },
+  { id: "bk4", name: "vcfo-prod-2026-10-04", at: at(10, 4, 2, 3), size: "4.1 GB", kind: "Daily", status: "Available" },
+  { id: "bk5", name: "vcfo-prod-2026-10-03", at: at(10, 3, 2, 3), size: "4.1 GB", kind: "Daily", status: "Available" },
+  { id: "bk6", name: "vcfo-prod-pre-2026.10.02", at: at(10, 2, 18, 10), size: "4.0 GB", kind: "Before deploy", status: "Available" },
+  { id: "bk7", name: "vcfo-prod-2026-10-01", at: at(10, 1, 2, 3), size: "4.0 GB", kind: "Daily", status: "Restore tested" },
+];
+
+export interface DataExport {
+  id: string;
+  name: string;
+  format: string;
+  size: string;
+  by: string;
+  at: Date;
+}
+
+export const EXPORTS: DataExport[] = [
+  { id: "x1", name: "Audit log, September", format: "CSV", size: "18 MB", by: "Mithilesh", at: at(10, 1, 9, 10) },
+  { id: "x2", name: "Northwind documents", format: "ZIP", size: "1.2 GB", by: "Krishna", at: at(9, 28, 15, 0) },
+  { id: "x3", name: "Filings register FY 2025-26", format: "XLSX", size: "2 MB", by: "Farhath", at: at(9, 20, 11, 30) },
+  { id: "x4", name: "Full database dump", format: "SQL", size: "3.9 GB", by: "Farhath", at: at(9, 1, 2, 0) },
 ];
 
 export interface Bucket {
@@ -813,7 +1312,31 @@ export const BUCKETS: Bucket[] = [
 
 // ---------- Audit ----------
 
-export type AuditAction = "Deploy" | "Roll back" | "Rotate key" | "Revoke key" | "Change setting" | "Run job" | "Reconnect" | "Disconnect" | "Test" | "Sign in" | "Retry message";
+export type AuditAction =
+  | "Deploy"
+  | "Roll back"
+  | "Rotate key"
+  | "Revoke key"
+  | "Set key"
+  | "Purge"
+  | "Change setting"
+  | "Change flag"
+  | "Run job"
+  | "Retry job"
+  | "Run migrations"
+  | "Reconnect"
+  | "Connect"
+  | "Disconnect"
+  | "Test"
+  | "Send test"
+  | "Verify domain"
+  | "Edit route"
+  | "Sign in"
+  | "Sign out"
+  | "Retry message"
+  | "Restore"
+  | "Export"
+  | "Submit template";
 export type AuditResult = "Done" | "Failed";
 export const RESULT_TONE: Record<AuditResult, ChipTone> = { Done: "ok", Failed: "bad" };
 
@@ -824,15 +1347,20 @@ export interface AuditEntry {
   action: AuditAction;
   target: string;
   result: AuditResult;
+  before?: string;
+  after?: string;
 }
 
 export const AUDIT: AuditEntry[] = [
-  { id: "a1", at: at(10, 6, 11, 20), actor: "Farhath", action: "Deploy", target: "Staging 2026.10.06-rc1", result: "Done" },
+  { id: "a1", at: at(10, 6, 11, 20), actor: "Farhath", action: "Deploy", target: "Staging 2026.10.06-rc1", result: "Done", before: "2026.10.05", after: "2026.10.06-rc1" },
   { id: "a2", at: at(10, 6, 9, 12), actor: "Farhath", action: "Sign in", target: "Developer console", result: "Done" },
   { id: "a3", at: at(10, 5, 18, 40), actor: "Mithilesh", action: "Sign in", target: "Developer console", result: "Done" },
-  { id: "a4", at: at(10, 5, 16, 40), actor: "Farhath", action: "Deploy", target: "Production 2026.10.05", result: "Done" },
+  { id: "a4", at: at(10, 5, 16, 40), actor: "Farhath", action: "Deploy", target: "Production 2026.10.05", result: "Done", before: "2026.10.02", after: "2026.10.05" },
+  { id: "a4b", at: at(10, 4, 11, 20), actor: "Farhath", action: "Submit template", target: "WhatsApp template deadline_1d for approval", result: "Done", before: "-", after: "Pending" },
   { id: "a5", at: at(10, 5, 16, 36), actor: "Deploy bot", action: "Deploy", target: "Staging 2026.10.05", result: "Done" },
-  { id: "a6", at: at(10, 4, 10, 2), actor: "Farhath", action: "Change setting", target: "Mask secrets in logs: on", result: "Done" },
+  { id: "a6", at: at(10, 4, 10, 2), actor: "Farhath", action: "Change setting", target: "Mask secrets in logs", result: "Done", before: "Off", after: "On" },
+  { id: "a6b", at: at(10, 3, 10, 12), actor: "Farhath", action: "Change flag", target: "Super admin portal", result: "Done", before: "Off", after: "On" },
+  { id: "a6c", at: at(10, 2, 16, 0), actor: "Farhath", action: "Change setting", target: "Monthly report sender", result: "Done", before: "updates@sbcllp.in", after: "reports@sbcllp.in" },
   { id: "a7", at: at(10, 3, 12, 30), actor: "Farhath", action: "Test", target: "Accounting sync", result: "Failed" },
   { id: "a8", at: at(10, 3, 9, 15), actor: "Farhath", action: "Rotate key", target: "ANTHROPIC_API_KEY", result: "Done" },
   { id: "a9", at: at(10, 2, 18, 15), actor: "Farhath", action: "Deploy", target: "Production 2026.10.02", result: "Done" },
@@ -841,8 +1369,8 @@ export const AUDIT: AuditEntry[] = [
   { id: "a12", at: at(10, 1, 8, 20), actor: "Farhath", action: "Run job", target: "Portal status sync", result: "Done" },
   { id: "a13", at: at(9, 29, 14, 0), actor: "Farhath", action: "Reconnect", target: "Outlook mailbox and calendar", result: "Done" },
   { id: "a14", at: at(9, 28, 16, 0), actor: "Farhath", action: "Deploy", target: "Production 2026.09.28", result: "Done" },
-  { id: "a15", at: at(9, 25, 10, 5), actor: "Farhath", action: "Roll back", target: "Production to 2026.09.23", result: "Done" },
-  { id: "a16", at: at(9, 22, 12, 0), actor: "Mithilesh", action: "Change setting", target: "Admins can read logs: off", result: "Done" },
+  { id: "a15", at: at(9, 25, 10, 5), actor: "Farhath", action: "Roll back", target: "Production to 2026.09.23", result: "Done", before: "2026.09.24", after: "2026.09.23" },
+  { id: "a16", at: at(9, 22, 12, 0), actor: "Mithilesh", action: "Change setting", target: "Admins can read logs", result: "Done", before: "On", after: "Off" },
   { id: "a17", at: at(9, 18, 11, 40), actor: "Farhath", action: "Revoke key", target: "Old partner key vk_live_pd19", result: "Done" },
   { id: "a18", at: at(9, 10, 15, 0), actor: "Farhath", action: "Rotate key", target: "RDS master password", result: "Done" },
 ];

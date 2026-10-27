@@ -25,24 +25,24 @@ Rows are in ASD-STE100. Do not port a superseded change.
 | K-10 | Main buttons | Use one main button per region in navy. | 29, 71, 145, 166 | `src/components/ui/button-variants.ts` | Superseded by C-0006 (navy #15263B) |
 | K-11 | Table heads | Use sentence case heads with a hairline under them. | 22, 129 | `src/components/dash/DashDataTable.tsx` | Superseded by C-0007 (e-Filing grid) |
 | K-12 | Sentence case | Rewrite uppercase labels and headings in sentence case. Keep acronyms. | 146 | All views; `src/components/client-portal/css-src/*` | Ported (a3dadc7) |
-| K-13 | Dates | Write "14 Sep", not "14 Sept". Use 24-hour times or "12:31". Do not use "in N days" for statutory dates. | 49, 50 | `src/lib/utils.ts` date helpers | Port |
+| K-13 | Dates | Write "14 Sep", not "14 Sept". Use 24-hour times or "12:31". Do not use "in N days" for statutory dates. | 49, 50 | `src/lib/utils.ts` date helpers | Ported (4510951) |
 | K-14 | Shell | Use one top bar style, one search ("Ctrl K"), one theme icon, one bell style, one active rail. | 11, 12, 13, 15, 16, 150 | `src/components/shell/TopBar.tsx`, `src/components/client-portal/TopBar.tsx` | Ported (3f9957d, aec7daf) |
 | K-15 | Sidebar order | Sort sidebars by priority. Client order follows incorporation state. | 151 | `src/components/client-portal/Sidebar.tsx`, `src/components/shell/RoleSidebar.tsx`, `intern-sidebar.ts` | Ported (14fdcd6) |
 | K-16 | Settings into Profile | Open Profile from the account row. Remove Settings from the lead and manager sidebar. | 134 | `src/views/settings/AccountSettings.tsx`, `src/components/shell/RoleSidebar.tsx` | Ported (4c749d5) |
 | K-17 | Word "Nudge" | Replace "Nudge" with "Remind" or "Send reminder" on every screen. | 125 | All staff views, `src/lib/notify/*` copy | Port |
-| K-18 | Money | Remove all money from client and super admin dashboards. | 118, 126 | `src/components/client-portal/pages/home/*`, `src/views/super/*` | Port |
-| K-19 | Client home order | Put the timeline and Steps first. Use two independent columns. | 72, 123 | `src/components/client-portal/pages/home/HomePage.tsx` | Port |
+| K-18 | Money | Remove all money from client and super admin dashboards. | 118, 126 | `src/components/client-portal/pages/home/*`, `src/views/super/*` | Ported (no change: no money on these dashboards, checked 27 Oct) |
+| K-19 | Client home order | Put the timeline and Steps first. Use two independent columns. | 72, 123 | `src/components/client-portal/pages/home/HomePage.tsx` | Ported (3adfe50) |
 | K-20 | Next action strip | Show one next action under the greeting. | 118 | `src/components/client-portal/pages/home/HomePage.tsx` | Superseded by C-0012 (remove it) |
-| K-21 | Steps card | Show flat phase rows with a 6 px bar and a 108 px count chip. | 122, 159 | `src/components/client-portal/pages/home/CardsB.tsx` `StepsCard` | Port |
-| K-22 | Attention lists | Use full-width rows, 44 px date tiles and a red urgent row. | 32, 163 | `CardsA.tsx` `AlertsCard`, `CardsB.tsx` `NextCard` | Port (full red row per C-0013) |
-| K-23 | What SBC is doing | Use bars in category colours. Remove info icons and link buttons. | 160 | `CardsA.tsx` `SbcCard` | Port |
-| K-24 | Compliance status | Show the total and one stacked bar. | 149, 170 | `CardsB.tsx` `CompCard` | Port |
-| K-25 | Timeline | Draw a Gantt with 46 px rows, status circles, 16 px bars and an orange COI mark. | 30, 169, 172 | `CardsB.tsx` `TimelineCard`, `pages/incorporation/Landing.tsx` | Port (one clock circle per C-0024) |
-| K-26 | Incorporation COI card | Show the countdown in white, a soft chip and one bar split by phase. Remove the ring. | 165 | `src/components/client-portal/pages/incorporation/Landing.tsx` | Port |
+| K-21 | Steps card | Show flat phase rows with a 6 px bar and a 108 px count chip. | 122, 159 | `src/components/client-portal/pages/home/CardsB.tsx` `StepsCard` | Ported (e7d04a0) |
+| K-22 | Attention lists | Use full-width rows, 44 px date tiles and a red urgent row. | 32, 163 | `CardsA.tsx` `AlertsCard`, `CardsB.tsx` `NextCard` | Ported (7850f46) |
+| K-23 | What SBC is doing | Use bars in category colours. Remove info icons and link buttons. | 160 | `CardsA.tsx` `SbcCard` | Ported (462f5d9) |
+| K-24 | Compliance status | Show the total and one stacked bar. | 149, 170 | `CardsB.tsx` `CompCard` | Ported (94d7d0d) |
+| K-25 | Timeline | Draw a Gantt with 46 px rows, status circles, 16 px bars and an orange COI mark. | 30, 169, 172 | `CardsB.tsx` `TimelineCard`, `pages/incorporation/Landing.tsx` | Ported (e87b96e) |
+| K-26 | Incorporation COI card | Show the countdown in white, a soft chip and one bar split by phase. Remove the ring. | 165 | `src/components/client-portal/pages/incorporation/Landing.tsx` | Ported (3a61ee9) |
 | K-27 | Three phases | Count 25 steps in three phases. Registrations leave incorporation. | 139, 175 | `src/data/checklist.ts` (do not edit without a spec), `src/views/intern/Clients.tsx`, `Landing.tsx` | Port after a spec |
 | K-28 | Registrations | Add a Registrations page and detail for client and staff. | 130, 131 | new: `src/components/client-portal/pages/registrations/*`, `app/app/*/registrations/*` | Superseded by C-0022 (layout) |
 | K-29 | Obligations | Add an Obligations page and detail. | 132 | new: `src/components/client-portal/pages/compliances/Obligations*.tsx` | Superseded by C-0018 to C-0021 |
-| K-30 | Compliance calendar | Use a hairline grid, tinted day badges and today in soft blue. | 162 | `src/components/client-portal/pages/compliances/CalendarPage.tsx`, `src/views/compliances/ComplianceCalendarView.tsx` | Port |
+| K-30 | Compliance calendar | Use a hairline grid, tinted day badges and today in soft blue. | 162 | `src/components/client-portal/pages/compliances/CalendarPage.tsx`, `src/views/compliances/ComplianceCalendarView.tsx` | Ported (97251ea) |
 | K-31 | Lead Today cuts | Show five blocks: greeting, practice strip, Action queue with Inbox, Phase progress, overdue filings. | 108, 111, 112, 127 | `src/views/intern/Today.tsx`, `src/components/intern/*` | Port |
 | K-32 | Action queue cells | Leave empty cells blank. Show counts as soft chips. | 173 | `src/components/intern/LeadActionQueue.tsx` | Port |
 | K-33 | Phase progress | Show a 6 px bar per phase with the count under it. | 24, 173 | `src/components/intern/LeadPhaseProgress.tsx` | Port |
@@ -54,10 +54,10 @@ Rows are in ASD-STE100. Do not port a superseded change.
 | K-39 | Staff Vault | Use the client Documents explorer with a client dropdown first. | 135 | `src/views/vault/DocumentVaultPage.tsx`, `src/views/admin/Vault.tsx` | Port (smooth per C-0025) |
 | K-40 | Email signatures | Show "Signature from Outlook · server-side signature on". | 138 | `src/views/staff/ComposeMail.tsx` | Port |
 | K-41 | Dark mode | Use slate surfaces and dark twins of each colour. | 167 | `app/globals.css`, `src/components/client-portal/css-src/00-tokens.css` | Ported (a8c2cb7) |
-| K-42 | Phone home | Show the navy band, then the white number strip. Remove the ring. | 168 | `src/components/client-portal/pages/home/MobileHome.tsx`, `MobileParts.tsx` | Port |
+| K-42 | Phone home | Show the navy band, then the white number strip. Remove the ring. | 168 | `src/components/client-portal/pages/home/MobileHome.tsx`, `MobileParts.tsx` | Ported (8534382) |
 | K-43 | Team page buttons | Make WhatsApp buttons soft green. | 48, 176 | `src/components/client-portal/pages/team/TeamPage.tsx` | Superseded by C-0027 (Team moves into Profile) |
 | K-44 | Developer console | Use the lcc Settings shape with full connection detail. | 98-106, 119, 153-155 | new: `app/app/dev/*` | Superseded by C-0037 to C-0039 |
 | K-45 | Super admin portal | Add Overview, Clients, Practice areas, Team, Risks, Growth, Reports, Firm settings. | 87-97, 110, 117 | `src/views/super/*`, new routes under `app/app/super/*` | Port (style per C-0035, C-0036) |
-| K-46 | Library shelf | Show the SBC SOPs as a book shelf. | 137 | `src/components/client-portal/pages/documents/library/LibraryPage.tsx` | Port |
-| K-47 | Ask VCFO prompt home | Open Ask VCFO on a prompt home with four quick-start chips. | 136 | `src/components/ask/AskPanel.tsx` | Port (no mascot per C-0003) |
+| K-46 | Library shelf | Show the SBC SOPs as a book shelf. | 137 | `src/components/client-portal/pages/documents/library/LibraryPage.tsx` | Ported (0750e91; motion only, SOP data not ported) |
+| K-47 | Ask VCFO prompt home | Open Ask VCFO on a prompt home with four quick-start chips. | 136 | `src/components/ask/AskPanel.tsx` | Ported (ef362ff) |
 | K-48 | Landing page | Spotlight and beams on the hero; peaks on sign-in. | 140 | `src/components/marketing/*` | Prototype only |

@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { TODAY } from "@/lib/dates";
 import { AUDIT, type AuditAction, type AuditEntry, type AuditResult } from "@/data/dev";
 import { Button } from "@/components/ui/Button";
+import { Switch } from "@/components/ui/Input";
 
 // ---------- Audit log for this session (R-40: risky changes and settings are logged) ----------
 
@@ -24,13 +25,19 @@ function read(): AuditEntry[] {
   return cache;
 }
 
-/** Write one row to the audit log. The sample day is TODAY; the clock time is now. */
-export function logAudit(action: AuditAction, target: string, result: AuditResult = "Done") {
+/** The sample day (TODAY) at the current clock time. */
+export function nowToday() {
   const now = new Date();
   const t = new Date(TODAY);
   t.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+  return t;
+}
+
+/** Write one row to the audit log. The sample day is TODAY; the clock time is now. */
+export function logAudit(action: AuditAction, target: string, result: AuditResult = "Done", before?: string, after?: string) {
+  const t = nowToday();
   seq += 1;
-  const entry: AuditEntry = { id: `s${now.getTime()}-${seq}`, at: t, actor: "Farhath", action, target, result };
+  const entry: AuditEntry = { id: `s${t.getTime()}-${seq}`, at: t, actor: "Farhath", action, target, result, before, after };
   cache = [entry, ...read()];
   try {
     sessionStorage.setItem(KEY, JSON.stringify(cache));
@@ -53,36 +60,129 @@ export function useAudit(): AuditEntry[] {
   return React.useMemo(() => [...session, ...AUDIT], [session]);
 }
 
-// ---------- Pick a grid row in place (R-36) ----------
+// ---------- Console settings shared by every page (R-40: a plain setting saves as it changes) ----------
 
-/** Class that marks a grid row with its id, so a click on the row can find it. */
-export const rowTag = (id: string) => `dgk-${id}`;
+const SKEY = "vcfo.dev.settings";
+type Settings = Record<string, boolean | number>;
+const NONE: Settings = {};
+let scache: Settings | null = null;
+const ssubs = new Set<() => void>();
 
-/** Picked row: soft blue cells over the zebra fill. */
-export const pickedRow = "[&>td]:!bg-accent-soft";
+function readSettings(): Settings {
+  if (scache) return scache;
+  try {
+    scache = JSON.parse(sessionStorage.getItem(SKEY) ?? "{}") as Settings;
+  } catch {
+    scache = {};
+  }
+  return scache;
+}
 
-/** Wrap a DataGrid: a click anywhere on a row (not on its buttons) picks the row. */
-export function RowPicker({ onPick, children }: { onPick: (id: string) => void; children: React.ReactNode }) {
+function subscribeSettings(cb: () => void) {
+  ssubs.add(cb);
+  return () => {
+    ssubs.delete(cb);
+  };
+}
+
+function writeSetting(key: string, v: boolean | number) {
+  scache = { ...readSettings(), [key]: v };
+  try {
+    sessionStorage.setItem(SKEY, JSON.stringify(scache));
+  } catch {
+    // Storage blocked: the value stays for this page view.
+  }
+  ssubs.forEach((f) => f());
+}
+
+/** A switch value shared across pages: "wa-fallback" on Connections and Access is one value. */
+export function useSwitch(key: string, initial: boolean, label: string): [boolean, (v: boolean) => void] {
+  const all = React.useSyncExternalStore(subscribeSettings, readSettings, () => NONE);
+  const on = key in all ? Boolean(all[key]) : initial;
+  const set = (v: boolean) => {
+    writeSetting(key, v);
+    logAudit("Change setting", label, "Done", on ? "On" : "Off", v ? "On" : "Off");
+  };
+  return [on, set];
+}
+
+/** A segmented choice shared across pages. Returns the picked index. */
+export function useChoice(key: string, opts: string[], initial: number, label: string): [number, (i: number) => void] {
+  const all = React.useSyncExternalStore(subscribeSettings, readSettings, () => NONE);
+  const cur = key in all ? Number(all[key]) : initial;
+  const set = (i: number) => {
+    if (i === cur) return;
+    writeSetting(key, i);
+    logAudit("Change setting", label, "Done", opts[cur], opts[i]);
+  };
+  return [cur, set];
+}
+
+/** Segmented control on a quiet track: the Tabs look (R-11). */
+export function Segmented({ opts, value, onChange, label }: { opts: string[]; value: number; onChange: (i: number) => void; label: string }) {
   return (
-    <div
-      className="min-w-0"
-      onClick={(e) => {
-        const t = e.target as HTMLElement;
-        if (t.closest("button, a, input, select")) return;
-        const tr = t.closest("tr");
-        const m = tr ? /(?:^|\s)dgk-(\S+)/.exec(tr.className) : null;
-        if (m) onPick(m[1]);
-      }}
-    >
-      {children}
+    <div role="radiogroup" aria-label={label} className="inline-flex max-w-full flex-none items-center gap-0.5 overflow-x-auto rounded-md border border-line bg-raised p-0.5 [scrollbar-width:none]">
+      {opts.map((o, i) => (
+        <button
+          key={o}
+          type="button"
+          role="radio"
+          aria-checked={i === value}
+          onClick={() => onChange(i)}
+          className={`inline-flex h-[26px] items-center whitespace-nowrap rounded-sm px-2.5 text-12.5 font-semibold transition-colors ${i === value ? "bg-btn text-white" : "text-muted hover:text-ink"}`}
+        >
+          {o}
+        </button>
+      ))}
     </div>
   );
 }
 
+/** Settings row: label and hint on the left, value and control on the right. Stacks on phones. */
+export function SettingRow({ label, hint, children, className }: { label: string; hint?: string; children?: React.ReactNode; className?: string }) {
+  return (
+    <div className={`grid gap-2 border-t border-line-soft px-4 py-3 text-13.5 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] sm:items-center sm:gap-4 md:px-5 ${className ?? ""}`}>
+      <div className="min-w-0">
+        <div className="font-semibold">{label}</div>
+        {hint && <div className="text-12.5 text-muted">{hint}</div>}
+      </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">{children}</div>
+    </div>
+  );
+}
+
+/** A switch row bound to a shared setting. */
+export function SwitchRow({ k, initial, label, hint }: { k: string; initial: boolean; label: string; hint?: string }) {
+  const [on, set] = useSwitch(k, initial, label);
+  return (
+    <SettingRow label={label} hint={hint}>
+      <Switch on={on} onChange={set} label={label} />
+    </SettingRow>
+  );
+}
+
+/** A segmented row bound to a shared setting. */
+export function ChoiceRow({ k, opts, initial, label, hint }: { k: string; opts: string[]; initial: number; label: string; hint?: string }) {
+  const [cur, set] = useChoice(k, opts, initial, label);
+  return (
+    <SettingRow label={label} hint={hint}>
+      <Segmented opts={opts} value={cur} onChange={set} label={label} />
+    </SettingRow>
+  );
+}
+
+// ---------- Pick a grid row in place (R-36) ----------
+
 /** First cell of a pickable row: a plain text button, so the keyboard can pick the row too. */
 export function PickCell({ on, onPick, children }: { on: boolean; onPick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onPick} aria-expanded={on} className="text-left font-semibold text-ink hover:underline">
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onPick();
+      }}
+      aria-expanded={on} className="text-left font-semibold text-ink hover:underline">
       {children}
     </button>
   );

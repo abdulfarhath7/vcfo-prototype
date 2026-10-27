@@ -31,7 +31,7 @@ export function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boo
       aria-checked={on}
       aria-label={label}
       onClick={() => onChange(!on)}
-      className={cn("relative inline-flex h-5 w-9 flex-none items-center rounded-full transition-colors", on ? "bg-navy" : "bg-line")}
+      className={cn("relative inline-flex h-5 w-9 flex-none items-center rounded-full transition-colors", on ? "bg-btn" : "bg-line")}
     >
       <span className={cn("absolute h-4 w-4 rounded-full bg-white transition-transform", on ? "translate-x-[18px]" : "translate-x-0.5")} />
     </button>

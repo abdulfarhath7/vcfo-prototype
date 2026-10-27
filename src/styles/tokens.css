@@ -41,6 +41,9 @@
   --idle-soft: #eceff4;
   --brand: #e9792f;
   --scrim: rgba(22, 33, 47, 0.4);
+  /* main button and picked tab (R-11, R-12): sidebar navy in light mode */
+  --btn: #15263b;
+  --btn-hover: #1b3049;
 
   /* sizes */
   --r-card: 10px;
@@ -69,6 +72,9 @@
   --faint: #6f7c8d;
 
   --navy-tint: #1f2935;
+  /* navy vanishes on the dark surface; lift the button one step */
+  --btn: #2b4766;
+  --btn-hover: #335378;
 
   --accent: #6fa3e0;
   --accent-soft: color-mix(in srgb, #6fa3e0 16%, var(--surface));

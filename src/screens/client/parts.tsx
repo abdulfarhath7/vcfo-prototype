@@ -1,41 +1,21 @@
 "use client";
 import * as React from "react";
 import { Download, Upload } from "lucide-react";
-import { TODAY, fmt } from "@/lib/dates";
-import { PHASES, MCA_REVIEW, COI_EXPECTED, TIMELINE, TIMELINE_TICKS, stepsOf, doneCount, stepTone, stepHref, phaseHref } from "@/data/incorporation";
+import { fmt } from "@/lib/dates";
+import { PHASES, stepsOf, doneCount, stepTone, stepHref, phaseHref } from "@/data/incorporation";
 import { DOC_STATUS_TONE, type ItemDoc } from "@/data/registrations";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { FileBadge } from "@/components/ui/FileBadge";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
-import { GanttTimeline, type GanttRow } from "@/components/cards/GanttTimeline";
 import { PhaseRows, type Phase } from "@/components/cards/PhaseRows";
 import { KeyValue, type KV } from "@/components/cards/KeyValue";
 import { cn } from "@/lib/cn";
+import { TimelineCardFull } from "./inc-timeline";
 
-/** Same rows as the client home timeline. */
-export function IncTimelineCard() {
-  const rows: GanttRow[] = [
-    { id: "p1", name: PHASES[0].short, status: "done", bars: [{ from: PHASES[0].start, to: PHASES[0].end, kind: "done" }], count: `${doneCount(1)}/${stepsOf(1).length}`, note: { text: `Done ${fmt(PHASES[0].end)}` } },
-    {
-      id: "p2",
-      name: PHASES[1].short,
-      status: "current",
-      bars: [
-        { from: PHASES[1].start, to: TODAY, kind: "cur" },
-        { from: TODAY, to: PHASES[1].end, kind: "rest" },
-      ],
-      count: `${doneCount(2)}/${stepsOf(2).length}`,
-      note: { text: "22%" },
-    },
-    { id: "mca", name: "MCA review", status: "planned", bars: [{ from: MCA_REVIEW.start, to: MCA_REVIEW.end, kind: "plan" }], milestone: COI_EXPECTED, note: { text: `COI ${fmt(COI_EXPECTED)}` } },
-    { id: "p3", name: PHASES[2].short, status: "planned", bars: [{ from: PHASES[2].start, to: PHASES[2].end, kind: "plan" }], count: `${doneCount(3)}/${stepsOf(3).length}` },
-  ];
-  return (
-    <SectionCard title="Timeline" flush right={<Button size="sm">Edit</Button>}>
-      <GanttTimeline start={TIMELINE.start} end={TIMELINE.end} ticks={TIMELINE_TICKS} rows={rows} />
-    </SectionCard>
-  );
+/** Timeline card with the editor, the change request and the row drill. Built in inc-timeline.tsx. */
+export function IncTimelineCard({ after, portal, className }: { after?: boolean; portal?: string; className?: string } = {}) {
+  return <TimelineCardFull after={after} portal={portal} className={className} />;
 }
 
 /** All three phases, each expands to its step table. */
