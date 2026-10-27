@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Knowledge bank</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc}
+.L *{box-sizing:border-box}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.04),0 6px 18px -10px rgba(15,42,74,.18);min-width:0}
+.chip{display:inline-flex;align-items:center;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.sg{font-family:sans-serif;letter-spacing:-.03em}
+.mono{font-family:'IBM Plex Mono',monospace}
+.mut{color:#667180}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 12px;border-radius:6px;font:600 12.5px Public Sans,sans-serif;border:1px solid #d0d5dd;background:#fff;color:#15263b;cursor:pointer;white-space:nowrap}
+.btnp{background:#15263b;border-color:#15263b;color:#fff}
+.shelf{display:flex;align-items:flex-end;gap:5px;padding:14px 14px 0;border-bottom:8px solid #c7b38a;box-shadow:0 6px 0 -2px #a8946a;min-height:120px}
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+@media (max-width:1100px){.lay{grid-template-columns:minmax(0,1fr)}}
+.f label{display:block;font-size:12px;font-weight:600;margin-bottom:5px}
+.f input,.f textarea{width:100%;border:1px solid #d0d5dd;border-radius:6px;padding:8px 10px;font:inherit;font-size:13px}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="docs" sub="Knowledge bank" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Docs › Knowledge bank" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1360px; width: 100%; margin: 0 auto; padding: 20px clamp(12px, 2vw, 28px) 60px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+        <nav aria-label="Folder path" class="mut" style="font-size: 12.5px">All › <b style="color: #15263b">GST</b></nav>
+        <input aria-label="Search files" placeholder="Search files by name…" style="margin-left: auto; width: 260px; height: 34px; border: 1px solid #d0d5dd; border-radius: 8px; padding: 0 12px; font: inherit">
+        <button type="button" class="btn">New folder</button><button type="button" class="btn btnp">Upload document</button>
+      </div>
+      <div class="lay">
+        <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0">
+          <section class="card" style="padding-bottom: 14px; overflow: hidden">
+            <div style="padding: 14px 16px 0; font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase">Shelves</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 24px; padding: 0 16px">
+              <sc-for list="{{shelves}}" as="s" hint-placeholder-count="4">
+                <a href="#" style="color: #15263b; display: block"><div class="shelf"><sc-for list="{{s.books}}" as="b" hint-placeholder-count="6"><span style="{{b}}"></span></sc-for></div><div style="display: flex; justify-content: space-between; padding: 8px 2px 0"><b>{{s.n}}</b><span class="mut" style="font-size: 12px">{{s.k}} docs</span></div></a>
+              </sc-for>
+            </div>
+          </section>
+          <section class="card" style="overflow: hidden">
+            <div style="padding: 12px 16px; font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase">GST · 6 documents</div>
+            <sc-for list="{{files}}" as="f" hint-placeholder-count="6"><div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid #e3e6eb"><span style="width: 30px; height: 36px; border-radius:6px; background: #efeafd; color: #6d4bd1; display: grid; place-items: center; font: 700 8.5px 'IBM Plex Mono', monospace">{{f.ext}}</span><span style="flex: 1; min-width: 0"><b style="display: block; font-size: 12.5px">{{f.t}}</b><span class="mut" style="font-size: 11.5px">{{f.d}}</span></span><span class="mono mut" style="font-size: 11px">{{f.when}}</span></div></sc-for>
+          </section>
+        </div>
+        <section class="card f" style="padding: 16px; display: flex; flex-direction: column; gap: 12px">
+          <b class="sg" style="font-size: 16px">Upload to library</b>
+          <div><label for="kt">Title</label><input id="kt" value="GST registration · document checklist"></div>
+          <div><label for="kf">File</label><div id="kf" style="height: 70px; border: 1.5px dashed #c3ccd8; border-radius: 8px; display: grid; place-items: center; color: #667180; background: #eef0f3; font-size: 12.5px">Drop a file or <a href="#">browse</a></div></div>
+          <div><label for="kd">When to use this document…</label><textarea id="kd" rows="3">Send to the client at Reg-1. Covers PAN, address proof and bank letter.</textarea></div>
+          <div style="display: flex; gap: 8px; justify-content: flex-end"><button type="button" class="btn">Cancel</button><button type="button" class="btn btnp">Upload to library</button></div>
+          <div class="mut" style="font-size: 11.5px">Only managers can delete files.</div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const __m = (this.state && this.state.mode) || 'mixed';
+    const __set = (m) => this.setState({ mode: m });
+    const pal = ['#6d4bd1', '#2563a8', '#15263b', '#1e7f55', '#e9792f', '#8a5a06', '#be3434', '#5b21b6'];
+    const shelf = (n, k, seed) => ({ n, k, books: Array.from({ length: Math.min(k, 9) }, (_, i) => 'display:block;border-radius:2px 2px 0 0;width:' + (14 + ((i * 7 + seed) % 3) * 4) + 'px;height:' + (70 + ((i * 13 + seed) % 5) * 9) + 'px;background:' + pal[(i + seed) % pal.length] + ';box-shadow:inset -3px 0 0 rgba(0,0,0,.12),inset 0 8px 0 rgba(255,255,255,.12)') });
+    const shelves = [shelf('Incorporation', 14, 1), shelf('GST', 6, 3), shelf('Income tax & TDS', 9, 5), shelf('Payroll', 5, 2), shelf('FEMA', 4, 4), shelf('Templates', 11, 6)];
+    const files = [['GST registration · document checklist', 'Send at Reg-1', 'PDF', '12 Oct'], ['GSTR-1 working template', 'Monthly return prep', 'XLSX', '3 Oct'], ['LUT filing guide', 'Exporters only', 'PDF', '28 Sep'], ['E-invoice threshold note', 'Over ₹5 cr turnover', 'PDF', '20 Sep'], ['GST portal · common errors', 'Internal', 'DOCX', '11 Sep'], ['Input credit reconciliation', 'Quarterly', 'XLSX', '2 Sep']].map(([t, d, ext, when]) => ({ t, d, ext, when }));
+    return { mode: __m, setMode: __set,  shelves, files };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Manager · Today (after)</title>
+<script src="./support.js"></script>
+<script src="./data.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}a:hover{color:#15263b}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+.L svg{flex:none}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.04),0 6px 18px -10px rgba(15,42,74,.18);min-width:0;position:relative}
+.ch{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;flex-wrap:wrap}
+.st{margin:0;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#15263b}
+.tile{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none;background:#eef0f3!important;color:#15263b!important}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;line-height:16px;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.mono{font-family:'IBM Plex Mono',monospace}
+.sg{font-family:sans-serif;letter-spacing:-.03em}
+.mut{color:#667180}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:30px;padding:0 11px;border-radius:6px;font:600 12px Public Sans,sans-serif;border:1px solid #d0d5dd;background:#fff;color:#15263b;cursor:pointer;white-space:nowrap}
+.btnp{background:#15263b;border-color:#15263b;color:#fff}
+.info{width:18px;height:18px;border:0;background:none;color:#98a1ae;display:inline-grid;place-items:center;padding:0;cursor:pointer}
+.new{font:600 10px/14px Public Sans,sans-serif;color:#667180;background:#eef0f3;border:1px solid #e3e6eb;border-radius:6px;padding:1px 6px;letter-spacing:0}
+.tag{font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;border-radius:6px;padding:1px 5px}
+.tag.inc{color:#667180;background:#eef0f3}
+.tag.cmp{color:#667180;background:#eef0f3}
+.lnk{font-size:12px;font-weight:700;color:#2563a8}
+.row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-top:1px solid #e3e6eb;min-width:0}
+.g{width:18px;height:18px;border-radius:99px;display:inline-grid;place-items:center;flex:none;color:#fff}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,340px);gap:16px;align-items:start}
+@media (max-width:1100px){.cols{grid-template-columns:minmax(0,1fr)}}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(108px,1fr));gap:8px;padding:0 16px 16px;overflow-x:auto}
+.nd{height:22px;min-width:22px;border-radius:12px;display:grid;place-items:center;font-size:10px;font-weight:800;padding:0 5px;flex:none}
+.ln{flex:1;height:0;margin:0 3px;min-width:8px}
+.tbl{width:100%;border-collapse:collapse;min-width:760px}
+.tbl th{text-align:left;padding:8px 12px;font-size:10.5px;font-weight:800;color:#98a1ae;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid #e3e6eb;background:#eef0f3;white-space:nowrap}
+.tbl td{padding:9px 12px;border-top:1px solid #e3e6eb;vertical-align:middle;white-space:nowrap}
+.tbl.hl{min-width:0;table-layout:fixed}.tbl.hl th:nth-child(1){width:27%}.tbl.hl th:nth-child(2){width:15%}.tbl.hl th:nth-child(3){width:34%}.tbl.hl th:nth-child(4),.tbl.hl th:nth-child(5){width:12%}
+.tbl.hl th,.tbl.hl td{padding-left:10px;padding-right:10px;overflow:hidden;text-overflow:ellipsis}
+.tbl.hl td .chip{min-width:0;width:100%;justify-content:center;box-sizing:border-box}
+.tbl.hl td b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.tk{width:9px;height:12px;border-radius:2px;display:inline-block}
+.gr{display:grid;grid-template-columns:190px repeat(10,minmax(36px,1fr));align-items:center}
+.fg{width:100%;border-collapse:collapse;min-width:700px}.fg thead th{background:#eef0f3;border-bottom:2px solid #15263b;padding:8px 3px}.fg thead th:first-child,.fg tbody td:first-child{padding-left:16px}.fg thead th:last-child,.fg tbody td:last-child{padding-right:16px}.fg tbody td{border-top:1px solid #e3e6eb;padding:6px 3px}
+.fg th{font:600 10px 'IBM Plex Mono',monospace;color:#98a1ae;letter-spacing:.05em;padding:4px 2px;text-align:center}
+.fg th:first-child{text-align:left}
+.fg td{text-align:center;font-size:12px;font-weight:600}.fg tbody td>span.fc{display:grid;place-items:center;height:28px;border-radius:6px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #e3e6eb;border-left:1px solid #e3e6eb}
+.cal>span{min-height:46px;border-right:1px solid #e3e6eb;border-bottom:1px solid #e3e6eb;padding:3px 4px;font-size:10.5px;display:flex;flex-direction:column;gap:2px}
+.empty{display:flex;gap:10px;align-items:center;padding:12px 16px;border-top:1px solid #e3e6eb;font-size:12px}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="today" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1360px; width: 100%; margin: 0 auto; padding: 20px clamp(12px, 2vw, 28px) 110px; display: flex; flex-direction: column; gap: 16px">
+
+      <!-- 1 · shared · greeting + KPIs + scope switch -->
+      <section data-card="greeting" style="position: relative; border-radius: 10px; padding: 16px 20px 0; background: linear-gradient(115deg, #15263b 0%, #1b3049 60%, #2563a8 100%); color: #fff; overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+          <div style="flex: 1; min-width: 220px">
+            <div class="mono" style="font-size: 11px; letter-spacing: .1em; opacity: .7">FRI 16 OCT 2026 · 12:31 PM</div>
+            <h1 class="sg" style="margin: 2px 0 0; font-size: 24px; line-height: 1.2; font-weight: 600">Good afternoon, Pranay</h1>
+          </div>
+          <div role="group" aria-label="Client scope" style="display: inline-flex; padding: 2px; border-radius: 8px; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18)">
+            <sc-for list="{{scopes}}" as="s" hint-placeholder-count="3"><button type="button" aria-pressed="{{s.pressed}}" onClick="{{s.pick}}" style="{{s.st}}">{{s.label}}<span class="mono" style="font-size: 11px; opacity: .75">{{s.n}}</span></button></sc-for>
+          </div>
+          <span class="new" style="background: rgba(255,255,255,.12); color: #e9eff6; border-color: rgba(255,255,255,.2)">New</span>
+        </div>
+        <div style="height: 1px; background: rgba(255,255,255,.14); margin: 12px 0 0"></div>
+        <div class="gk" style="display: flex; flex-wrap: wrap">
+          <sc-for list="{{kpis}}" as="k" hint-placeholder-count="5">
+            <a href="#" title="{{k.tip}}" style="display: flex; align-items: baseline; gap: 7px; padding: 11px 22px 13px 0; margin-right: 22px; border-right: 1px solid rgba(255,255,255,.14); color: #fff"><b class="sg" style="{{k.st}}">{{k.n}}</b><span style="font-size: 12px; color: #c9d6e8">{{k.label}}</span></a>
+          </sc-for>
+        </div>
+        <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: transparent"></span>
+      </section>
+
+      <!-- practice areas (owner, 23 Oct) -->
+      <dc-import name="Practice" scope="pranay" slim="1" hint-size="100%,56px"></dc-import>
+
+      <div class="cols">
+        <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+
+          <!-- 5 · shared · action queue by company -->
+          <section data-card="queue" class="card">
+            <div class="ch"><span class="tile" style="background: #eef0f3; color: #a35f00"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"></path></svg></span><h2 class="st">Action queue</h2><span class="chip" style="background: #15263b; color: #fff">{{qCount}}</span><sc-if value="{{showInc}}" hint-placeholder-val="{{true}}"><sc-for list="{{stuckTop}}" as="s" hint-placeholder-count="1"><a href="#" data-go="lead-step" class="ds-stuck" title="{{s.c}} · waiting {{s.d}}">{{stuckN}} stuck · {{s.t}}</a></sc-for></sc-if><span style="margin-left: auto"></span><a class="lnk" href="#">View all work →</a></div>
+            <div style="overflow-x: auto"><div class="ds-rows" style="min-width: 640px; margin-bottom: 8px">
+              <div class="ds-head" style="display: grid; grid-template-columns: 200px repeat(5, minmax(64px, 1fr)) 80px; gap: 4px; align-items: center; padding: 4px 16px; padding-top: 8px; padding-bottom: 8px"><span>Company</span><sc-for list="{{hmCols}}" as="c" hint-placeholder-count="5"><span style="text-align: center">{{c.l}}</span></sc-for><span style="text-align: center">Total</span></div>
+              <sc-for list="{{hm}}" as="r" hint-placeholder-count="8"><div class="ds-row" style="display: grid; grid-template-columns: 200px repeat(5, minmax(64px, 1fr)) 80px; gap: 4px; align-items: center; padding: 4px 16px; min-height: 40px"><span style="display: flex; align-items: center; gap: 8px; font-weight: 600; min-width: 0"><span style="{{r.av}}">{{r.k}}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span></span><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><span style="position: relative; display: block" onMouseEnter="{{c.enter}}" onMouseLeave="{{c.leave}}"><button type="button" onClick="{{c.pick}}" onFocus="{{c.enter}}" onBlur="{{c.leave}}" aria-label="{{c.tip}}" style="{{c.st}}; width: 100%">{{c.n}}</button><sc-if value="{{c.hvOn}}" hint-placeholder-val="{{false}}"><div role="tooltip" style="{{c.hvSt}}"><div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #eef0f3"><i style="{{c.hvDot}}"></i><b style="font-size: 12.5px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.hvTitle}}</b><span class="mono mut" style="font-size: 11px; white-space: nowrap">{{c.hvMeta}}</span></div><sc-for list="{{c.hvList}}" as="x" hint-placeholder-count="1"><div style="padding: 9px 12px; border-bottom: 1px solid #e3e6eb; display: flex; flex-direction: column; gap: 4px"><div style="display: flex; align-items: center; gap: 8px"><span class="mono" style="font-size: 11px; color: #667180; width: 48px; flex: none">{{x.code}}</span><b style="font-size: 12.5px; flex: 1; min-width: 0">{{x.t}}</b></div><div style="display: flex; align-items: center; gap: 8px; padding-left: 56px"><span class="mut" style="font-size: 11.5px; flex: 1; min-width: 0">{{x.why}}</span><span class="chip" style="{{x.cs}}">{{x.status}}</span></div><div style="padding-left: 56px; font-size: 11.5px; color: #2563a8; font-weight: 700">Next: {{x.cta}}</div></div></sc-for><div class="mut" style="padding: 8px 12px; font-size: 11px">Click the number to open these tasks</div></div></sc-if></span></sc-for><span style="text-align: center; font-weight: 800">{{r.t}} <span class="mut" style="font-weight: 600; font-size: 11px">{{r.tl}}</span></span></div></sc-for>
+            </div></div>
+            <sc-if value="{{hmOn}}" hint-placeholder-val="{{false}}">
+              <div style="border-top: 1px solid #e3e6eb; background: #eef0f3; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; align-items: center; gap: 8px"><b style="font-size: 12.5px">{{hmTitle}}</b><span class="chip" style="background: #15263b; color: #fff">{{hmN}}</span><button type="button" onClick="{{hmClose}}" aria-label="Close the task list" style="margin-left: auto; border: 0; background: none; color: #667180; cursor: pointer; font-size: 14px">✕</button></div>
+                <sc-for list="{{hmList}}" as="it" hint-placeholder-count="2">
+                  <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr) 120px 130px; gap: 12px; align-items: center; background: #fff; border: 1px solid #e3e6eb; border-radius:8px; padding: 8px 12px">
+                    <span class="mono mut" style="font-size: 11.5px">{{it.code}}</span>
+                    <span style="min-width: 0"><b style="font-weight: 600">{{it.t}}</b> <span class="mut" style="font-size: 11.5px">· {{it.co}} · {{it.why}}</span></span>
+                    <span class="chip" style="{{it.cs}}">{{it.status}}</span>
+                    <button type="button" style="{{it.bs}}">{{it.cta}}</button>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </section>
+
+          <!-- 7 · incorporation only · phase progress -->
+          <sc-if value="{{showInc}}" hint-placeholder-val="{{true}}">
+            <section data-card="phase-progress" class="card" style="padding-bottom: 8px">
+              <div class="ch"><span class="tile" style="background: #e2f3ea; color: #1e7f55"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.5 8.5-5-5L2 17"></path><path d="M16 7h6v6"></path></svg></span><h2 class="st">Phase progress · {{nIncShown}} incorporating</h2><span class="tag inc">INCORPORATION</span><span class="mut" style="margin-left: auto; font-size: 11.5px">Done ✓ · Current blue · Stuck red · Next grey</span></div>
+              <div style="overflow-x: auto"><div style="min-width: 640px">
+                <div class="ds-head" style="display: grid; grid-template-columns: 200px 1fr 80px; gap: 16px; padding: 8px 16px"><span>COMPANY</span><span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; text-align: center"><span>PART A</span><span>PART B</span><span>POST-INC.</span></span><span>DAYS TO COI</span></div>
+                <sc-for list="{{phases}}" as="r" hint-placeholder-count="4">
+                  <div class="ds-row" style="display: grid; grid-template-columns: 200px 1fr 80px; gap: 16px; align-items: center; min-height: 40px; padding: 4px 16px; border-top: 1px solid #e3e6eb">
+                    <span style="display: flex; align-items: center; gap: 8px; min-width: 0"><i style="{{r.dot}}"></i><b style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</b></span>
+                    <span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px"><sc-for list="{{r.grp}}" as="g" hint-placeholder-count="4"><span style="{{g.st}}" title="{{g.tip}}">{{g.l}}</span></sc-for></span>
+                    <span class="sg" style="{{r.dcs}}">{{r.days}}</span>
+                  </div>
+                </sc-for>
+              </div></div>
+            </section>
+          </sc-if>
+
+          <!-- 8 · incorporation only · phase-bar timeline (classic) -->
+
+          <!-- 9 · compliance only · clients × filings -->
+          <sc-if value="{{showCmp}}" hint-placeholder-val="{{true}}">
+            <section data-card="filing-grid" class="card">
+              <div class="ch"><span class="tile" style="background: #e2f3ea; color: #1e7f55"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18M3 15h18M9 3v18M15 3v18"></path></svg></span><h2 class="st">Clients × filings · October</h2><span class="tag cmp">COMPLIANCE</span>
+                <span class="mut" style="margin-left: auto; display: flex; gap: 12px; font-size: 11.5px; flex-wrap: wrap"><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #1e7f55"></i> Filed</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #a35f00"></i> Due soon</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #be3434"></i> Overdue</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #eceff4"></i> Upcoming</span></span></div>
+              <div style="overflow-x: auto; padding: 0 0 10px">
+                <table class="fg">
+                  <thead><tr><th>CLIENT</th><sc-for list="{{fcols}}" as="f" hint-placeholder-count="9"><th>{{f}}</th></sc-for></tr></thead>
+                  <tbody>
+                    <sc-for list="{{grid}}" as="r" hint-placeholder-count="4">
+                      <tr><td style="text-align: left; font-size: 12.5px; font-weight: 600; white-space: nowrap"><i style="{{r.dot}}"></i> {{r.name}}</td><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="9"><td title="{{c.tip}}"><span class="fc" style="{{c.st}}">{{c.t}}</span></td></sc-for></tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </sc-if>
+        </div>
+
+        <!-- right rail -->
+        <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+          <dc-import name="Approvals" mgr="pranay" hint-size="100%,200px"></dc-import>
+          <!-- 12 + 13 · inbox: triage and my to-dos in one card -->
+          <section data-card="inbox" data-inbox="triage" class="card">
+            <div class="ch"><h2 class="st">Inbox</h2><span class="ds-tabs" role="tablist" aria-label="Inbox"><button type="button" role="tab" data-inbox-tab="triage" aria-selected="true">Triage <b>{{triageN}}</b></button><button type="button" role="tab" data-inbox-tab="todos" aria-selected="false">My to-dos <b>{{todoN}}</b></button></span></div>
+            <div data-inbox-pane="triage"><sc-for list="{{triage}}" as="t" hint-placeholder-count="3">
+              <div class="tri-row {{t.nc}}" tabindex="0" style="padding: 8px 16px; border-top: 1px solid #e3e6eb">
+                <div style="display: flex; gap: 8px; align-items: baseline"><i style="{{t.dot}}"></i><span style="flex: 1; font-weight: 600; font-size: 12.5px">{{t.t}}</span><span class="mono mut" style="font-size: 10.5px">{{t.when}}</span></div>
+                <div class="mut" style="font-size: 11.5px; margin: 2px 0 7px 14px">{{t.from}}</div>
+                <div class="tri-act" style="display: flex; gap: 6px; margin-left: 14px"><button type="button" class="btn" style="height: 28px; font-size: 12px">Make task</button><button type="button" class="btn" style="height: 28px; font-size: 12px">Done</button><button type="button" class="btn" style="height: 28px; font-size: 12px">Snooze</button></div>
+              </div>
+            </sc-for></div>
+            <div data-inbox-pane="todos"><div style="display: flex; padding: 0 16px 8px"><span class="seg" style="margin-left: auto; display: inline-flex; padding: 2px; border-radius: 8px; background: #f1f4f8; box-shadow: inset 0 0 0 1px #e3e6eb"><button type="button" style="border: 0; height: 24px; padding: 0 8px; border-radius:6px; font: 600 11px Public Sans; background: #15263b; color: #fff">Open</button><button type="button" style="border: 0; height: 24px; padding: 0 8px; border-radius:6px; font: 600 11px Public Sans; background: none; color: #667180">Done</button><button type="button" style="border: 0; height: 24px; padding: 0 8px; border-radius:6px; font: 600 11px Public Sans; background: none; color: #667180">All</button></span></div><sc-for list="{{todos}}" as="t" hint-placeholder-count="4">
+              <div class="row" style="padding: 8px 16px">
+                <input type="checkbox" aria-label="{{t.t}}" checked="{{t.done}}" style="width: 16px; height: 16px; accent-color: #1e7f55; margin: 0">
+                <i style="{{t.dot}}"></i>
+                <span style="{{t.ts}}">{{t.t}}</span>
+                <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span class="chip" style="background: #e2f3ea; color: #1e7f55; flex: none">✓ Done</span></sc-if>
+                <sc-if value="{{t.pinned}}" hint-placeholder-val="{{false}}"><span class="chip" style="background: #eef0f3; color: #667180" title="Pinned from the action queue">Pinned</span></sc-if>
+                <button type="button" aria-label="Remove from todos" title="Remove from todos" style="width: 22px; height: 22px; border: 0; background: none; color: #98a1ae; display: grid; place-items: center; padding: 0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+              </div>
+            </sc-for>
+            <div style="display: flex; gap: 6px; padding: 10px 16px 14px; border-top: 1px solid #e3e6eb"><label for="nt" style="position: absolute; left: -9999px">New to-do</label><input id="nt" placeholder="Type a todo…" style="flex: 1; min-width: 0; height: 30px; border: 1px solid #d0d5dd; border-radius: 6px; padding: 0 10px; font: inherit; font-size: 12.5px"><button type="button" class="btn">From queue</button><button type="button" class="btn btnp">Add</button></div>
+          </div>
+          </section>
+          <section data-card="waiting-client" class="card">
+            <div class="ch"><h2 class="st">Waiting on client</h2><span class="chip">{{waitCN}}</span></div>
+            <sc-for list="{{waitClient}}" as="w" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-top: 1px solid #e3e6eb"><i style="{{w.dot}}"></i><span style="flex: 1; min-width: 0"><b style="display: block; font-weight: 600; font-size: 12.5px">{{w.t}}</b><span class="mut" style="font-size: 11.5px">{{w.c}} · {{w.age}}</span></span><button type="button" class="btn" style="height: 26px" onClick="{{w.go}}">Remind</button></div></sc-for>
+          </section>
+
+          <!-- 15 · incorporation only · days to COI -->
+
+          <!-- 16 · compliance only · compliance health (owner design) -->
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["before","mixed","after"],"default":"after"},"$preview":{"width":1440,"height":2900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const mode = s.mode || this.props.mode || 'after';
+    const scope = s.scope || 'all';
+    const day = s.day == null ? -1 : s.day;
+    const set = (o) => this.setState(o);
+
+    // master client list; base stage applies in Mixed
+    const CL = {
+      BR: ['Brightwave Robotics', '#db2777', '#fde2ec', '#9d174d', 'cmp'],
+      TL: ['Tidewater Logistics', '#0d9488', '#ccf3ec', '#0f5f55', 'cmp'],
+      KH: ['Kestrel Health', '#0284c7', '#dbeefe', '#0b5c8f', 'cmp'],
+      HF: ['Halcyon Fintech', '#a16207', '#fdf0d2', '#8a5a06', 'cmp'],
+      NT: ['Northwind Technologies', '#7c3aed', '#ebe5ff', '#5b21b6', 'inc'],
+      OL: ['Orchid Lane Foods', '#4f46e5', '#e3e9ff', '#3730a3', 'inc'],
+      LA: ['Larkspur Analytics', '#16a34a', '#daf5e3', '#166534', 'inc'],
+      JB: ['Juniper Bio', '#64748b', '#eef1f5', '#334155', 'inc']
+    };
+    const KEYS = ['NT', 'OL', 'LA', 'JB', 'BR', 'TL', 'KH', 'HF'];
+    const stageOf = (k) => mode === 'before' ? 'inc' : (mode === 'after' ? 'cmp' : CL[k][4]);
+    const inScope = (k) => scope === 'all' || stageOf(k) === scope;
+    // an item tagged inc/cmp shows only while its client is in that stage
+    const live = (k, need) => (need === 'any' || stageOf(k) === need) && inScope(k);
+    const nInc = KEYS.filter(k => stageOf(k) === 'inc').length, nCmp = 8 - nInc;
+    const dot = (k) => 'width:8px;height:8px;border-radius:2px;flex:none;display:inline-block;background:' + CL[k][1];
+
+    const scopes = [['all', 'All', 8], ['inc', 'Incorporating', nInc], ['cmp', 'Compliance', nCmp]].map(([k, label, n]) => ({
+      label, n, pressed: k === scope ? 'true' : 'false', pick: () => set({ scope: k }),
+      st: 'border:0;height:28px;padding:0 10px;border-radius:6px;font:600 12px Public Sans,sans-serif;cursor:pointer;display:inline-flex;gap:6px;align-items:center;' + (k === scope ? 'background:#fff;color:#15263b' : 'background:none;color:#dfe7f2')
+    }));
+    const showInc = nInc > 0 && scope !== 'cmp';
+    const showCmp = nCmp > 0 && scope !== 'inc';
+
+    // ---- week strip (shared) ----
+    const dC = { f: '#be3434', s: '#15263b', n: '#a35f00', d: '#1e7f55' };
+    const W = [
+      ['Mon 12', [['d', 'Name Approval · Larkspur', 'LA', 'inc'], ['n', 'Name re-apply · Halcyon', 'HF', 'inc'], ['d', 'MSME · Halcyon', 'HF', 'cmp']]],
+      ['Tue 13', [['s', 'Subscriber · Orchid', 'OL', 'inc'], ['s', 'SPICe+ filing · Kestrel', 'KH', 'inc'], ['d', 'INC-20A · Kestrel', 'KH', 'cmp']]],
+      ['Wed 14', [['n', 'Reminder · Northwind NOC', 'NT', 'inc'], ['f', 'GSTR-1 QRMP · Orchid', 'OL', 'cmp']]],
+      ['Thu 15', [['s', 'MCA remarks · Tidewater', 'TL', 'inc'], ['f', 'PF ECR · Halcyon', 'HF', 'cmp'], ['n', 'Payroll sheet · Larkspur', 'LA', 'cmp']]],
+      ['Fri 16 · Today', [['f', 'TDS challan · Kestrel', 'KH', 'cmp'], ['s', 'Bank A/c · Brightwave', 'BR', 'cmp'], ['s', 'Bank details · Brightwave', 'BR', 'inc'], ['f', 'GSTR-1 · Halcyon', 'HF', 'cmp'], ['s', 'FC-GPR · Tidewater', 'TL', 'cmp'], ['s', 'GST Reg · Kestrel', 'KH', 'cmp'], ['s', 'Draft BR · Larkspur', 'LA', 'inc'], ['f', 'PT · Northwind', 'NT', 'cmp'], ['n', 'Logo file · Halcyon', 'HF', 'cmp'], ['n', 'KYC docs · Juniper', 'JB', 'inc'], ['n', 'Utility bill · Northwind', 'NT', 'inc']]],
+      ['Sat 17', []], ['Sun 18', []]
+    ];
+    const weekRaw = W.map(([label, items]) => [label, items.filter(([, , k, need]) => live(k, need))]);
+    const days = weekRaw.map(([label, items], i) => {
+      const today = i === 4, sel = i === day;
+      return { label, count: items.length, has: items.length > 0, empty: items.length === 0, pressed: sel ? 'true' : 'false',
+        pick: () => set({ day: sel ? -1 : i }),
+        items: items.slice(0, 2).map(([k, t]) => ({ t, bg: 'width:6px;height:6px;border-radius:2px;flex:none;display:inline-block;background:' + dC[k],
+          st: 'display:flex;align-items:center;gap:6px;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:left;' + (k === 'f' ? 'color:#be3434;font-weight:600' : (k === 'd' ? 'color:#667180' : 'color:#15263b')) })),
+        more: items.length > 2, moreN: items.length - 2,
+        ns: 'min-width:20px;height:18px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;padding:0 5px;background:' + (items.length && items.every(x => x[0] === 'd') ? '#1e7f55' : '#15263b'),
+        box: 'all:unset;box-sizing:border-box;cursor:pointer;border:1px solid ' + (today ? '#15263b' : '#e3e6eb') + ';border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:7px;min-height:118px;font-family:Public Sans,sans-serif;color:#15263b;' + (today ? 'background:#f4f6fa;box-shadow:inset 0 3px 0 #15263b' : (items.length ? 'background:#fff' : 'background:#eef0f3')) + (sel ? ';outline:2px solid #15263b;outline-offset:1px' : ''),
+        lab: 'font-size:12px;' + (items.length || today ? '' : 'color:#667180') };
+    });
+    const weekLegend = [['Statutory filing', '#be3434', showCmp], ['Step deadline', '#15263b', true], ['Reminder due', '#a35f00', true], ['Done', '#1e7f55', true]].filter(x => x[2]).map(([n, c]) => ({ n, sw: 'display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;background:' + c }));
+    const weekCount = weekRaw.reduce((a, [, it]) => a + it.filter(x => x[0] !== 'd').length, 0);
+
+    // ---- action queue (shared) ----
+    const G = {
+      late: ['background:#be3434', 'M12 7v6M12 17h.01', 'Late'],
+      you: ['background:#15263b', 'M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z M6 19c1-3 3.5-4 6-4s5 1 6 4', 'Waiting on you'],
+      prog: ['background:#667180;color:#fff', 'M12 7v5l3 2', 'In progress'],
+      sbc: ['background:#98a1ae', 'M5 12h14M13 6l6 6-6 6', 'With client / MCA / manager'],
+      fil: ['background:#a35f00', 'M5 4h14v16H5z M9 9h6M9 13h6', 'Filing']
+    };
+    const CS = { red: 'background:#be3434;color:#fff', amb: 'background:#a35f00;color:#fff', gold: 'background:#eef0f3;color:#15263b', blue: 'background:#eef0f3;color:#667180', grey: 'background:#eef0f3;color:#667180', ok: 'background:#e2f3ea;color:#1e7f55' };
+    // [client, need, meta, [glyph, code, title, why, status, chip, cta, primary]]
+    const Q = [
+      ['NT', 'inc', 'Day 37 · Part B', [['sbc', 'Pre-7', 'Registered office address', 'Waiting client · utility bill', 'Client · 5d', 'blue', 'Send reminder']]],
+      ['NT', 'cmp', 'Compliance', [['fil', 'PT', 'Professional tax · Oct', 'Filing', 'Due 25 Oct', 'grey', 'Open filing']]],
+      ['OL', 'inc', 'Day 29 · Part B', [['you', 'Pre-10', 'KYC Review & DSC', 'Client submitted · review', 'Your step', 'gold', 'Review']]],
+      ['OL', 'cmp', 'Compliance', [['fil', 'GST', 'GSTR-1 QRMP · Q2', 'Filing', 'Due 13 Oct', 'red', 'Open filing']]],
+      ['LA', 'inc', 'Day 32 · Part A', [['you', 'Pre-2', 'Draft Board resolution', 'Accepted · deliver', 'Your step', 'gold', 'Deliver']]],
+      ['LA', 'cmp', 'Compliance', [['sbc', 'PF', 'Payroll sheet · Oct', 'Document request', 'Client · 2d', 'blue', 'Send reminder']]],
+      ['JB', 'inc', 'Day 3 · Part A', [['sbc', 'Pre-1', 'Client details', 'Document request', 'Client · 1d', 'blue', 'Send reminder']]],
+      ['JB', 'cmp', 'Compliance', [['fil', 'MCA', 'DIR-3 KYC', 'Filing', 'Due 30 Oct', 'grey', 'Open filing']]],
+      ['BR', 'inc', 'Day 41 · Part B', [['late', 'Pre-14', 'Bank details for SPICe+', 'Rejected · fix', 'Overdue 2d', 'red', 'Open step', 1]]],
+      ['BR', 'cmp', 'Day 41 · Post-inc', [['late', 'Post-3', 'Bank account opening', 'Rejected · fix', 'Overdue 2d', 'red', 'Open step', 1], ['you', 'Post-4', 'Board minutes', 'Client submitted · review', 'Your step', 'gold', 'Review']]],
+      ['TL', 'inc', 'Day 58 · Part B', [['late', 'Pre-16', 'MCA Remarks resubmission', '… · overdue', 'Overdue 1d', 'red', 'Continue', 1]]],
+      ['TL', 'cmp', 'Day 58 · Post-inc', [['late', 'Post-8', 'FC-GPR Filing', '… · overdue', 'Overdue 1d', 'red', 'Continue', 1], ['sbc', 'Post-9', 'FC-GPR form approval', 'Waiting manager · 3d', 'Manager', 'blue', 'Email manager again']]],
+      ['KH', 'inc', 'Day 52 · Part B', [['prog', 'Pre-12', 'SPICe+ Filing', 'In progress', 'Due today', 'amb', 'Continue']]],
+      ['KH', 'cmp', 'Day 74 · Registration', [['prog', 'Reg-1', 'GST Registration', 'In progress', 'Due today', 'amb', 'Continue'], ['you', 'Doc', 'Registration doc pack', 'Accepted · deliver', 'Ready', 'gold', 'Deliver']]],
+      ['HF', 'inc', 'Day 33 · Part A', [['late', 'Pre-4', 'Name re-application', 'Rejected · fix', 'Overdue 2d', 'red', 'Open step', 1]]],
+      ['HF', 'cmp', 'Compliance', [['fil', 'GST', 'GSTR-1 · Sep', 'Filing', 'Due 20 Oct', 'amb', 'Open filing']]]
+    ];
+    const groups = Q.filter(([k, need]) => live(k, need)).map(([k, need, meta, items]) => {
+      const c = CL[k];
+      const late = items.filter(x => x[5] === 'red').length;
+      return { name: c[0], meta, ini: k, tag: need === 'inc' ? 'INCORPORATING' : 'COMPLIANCE', tagCls: 'tag ' + need,
+        pill: late ? late + ' overdue' : (items.some(x => x[0] === 'fil') ? 'filing due' : (items.some(x => x[6] === 'Deliver') ? 'deliver ready' : items.length + ' open')),
+        pillSt: late ? CS.red : CS.grey,
+        av: 'width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-weight:800;background:' + c[2] + ';color:' + c[3],
+        items: items.map(([g, code, t, why, status, cs, cta, primary]) => ({ code, t, why, status, cta, cs: CS[cs], gs: G[g][0], gp: G[g][1], gt: G[g][2],
+          bs: 'display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:6px;font:600 12px Public Sans,sans-serif;cursor:pointer;white-space:nowrap;min-width:110px;justify-content:center;' + (primary ? 'background:#15263b;border:1px solid #15263b;color:#fff' : 'background:#fff;border:1px solid #d0d5dd;color:#15263b') })) };
+    });
+    // action queue heatmap: clients x status, click a count for its tasks
+    const HS = [['red', 'over', 'Overdue', '#be3434'], ['amb', 'due', 'Due today', '#a35f00'], ['gold', 'mine', 'My step', '#2563a8'], ['blue', 'wait', 'Waiting', '#667180'], ['grey', 'up', 'Upcoming', '#98a1ae']];
+    const hmItems = [];
+    Q.filter(([k, need]) => live(k, need)).forEach(([k, need, meta, items]) => items.forEach(([g, code, t, why, status, cs, cta, primary]) => hmItems.push({ k, code, t, why, status, cs, cta, primary, meta })));
+    const hmSel = s.hm || null, hmHv = s.hv || null;
+    const hmCols = HS.map(([cs, id, l, col]) => ({ l, st: 'font:700 10.5px Public Sans,sans-serif;letter-spacing:.07em;text-transform:uppercase;text-align:center;color:' + col }));
+    const hmKeys = KEYS.filter(k => hmItems.some(x => x.k === k));
+    const hm = hmKeys.map(k => { const mine = hmItems.filter(x => x.k === k);
+      return { k, name: CL[k][0], t: mine.length, tl: mine.length > 1 ? 'tasks' : 'task',
+        av: 'width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:10px;font-weight:800;flex:none;background:' + CL[k][2] + ';color:' + CL[k][3],
+        cells: HS.map(([cs, id, l, col]) => { const nn = mine.filter(x => x.cs === cs).length, key = k + '|' + cs, mix = nn === 0 ? 0 : (nn === 1 ? 32 : 70);
+          const its = mine.filter(x => x.cs === cs), ci = HS.findIndex(h => h[0] === cs), hvOn = hmHv === key && nn > 0;
+          return { n: nn || '', tip: CL[k][0] + ' · ' + l + ' · ' + nn, pick: () => { if (nn) set({ hm: hmSel === key ? null : key, hv: null }); },
+            enter: () => { if (nn && hmHv !== key) set({ hv: key }); }, leave: () => { if (hmHv === key) set({ hv: null }); }, hvOn,
+            hvTitle: CL[k][0] + ' · ' + l, hvMeta: (its[0] ? its[0].meta : '') + ' · ' + nn + (nn > 1 ? ' tasks' : ' task'),
+            hvDot: 'width:9px;height:9px;border-radius:3px;flex:none;display:inline-block;background:' + col,
+            hvSt: 'position:absolute;top:calc(100% + 6px);z-index:30;width:320px;background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 18px 40px -14px rgba(15,42,74,.45);text-align:left;color:#15263b;font-family:Public Sans,sans-serif;' + (ci >= 3 ? 'right:0' : 'left:0'),
+            hvList: hvOn ? its.map(x => ({ code: x.code, t: x.t, why: x.why, status: x.status, cta: x.cta, cs: CS[x.cs] })) : [],
+            st: 'height:30px;border:0;border-radius:6px;display:grid;place-items:center;font:800 13px Public Sans,sans-serif;' + (nn ? 'cursor:pointer;color:#fff;background:' + (nn > 1 ? 'color-mix(in srgb,' + col + ' 80%,#000)' : col) : 'cursor:default;background:#eef0f3') + (hmSel === key ? ';box-shadow:0 0 0 2px #15263b' : '') }; }) }; });
+    const hmPick = hmSel ? hmItems.filter(x => x.k + '|' + x.cs === hmSel) : [];
+    const hmLab = hmSel ? HS.filter(h => h[0] === hmSel.split('|')[1])[0][2] + ' · ' + CL[hmSel.split('|')[0]][0] : '';
+    const hmList = hmPick.map(x => ({ code: x.code, t: x.t, why: x.why, co: CL[x.k][0].split(' ')[0], status: x.status, cta: x.cta, cs: CS[x.cs],
+      bs: 'display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 10px;border-radius:6px;font:600 12px Public Sans,sans-serif;cursor:pointer;white-space:nowrap;' + (x.primary ? 'background:#15263b;border:1px solid #15263b;color:#fff' : 'background:#fff;border:1px solid #d0d5dd;color:#15263b') }));
+    const qItems = groups.reduce((a, g) => a.concat(g.items), []);
+    const qCount = qItems.length;
+    const qLate = qItems.filter(x => x.cs === CS.red).length;
+
+    // ---- ball in court (shared) ----
+    const BALL = [
+      ['Me', 'you', '#15263b', [['BR', 'cmp', 'Bank A/c · Brightwave', '2d late'], ['BR', 'inc', 'Bank details · Brightwave', '2d late'], ['OL', 'inc', 'KYC review · Orchid', 'today'], ['LA', 'inc', 'Draft BR · Larkspur', 'Mon'], ['TL', 'inc', 'MCA remarks · Tidewater', '1d late'], ['NT', 'cmp', 'PT working · Northwind', '25 Oct'], ['KH', 'cmp', 'GST Reg · Kestrel', 'today']]],
+      ['Client', 'sbc', '#98a1ae', [['NT', 'inc', 'Utility bill · Northwind', '5d', 1], ['HF', 'cmp', 'Logo file · Halcyon', '3d', 1], ['JB', 'inc', 'KYC docs · Juniper', '1d', 1], ['LA', 'cmp', 'Payroll sheet · Larkspur', '2d', 1], ['HF', 'inc', 'Name options · Halcyon', '2d', 1]]],
+      ['MCA / portal', 'prog', '#667180', [['OL', 'inc', 'SPICe+ · Orchid', 'SRN 2d'], ['KH', 'inc', 'SPICe+ · Kestrel', 'SRN 1d'], ['TL', 'cmp', 'INC-22 · Tidewater', 'SRN 6d'], ['KH', 'cmp', 'GST ARN · Kestrel', '3d']]]
+    ];
+    const courts = BALL.map(([who, g, col, items]) => {
+      const vis = items.filter(([k, need]) => live(k, need));
+      return { who, n: vis.length, gs: G[g][0], gp: G[g][1],
+        bar: 'display:block;height:100%;border-radius:3px;background:' + col + ';width:' + Math.round(vis.length / 7 * 100) + '%',
+        items: vis.slice(0, 3).map(([k, , t, d, nudge]) => ({ t, d, nudge: !!nudge, dot: dot(k) })) };
+    });
+    const waitCount = courts[1].n + courts[2].n;
+
+    // ---- incorporation sections ----
+    const S = { d: 'background:#1e7f55;color:#fff', c: 'background:#2563a8;color:#fff', s: 'background:#be3434;color:#fff', n: 'border:1.5px dashed #b4bcc7;background:#fff;color:#98a1ae' };
+    const tot = [5, 9, 11, 23], pn = ['Part A', 'Part B', 'Post-incorporation', 'Registration'];
+    const PH = { NT: ['dcnn', [5, 1, 0, 0], 24], OL: ['dcnn', [5, 4, 0, 0], 19], LA: ['cnnn', [2, 0, 0, 0], 41], JB: ['cnnn', [0, 0, 0, 0], 58], BR: ['dsnn', [5, 6, 0, 0], 3], TL: ['dsnn', [5, 8, 0, 0], 6], KH: ['dcnn', [5, 7, 0, 0], 9], HF: ['scnn', [3, 0, 0, 0], 33] };
+    const incKeys = KEYS.filter(k => live(k, 'inc'));
+    const phases = incKeys.map(k => {
+      const [kinds, done, days] = PH[k];
+      const r = { name: CL[k][0], days: days + 'd', dot: dot(k), dcs: 'font-size:14px;font-weight:600;' + (days < 10 ? 'color:#be3434' : 'color:#15263b') };
+      kinds.split('').forEach((k2, i) => { r['n' + i] = S[k2]; r['x' + i] = k2 === 'd' ? '✓' : (k2 === 'n' ? '' : done[i] + '/' + tot[i]); r['t' + i] = pn[i] + ' · ' + done[i] + ' of ' + tot[i]; r['l' + i] = k2 === 'd' ? 'border-top:2px solid #1e7f55' : 'border-top:2px dashed #c3ccd8'; });
+      r.grp = kinds.split('').slice(0, 3).map((k2, i) => {
+        const doneP = k2 === 'd', started = k2 === 'c' || k2 === 's';
+        return { l: doneP ? '✓' : (started ? done[i] + '/' + tot[i] : '0/' + tot[i]),
+          tip: pn[i] + ' · ' + (doneP ? 'complete' : done[i] + ' of ' + tot[i] + ' done') + (k2 === 's' ? ' · stuck' : ''),
+          st: 'height:28px;border-radius:6px;display:grid;place-items:center;font:600 12px Public Sans,sans-serif;' + (doneP ? 'background:#1e7f55;color:#fff' : (k2 === 's' ? 'background:#be3434;color:#fff' : (k2 === 'c' ? 'background:#2563a8;color:#fff' : 'background:#fff;border:1.5px dashed #b4bcc7;color:#98a1ae'))) };
+      });
+      return r;
+    });
+    const BAR = { NT: [0, 3, 6, 7], OL: [0, 2, 5, 6], LA: [2, 5, 8, 9], JB: [3, 6, 9, 10], BR: [0, 2, 4, 5], TL: [0, 2, 4, 5], KH: [1, 3, 5, 5], HF: [1, 4, 7, 8] };
+    const TW = 10, TPOS = 4.4, tp = (x) => (x / TW * 100).toFixed(2) + '%';
+    const tbWk = []; for (let i = 0; i <= TW; i++) tbWk.push({ l: 'W' + (38 + i), st: 'position:absolute;bottom:7px;left:' + tp(i) + ';transform:translateX(-50%);font:500 11px IBM Plex Mono,monospace;white-space:nowrap;' + (i === 4 ? 'color:#be3434;font-weight:700' : 'color:#667180'), gl: 'position:absolute;top:30px;bottom:0;left:' + tp(i) + ';width:1px;background:#eef0f3' });
+    const bars = incKeys.map(k => {
+      const [a, b, c, e] = BAR[k], [kinds, done, days] = PH[k], aDone = done[0] === 5, late = kinds.indexOf('s') >= 0;
+      const seg = (x, y, bg) => 'position:absolute;top:50%;transform:translateY(-50%);height:18px;border-radius:6px;display:flex;align-items:center;padding:0 7px;font:700 10.5px Public Sans,sans-serif;color:#fff;white-space:nowrap;overflow:hidden;left:' + tp(x) + ';width:calc(' + ((y - x) / TW * 100).toFixed(2) + '% - 2px);background:' + bg;
+      return { k, name: CL[k][0], sub: days + ' days to COI',
+        av: 'width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-weight:800;flex:none;background:' + CL[k][2] + ';color:' + CL[k][3],
+        a: seg(a, b, aDone ? '#1e7f55' : '#15263b'), al: 'A ' + done[0] + '/5', at: 'Part A · ' + done[0] + ' of 5',
+        b: seg(b, c, late ? '#be3434' : (aDone ? '#15263b' : '#c3cad6')), bl: 'B ' + done[1] + '/9', bt: 'Part B · ' + done[1] + ' of 9' + (late ? ' · stuck' : ''),
+        c: 'position:absolute;top:50%;left:' + tp(e + .5) + ';width:14px;height:14px;border-radius:99px;transform:translate(-50%,-50%);background:#15263b', ct: 'COI target · ' + days + ' days' };
+    });
+    const tbToday = 'position:absolute;top:24px;bottom:-6px;left:' + tp(TPOS) + ';width:2px;margin-left:-1px;background:#be3434;z-index:2';
+    const tbTag = 'position:absolute;bottom:-30px;left:' + tp(TPOS) + ';transform:translateX(-50%);background:#be3434;color:#fff;font:700 11px Public Sans,sans-serif;padding:2px 8px;border-radius:6px;white-space:nowrap;z-index:3';
+    const STK = [['BR', 'Bank details for SPICe+', 'Part B · Pre-14', '5d'], ['TL', 'MCA Remarks resubmission', 'Part B · Pre-16', '3d'], ['HF', 'Name re-application', 'Part A · Pre-4', '2d'], ['OL', 'MCA query on SPICe+', 'Part B · Pre-11', '2d']];
+    const stuck = STK.filter(([k]) => live(k, 'inc')).map(([k, t, c, d]) => ({ t, c: CL[k][0].split(' ')[0] + ' · ' + c, d, dot: dot(k) }));
+    const coi = incKeys.map(k => [k, PH[k][2]]).sort((a, b) => a[1] - b[1]).slice(0, 4).map(([k, n]) => ({ n: n + 'd', name: CL[k][0].split(' ')[0], win: 'window ends ' + (16 + n) + (16 + n > 31 ? '' : ' Oct'),
+      box: 'display:flex;flex-direction:column;gap:3px;padding:10px;border-radius:8px;border:1px solid ' + (n < 10 ? '#f3c4bf' : '#e3e6eb') + ';background:' + (n < 10 ? '#fbe6e6' : '#eef0f3') + ';color:' + (n < 10 ? '#be3434' : '#15263b') }));
+    coi.forEach(c => { if (c.win.indexOf('Oct') < 0) c.win = 'window ends ' + (parseInt(c.n, 10) + 16 - 31) + ' Nov'; });
+
+    // ---- compliance sections ----
+    const fcols = ['GSTR-1', 'GSTR-3B', 'TDS', 'PF ECR', 'ESI', 'PT', 'FC-GPR', 'DIR-3', 'ADT-1'];
+    const due = [11, 20, 7, 15, 15, 25, 22, 30, 30];
+    const FST = { f: ['background:#1e7f55;color:#fff', '✓', 'Filed'], d: ['background:#a35f00;color:#fff', '20', 'Due soon'], o: ['background:#be3434;color:#fff', '!', 'Overdue'], u: ['background:#eceff4;color:#667180', '', 'Upcoming'], x: ['background:#fff;box-shadow:inset 0 0 0 1px #dfe3e9;background-image:repeating-linear-gradient(45deg,transparent 0 4px,#eef0f3 4px 5px)', '', 'Not applicable'] };
+    const FR = { BR: 'ffdfuuxux', TL: 'ffffuuoxu', KH: 'xxdxxxxux', HF: 'dfdouuxfx', NT: 'ffffxfxux', OL: 'ffdfuuxxu', LA: 'fffxxxfux', JB: 'xxuxxxxuu' };
+    const cmpKeys = KEYS.filter(k => live(k, 'cmp'));
+    const grid = cmpKeys.filter(k => /[od]/.test(FR[k])).map(k => ({ name: CL[k][0], dot: dot(k), cells: FR[k].split('').map((c, i) => ({ st: FST[c][0], t: c === 'd' ? String(due[i]) : FST[c][1], tip: CL[k][0] + ' · ' + FST[c][2] })) }));
+    const cnt = { f: 0, d: 0, o: 0, u: 0 };
+    const evMap = {};
+    const rank = { o: 3, d: 2, u: 1, f: 0 };
+    cmpKeys.forEach(k => FR[k].split('').forEach((c, i) => {
+      if (c === 'x') return;
+      cnt[c]++;
+      const key = due[i] + '|' + fcols[i];
+      const e = evMap[key] || (evMap[key] = { day: due[i], f: fcols[i], n: 0, worst: 'f' });
+      e.n++; if (rank[c] > rank[e.worst]) e.worst = c;
+    }));
+    const evCol = { o: '#be3434', d: '#a35f00', u: '#eceff4', f: '#1e7f55' };
+    const cal = [];
+    const BADGE = { o: '#be3434', d: '#a35f00', f: '#1e7f55', u: '#15263b' }, CBAR = { o: '#be3434', d: '#a35f00', f: '#1e7f55', u: '#98a1ae' };
+    const cell = 'min-height:78px;padding:6px 7px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid #98a1ae;border-bottom:1px solid #98a1ae;background:#fff;';
+    const calDow = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((l, i) => ({ l, st: 'padding:6px 7px;background:#eef2f8;border-bottom:1px solid #98a1ae;font:800 10.5px Public Sans,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#667180' + (i < 6 ? ';border-right:1px solid #98a1ae' : '') }));
+    const badge = (st) => 'min-width:22px;height:22px;padding:0 4px;border-radius:6px;display:grid;place-items:center;font:700 12px Public Sans,sans-serif;' + st;
+    const outDay = (n) => ({ n, cnt: '', ev: [], box: cell + (cal.length % 7 === 6 ? 'border-right:0;' : ''), ns: badge('color:#a9b4c4') });
+    [28, 29, 30].forEach(n => cal.push(outDay(n)));
+    for (let d = 1; d <= 31; d++) {
+      const evs = Object.keys(evMap).map(k => evMap[k]).filter(e => e.day === d), pos = cal.length % 7, today = d === 16;
+      const worst = ['o', 'd', 'u', 'f'].filter(w => evs.some(e => e.worst === w))[0];
+      cal.push({ n: d, cnt: evs.length > 2 ? evs.length : '', ns: badge(worst ? 'background:' + BADGE[worst] + ';color:#fff' : 'color:#15263b'),
+        box: cell + (pos === 6 ? 'border-right:0;' : '') + (today ? 'box-shadow:inset 0 0 0 2px #15263b;background:#eef2f8;' : ''),
+        ev: evs.slice(0, 2).map(e => ({ t: e.f + ' · ' + e.n, st: 'display:flex;align-items:center;gap:5px;height:18px;flex:none;padding:0 5px 0 0;border-radius:3px;background:' + (today ? '#fff' : '#eef2f8') + ';font:600 10.5px Public Sans,sans-serif;color:#15263b;overflow:hidden;white-space:nowrap',
+          bar: 'width:3px;align-self:stretch;flex:none;border-radius:3px 0 0 3px;background:' + CBAR[e.worst] })) });
+    }
+    let nx = 1; while (cal.length % 7) cal.push(outDay(nx++));
+    const cm = [cnt.f, cnt.d, cnt.o, cnt.u];
+    const cmpTotal = cm.reduce((a, b) => a + b, 0);
+    const pct = (i) => Math.round(cm.slice(0, i).reduce((a, b) => a + b, 0) / (cmpTotal || 1) * 100);
+    const donut = 'cursor:pointer;width:96px;height:96px;border-radius:99px;flex:none;display:grid;place-items:center;background:conic-gradient(#1e7f55 0 ' + pct(1) + '%,#a35f00 ' + pct(1) + '% ' + pct(2) + '%,#be3434 ' + pct(2) + '% ' + pct(3) + '%,#e3e6eb ' + pct(3) + '% 100%)';
+    // pop-up like the client Incorporation donuts: tabs per status, a row per filing, rows open the filings register
+    const DST = [['f', 'Filed', '#1e7f55'], ['d', 'Due soon', '#a35f00'], ['o', 'Overdue', '#be3434'], ['u', 'Upcoming', '#98a1ae']];
+    const openDonut = (active) => {
+      if (!window.vcfoDrill) return;
+      const by = { f: [], d: [], o: [], u: [] };
+      cmpKeys.forEach(k => FR[k].split('').forEach((c, i) => { if (!by[c]) return; const d = DST.filter(x => x[0] === c)[0];
+        by[c].push([fcols[i] + ' · ' + CL[k][0], c === 'f' ? 'Filed' : (c === 'o' ? 'Was due ' + due[i] + ' Oct' : 'Due ' + due[i] + ' Oct'), d[1], d[2], 'lead-filings']); }));
+      const tabs = [{ label: 'All', rows: [].concat(by.o, by.d, by.u, by.f) }].concat(DST.map(([k, label, color]) => ({ label, color, rows: by[k] })));
+      window.vcfoDrill({ title: 'Compliance health · October', sub: cmpTotal + ' filings across ' + cmpKeys.length + ' clients', tabs, active: typeof active === 'number' ? active : 0,
+        link: { lead: 'Every filing for your compliance clients', text: 'Open filings →', go: 'lead-filings', where: 'Filings' } });
+    };
+    const cmpLegend = [['Filed', '#1e7f55'], ['Due soon', '#a35f00'], ['Overdue', '#be3434'], ['Upcoming', '#e3e6eb']].map(([label, c], i) => ({ label, n: cm[i], sw: 'width:12px;height:12px;border-radius:3px;flex:none;background:' + c, open: () => openDonut(i + 1) }));
+    const nextF = [];
+    cmpKeys.forEach(k => FR[k].split('').forEach((c, i) => { if (c === 'o' || c === 'd') nextF.push({ k, c, i }); }));
+    nextF.sort((a, b) => rank[b.c] - rank[a.c] || due[a.i] - due[b.i]);
+    const nextList = nextF.slice(0, 2).map(({ k, c, i }) => ({ dd: due[i], t: fcols[i] + ' · Sep', c: CL[k][0], s: c === 'o' ? 'Overdue' : 'Due ' + (due[i] - 16) + 'd', cs: c === 'o' ? CS.red : CS.amb,
+      tile: 'width:40px;height:42px;border-radius:8px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;' + (c === 'o' ? 'background:#fbe6e6;color:#be3434' : 'background:#eef0f3;color:#8a4a10') }));
+
+    // ---- client health (shared) ----
+    const TK = { d: 'background:#1e7f55', c: 'background:#15263b;outline:2px solid #e9792f;outline-offset:1px', s: 'background:#be3434', w: 'background:#15263b', n: 'background:#eceff4' };
+    const HI = { NT: ['dwnnnnnnn', '2/9 Part B', 'Client', 'blue', '20 Oct', 'At risk', '#a35f00'], OL: ['ddddcnnnn', '5/9 Part B', 'Me', 'gold', 'Today', 'On track', '#1e7f55'], LA: ['dcnnn', '2/5 Part A', 'Me', 'gold', '19 Oct', 'On track', '#1e7f55'], JB: ['cnnnn', '0/5 Part A', 'Client', 'blue', '22 Oct', 'New', '#98a1ae'], BR: ['dddddsnnn', '6/9 Part B', 'Me', 'gold', 'Overdue', 'Stuck', '#be3434'], TL: ['dddddddsn', '8/9 Part B', 'MCA', 'grey', 'Overdue', 'Stuck', '#be3434'], KH: ['ddddddcnn', '7/9 Part B', 'Me', 'gold', 'Today', 'On track', '#1e7f55'], HF: ['ddsnn', '3/5 Part A', 'Client', 'blue', 'Overdue', 'Stuck', '#be3434'] };
+    const HC = { BR: ['ddsnnnnnnnn', '2/11 Post-inc', 'Me', 'gold', 'Overdue', 'Stuck', '#be3434'], TL: ['dddddddsnnn', '7/11 Post-inc', 'Manager', 'blue', 'Overdue', 'Stuck', '#be3434'], KH: ['cnnnnnnnnn', '3/23 · 1 filing due', 'Me', 'gold', '20 Oct TDS', 'On track', '#1e7f55'], HF: ['ddddddddc', '19/23 · 2 filings', 'Client', 'blue', '20 Oct GSTR-1', 'At risk', '#a35f00'], NT: ['ddddddddd', '6 filings · 0 late', 'Me', 'gold', '25 Oct PT', 'On track', '#1e7f55'], OL: ['ddddddddw', '5 filings · 1 late', 'Client', 'blue', '20 Oct', 'At risk', '#a35f00'], LA: ['ddddddddd', '4 filings · 0 late', 'Client', 'blue', '30 Oct', 'On track', '#1e7f55'], JB: ['nnnnnnnnn', '3 upcoming', 'Me', 'gold', '30 Oct DIR-3', 'New', '#98a1ae'] };
+    const WHO = (w) => { const k = String(w).split(' ')[0]; return ({ Me: 'background:#e6effa;color:#0a4f94', Client: 'background:#fcefd8;color:#a35f00', Manager: 'background:#efeafd;color:#5b3fb8', MCA: 'background:#ddf3ef;color:#0f6b5f' })[k] || 'background:#eef0f3;color:#667180'; };
+    const health = KEYS.filter(inScope).map(k => {
+      const st = stageOf(k), h = st === 'inc' ? HI[k] : HC[k];
+      return { name: CL[k][0], ini: k, tr: h[1], ball: h[2], next: h[4], health: h[5], stage: st === 'inc' ? 'Incorporating' : 'Compliance',
+        av: 'width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:9.5px;font-weight:800;background:' + CL[k][2] + ';color:' + CL[k][3],
+        ss: st === 'inc' ? CS.gold : CS.ok, bs: WHO(h[2]), hd: 'width:8px;height:8px;border-radius:99px;display:inline-block;background:' + h[6],
+        ticks: h[0].split('').map(c => TK[c]),
+        ...(() => { const dn = h[0].split('').filter(c => c === 'd').length, p = Math.round(dn / h[0].length * 100);
+          return { pct: p + '%', fill: 'position:absolute;left:0;top:0;bottom:0;border-radius:6px;width:' + p + '%;background:' + h[6],
+            pl: 'position:absolute;left:8px;top:50%;transform:translateY(-50%);font:700 11px Public Sans,sans-serif;white-space:nowrap;color:' + (p > 18 ? '#fff' : '#15263b') }; })() };
+    });
+
+    // ---- rail (shared) ----
+    const TRI = [['TL', 'any', 'Mei Tanaka replied: "FIRMS login sent"', 'Tidewater · email', '#15263b', '10:12'], ['OL', 'inc', 'MCA: SRN AB1234 approved', 'Orchid Lane · MCA mail', '#1e7f55', '09:40'], ['KH', 'cmp', 'Pranay: "Push Kestrel GST today"', 'Manager note', '#a35f00', '09:05'], ['NT', 'inc', 'New upload: utility bill (blurred)', 'Northwind · client upload', '#15263b', 'Thu'], ['HF', 'cmp', 'GST portal: GSTR-1 draft saved', 'Halcyon · portal mail', '#15263b', 'Thu']];
+    const triAll = TRI.filter(([k, need]) => live(k, need));
+    if (!this.__ni) { this.__ni = 1; setTimeout(() => this.setState({ niTick: 1 }), 4500); }
+    const triage = (this.state && this.state.niTick ? [['NT', 'any', 'Rohan uploaded the stamped rent agreement', 'Northwind · client upload', '#2563a8', 'Now', 1]] : []).concat(triAll).slice(0, 3).map(([k, , t, from, c, when, nw]) => ({ t, from, when, nc: nw ? 'nw' : '', dot: 'width:8px;height:8px;border-radius:99px;flex:none;display:inline-block;background:' + c }));
+    const TODO = [['NT', 'inc', 'Call Northwind about NOC', 1, 0], ['TL', 'cmp', 'FC-GPR · check FIRMS login', 0, 1], ['BR', 'cmp', 'Bank KYC pack for Brightwave', 0, 1], ['BR', 'inc', 'Bank letter for SPICe+ · Brightwave', 0, 1], ['HF', 'cmp', 'Ask Bharath about Halcyon PT', 0, 0], ['LA', 'inc', 'Proofread Larkspur BR', 0, 0]];
+    const todos = TODO.filter(([k, need]) => live(k, need)).map(([k, , t, done, pinned]) => ({ t, done: !!done, pinned: !!pinned, dot: dot(k), ts: 'flex:1;min-width:0;font-size:12.5px;' + (done ? 'color:#667180' : '') }));
+    const WT = [['NT', 'inc', 'Utility bill + NOC', 'Northwind · Pre-7', 'Client 5d', CS.blue, 'Remind'], ['TL', 'cmp', 'FIRMS login', 'Tidewater · Post-8', 'Client 3d', CS.blue, 'Remind'], ['TL', 'cmp', 'Approval: FC-GPR form', 'Tidewater · Post-9', 'Manager 3d', CS.grey, 'Email again'], ['OL', 'inc', 'SPICe+ SRN AB1290', 'Orchid · Pre-11', 'MCA 2d', CS.grey, 'Track'], ['HF', 'cmp', 'Logo file (SVG)', 'Halcyon · Reg-15', 'Client 3d', CS.blue, 'Remind'], ['JB', 'inc', 'KYC docs', 'Juniper · Pre-1', 'Client 1d', CS.blue, 'Remind'], ['BR', 'inc', 'Bank letter', 'Brightwave · Pre-14', 'Client 4d', CS.blue, 'Remind'], ['LA', 'cmp', 'Payroll sheet', 'Larkspur · PF', 'Client 2d', CS.blue, 'Remind']];
+    const waitAll = WT.filter(([k, need]) => live(k, need));
+    const waiting = waitAll.slice(0, 5).map(([k, , t, c, who, cs, cta]) => ({ t, c, who, cs: WHO(who), cta, dot: dot(k) }));
+
+    const kpis = [
+      [qCount, 'Action', '#ffffff', 'Items where you act next'], [qLate + cnt.o, 'Overdue', '#ff9b8f', 'Late steps and filings'],
+      [waitCount, 'Waiting', '#ffffff', 'On the client or MCA'], [weekCount, 'This week', '#fff', 'Open items Mon-Sun'], [2, 'Done today', '#ffffff', 'Closed since 9 AM']
+    ].map(([n, label, c, tip]) => ({ n: String(n), label, tip, st: 'font-size:21px;line-height:1;color:' + c }));
+
+    const lateSteps = qLate;
+    const digest = (lateSteps ? lateSteps + ' step' + (lateSteps > 1 ? 's are' : ' is') + ' late' : 'No late steps') + (showCmp ? ', ' + (cnt.d + cnt.o) + ' filings need you' : '') + '.';
+    const digest2 = showInc && showCmp ? 'Start with the red rows in the action queue, then the Tuesday GST and TDS filings.' : (showInc ? 'Start with the stuck steps. Northwind still owes the utility bill.' : 'Pay the overdue PF return first, then the Tuesday GST and TDS filings.');
+
+    return {
+      mode, setMode: (m) => set({ mode: m, scope: 'all' }), scopes, kpis, days, weekLegend,
+      dayOn: day >= 0, dayName: day >= 0 ? W[day][0] : '', clearDay: () => set({ day: -1 }),
+      groups, qCount, courts, phases, bars, tbWk, tbToday, tbTag, hm, hmCols, hmList, hmOn: !!hmSel, hmTitle: hmLab, hmN: hmPick.length, hmClose: () => set({ hm: null }), stuck, stuckN: stuck.length, coi, nIncShown: incKeys.length,
+      fcols, grid, cal, calDow, donut, openDonut: () => openDonut(0), cmpTotal, cmpLegend, nextF: nextList,
+      health, triage, triageN: triAll.length, todos, todoN: todos.filter(t => !t.done).length, stuckTop: stuck.slice(0, 1), waitClient: waitAll.filter(w => /^Client/.test(w[4])).map(([kk, , t, c, who]) => ({ t, c, age: who.replace('Client ', '') + ' waiting', dot: dot(kk), go: () => { if (window.vcfoToast) window.vcfoToast('Reminder sent to ' + CL[kk][0].split(' ')[0] + ' · ' + t); } })), waitCN: waitAll.filter(w => /^Client/.test(w[4])).length, waiting, waitN: waitAll.length,
+      showInc, showCmp, showNote: showCmp && live('KH', 'cmp'),
+      digest, digest2, digestCta: showInc && showCmp ? 'Start with the queue' : (showInc ? 'Open stuck steps' : 'Open filings')
+    };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Pre-incorporation documents</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;family=Tinos&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.04),0 6px 18px -10px rgba(15,42,74,.18);min-width:0}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;line-height:16px;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.mono{font-family:'IBM Plex Mono',monospace}
+.sg{font-family:sans-serif;letter-spacing:-.03em}
+.mut{color:#667180}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:600 12.5px Public Sans,sans-serif;border:1px solid #d0d5dd;background:#fff;color:#15263b;cursor:pointer;white-space:nowrap}
+.ib{width:30px;height:30px;border-radius:6px;border:1px solid #e3e6eb;background:#fff;color:#667180;display:grid;place-items:center;cursor:pointer}
+.dr{display:grid;grid-template-columns:4px 36px minmax(0,1fr) 140px 130px 68px;gap:12px;align-items:center;padding:10px 16px 10px 0;border-top:1px solid #e3e6eb}
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+@media (max-width:1180px){.lay{grid-template-columns:minmax(0,1fr)}}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="clients" client="Northwind Technologies" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Clients › Northwind Technologies › Documents" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1360px; width: 100%; margin: 0 auto; padding: 20px clamp(12px, 2vw, 28px) 60px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+        <span class="chip" style="background: #e2f3ea; color: #1e7f55">3 ready</span><span class="chip" style="background: #fcefd8; color: #a35f00">4 need inputs</span><span class="chip" style="background: #eef0f3; color: #667180">1 waiting for release</span>
+        <button type="button" class="btn" style="margin-left: auto; background: #15263b; color: #fff; border-color: #15263b"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Download ready (3) as .zip</button>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+        <span role="group" aria-label="Filter by part" style="display: inline-flex; padding: 2px; border-radius: 8px; background: #f1f4f8; box-shadow: inset 0 0 0 1px #e3e6eb"><span style="height: 28px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; background: #15263b; color: #fff">All <span class="mono">8</span></span><span style="height: 28px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #667180">SPICe+ Part A <span class="mono">3</span></span><span style="height: 28px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #667180">SPICe+ Part B <span class="mono">5</span></span></span>
+        <a href="#" style="font-size: 12px; font-weight: 700">Not in the pack yet: Proposed Directors →</a>
+      </div>
+      <div class="lay">
+        <section class="card" style="overflow: hidden">
+          <sc-for list="{{parts}}" as="p" hint-placeholder-count="2">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #eef0f3; border-top: 1px solid #e3e6eb"><b style="font-size: 12px; letter-spacing: .07em; text-transform: uppercase">{{p.h}}</b><span style="flex: 1; max-width: 160px; height: 6px; border-radius: 3px; background: #eceff4; overflow: hidden"><span style="{{p.bar}}"></span></span><span class="mono mut" style="font-size: 11px">{{p.n}}</span></div>
+              <sc-for list="{{p.rows}}" as="r" hint-placeholder-count="4">
+                <div class="dr" style="{{r.rowSt}}">
+                  <span style="{{r.band}}"></span>
+                  <span style="{{r.ic}}">{{r.ext}}</span>
+                  <span style="min-width: 0"><b style="display: block; font-size: 13px">{{r.t}}</b><span class="mut" style="font-size: 11.5px">{{r.sub}}</span></span>
+                  <span class="mut mono" style="font-size: 11px">{{r.meta}}</span>
+                  <span><span class="chip" style="{{r.cs}}">{{r.s}}</span></span>
+                  <span style="display: flex; gap: 4px"><button type="button" class="ib" aria-label="Preview" title="Preview"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button><button type="button" class="ib" aria-label="Download as Word" title="Download as Word"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg></button></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </section>
+        <section class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; align-items: center; gap: 8px"><b style="font-size: 13px">Preview</b><span class="chip" style="background: #e2f3ea; color: #1e7f55">Ready</span><span class="mut" style="margin-left: auto; font-size: 11.5px">MOA · page 1 of 6</span></div>
+          <div style="background: #f7f9fc; border-radius: 8px; padding: 16px; display: flex; justify-content: center"><div style="width: 300px; height: 400px; background: #fff; box-shadow: 0 2px 10px rgba(15,42,74,.08); padding: 28px 26px; font-family: Tinos, serif; font-size: 10.5px; line-height: 1.5; color: #222; overflow: hidden"><div style="text-align: center; font-weight: 700">THE COMPANIES ACT, 2013<br>MEMORANDUM OF ASSOCIATION<br>OF<br>NORTHWIND TECHNOLOGIES INDIA PRIVATE LIMITED</div><p>1. The name of the Company is NORTHWIND TECHNOLOGIES INDIA PRIVATE LIMITED.</p><p>2. The registered office of the Company will be situated in the State of Karnataka.</p><p>3. (a) The objects to be pursued by the Company on its incorporation are: to carry on the business of software development, IT-enabled services…</p></div></div>
+          <div style="display: flex; gap: 8px"><button type="button" class="btn" style="flex: 1">Download as Word</button><button type="button" class="btn" style="flex: 1">Open step</button></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1050}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const __m = (this.state && this.state.mode) || 'mixed';
+    const __set = (m) => this.setState({ mode: m });
+    const CS = { r: 'background:#e2f3ea;color:#1e7f55', n: 'background:#fcefd8;color:#a35f00', w: 'background:#eef0f3;color:#667180', m: 'background:#fbe6e6;color:#be3434' };
+    const SL = { r: 'Ready', n: 'Needs inputs', w: 'Waiting for release', m: 'Missing inputs' };
+    const row = (t, sub, meta, s, ext) => ({ t, sub, meta, s: SL[s], cs: CS[s], ext,
+      band: 'align-self:stretch;background:' + (ext === 'DOCX' ? '#2563a8' : '#be3434'),
+      ic: 'width:34px;height:40px;border-radius:6px;display:grid;place-items:center;font:700 8.5px IBM Plex Mono,monospace;' + (s === 'm' ? 'border:1.5px dashed #c3ccd8;color:#98a1ae' : 'background:#f1f4f8;color:#667180'),
+      rowSt: s === 'm' ? 'background:repeating-linear-gradient(135deg,#fff 0 8px,#eef0f3 8px 16px)' : '' });
+    const parts = [
+      ['SPICe+ Part A', '3 of 3', 100, [row('Name reservation (RUN)', 'Pre-1 · Attached to Pre-1', 'Generated now', 'r', 'PDF'), row('Board resolution · subsidiary', 'Pre-2 · Finalized 9 Oct', 'Finalized 9 Oct', 'r', 'DOCX'), row('Name NOC from parent', 'Pre-3', 'Generated 8 Oct', 'r', 'DOCX')]],
+      ['SPICe+ Part B', '0 of 5', 0, [row('Memorandum of Association', 'Pre-8 · 2 fields missing', 'Draft', 'n', 'DOCX'), row('Articles of Association', 'Pre-8', 'Draft', 'n', 'DOCX'), row('INC-9 declaration', 'Pre-10 · directors KYC missing', '-', 'm', 'PDF'), row('Registered office NOC', 'Pre-7 · waiting client', '-', 'n', 'DOCX'), row('Subscriber sheet', 'Pre-9 · released after KYC', '-', 'w', 'PDF')]]
+    ].map(([h, n, pct, rows]) => ({ h, n, rows, bar: 'display:block;height:100%;background:#1e7f55;width:' + pct + '%' }));
+    return { mode: __m, setMode: __set,  parts };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

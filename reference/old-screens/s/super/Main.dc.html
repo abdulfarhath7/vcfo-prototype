@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Super admin · Overview</title>
+<script src="./support.js"></script>
+<script src="./data.js"></script>
+<script src="./assign.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+.L svg{flex:none}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.06),0 1px 1px rgba(15,42,74,.04);min-width:0;position:relative}
+.ch{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;flex-wrap:wrap}
+.st{margin:0;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#15263b}
+.tile{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none;background:#eef0f3;color:#15263b}
+.cnt{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;background:#2563a8;color:#fff;font-size:11px;font-weight:600}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:600;line-height:16px;white-space:nowrap}
+.chip.sol{min-width:112px;color:#fff}
+.mut{color:#667180}
+.mono{font-family:'IBM Plex Mono',monospace}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;min-width:84px;padding:0 12px;border-radius:8px;font:600 13px Public Sans,sans-serif;border:1px solid #e3e6eb;background:#fff;color:#15263b;cursor:pointer;white-space:nowrap}
+.btnp{background:#2563a8;border-color:#2563a8;color:#fff}
+.lnk{font-size:12px;font-weight:600;color:#2563a8;background:none;border:0;cursor:pointer;padding:0}
+.cols{display:grid;grid-template-columns:minmax(300px,1fr) minmax(0,2fr);gap:16px;align-items:stretch}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.cols2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+@media (max-width:1100px){.cols,.cols2,.cols3{grid-template-columns:minmax(0,1fr)}}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.06em;background:#eef0f3;border-bottom:2px solid #15263b;white-space:nowrap}
+.tbl td{height:44px;padding:5px 12px;border-top:1px solid #e3e6eb;vertical-align:middle;white-space:nowrap}
+.tbl tbody tr:nth-child(even) td{background:rgba(238,242,247,.45)}
+.tbl tbody tr.go{cursor:pointer}
+.tbl tbody tr.go:hover td{background:#eef4fb}
+.ct{width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;font-size:10.5px;font-weight:600;flex:none}
+.pt{width:24px;height:24px;border-radius:8px;display:inline-grid;place-items:center;font-size:10px;font-weight:600;flex:none;background:#eef0f3;color:#15263b}
+.nm{display:flex;align-items:center;gap:9px;min-width:0}
+.nm b{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.pb{display:flex;gap:2px;height:8px;width:132px;border-radius:4px;overflow:hidden}
+.pb>span{display:block;height:100%}
+.sub{display:block;font-size:11.5px;color:#667180;margin-top:1px;overflow:hidden;text-overflow:ellipsis}
+.sc{overflow:auto;scrollbar-width:thin}
+.hero{position:relative;border-radius:10px;padding:16px 20px 0;background:linear-gradient(115deg,#15263b 0%,#1b3049 60%,#2563a8 100%);color:#fff;overflow:hidden}
+.hero h1{margin:2px 0 0;font-size:24px;line-height:1.2;font-weight:600}
+.hero .when{font-size:11px;letter-spacing:.06em;opacity:.75}
+.kp{display:flex;flex-wrap:wrap;margin-top:12px;border-top:1px solid rgba(255,255,255,.14)}
+.kp>span{display:flex;align-items:baseline;gap:7px;padding:11px 22px 13px 0;margin-right:22px;border-right:1px solid rgba(255,255,255,.14)}
+.kp>span:last-child{border-right:0}
+.kp b{font-size:22px;font-weight:600}
+.kp em{font-style:normal;font-size:12px;color:#c9d6e8}
+.kp b.hot{color:#ff9b8f}
+.mr{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px 44px;gap:8px;align-items:center;padding:10px 16px;border-top:1px solid #e3e6eb;cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;font:inherit;color:inherit}
+.mr:hover{background:#eef4fb}
+.mr .n{text-align:right;font-weight:600}
+.mr .h{font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.06em;text-align:right}
+.ld{height:6px;border-radius:3px;background:#e3e6eb;overflow:hidden;margin-top:6px}
+.ld>span{display:block;height:100%;background:#2563a8}
+.pipe{display:flex;align-items:stretch;gap:0;padding:4px 16px 16px;overflow-x:auto}
+.ps{flex:1;min-width:96px;border:1px solid #e3e6eb;border-radius:8px;padding:10px 12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.ps:hover{background:#eef4fb}
+.ps[aria-pressed="true"]{background:#e6effa;border-color:#c5d8f0}
+.ps>b{display:block;font-size:22px;font-weight:600;line-height:1.1}
+.ps>span{display:block;font-size:12px;color:#667180;margin-top:2px}
+.ps i{display:flex;gap:3px;margin-top:8px;font-style:normal}
+.ps i s{width:8px;height:8px;border-radius:2px;display:block;text-decoration:none}
+.arw{display:grid;place-items:center;width:22px;flex:none;color:#98a1ae}
+.dn{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;flex:none}
+.dn>div{width:80px;height:80px;border-radius:50%;background:#fff;display:grid;place-items:center;text-align:center}
+.dn b{display:block;font-size:22px;font-weight:600;line-height:1}
+.lg{all:unset;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 6px;border-radius:6px;font-size:12.5px;font-weight:600}
+.lg:hover{background:#f7f9fc}
+.lg[aria-pressed="true"]{background:#e6effa;box-shadow:inset 0 0 0 1px #c5d8f0;color:#2563a8}
+.lg:focus-visible,.mr:focus-visible,.ps:focus-visible{outline:2px solid #2563a8;outline-offset:1px}
+.sw{width:10px;height:10px;border-radius:3px;flex:none}
+.br{display:grid;grid-template-columns:110px minmax(0,1fr) 32px;gap:10px;align-items:center;font-size:12.5px;font-weight:600}
+.trk{height:8px;border-radius:4px;background:#e3e6eb;overflow:hidden;display:flex;gap:2px}
+.trk>span{display:block;height:100%}
+.it{display:flex;align-items:center;gap:10px;padding:9px 16px;border-top:1px solid #e3e6eb}
+.empty{padding:22px 16px;color:#667180}
+.corner{position:absolute;top:12px;right:12px}
+.ibtn{width:32px;height:32px;border-radius:8px;border:1px solid #e3e6eb;background:#fff;color:#667180;display:grid;place-items:center;cursor:pointer;padding:0}
+.ibtn:hover{background:#f7f9fc;color:#15263b}
+.seg2{display:inline-flex;border:1px solid #e3e6eb;border-radius:8px;overflow:hidden}
+.seg2 button{height:32px;padding:0 12px;border:0;background:#fff;color:#667180;font:600 13px Public Sans,sans-serif;cursor:pointer}
+.seg2 button[aria-pressed="true"]{background:#e6effa;color:#2563a8}
+.colsW{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(290px,1fr);gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+@media (max-width:1100px){.colsW{grid-template-columns:minmax(0,1fr)}}
+.cg{width:100%;border-collapse:collapse;table-layout:fixed}
+.cg th{background:#eef0f3;border-bottom:2px solid #15263b;padding:8px 4px;font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.04em;text-align:center;white-space:nowrap}
+.cg th:first-child,.cg td:first-child{text-align:left;padding-left:16px;width:230px}
+.cg th:last-child,.cg td:last-child{padding-right:16px}
+.cg td{border-top:1px solid #e3e6eb;padding:6px 4px;text-align:center;font-size:12px;font-weight:600;height:40px}
+.cg td>span.c{display:grid;place-items:center;height:28px;border-radius:6px}
+.cg .d{background:#1e7f55;color:#fff}.cg .p{background:#2563a8;color:#fff}.cg .o{background:#be3434;color:#fff}.cg .w{background:#a35f00;color:#fff}
+.cg .n{background:#fff;box-shadow:inset 0 0 0 1.5px #c4ccd8;color:#56627a}
+.cg tbody tr.go:hover td{background:#eef4fb}
+
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+@media (max-width:1100px){.cols3{grid-template-columns:minmax(0,1fr)}}
+.big{display:flex;gap:18px;padding:0 16px 14px;flex-wrap:wrap}
+.big>div{display:flex;flex-direction:column}
+.big b{font-size:24px;font-weight:600;line-height:1.1}
+.big em{font-style:normal;font-size:12px;color:#667180}
+.foot{display:flex;align-items:center;gap:8px;padding:10px 16px 14px;border-top:1px solid #e3e6eb;font-size:12.5px;margin-top:auto}
+.card.flex{display:flex;flex-direction:column}
+.hbar{display:grid;grid-template-columns:118px minmax(0,1fr) 30px;gap:10px;align-items:center;font-size:12.5px;font-weight:600}
+.rows{display:flex;flex-direction:column;gap:9px;padding:0 16px 14px}
+.ar{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(5,minmax(0,.7fr));gap:8px;align-items:center;padding:10px 16px;border-top:1px solid #e3e6eb}
+.ar .n{text-align:right;font-weight:600}
+.ar.h{background:#eef0f3;padding-top:7px;padding-bottom:7px;font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.06em}
+.ar.h>span{text-align:right}.ar.h>span:first-child{text-align:left}
+.cg{width:100%;border-collapse:collapse}
+.cg th{background:#eef0f3;border-bottom:2px solid #15263b;padding:8px 3px;font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.04em;text-align:center;white-space:nowrap}
+.cg th:first-child,.cg td:first-child{text-align:left;padding-left:16px}
+.cg th:last-child,.cg td:last-child{padding-right:16px}
+.cg td{border-top:1px solid #e3e6eb;padding:6px 3px;text-align:center;font-size:12px;font-weight:600}
+.cg td>span.c{display:grid;place-items:center;height:28px;border-radius:6px}
+.cg .d{background:#1e7f55;color:#fff}.cg .p{background:#2563a8;color:#fff}.cg .w{background:#a35f00;color:#fff}
+.cg .n{background:#eef0f3;color:#56627a}
+.cg .x{background:#fff;box-shadow:inset 0 0 0 1px #e3e6eb;background-image:repeating-linear-gradient(45deg,transparent 0 4px,#eef0f3 4px 5px)}
+.cal7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:0 16px 16px}
+.cal7 .h{font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.06em;text-align:center;padding-bottom:2px}
+.dy{all:unset;box-sizing:border-box;min-height:62px;border-radius:8px;padding:6px 8px;display:flex;flex-direction:column;gap:4px;cursor:pointer;border:1px solid #e3e6eb;background:#fff}
+.dy:hover{border-color:#b4bcc7}
+.dy[aria-pressed="true"]{box-shadow:inset 0 0 0 2px #2563a8}
+.dy:focus-visible{outline:2px solid #2563a8;outline-offset:1px}
+.dy .dn2{font-size:12px;font-weight:600}
+.dy .ct2{font-size:11px;font-weight:600;border-radius:6px;padding:1px 6px;align-self:flex-start}
+.dy.blank{visibility:hidden;cursor:default}
+.dy.today .dn2{color:#fff;background:#2563a8;border-radius:6px;padding:0 5px;align-self:flex-start}
+.kcol{background:#eef0f3;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.kcol h3{margin:0 0 2px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#667180;display:flex;justify-content:space-between}
+.kc{background:#fff;border:1px solid #e3e6eb;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.kc b{font-weight:600}
+.money{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rk{display:grid;grid-template-columns:120px minmax(0,1fr) 150px 70px 84px;gap:10px;align-items:center;padding:10px 16px;border-top:1px solid #e3e6eb}
+.rk.h{background:#eef0f3;padding-top:7px;padding-bottom:7px;font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.06em}
+.sev{display:inline-flex;gap:2px}.sev i{width:6px;height:14px;border-radius:2px;background:#e3e6eb}.sev i.on{background:#be3434}
+.chipf{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:8px;border:1px solid #e3e6eb;background:#fff;font:600 12.5px Public Sans,sans-serif;color:#15263b;cursor:pointer}
+.chipf[aria-pressed="true"]{background:#e6effa;border-color:#c5d8f0;color:#2563a8}
+.chipf b{font-weight:600;color:#667180}
+.page{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e3e6eb;border-radius:12px;box-shadow:0 1px 2px rgba(15,42,74,.06);padding:32px 40px;display:flex;flex-direction:column;gap:22px}
+.page h1{margin:0;font-size:22px;font-weight:600}
+.page h3{margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#667180}
+.kg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kg>div{border:1px solid #e3e6eb;border-radius:8px;padding:12px}
+.kg b{display:block;font-size:22px;font-weight:600}
+.kg em{font-style:normal;font-size:12px;color:#667180}
+.set{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1100px){.set{grid-template-columns:minmax(0,1fr)}}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 16px;border-top:1px solid #e3e6eb}
+.sw2{width:28px;height:28px;border-radius:6px;border:1px solid #e3e6eb}
+.cg th:first-child{width:230px}
+
+/* Number strip: the change against last month sits after each label. */
+.kp i.dl{font-style:normal;font-size:11.5px;font-weight:600;margin-left:2px}
+
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="today" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Overview" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1400px; width: 100%; margin: 0 auto; padding: 18px clamp(12px, 2vw, 28px) 110px; display: flex; flex-direction: column; gap: 16px">
+
+      <section class="hero" data-card="greeting">
+        <div class="when">FRI 16 OCT 2026 · 12:31 PM · SBC, THE WHOLE FIRM</div>
+        <h1>Good afternoon, Mithilesh</h1>
+        <div class="kp"><sc-for list="{{kpis}}" as="k" hint-placeholder-count="7"><span title="{{k.tip}}"><b style="{{k.st}}">{{k.n}}</b><em>{{k.label}}</em><i class="dl" style="{{k.ds}}">{{k.d}}</i></span></sc-for></div>
+      </section>
+
+      <!-- the three practice areas, side by side -->
+      <div class="cols3">
+        <section class="card flex" data-card="p-inc">
+          <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-6h6v6"></path></svg></span><h2 class="st">Incorporation</h2><span class="cnt">{{nInc}}</span></div>
+          <div class="rows"><sc-for list="{{incStages}}" as="b" hint-placeholder-count="4"><div class="hbar" title="{{b.tip}}"><span>{{b.label}}</span><span class="trk"><span style="{{b.bar}}"></span></span><span style="text-align: right">{{b.n}}</span></div></sc-for></div>
+          <div class="foot"><span class="mut">Average <b style="color: #15263b">{{avgCoi}} days</b> to COI · target 30</span><a href="#" class="lnk" data-go="super-incorporation" style="margin-left: auto">Open</a></div>
+        </section>
+        <section class="card flex" data-card="p-reg">
+          <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8 M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></span><h2 class="st">Registrations</h2></div>
+          <div class="big"><sc-for list="{{regBig}}" as="x" hint-placeholder-count="3"><div><b style="{{x.st}}">{{x.n}}</b><em>{{x.label}}</em></div></sc-for></div>
+          <div class="rows"><sc-for list="{{regTop}}" as="b" hint-placeholder-count="3"><div class="hbar" title="{{b.tip}}"><span>{{b.label}}</span><span class="trk"><span style="{{b.d}}"></span><span style="{{b.p}}"></span><span style="{{b.w}}"></span></span><span style="text-align: right">{{b.n}}</span></div></sc-for></div>
+          <div class="foot"><span class="mut">Most pending: <b style="color: #15263b">{{regWorst}}</b></span><a href="#" class="lnk" data-go="super-registrations" style="margin-left: auto">Open</a></div>
+        </section>
+        <section class="card flex" data-card="p-cmp">
+          <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z M16 2v4 M8 2v4 M3 10h18 M9 16l2 2 4-4"></path></svg></span><h2 class="st">Compliances · October</h2></div>
+          <div style="display: flex; gap: 14px; align-items: center; padding: 0 16px 14px">
+            <div style="{{fDonut}}" role="img" aria-label="{{fTip}}"><div style="width: 80px; height: 80px; border-radius: 50%; background: #fff; display: grid; place-items: center; text-align: center"><div><b style="display: block; font-size: 22px; font-weight: 600; line-height: 1">{{fTot}}</b><span class="mut" style="font-size: 11px">filings</span></div></div></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px"><sc-for list="{{fLegend}}" as="l" hint-placeholder-count="5"><div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600"><span class="sw" style="{{l.sw}}"></span><span style="flex: 1">{{l.label}}</span><b>{{l.n}}</b></div></sc-for></div>
+          </div>
+          <div class="foot"><span class="mut">Worst statute: <b style="color: #15263b">{{worstStat}}</b></span><a href="#" class="lnk" data-go="super-compliances" style="margin-left: auto">Open</a></div>
+        </section>
+      </div>
+
+      <div class="cols2">
+        <section class="card" data-card="admins">
+          <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"></path></svg></span><h2 class="st">Admins · this month</h2><a href="#" class="lnk" data-go="super-team" style="margin-left: auto">Open Team</a></div>
+          <div class="ar h"><span>Admin</span><span>Clients</span><span>Assigned</span><span>Approvals</span><span>Open esc.</span><span>Response</span></div>
+          <sc-for list="{{admins}}" as="a" hint-placeholder-count="2">
+            <div class="ar"><span class="nm"><span class="pt">{{a.ini}}</span><span><b>{{a.name}}</b><span class="sub">{{a.mgrs}}</span></span></span><span class="n">{{a.clients}}</span><span class="n">{{a.assigned}}</span><span class="n">{{a.approvals}}</span><span class="n" style="{{a.openSt}}">{{a.open}}</span><span class="n">{{a.response}}</span></div>
+          </sc-for>
+        </section>
+        <section class="card" data-card="managers">
+          <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8a4 4 0 1 0 0-8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span><h2 class="st">Managers</h2></div>
+          <div class="ar h"><span>Manager</span><span>Clients</span><span>Open</span><span>Late</span><span>On time</span><span>Load</span></div>
+          <sc-for list="{{mgrs}}" as="m" hint-placeholder-count="4">
+            <button type="button" class="ar" data-pick-mgr="{{m.id}}" data-go="admin-managers" title="Open {{m.name}}" style="width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="nm"><span class="pt">{{m.ini}}</span><span><b>{{m.name}}</b><span class="sub">under {{m.admin}}</span></span></span><span class="n">{{m.clients}}</span><span class="n">{{m.open}}</span><span class="n" style="{{m.lateSt}}">{{m.late}}</span><span class="n">{{m.onTime}}%</span><span class="ld" style="margin-top: 0"><span style="{{m.load}}"></span></span></button>
+          </sc-for>
+        </section>
+      </div>
+
+      <section class="card" data-card="risks">
+          <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4 M12 17h.01 M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path></svg></span><h2 class="st">Top risks</h2><span class="cnt">{{nRisks}}</span><a href="#" class="lnk" data-go="super-risks" style="margin-left: auto">All risks</a></div>
+          <sc-for list="{{risks}}" as="x" hint-placeholder-count="5">
+            <div class="it"><span class="ct" style="{{x.ct}}">{{x.k}}</span><span style="flex: 1; min-width: 0"><b style="font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{x.t}}</b><span class="sub">{{x.sub}}</span></span><span class="chip" style="background: #eef0f3; color: #15263b; min-width: 96px">{{x.kind}}</span></div>
+          </sc-for>
+        </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const A = window.ADM, s = this.state || {}, set = (o) => this.setState(o);
+    if (!this.__l) { this.__l = 1; window.addEventListener('vcfo:assign', () => this.setState({ t: Date.now() })); }
+    const all = A.allClients(), byK = {}; all.forEach(c => { byK[c.k] = c; });
+    const M = (id) => A.ALLMGR[id] || { name: '', ini: '' };
+    const inc = all.filter(c => c.stage === 'inc');
+    // registrations
+    let rd = 0, rp = 0, rw = 0;
+    Object.keys(A.REG).forEach(k => A.REG[k].split('').forEach(v => { if (v === 'd') rd++; if (v === 'p') rp++; if (v === 'w') rw++; }));
+    const byType = A.REGS.map((t, i) => { let d = 0, p = 0, w = 0; Object.keys(A.REG).forEach(k => { const v = A.REG[k][i]; if (v === 'd') d++; if (v === 'p') p++; if (v === 'w') w++; }); return { t, d, p, w, open: p + w }; });
+    const regTop = byType.slice().sort((a, b) => b.open - a.open).slice(0, 4).map(x => { const tt = x.d + x.p + x.w || 1;
+      return { label: x.t, n: x.open, tip: x.t + ': ' + x.d + ' done, ' + x.p + ' in progress, ' + x.w + ' pending', d: 'background:#1e7f55;width:' + x.d / tt * 100 + '%', p: 'background:#2563a8;width:' + x.p / tt * 100 + '%', w: 'background:#a35f00;width:' + x.w / tt * 100 + '%' }; });
+    // filings
+    const FS = ['o', 'l', 'd', 'u', 'f'], cnt = FS.map(k => A.FIL.filter(f => f[4] === k).length);
+    const filedAll = A.FIL.filter(f => f[0] < 16 || f[4] === 'o'), onTime = A.FIL.filter(f => f[4] === 'f').length;
+    const pct = Math.round(onTime / Math.max(1, filedAll.length) * 100);
+    const expo = A.FIL.filter(f => f[4] === 'o').reduce((a, f) => a + f[5], 0);
+    const stat = {}; A.FIL.forEach(f => { if (f[4] === 'o' || f[4] === 'l') stat[f[3]] = (stat[f[3]] || 0) + 1; });
+    const worstStat = Object.keys(stat).sort((a, b) => stat[b] - stat[a])[0] || 'None';
+    const billed = A.FEES.reduce((a, f) => a + f[1], 0), coll = A.FEES.reduce((a, f) => a + f[2], 0);
+    // Change against last month, and whether that change is good news.
+    const DELTA = [['+2', 1], ['−3', 1], ['+4 pts', 1], ['+1', 0]];
+    const kpis = [[all.length, 'Clients'], [rp + rw, 'Registrations open'], [pct + '%', 'Filed on time'], [cnt[0], 'Filings overdue', 1],
+      ].map(([n, label, hot], i) => { const [d, good] = DELTA[i];
+      return { n, label, tip: label + ': ' + n + ' · ' + d + ' against September', st: hot ? 'color:#ff9b8f' : '', d, ds: 'color:' + (good ? '#1e7f55' : '#be3434') }; });
+    const STG = [['name', 'Name approval'], ['spice', 'SPICe+ forms'], ['mca', 'MCA review'], ['coi', 'Certificate']];
+    const maxS = Math.max(1, ...STG.map(([k]) => inc.filter(c => c.pipe === k).length));
+    const incStages = STG.map(([k, label]) => { const l = inc.filter(c => c.pipe === k); return { label, n: l.length, tip: l.map(c => c.name).join(', ') || 'None', bar: 'background:#2563a8;width:' + l.length / maxS * 100 + '%' }; });
+    const avgCoi = Math.round(Object.values(A.DAYS).reduce((a, b) => a + b, 0) / Object.keys(A.DAYS).length);
+    const COLF = { o: '#be3434', l: '#a35f00', d: '#2563a8', u: '#c4ccd8', f: '#1e7f55' };
+    const admins = Object.keys(A.ADMINS).map(id => { const a = A.ADMINS[id];
+      return { ini: a.ini, name: a.name, mgrs: a.mgrs.map(m => M(m).name).join(', '), clients: all.filter(c => c.admin === id).length, assigned: a.assigned, approvals: a.approvals, open: a.open, openSt: a.open ? 'color:#be3434' : '', response: a.response }; });
+    const mgrs = Object.keys(A.ALLMGR).map(id => { const x = A.allStats(id), adm = A.ADMINS[A.adminOf(id)];
+      return { id, name: M(id).name, ini: M(id).ini, admin: adm ? adm.name : 'no admin', clients: x.clients.length, open: x.open, late: x.overdue, lateSt: x.overdue ? 'color:#be3434' : '', onTime: A.ALLMGR[id].onTime,
+        load: 'width:' + Math.min(100, x.clients.length / A.CAP * 100) + '%;background:' + (x.clients.length > A.CAP * .8 ? '#a35f00' : '#2563a8') }; });
+    const risks = A.RISKS.slice().sort((a, b) => b[5] - a[5] || b[4] - a[4]).slice(0, 5).map(r => { const c = byK[r[2]];
+      return { k: r[2] || '?', ct: c ? 'background:' + c.soft + ';color:' + c.ink : 'background:#eef0f3;color:#667180', t: r[1] + (c ? ' · ' + c.name : ''), kind: A.RK[r[0]],
+        sub: (c ? M(c.mgr).name + ' · ' : 'Unassigned · ') + (r[3] ? r[3] + (r[3] === 1 ? ' day' : ' days') : 'today') }; });
+    const SO = { stuck: 0, over: 1, due: 2, wait: 3 };
+    const attn = all.filter(c => SO[c.health] !== undefined).sort((a, b) => SO[a.health] - SO[b.health]).slice(0, 6).map(c => ({ k: c.k, name: c.name, ct: 'background:' + c.soft + ';color:' + c.ink,
+      step: c.code + ' ' + c.step, who: M(c.mgr).name + ', pending with ' + c.ball + ' ' + c.days + 'd', hl: A.HEALTH[c.health][0], hlS: 'background:' + A.HEALTH[c.health][1] }));
+    return { mode: s.mode || 'mixed', setMode: (m) => set({ mode: m }), kpis, nInc: inc.length, incStages, avgCoi,
+      regBig: [[rd, 'Done', '#1e7f55'], [rp, 'In progress', '#2563a8'], [rw, 'Pending', '#a35f00']].map(([n, label, c]) => ({ n, label, st: 'color:' + c })), regTop,
+      regWorst: byType.slice().sort((a, b) => b.w - a.w)[0].t,
+      fDonut: A.donut(FS.map((k, i) => [cnt[i], COLF[k]])), fTot: A.FIL.length, fTip: FS.map((k, i) => A.FST[k][0] + ' ' + cnt[i]).join(', '),
+      fLegend: FS.map((k, i) => ({ label: A.FST[k][0], n: cnt[i], sw: 'background:' + COLF[k] })), worstStat,
+      admins, mgrs, cap: A.CAP, risks, nRisks: A.RISKS.length, attn };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

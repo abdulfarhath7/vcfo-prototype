@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Manager · Board resolution</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;family=Tinos&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc}
+.L *{box-sizing:border-box}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.04),0 6px 18px -10px rgba(15,42,74,.18);min-width:0}
+.chip{display:inline-flex;align-items:center;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.sg{font-family:sans-serif;letter-spacing:-.03em}
+.mut{color:#667180}
+.tb{width:30px;height:30px;border:1px solid #e3e6eb;border-radius:6px;background:#fff;font:inherit;font-weight:700;color:#344054}
+.btn{width:100%;height:36px;border-radius:6px;border:1px solid #d0d5dd;background:#fff;color:#15263b;font:600 13px Public Sans,sans-serif;display:flex;align-items:center;gap:8px;padding:0 12px;cursor:pointer}
+.btnp{background:#15263b;border-color:#15263b;color:#fff;justify-content:center}
+.tile{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none}
+.page{width:min(600px,100%);background:#fff;border:1px solid #e3e6eb;box-shadow:0 2px 10px rgba(15,42,74,.06);padding:48px 56px;font-family:Tinos,'Times New Roman',serif;font-size:13px;line-height:1.55;color:#111}
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media (max-width:1100px){.lay{grid-template-columns:minmax(0,1fr)}}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="clients" client="Larkspur Analytics" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Clients › Larkspur Analytics › Board resolution" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1300px; width: 100%; margin: 0 auto; padding: 20px clamp(12px, 2vw, 28px) 60px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+        <span class="tile" style="width: 32px; height: 32px; background: #e3edfb; color: #2563a8"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"></path></svg></span>
+        <span class="chip" style="background: #fcefd8; color: #a35f00">Draft</span>
+        <span style="width: 22px; height: 22px; border-radius: 6px; background: #daf5e3; color: #166534; display: grid; place-items: center; font-size: 9.5px; font-weight: 800; margin-left: 8px">LA</span><span class="mut">Larkspur Analytics · Pre-2</span>
+      </div>
+      <div class="lay">
+        <section class="card">
+          <div style="display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid #e3e6eb; flex-wrap: wrap"><b style="font-size: 12.5px; margin-right: 8px">Document preview</b><button type="button" class="tb" aria-label="Bold">B</button><button type="button" class="tb" aria-label="Italic"><i>I</i></button><button type="button" class="tb" aria-label="Underline"><u>U</u></button><span class="mut" style="margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 6px"><i style="width: 7px; height: 7px; border-radius: 99px; background: #a35f00; display: inline-block"></i>Unsaved changes</span></div>
+          <div style="display: flex; justify-content: center; background: #f7f9fc; padding: 24px 12px; min-height: 700px">
+            <div class="page">
+              <div style="text-align: center; font-weight: 700">CERTIFIED TRUE COPY OF THE RESOLUTION PASSED BY THE BOARD OF DIRECTORS OF LARKSPUR DATA GMBH</div>
+              <p>At the meeting of the Board of Directors held on 9 October 2026 at Hamburg, the following resolution was passed:</p>
+              <p>"RESOLVED THAT the Company do incorporate a wholly owned subsidiary in India under the name <b style="background: #fff4d6; outline: 1px dashed #e9792f">Larkspur Analytics India Private Limited</b> or such other name as may be approved by the Registrar of Companies…"</p>
+              <p>"RESOLVED FURTHER THAT Ms Sofia Moreau, Director, be and is hereby authorised to sign the subscriber sheet, Memorandum and Articles of Association…"</p>
+              <p>"RESOLVED FURTHER THAT the Company subscribe to 9,999 equity shares of ₹10 each…"</p>
+              <p style="margin-top: 40px">For and on behalf of the Board<br><br>____________________<br>Sofia Moreau, Director</p>
+            </div>
+          </div>
+        </section>
+        <aside style="display: flex; flex-direction: column; gap: 14px">
+          <section class="card" style="padding: 16px">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px"><span class="tile" style="background: #e2f3ea; color: #1e7f55"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span><b>Word document ready</b></div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <button type="button" class="btn">Save changes</button>
+              <button type="button" class="btn">Apply latest template</button>
+              <button type="button" class="btn">Re-generate from Pre-1</button>
+              <button type="button" class="btn">Download Word document</button>
+            </div>
+          </section>
+          <section class="card" style="padding: 16px">
+            <div style="position: relative; display: flex; flex-direction: column; margin-bottom: 14px">
+              <span style="position: absolute; left: 10px; top: 12px; bottom: 12px; width: 2px; background: #e3e6eb"></span>
+              <span style="display: flex; gap: 10px; align-items: center; padding: 5px 0; position: relative"><span style="width: 22px; height: 22px; border-radius: 99px; background: #1e7f55; color: #fff; display: grid; place-items: center; font-size: 10px; font-weight: 800">✓</span><span>Generated from Pre-1</span></span>
+              <span style="display: flex; gap: 10px; align-items: center; padding: 5px 0; position: relative"><span style="width: 22px; height: 22px; border-radius: 99px; background: #15263b; color: #fff; display: grid; place-items: center; font-size: 10px; font-weight: 800; box-shadow: 0 0 0 3px rgba(201,162,75,.55)">2</span><b>Draft · editing</b></span>
+              <span style="display: flex; gap: 10px; align-items: center; padding: 5px 0; position: relative"><span style="width: 22px; height: 22px; border-radius: 99px; border: 1.5px dashed #b4bcc7; background: #fff; display: grid; place-items: center; font-size: 10px; color: #98a1ae">3</span><span class="mut">Finalized · client visible</span></span>
+              <span style="display: flex; gap: 10px; align-items: center; padding: 5px 0; position: relative"><span style="width: 22px; height: 22px; border-radius: 99px; border: 1.5px dashed #b4bcc7; background: #fff; display: grid; place-items: center; font-size: 10px; color: #98a1ae">4</span><span class="mut">Sent to client</span></span>
+              <span style="display: flex; gap: 10px; align-items: center; padding: 5px 0; position: relative"><span style="width: 22px; height: 22px; border-radius: 99px; border: 1.5px dashed #b4bcc7; background: #fff; display: grid; place-items: center; font-size: 10px; color: #98a1ae">5</span><span class="mut">Signed copy uploaded</span></span>
+            </div>
+            <button type="button" class="btn btnp">Finalise for client</button>
+          </section>
+          <section class="card" style="padding: 14px 16px; border-color: #c9d9f3">
+            <b style="font-size: 13px">Finalise board resolution?</b>
+            <div class="mut" style="font-size: 12px; margin: 4px 0 10px">The client can see and download it after this.</div>
+            <div style="display: flex; gap: 8px"><button type="button" class="btn" style="justify-content: center">Cancel</button><button type="button" class="btn btnp">Finalise</button></div>
+            <div style="border-top: 1px solid #e3e6eb; margin-top: 12px; padding-top: 10px; font-size: 12px"><b>Next:</b> Send board resolution to client? <a href="#">Send to client</a> opens Outlook.</div>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic { renderVals() {
+    const __m = (this.state && this.state.mode) || 'mixed';
+    const __set = (m) => this.setState({ mode: m }); return { mode: __m, setMode: __set, }; } }
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

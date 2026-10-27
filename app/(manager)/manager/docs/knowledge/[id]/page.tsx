@@ -1,0 +1,6 @@
+import { ReaderScreen } from "@/screens/shared/LibraryScreen";
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ReaderScreen portal="manager" id={id} />;
+}

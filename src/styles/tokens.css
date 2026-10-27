@@ -1,0 +1,91 @@
+/* Tokens from docs/RULES.md. This is the only file with colour values. */
+
+:root {
+  --white: #ffffff;
+  --canvas: #f3f5f9;
+  --surface: #ffffff;
+  --raised: #f5f6f8;
+  --line: #e3e6eb;
+  --line-soft: #eef0f3;
+  --ink: #16212f;
+  --ink-2: #3f4a59;
+  --muted: #667180;
+  --faint: #98a1ae;
+
+  --navy: #15263b;
+  --navy-2: #1b3049;
+  --navy-hover: #1b3049;
+  --navy-tint: #eef2f8;
+  --navy-ink: #c9d4e2;
+  --navy-faint: #7f93ab;
+  --navy-line: rgba(255, 255, 255, 0.08);
+  --navy-on: rgba(110, 160, 230, 0.18);
+
+  --accent: #2563a8;
+  --accent-soft: #e6effa;
+  --accent-line: #b9d0ec;
+  --ok: #1e7f55;
+  --ok-soft: #e2f3ea;
+  --ok-mid: #46a87a;
+  --warn: #a35f00;
+  --warn-soft: #fcefd8;
+  --warn-mid: #e3a040;
+  --bad: #be3434;
+  --bad-soft: #fbe6e6;
+  --bad-mid: #dd6262;
+  --violet: #6a4fb6;
+  --violet-soft: #efeafb;
+  --teal: #0f7c86;
+  --teal-soft: #e0f3f4;
+  --idle: #56627a;
+  --idle-soft: #eceff4;
+  --brand: #e9792f;
+  --scrim: rgba(22, 33, 47, 0.4);
+
+  /* sizes */
+  --r-card: 10px;
+  --r-btn: 8px;
+  --r-chip: 5px;
+  --h-head: 52px;
+  --h-row: 46px;
+  --h-btn: 36px;
+  --h-btn-sm: 30px;
+  --h-chip: 22px;
+  --w-chip: 108px;
+  --w-owner: 96px;
+  --w-side: 236px;
+  --h-top: 60px;
+}
+
+:root[data-theme="dark"] {
+  --canvas: #111821;
+  --surface: #18202b;
+  --raised: #1f2935;
+  --line: #2c3745;
+  --line-soft: #263140;
+  --ink: #e6eaf0;
+  --ink-2: #c3ccd8;
+  --muted: #9aa7b8;
+  --faint: #6f7c8d;
+
+  --navy-tint: #1f2935;
+
+  --accent: #6fa3e0;
+  --accent-soft: color-mix(in srgb, #6fa3e0 16%, var(--surface));
+  --accent-line: color-mix(in srgb, #6fa3e0 40%, var(--surface));
+  --ok: #8fdcb4;
+  --ok-soft: color-mix(in srgb, #8fdcb4 16%, var(--surface));
+  --ok-mid: #46a87a;
+  --warn: #f2c27a;
+  --warn-soft: color-mix(in srgb, #f2c27a 16%, var(--surface));
+  --warn-mid: #e3a040;
+  --bad: #f29b9b;
+  --bad-soft: color-mix(in srgb, #f29b9b 16%, var(--surface));
+  --bad-mid: #dd6262;
+  --violet: #c4b2f2;
+  --violet-soft: color-mix(in srgb, #c4b2f2 16%, var(--surface));
+  --teal: #7fd0d6;
+  --teal-soft: color-mix(in srgb, #7fd0d6 16%, var(--surface));
+  --idle: #9aa7b8;
+  --idle-soft: color-mix(in srgb, #9aa7b8 16%, var(--surface));
+}

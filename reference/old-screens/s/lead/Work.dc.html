@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Work</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+.L svg{flex:none}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.04),0 6px 18px -10px rgba(15,42,74,.18);min-width:0;position:relative}
+.ch{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;flex-wrap:wrap}
+.st{margin:0;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.tile{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;line-height:16px;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.mono{font-family:'IBM Plex Mono',monospace}
+.sg{font-family:sans-serif;letter-spacing:-.03em}
+.mut{color:#667180}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:600 12.5px Public Sans,sans-serif;border:1px solid #d0d5dd;background:#fff;color:#15263b;cursor:pointer;white-space:nowrap}
+.btnp{background:#15263b;border-color:#15263b;color:#fff}
+.seg{display:inline-flex;flex-wrap:wrap;padding:2px;border-radius:8px;background:#f1f4f8;box-shadow:inset 0 0 0 1px #e3e6eb}
+.new{font:600 10px/14px Public Sans,sans-serif;color:#667180;background:#eef0f3;border:1px solid #e3e6eb;border-radius:6px;padding:1px 6px;letter-spacing:0}
+.fc{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;border:1px solid #e3e6eb;background:#fff;font:600 12px Public Sans,sans-serif;color:#344054;cursor:pointer;white-space:nowrap}
+.tl{display:grid;grid-template-columns:170px repeat(14,minmax(26px,1fr));align-items:center}
+.wcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,340px);gap:16px;align-items:stretch}
+.wcols>section:first-child{order:2}
+@media (max-width:1100px){.wcols{grid-template-columns:minmax(0,1fr)}}
+.td{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:0 8px;border-radius:8px;border:1px solid transparent;cursor:grab}
+.td:hover{background:#f8fafc;border-color:#e3e6eb}
+.hd{font:800 10.5px Public Sans,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#98a1ae;padding:12px 18px 6px;display:flex;align-items:center;gap:6px}
+.grip{color:#b6c0cd;flex:none}
+.hr{position:absolute;left:0;right:0;border-top:1px solid #e3e8ef}
+.tlrow{height:36px}
+.tlx{display:none}
+.blk{position:absolute;left:3px;right:3px;border-radius:6px;padding:3px 6px;font-size:11px;line-height:1.25;overflow:hidden;color:#fff}
+.blk .rh{position:absolute;left:0;right:0;height:8px;cursor:ns-resize;z-index:3;touch-action:none}
+.blk .rh.t{top:0}.blk .rh.b{bottom:0}
+.blk .rh::after{content:"";position:absolute;left:50%;width:24px;height:3px;margin-left:-12px;border-radius:2px;background:currentColor;opacity:0;transition:opacity .15s}
+.blk .rh.t::after{top:2px}.blk .rh.b::after{bottom:2px}
+.blk:hover .rh::after,.blk.rz .rh::after{opacity:.7}
+.blk{cursor:pointer}
+.tbx{position:absolute;z-index:9;width:214px;background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 16px 34px -12px rgba(15,42,74,.45);padding:10px 12px;color:#15263b;font:12px Public Sans,sans-serif;cursor:default}
+.tbx b{display:block;font-size:12.5px;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbx .rw{display:grid;grid-template-columns:42px 1fr;align-items:center;gap:6px;margin-bottom:6px}
+.tbx label{font-weight:600;color:#667180}
+.tbx{color-scheme:light}
+.tbx .sp{display:grid;grid-template-columns:30px 1fr 30px;align-items:center;height:32px;border:1px solid #d0d5dd;border-radius:8px;overflow:hidden;background:#fff}
+.tbx .sp button{height:100%;border:0;background:#f4f6fa;color:#15263b;font:700 15px Public Sans,sans-serif;cursor:pointer;padding:0}
+.tbx .sp button:hover{background:#eceff4}
+.tbx .sp button:disabled{color:#c3ccd8;cursor:default;background:#f4f6fa}
+.tbx .sp button:focus-visible{outline:2px solid #1a73d6;outline-offset:-2px}
+.tbx .sp input{min-width:0;width:100%;height:100%;border:0;border-left:1px solid #e3e6eb;border-right:1px solid #e3e6eb;text-align:center;font:700 13px Public Sans,sans-serif;color:#15263b;background:#fff;font-variant-numeric:tabular-nums;padding:0 4px;box-sizing:border-box}
+.tbx .sp input:focus{outline:2px solid #1a73d6;outline-offset:-2px}
+.tbx .sp.bad{border-color:#be3434}
+.tbx .hint{font-size:11px;color:#98a1ae;margin:-2px 0 6px 48px}
+.tbx .du{font-size:11px;color:#667180;margin:0 0 6px 48px}
+.tbx .er{color:#be3434;font-size:11px;margin:2px 0 6px}
+.tbx .ac{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
+.tbx .ac button{height:28px;padding:0 12px;border-radius:8px;font:600 12px Public Sans,sans-serif;cursor:pointer;border:1px solid #d0d5dd;background:#fff;color:#15263b}
+.tbx .ac button.p{background:#15263b;border-color:#15263b;color:#fff}
+.blk.rz{box-shadow:0 0 0 2px #15263b,0 8px 18px -8px rgba(15,42,74,.5)!important;z-index:6}
+.ld-an{display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:16px;align-items:stretch}
+@media (max-width:1000px){.ld-an{grid-template-columns:minmax(0,1fr)}}
+.ld-bar{display:grid;grid-template-columns:96px minmax(0,1fr) 40px;gap:12px;align-items:center;font-size:13px;font-weight:600}
+.ms-row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;color:#15263b;cursor:pointer;padding:3px 6px;margin:0 -6px;border-radius:6px}
+.ms-row:hover{background:#f4f6fa}
+.ms-row:focus-visible{outline:2px solid #2563a8;outline-offset:1px}
+.ld-trk{display:flex;gap:2px;height:12px;border-radius:99px;overflow:hidden;background:#c4ccd8}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="work" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Work" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1400px; width: 100%; margin: 0 auto; padding: 18px clamp(12px, 2vw, 28px) 110px; display: flex; flex-direction: column; gap: 14px">
+
+      <!-- toolbar: the count, the view, the two filters that matter, and the actions -->
+      <div class="ds-bar">
+        <sc-if value="{{ddAny}}" hint-placeholder-val="{{false}}"><div class="ds-scrim" onClick="{{ddClose}}" aria-hidden="true"></div></sc-if>
+        <span class="chip" style="background: #15263b; color: #fff">14 open · 8 companies</span>
+        <span class="seg" role="group" aria-label="Work view"><sc-for list="{{views}}" as="v" hint-placeholder-count="3"><button type="button" onClick="{{v.pick}}" aria-pressed="{{v.pressed}}" style="{{v.st}}">{{v.label}}</button></sc-for></span>
+        <span class="ds-ddw"><button type="button" class="ds-dd" aria-haspopup="true" aria-expanded="{{ddCoX}}" data-active="{{ddCoOn}}" aria-label="Clients filter: {{ddCoLabel}}" onClick="{{ddCoTog}}">{{ddCoLabel}}<svg class="ds-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><sc-if value="{{ddCoOpen}}" hint-placeholder-val="{{false}}"><div class="ds-pop" role="group" aria-label="Clients"><div class="ds-pop-h"><span>Clients</span><button type="button" class="ds-lnk" onClick="{{ddCoClear}}">Clear</button></div><sc-for list="{{ddCoOpts}}" as="o" hint-placeholder-count="4"><button type="button" class="ds-opt" aria-pressed="{{o.on}}" onClick="{{o.pick}}"><span class="ds-cb" aria-hidden="true"></span><i style="{{o.dot}}"></i>{{o.label}}</button></sc-for></div></sc-if></span>
+        <span class="ds-ddw"><button type="button" class="ds-dd" aria-haspopup="true" aria-expanded="{{ddShX}}" data-active="{{ddShOn}}" aria-label="Show filter: {{ddShLabel}}" onClick="{{ddShTog}}">{{ddShLabel}}<svg class="ds-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><sc-if value="{{ddShOpen}}" hint-placeholder-val="{{false}}"><div class="ds-pop" role="group" aria-label="Show"><sc-for list="{{ddShOpts}}" as="o" hint-placeholder-count="4"><button type="button" class="ds-opt" aria-pressed="{{o.on}}" onClick="{{o.pick}}"><span class="ds-rd" aria-hidden="true"></span><i style="{{o.dot}}"></i>{{o.label}}</button></sc-for></div></sc-if></span>
+        <span style="margin-left: auto; display: flex; gap: 8px; align-items: center">
+          <button type="button" class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>Plan my week</button>
+          <button type="button" class="btn btnp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>New to-do</button>
+          <span class="ds-ddw"><button type="button" class="ds-dd ds-icon" aria-haspopup="menu" aria-expanded="{{ddMoreX}}" aria-label="More actions" title="More actions" onClick="{{ddMoreTog}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button><sc-if value="{{ddMoreOpen}}" hint-placeholder-val="{{false}}"><div class="ds-pop ds-pop-r" role="menu" aria-label="More actions"><button type="button" class="ds-opt" role="menuitem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m17 2 4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3"></path></svg>Templates<span class="new">New</span></button><button type="button" class="ds-opt" role="menuitem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Export<span class="new">New</span></button></div></sc-if></span>
+        </span>
+      </div>
+
+
+      <div class="wcols">
+        <!-- TO-DO -->
+        <section class="card" style="padding-bottom: 10px">
+          <div class="ch"><span class="tile" style="background: #fcefd8; color: #a35f00"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m9 12 2 2 4-4"></path></svg></span><h2 class="st">To-do</h2><span class="chip" style="background: #15263b; color: #fff">14</span></div>
+          <div style="display: flex; gap: 6px; padding: 0 16px 6px"><label for="qa" style="position: absolute; left: -9999px">Quick add</label><input id="qa" placeholder="Add a to-do…  e.g. 'Call Mei Fri 3pm'" style="flex: 1; min-width: 0; height: 32px; border: 1px solid #d0d5dd; border-radius: 6px; padding: 0 10px; font: inherit; font-size: 12.5px"></div>
+          <sc-for list="{{todoGroups}}" as="g" hint-placeholder-count="3">
+            <div>
+              <div class="hd"><span>{{g.h}}</span><span class="mono" style="color: #b6c0cd">{{g.n}}</span><sc-if value="{{g.isNew}}" hint-placeholder-val="{{false}}"><span class="new">New</span></sc-if></div>
+              <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+                <div class="td" style="{{t.rowSt}}">
+                  <svg class="grip" width="12" height="16" viewBox="0 0 12 16" fill="currentColor" aria-hidden="true"><circle cx="3" cy="3" r="1.4"></circle><circle cx="9" cy="3" r="1.4"></circle><circle cx="3" cy="8" r="1.4"></circle><circle cx="9" cy="8" r="1.4"></circle><circle cx="3" cy="13" r="1.4"></circle><circle cx="9" cy="13" r="1.4"></circle></svg>
+                  <input type="checkbox" aria-label="{{t.t}}" checked="{{t.done}}" style="width: 15px; height: 15px; margin: 0; accent-color: #1e7f55">
+                  <i style="{{t.dot}}"></i>
+                  <span style="flex: 1; min-width: 0"><span style="{{t.ts}}">{{t.t}}</span><span class="mut" style="display: block; font-size: 11px">{{t.meta}}</span></span>
+                  <sc-if value="{{t.lock}}" hint-placeholder-val="{{false}}"><span title="Due date locked by manager" style="color: #667180; display: flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect width="16" height="10" x="4" y="11" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span></sc-if>
+                  <span class="chip" style="{{t.cs}}">{{t.due}}</span>
+                  <sc-if value="{{t.nudge}}" hint-placeholder-val="{{false}}"><button type="button" class="btn" style="height: 24px; padding: 0 8px; font-size: 11px">Remind</button></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </section>
+
+        <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+        <!-- TIMELINE -->
+        <section class="card">
+          <div class="ch"><span class="tile" style="background: #e3edfb; color: #2563a8"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h10M6 12h9M11 18h7"></path></svg></span><h2 class="st">Timeline</h2>
+            <span class="mono mut" style="font-size: 11px; margin-left: auto">12 to 25 OCT</span></div>
+            <div class="mut" style="font-size: 11.5px; display: flex; gap: 6px 14px; flex-wrap: wrap; padding: 0 16px 10px"><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #1a73d6; vertical-align: -1px"></i> In progress</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #be3434; vertical-align: -1px"></i> Overdue</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #c3cad6; vertical-align: -1px"></i> Waiting on client</span><span>Manager date</span><span><i style="display: inline-block; width: 18px; height: 8px; border-radius: 3px; border: 1.5px dashed #1a73d6; background: #e3eefb; vertical-align: 0"></i> My to-do</span><span><i style="display: inline-block; width: 8px; height: 8px; transform: rotate(45deg); background: #be3434"></i> Filing due</span><span><i style="display: inline-block; width: 2px; height: 10px; background: #d4213d"></i> Today</span></div>
+          <div style="overflow-x: auto; padding: 0 16px 14px">
+            <div style="min-width: 560px; position: relative; padding-bottom: 28px">
+              <div class="tl mono" style="font-size: 10px; color: #98a1ae; border-bottom: 1px solid #e3e6eb; padding-bottom: 4px">
+                <span></span><sc-for list="{{tlDays}}" as="d" hint-placeholder-count="14"><span style="{{d.st}}">{{d.l}}</span></sc-for>
+              </div>
+              <span aria-hidden="true" style="position: absolute; top: 18px; bottom: 22px; left: calc(170px + (100% - 170px) * 4.5 / 14 - 1px); width: 2px; background: #d4213d; z-index: 3"></span><span style="position: absolute; bottom: 2px; left: calc(170px + (100% - 170px) * 4.5 / 14); transform: translateX(-50%); background: #d4213d; color: #fff; font: 700 11px Public Sans, sans-serif; padding: 2px 8px; border-radius:6px; white-space: nowrap; z-index: 4">Today 16 Oct</span>
+              <sc-for list="{{tl}}" as="r" hint-placeholder-count="9">
+                <div class="tl tlrow" style="border-bottom: 1px solid #e3e6eb; position: relative">
+                  <span style="display: flex; align-items: center; gap: 8px; min-width: 0; padding-right: 8px"><i style="{{r.dot}}"></i><span style="min-width: 0; overflow: hidden"><b style="display: block; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.t}}</b><span class="mut" style="display: block; font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis" title="{{r.c}}">{{r.c}}</span></span></span>
+                  <span class="tlbar" style="{{r.bar}}" title="{{r.tip}}" onClick="{{r.pick}}"><sc-if value="{{r.lock}}" hint-placeholder-val="{{false}}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-label="Locked by manager" role="img"><rect width="16" height="10" x="4" y="11" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></sc-if>{{r.lab}}<span class="tlx">{{r.span}}</span></span>
+                  <sc-if value="{{r.hasDue}}" hint-placeholder-val="{{false}}"><span style="{{r.due}}" title="{{r.dueTip}}"></span></sc-if>
+                </div>
+              </sc-for>
+              <!-- request change pop-over: opens when a locked bar is clicked -->
+              <sc-if value="{{popOn}}" hint-placeholder-val="{{false}}">
+                <div role="dialog" aria-label="Locked date" style="{{popSt}}">
+                  <div style="display: flex; gap: 8px; align-items: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15263b" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect width="16" height="10" x="4" y="11" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><b style="font-size: 12.5px; flex: 1">{{popT}}</b><button type="button" onClick="{{popX}}" aria-label="Close" style="border: 0; background: none; color: #667180; cursor: pointer; font-size: 14px; padding: 0 2px">✕</button></div>
+                  <div class="mut" style="font-size: 11.5px; margin: 4px 0 8px">You can plan work inside it. Moving the date needs your manager.</div>
+                  <button type="button" class="btn btnp" style="height: 28px; width: 100%">Request change</button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </section>
+            <!-- CALENDAR -->
+          <section class="card" style="overflow: visible">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px 12px">
+              <div style="position: relative">
+              <div style="display: flex; align-items: center; gap: 2px; background: #fff; border: 1px solid #e3e6eb; border-radius: 6px; padding: 2px">
+                <button type="button" aria-label="Previous" style="border: 0; width: 28px; height: 28px; border-radius:6px; background: none; color: #15263b; cursor: pointer; display: grid; place-items: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+                <button type="button" onClick="{{pkM}}" aria-expanded="{{pkMe}}" aria-haspopup="dialog" aria-label="Choose month" style="{{pkMs}}"><span>October</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+                <button type="button" onClick="{{pkY}}" aria-expanded="{{pkYe}}" aria-haspopup="dialog" aria-label="Choose year" style="{{pkYs}}"><span>2026</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+                <button type="button" aria-label="Next" style="border: 0; width: 28px; height: 28px; border-radius:6px; background: none; color: #15263b; cursor: pointer; display: grid; place-items: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+              </div>
+              <sc-if value="{{pkOpen}}" hint-placeholder-val="{{false}}">
+                <div role="dialog" aria-label="Choose a date" style="position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; width: 304px; background: #fff; border: 1px solid #e3e6eb; border-radius: 14px; box-shadow: 0 18px 40px -16px rgba(15,42,74,.35); padding: 12px">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 10px">
+                    <button type="button" aria-label="Previous" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e3e6eb; background: #fff; color: #15263b; display: grid; place-items: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+                    <span style="display: flex; align-items: center; gap: 4px"><button type="button" onClick="{{pkM}}" style="{{pkMs}}"><span>October</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button><button type="button" onClick="{{pkY}}" style="{{pkYs}}"><span>2026</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button></span>
+                    <button type="button" aria-label="Next" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e3e6eb; background: #fff; color: #15263b; display: grid; place-items: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px"><sc-for list="{{pkGrid}}" as="g" hint-placeholder-count="12"><button type="button" onClick="{{g.pick}}" aria-pressed="{{g.on}}" style="{{g.st}}">{{g.l}}</button></sc-for></div>
+                  <div style="display: flex; justify-content: flex-end; border-top: 1px solid #eef0f3; margin-top: 10px; padding-top: 8px"><button type="button" onClick="{{pkClose}}" style="border: 0; background: none; font: 600 13px Public Sans, sans-serif; color: #15263b; cursor: pointer; padding: 4px 6px">Today</button></div>
+                </div>
+              </sc-if>
+            </div>
+            <span class="mono mut" style="font-size: 11.5px">{{calRange}}</span>
+              <button type="button" class="btn" style="height: 34px">Today</button>
+              <span class="seg" role="group" aria-label="Calendar view" style="margin-left: auto"><sc-for list="{{calViews}}" as="v" hint-placeholder-count="3"><button type="button" onClick="{{v.pick}}" aria-pressed="{{v.pressed}}" style="{{v.st}}">{{v.label}}</button></sc-for></span>
+            </div>
+
+            <!-- WEEK / DAY -->
+            <sc-if value="{{isGrid}}" hint-placeholder-val="{{true}}">
+              <div style="overflow-x: auto; margin: 0 16px 12px; border: 1px solid #98a1ae; border-radius: 8px; background: #fff">
+                <div style="{{gridMin}}">
+                  <div style="{{headCols}}">
+                    <span style="background: #eef2f8; border-bottom: 1px solid #98a1ae"></span>
+                    <sc-for list="{{cols}}" as="c" hint-placeholder-count="7"><span style="{{c.hst}}"><span style="font: 800 11px Public Sans, sans-serif; letter-spacing: .08em">{{c.dw}}</span><b class="sg" style="{{c.ns}}">{{c.dn}}</b></span></sc-for>
+                  </div>
+                  <div style="{{headCols}}">
+                    <span class="mono" style="font-size: 9.5px; color: #98a1ae; padding: 6px 6px 0 0; text-align: right; border-bottom: 1px solid #e3e6eb">ALL DAY</span>
+                    <sc-for list="{{cols}}" as="c" hint-placeholder-count="7"><span style="{{c.ad}}"><sc-for list="{{c.all}}" as="a" hint-placeholder-count="1"><span style="{{a.st}}" title="{{a.tip}}">{{a.t}}</span></sc-for></span></sc-for>
+                  </div>
+                  <div style="{{bodyCols}}">
+                    <div style="position: relative">
+                      <sc-for list="{{hours}}" as="h" hint-placeholder-count="9"><span style="{{h.st}}">{{h.l}}</span></sc-for>
+                    </div>
+                    <sc-for list="{{cols}}" as="c" hint-placeholder-count="7">
+                      <div style="{{c.body}}">
+                        <sc-for list="{{hours}}" as="h" hint-placeholder-count="9"><span class="hr" style="{{h.line}}"></span></sc-for>
+                        <sc-for list="{{c.blocks}}" as="b" hint-placeholder-count="2">
+                          <div class="{{b.cls}}" style="{{b.st}}" title="{{b.tip}}" onClick="{{b.open}}"><span class="rh t" onPointerDown="{{b.top}}" aria-label="Drag to change the start time" role="slider"></span><span class="rh b" onPointerDown="{{b.bot}}" aria-label="Drag to change the end time" role="slider"></span><b style="display: block; font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{b.t}}</b><span style="display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{b.time}}</span>
+                            <sc-if value="{{b.warn}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 3px; margin-top: 3px; background: #fff4e5; color: #8a4a10; border-radius:6px; padding: 2px 4px; font-weight: 700"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"></path></svg>After task end 15 Oct</span></sc-if>
+                          </div>
+                        </sc-for>
+                        <sc-if value="{{c.edOn}}" hint-placeholder-val="{{false}}">
+                          <div class="tbx" role="dialog" aria-label="Change time" style="{{c.edSt}}">
+                            <b>{{c.edT}}</b>
+                            <div class="rw"><label for="tbx-a">Start</label><div class="{{c.aCls}}"><button type="button" aria-label="Start 15 minutes earlier" onClick="{{c.aDn}}" disabled="{{c.aDnOff}}">−</button><input id="tbx-a" type="text" inputmode="text" autocomplete="off" value="{{c.edA}}" onChange="{{c.tyA}}" onBlur="{{c.blA}}" onKeyDown="{{c.kd}}" aria-label="Start time, for example 2:30 pm"><button type="button" aria-label="Start 15 minutes later" onClick="{{c.aUp}}" disabled="{{c.aUpOff}}">+</button></div></div>
+                            <div class="rw"><label for="tbx-z">End</label><div class="{{c.zCls}}"><button type="button" aria-label="End 15 minutes earlier" onClick="{{c.zDn}}" disabled="{{c.zDnOff}}">−</button><input id="tbx-z" type="text" inputmode="text" autocomplete="off" value="{{c.edZ}}" onChange="{{c.tyZ}}" onBlur="{{c.blZ}}" onKeyDown="{{c.kd}}" aria-label="End time, for example 4:45 pm"><button type="button" aria-label="End 15 minutes later" onClick="{{c.zUp}}" disabled="{{c.zUpOff}}">+</button></div></div>
+                            <div class="du">{{c.edDur}}</div>
+                            <div class="hint">Type a time like 2:30 pm or 14:30, or use − / +</div>
+                            <sc-if value="{{c.edBad}}" hint-placeholder-val="{{false}}"><div class="er">{{c.edMsg}}</div></sc-if>
+                            <div class="ac"><button type="button" onClick="{{c.edX}}">Cancel</button><button type="button" class="p" onClick="{{c.edOk}}">Save</button></div>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{c.ghost}}" hint-placeholder-val="{{false}}">
+                          <div style="position: absolute; left: 3px; right: 3px; top: 330px; height: 66px; border-radius: 6px; border: 2px dashed #db2777; background: rgba(219,39,119,.08); z-index: 4"></div>
+                          <div style="position: absolute; left: -150px; top: 292px; z-index: 7; width: 220px; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; background: #fff; border: 1px solid #e3e6eb; box-shadow: 0 16px 30px -10px rgba(15,42,74,.45); transform: rotate(-2deg)"><i style="width: 8px; height: 8px; border-radius: 2px; background: #db2777"></i><b style="font-size: 12px; flex: 1">Bank KYC pack · Brightwave</b><svg width="16" height="16" viewBox="0 0 24 24" fill="#15263b" aria-hidden="true"><path d="M5 3l14 8-6 2-3 6z"></path></svg></div>
+                          <span style="position: absolute; left: 6px; top: 400px; z-index: 7; font: 700 10.5px Public Sans; color: #9d174d; background: #fde2ec; border-radius:6px; padding: 1px 5px">Drop · 4:30 to 6:00 PM</span>
+                        </sc-if>
+                        <sc-if value="{{c.now}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: 0; right: 0; top: 154px; height: 2px; background: #d4213d; z-index: 5"><span style="position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 99px; background: #d4213d"></span></span></sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- MONTH -->
+            <sc-if value="{{isMonth}}" hint-placeholder-val="{{false}}">
+              <div style="padding: 0 16px 16px">
+                <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid #98a1ae; border-bottom: 0; border-radius: 8px; overflow: hidden; background: #fff">
+                  <sc-for list="{{dows}}" as="w" hint-placeholder-count="7"><span style="{{w.st}}">{{w.l}}</span></sc-for>
+                  <sc-for list="{{month}}" as="d" hint-placeholder-count="35"><span style="{{d.box}}"><span style="display: flex; align-items: center; gap: 6px"><b style="{{d.ns}}">{{d.n}}</b><span class="mono" style="margin-left: auto; font-size: 11px; color: #667180">{{d.cnt}}</span></span><sc-for list="{{d.ev}}" as="e" hint-placeholder-count="2"><span style="{{e.st}}"><i style="{{e.bar}}"></i><span style="overflow: hidden; text-overflow: ellipsis">{{e.t}}</span></span></sc-for></span></sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </section>
+        </div>
+      </div>
+
+      <!-- my work · status and by area -->
+      <div class="ld-an" data-card="my-status">
+        <section class="card" style="padding: 18px 20px; display: flex; gap: 22px; align-items: center">
+          <div style="{{msDonut}}" role="button" tabindex="0" title="Open the breakdown" aria-label="{{msTip}} · open the breakdown" onClick="{{msOpen}}"><div style="width: 78px; height: 78px; border-radius: 99px; background: #fff; display: grid; place-items: center; text-align: center"><div><b class="sg" style="font-size: 24px; display: block; line-height: 1">{{msTot}}</b><span class="mut" style="font-size: 11px">tasks</span></div></div></div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px">
+            <span style="font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase">My work · status</span>
+            <sc-for list="{{msLegend}}" as="c" hint-placeholder-count="5"><button type="button" class="ms-row" onClick="{{c.open}}" aria-label="{{c.label}} · {{c.n}} · open the list"><span style="{{c.sw}}"></span><span style="flex: 1">{{c.label}}</span><b>{{c.n}}</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: #98a1ae"><path d="m9 6 6 6-6 6"></path></svg></button></sc-for>
+          </div>
+        </section>
+        <section class="card" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 13px">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap"><h2 class="st">By area · Sep to Oct</h2>
+            <span class="mut" style="margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px"><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #1e7f55"></i> Done</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #a35f00"></i> Pending</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #be3434"></i> Overdue</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #c4ccd8"></i> Not started</span></span></div>
+          <sc-for list="{{msAreas}}" as="a" hint-placeholder-count="5"><div class="ld-bar" title="{{a.tip}}"><span>{{a.name}}</span><span class="ld-trk"><span style="{{a.done}}"></span><span style="{{a.pend}}"></span><span style="{{a.late}}"></span></span><span class="mono mut" style="font-size: 12px; text-align: right">{{a.frac}}</span></div></sc-for>
+        </section>
+      </div>
+    </main>
+  </div>
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"cal":{"editor":"enum","options":["week","day","month"],"default":"week"},"$preview":{"width":1440,"height":2000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const cal = s.cal || this.props.cal || 'week';
+    const view = s.view || 'planner';
+    const mode = s.mode || this.props.mode || 'mixed';
+    const BASE = { BR: 'cmp', TL: 'cmp', KH: 'cmp', HF: 'cmp', NT: 'inc', OL: 'inc', LA: 'inc', JB: 'inc' };
+    const stageOf = (k) => mode === 'before' ? 'inc' : (mode === 'after' ? 'cmp' : BASE[k]);
+    // an item tagged inc/cmp exists only while its client is in that stage
+    const live = (k, need) => !need || need === 'any' || stageOf(k) === need;
+    const set = (o) => this.setState(o);
+    const segBtn = (on) => 'border:0;height:28px;padding:0 11px;border-radius:6px;font:600 12px Public Sans,sans-serif;cursor:pointer;' + (on ? 'background:#15263b;color:#fff' : 'background:none;color:#667180');
+    const views = [['planner', 'Planner'], ['list', 'List'], ['board', 'Board']].map(([k, label]) => ({ label, pressed: k === view ? 'true' : 'false', pick: () => set({ view: k }), st: segBtn(k === view) }));
+    const calViews = [['day', 'Day'], ['week', 'Week'], ['month', 'Month']].map(([k, label]) => ({ label, pressed: k === cal ? 'true' : 'false', pick: () => set({ cal: k }), st: segBtn(k === cal) }));
+
+    const C = { BR: ['Brightwave', '#db2777'], TL: ['Tidewater', '#0d9488'], KH: ['Kestrel', '#0284c7'], HF: ['Halcyon', '#a16207'], NT: ['Northwind', '#7c3aed'], OL: ['Orchid Lane', '#4f46e5'], LA: ['Larkspur', '#16a34a'], JB: ['Juniper', '#64748b'] };
+    const dot = (k) => 'width:8px;height:8px;border-radius:2px;flex:none;display:inline-block;background:' + C[k][1];
+    const coChips = Object.keys(C).map(k => ({ n: C[k][0], dot: dot(k) }));
+    const coSel = s.co || [], showSel = s.show || 'all', ddOpen = s.dd || '';
+    const ddTog = (k) => () => set({ dd: ddOpen === k ? '' : k });
+    const SHOWS = [['all', 'Steps + filings'], ['steps', 'Steps only'], ['filings', 'Filings only']];
+    const ddBar = {
+      ddAny: !!ddOpen, ddClose: () => set({ dd: '' }),
+      ddCoLabel: !coSel.length ? 'All clients' : (coSel.length === 1 ? C[coSel[0]][0] : coSel.length + ' clients'),
+      ddCoOn: coSel.length ? 'true' : 'false', ddCoOpen: ddOpen === 'co', ddCoX: ddOpen === 'co' ? 'true' : 'false', ddCoTog: ddTog('co'), ddCoClear: () => set({ co: [] }),
+      ddCoOpts: Object.keys(C).map(k => ({ label: C[k][0], dot: dot(k), on: coSel.includes(k) ? 'true' : 'false', pick: () => set({ co: coSel.includes(k) ? coSel.filter(x => x !== k) : coSel.concat(k) }) })),
+      ddShLabel: SHOWS.find(x => x[0] === showSel)[1], ddShOn: showSel !== 'all' ? 'true' : 'false', ddShOpen: ddOpen === 'show', ddShX: ddOpen === 'show' ? 'true' : 'false', ddShTog: ddTog('show'),
+      ddShOpts: SHOWS.map(([k, label]) => ({ label, dot: 'display:none', on: k === showSel ? 'true' : 'false', pick: () => set({ show: k, dd: '' }) })),
+      ddMoreOpen: ddOpen === 'more', ddMoreX: ddOpen === 'more' ? 'true' : 'false', ddMoreTog: ddTog('more')
+    };
+
+    const tlDays = ['M 12', 'T 13', 'W 14', 'T 15', 'F 16', 'S 17', 'S 18', 'M 19', 'T 20', 'W 21', 'T 22', 'F 23', 'S 24', 'S 25'].map((l, i) => ({ l,
+      st: 'text-align:center;' + (i === 4 ? 'color:#d4213d;font-weight:700' : (i === 5 || i === 6 || i === 12 || i === 13 ? 'color:#c3ccd8' : '')) }));
+    // [title, client, start, end, kind(m=manager locked,o=own,w=waiting), dueDay|null, dueKind]
+    const T = [
+      ['Bank account opening', 'BR', 0, 4, 'm', null, '', 'Post-3 · overdue 1d', 'cmp'],
+      ['Bank details for SPICe+', 'BR', 0, 4, 'm', null, '', 'Pre-14 · overdue 1d', 'inc'],
+      ['Bank KYC pack', 'BR', 3, 5, 'o', null, '', 'My to-do', 'any'],
+      ['FC-GPR Filing', 'TL', 1, 5, 'm', null, '', 'Post-8', 'cmp'],
+      ['MCA Remarks resubmission', 'TL', 1, 5, 'm', null, '', 'Pre-16', 'inc'],
+      ['GST Registration', 'KH', 2, 9, 'm', 8, 'TDS challan due 20 Oct', 'Reg-1', 'cmp'],
+      ['SPICe+ Filing', 'KH', 2, 6, 'm', null, '', 'Pre-12', 'inc'],
+      ['KYC Review & DSC', 'OL', 3, 8, 'm', null, '', 'Pre-10', 'inc'],
+      ['GSTR-1 QRMP · Q2', 'OL', 1, 2, 'f', 1, 'GSTR-1 QRMP due 13 Oct · overdue', 'Filing', 'cmp'],
+      ['Draft Board resolution', 'LA', 4, 10, 'm', null, '', 'Pre-2', 'inc'],
+      ['Registered office address', 'NT', 0, 9, 'w', null, '', 'Pre-7 · waiting client', 'inc'],
+      ['Professional tax · Oct', 'NT', 12, 13, 'f', 13, 'PT due 25 Oct', 'Filing', 'cmp'],
+      ['PF ECR · Sep', 'HF', 3, 4, 'f', 3, 'PF ECR due 15 Oct · overdue', 'Filing', 'cmp'],
+      ['Monthly GST recon', 'HF', 9, 11, 'r', null, '', 'Recurring · 10th', 'cmp']
+    ];
+    const TD = ['Mon 12', 'Tue 13', 'Wed 14', 'Thu 15', 'Fri 16', 'Sat 17', 'Sun 18', 'Mon 19', 'Tue 20', 'Wed 21', 'Thu 22', 'Fri 23', 'Sat 24', 'Sun 25'];
+    let tlI = -1;
+    const tl = T.filter(r => live(r[1], r[8]) && (!coSel.length || coSel.includes(r[1])) && (showSel === 'all' || (showSel === 'filings') === (r[4] === 'f'))).map(([t, k, a, b, kind, due, dueTip, sub]) => {
+      const col = C[k][1];
+      const late = k === 'BR' && kind === 'm';
+      let bar = 'grid-column:' + (a + 2) + ' / ' + (b + 2) + ';height:20px;border-radius:6px;display:flex;align-items:center;gap:4px;padding:0 7px;font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;';
+      if (kind === 'm') bar += 'background:' + (late ? '#be3434' : '#1a73d6') + ';color:#fff;cursor:pointer';
+      else if (kind === 'o') bar += 'background:#e3eefb;border:1.5px dashed #1a73d6;color:#1a73d6';
+      else if (kind === 'w') bar += 'background:#c3cad6;color:#15263b';
+      else if (kind === 'r') bar += 'background:#fff;border:1.5px solid #15263b;color:#15263b';
+      else bar += 'visibility:hidden';
+      tlI++; const row = tlI;
+      return { pick: kind === 'm' ? () => set({ pop: (s.pop && s.pop.row === row) ? null : { row, a, b, t } }) : null,
+        span: TD[a] + ' to ' + TD[Math.max(a, b - 1)], t, c: C[k][0] + ' · ' + sub, dot: dot(k), bar, lock: kind === 'm', lab: kind === 'w' ? 'Waiting on client' : (kind === 'o' ? 'Mine' : (kind === 'r' ? '↻ repeats' : '')),
+        tip: t + ' · ' + (kind === 'm' ? 'dates set by manager' : 'your dates'), hasDue: due != null, dueTip,
+        due: due == null ? '' : 'position:absolute;top:calc(50% - 6px);left:calc(170px + (100% - 170px) * ' + (due + 0.5) / 14 + ' - 6px);width:12px;height:12px;transform:rotate(45deg);border-radius:2px;z-index:2;background:' + (kind === 'f' ? '#be3434' : '#15263b') + ';box-shadow:0 0 0 2px #fff' };
+    });
+
+    const CS = { red: 'background:#be3434;color:#fff', amb: 'background:#a35f00;color:#fff', grey: 'background:#eef0f3;color:#667180', blue: 'background:#e3edfb;color:#2563a8', ok: 'background:#e2f3ea;color:#1e7f55' };
+    const mk = (t, k, meta, due, cs, o) => Object.assign({ k, t, meta: C[k][0] + ' · ' + meta, due, cs: CS[cs], dot: dot(k), done: false, lock: false, nudge: false }, o || {});
+    const groups = [
+      ['Assigned by manager', [mk('Bank account opening', 'BR', 'Post-3 · Pranay', 'Overdue 1d', 'red', { lock: true, need: 'cmp' }), mk('Bank details for SPICe+', 'BR', 'Pre-14 · Pranay', 'Overdue 1d', 'red', { lock: true, need: 'inc' }), mk('FC-GPR Filing', 'TL', 'Post-8 · Pranay', 'Today', 'amb', { lock: true, need: 'cmp' }), mk('MCA Remarks resubmission', 'TL', 'Pre-16 · Pranay', 'Today', 'amb', { lock: true, need: 'inc' }), mk('GST Registration', 'KH', 'Reg-1 · Pranay', 'Tue 20', 'grey', { lock: true, need: 'cmp' }), mk('SPICe+ Filing', 'KH', 'Pre-12 · Pranay', 'Tue 20', 'grey', { lock: true, need: 'inc' }), mk('KYC Review & DSC', 'OL', 'Pre-10 · Pranay', 'Mon 19', 'grey', { lock: true, need: 'inc' }), mk('Draft Board resolution', 'LA', 'Pre-2 · Pranay', 'Wed 21', 'grey', { lock: true, need: 'inc' }), mk('Professional tax · Oct', 'NT', 'Filing · Pranay', 'Sun 25', 'grey', { lock: true, need: 'cmp' })]],
+      ['My to-dos', [mk('Bank KYC pack', 'BR', 'dragging…', 'Fri 16', 'grey'), mk('FC-GPR · check FIRMS login', 'TL', 'planned Fri 10 AM', 'Fri 16', 'grey', { need: 'cmp' }), mk('Call Northwind about NOC', 'NT', 'done 9:40', 'Done', 'ok', { done: true, need: 'inc' })]],
+      ['Waiting on client', [mk('Utility bill + NOC', 'NT', 'asked 11 Oct', '5d', 'blue', { nudge: true, need: 'inc' }), mk('Logo file (SVG)', 'HF', 'asked 13 Oct', '3d', 'blue', { nudge: true, need: 'cmp' }), mk('Payroll sheet', 'LA', 'asked 14 Oct', '2d', 'blue', { nudge: true, need: 'cmp' })], true],
+      ['Recurring this month', [mk('Monthly GST reconciliation', 'HF', 'every 10th', '↻ 10 Nov', 'grey', { need: 'cmp' }), mk('TDS working papers', 'KH', 'every 5th', '↻ 5 Nov', 'grey', { need: 'cmp' }), mk('Weekly client status email', 'NT', 'every Fri', '↻ Today', 'amb')]]
+    ].map(([h, items, isNew]) => [h, items.filter(it => live(it.k, it.need) && (!coSel.length || coSel.includes(it.k)) && showSel !== 'filings'), isNew]);
+    const todoGroups = groups.map(([h, items, isNew]) => ({ h, n: items.length, isNew: !!isNew, items: items.map((it, i) => Object.assign(it, {
+      ts: 'display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' + (it.done ? 'color:#667180' : ''),
+      rowSt: h === 'My to-dos' && i === 0 ? 'opacity:.45;border:1px dashed #db2777;background:#fff7fb' : '' })) }));
+
+    // calendar
+    const H0 = 9, PX = 44, NH = 10;
+    const hours = []; for (let h = 0; h < NH; h++) { const hh = H0 + h; hours.push({ l: (hh > 12 ? hh - 12 : hh) + (hh >= 12 ? ' PM' : ' AM'), st: 'position:absolute;right:6px;top:' + (h * PX - 6) + 'px;font:600 11px Public Sans,sans-serif;color:#3c4a5e;white-space:nowrap', line: 'top:' + (h * PX) + 'px' }); }
+    // [dayIdx, start, end, title, client, own, warn]
+    const B = [
+      [0, 10, 12, 'Bank account opening', 'BR', 0, 0, 'cmp'], [0, 10, 12, 'Bank details for SPICe+', 'BR', 0, 0, 'inc'], [1, 9.5, 11, 'FC-GPR Filing', 'TL', 0, 0, 'cmp'], [1, 9.5, 11, 'MCA Remarks', 'TL', 0, 0, 'inc'], [1, 14, 15, 'Subscriber details', 'OL', 0, 0, 'inc'], [1, 14, 15, 'GSTR-1 QRMP', 'OL', 0, 0, 'cmp'],
+      [2, 11, 12.5, 'GST Registration', 'KH', 0, 0, 'cmp'], [2, 11, 12.5, 'SPICe+ Filing', 'KH', 0, 0, 'inc'], [2, 15, 16, 'Remind Northwind', 'NT', 0, 0, 'inc'], [2, 15, 16, 'PT working', 'NT', 0, 0, 'cmp'], [3, 10, 12, 'KYC Review & DSC', 'OL', 0, 0, 'inc'], [3, 16, 17.5, 'Bank account opening', 'BR', 0, 0, 'cmp'], [3, 16, 17.5, 'Bank details for SPICe+', 'BR', 0, 0, 'inc'],
+      [4, 10, 11, 'FC-GPR · FIRMS login', 'TL', 1, 0, 'cmp'], [4, 12, 13.5, 'Draft Board resolution', 'LA', 0, 0, 'inc'], [4, 12, 13.5, 'Payroll sheet follow-up', 'LA', 0, 0, 'cmp'], [4, 14.5, 16, 'Bank account opening', 'BR', 0, 1, 'cmp'], [4, 14.5, 16, 'Bank details for SPICe+', 'BR', 0, 1, 'inc']
+    ].filter(b => live(b[4], b[7]));
+    const RZ = s.rz || {}, keyOf = (b) => b[0] + '|' + b[3] + '|' + b[1];
+    B.forEach(b => { const r = RZ[keyOf(b)]; if (r) { b.k = keyOf(b); b[1] = r[0]; b[2] = r[1]; } else b.k = keyOf(b); });
+    const fmt = (h) => { const hh = Math.floor(h + 1e-9), m = Math.round((h - hh) * 60); return (hh > 12 ? hh - 12 : hh) + ':' + (m < 10 ? '0' : '') + m; };
+    const hhmm = (h) => { const hh = Math.floor(h + 1e-9), m = Math.round((h - hh) * 60); return (hh < 10 ? '0' : '') + hh + ':' + (m < 10 ? '0' : '') + m; };
+    const toH = (v) => { const m = /^(\d{1,2}):(\d{2})/.exec(String(v || '')); return m ? +m[1] + (+m[2]) / 60 : NaN; };
+    const ED = s.ed || null;
+    const parseT = (v) => {
+      let t = String(v || '').trim().toLowerCase().replace(/\s+/g, '').replace('.', ':');
+      const pm = /p/.test(t), am = /a/.test(t); t = t.replace(/[apm]/g, '');
+      let h, m = 0, x;
+      if ((x = /^(\d{1,2}):(\d{1,2})$/.exec(t))) { h = +x[1]; m = +x[2]; }
+      else if ((x = /^(\d{3,4})$/.exec(t))) { h = Math.floor(+x[1] / 100); m = +x[1] % 100; }
+      else if ((x = /^(\d{1,2})$/.exec(t))) { h = +x[1]; }
+      else return NaN;
+      if (m > 59 || h > 23) return NaN;
+      if (pm && h < 12) h += 12; if (am && h === 12) h = 0;
+      if (!pm && !am && h >= 1 && h <= 7) h += 12;   // work hours: a bare 2 means 2 pm
+      return h + m / 60;
+    };
+    const openBox = (b) => (e) => {
+      if (e && e.target && e.target.closest && e.target.closest('.rh')) return;
+      if (this._rzJust && Date.now() - this._rzJust < 350) return;
+      this.setState({ ed: { k: b.k, a: b[1], z: b[2], msg: '' } });
+    };
+    const grab = (b, edge) => (e) => {
+      if (e && e.preventDefault) e.preventDefault(); if (e && e.stopPropagation) e.stopPropagation();
+      const y0 = e.clientY, a0 = b[1], z0 = b[2], k = b.k;
+      this._rzk = k;
+      const move = (ev) => {
+        const d = Math.round((ev.clientY - y0) / PX * 4) / 4;
+        let a = a0, z = z0;
+        if (edge === 't') a = Math.min(Math.max(H0, a0 + d), z0 - 0.5); else z = Math.max(Math.min(H0 + NH, z0 + d), a0 + 0.5);
+        const cur = (this.state && this.state.rz) || {};
+        if (cur[k] && cur[k][0] === a && cur[k][1] === z) return;
+        this.setState({ rz: Object.assign({}, cur, { [k]: [a, z] }) });
+      };
+      const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); this._rzk = null; this._rzJust = Date.now(); this.setState({ rzOn: null });
+        const r = ((this.state && this.state.rz) || {})[k]; if (r && window.vcfoToast) window.vcfoToast(b[3] + ' · ' + fmt(r[0]) + ' to ' + fmt(r[1]) + (r[1] >= 12 ? 'pm' : 'am')); };
+      window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+      this.setState({ rzOn: k });
+    };
+    const blockSt = (b) => {
+      const col = C[b[4]][1];
+      return 'top:' + ((b[1] - H0) * PX + 1) + 'px;height:' + ((b[2] - b[1]) * PX - 2) + 'px;' + 'border-radius:8px;padding:4px 7px;font-size:11.5px;line-height:1.3;' + (b[5] ? 'background:#fff;color:' + col + ';border:1.5px dashed ' + col : 'background:' + col + ';color:#fff;box-shadow:0 1px 3px rgba(15,42,74,.25)') + (b[6] ? ';outline:2px solid #a35f00;outline-offset:1px' : '');
+    };
+    const ALLR = { 1: [['GSTR-1 QRMP · Orchid', 'f', 'Filing due 13 Oct · read-only', 'OL', 'cmp']], 3: [['PF ECR · Halcyon', 'f', 'Filing due 15 Oct · overdue · read-only', 'HF', 'cmp']], 4: [['FC-GPR due · locked', 'm', 'Manager date · locked', 'TL', 'cmp'], ['MCA remarks due · locked', 'm', 'Manager date · locked', 'TL', 'inc']] };
+    const ALL = {}; Object.keys(ALLR).forEach(d => { ALL[d] = ALLR[d].filter(a => live(a[3], a[4])); });
+    const dw = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const dayIdx = cal === 'day' ? [4] : [0, 1, 2, 3, 4, 5, 6];
+    const edB = ED ? B.filter(b => b.k === ED.k)[0] : null;
+    const saveBox = () => {
+      const a = ED.aT != null ? parseT(ED.aT) : ED.a, z = ED.zT != null ? parseT(ED.zT) : ED.z;
+      let msg = '';
+      if (isNaN(a) || isNaN(z)) msg = 'Use a time like 2:30 pm or 14:30.';
+      else if (a < H0 || z > H0 + NH) msg = 'Pick a time between 9:00 am and 7:00 pm.';
+      else if (z - a < 0.25) msg = 'End must be at least 15 minutes after start.';
+      if (msg) { this.setState({ ed: Object.assign({}, ED, { msg }) }); return; }
+      const cur = s.rz || {};
+      this.setState({ ed: null, rz: Object.assign({}, cur, { [ED.k]: [a, z] }) });
+      if (window.vcfoToast) window.vcfoToast(edB[3] + ' · ' + fmt(a) + ' to ' + fmt(z) + (z >= 12 ? 'pm' : 'am'));
+    };
+    const cols = dayIdx.map(i => {
+      const today = i === 4, wk = i >= 5;
+      const edHere = !!(edB && edB[0] === i);
+      const edInfo = edHere ? { edOn: true, edT: edB[3], edA: ED.aT != null ? ED.aT : fmt(ED.a) + (ED.a >= 12 ? ' pm' : ' am'), edZ: ED.zT != null ? ED.zT : fmt(ED.z) + (ED.z >= 12 ? ' pm' : ' am'),
+        aCls: 'sp' + (ED.aT != null && isNaN(parseT(ED.aT)) ? ' bad' : ''), zCls: 'sp' + (ED.zT != null && isNaN(parseT(ED.zT)) ? ' bad' : ''),
+        tyA: (e) => set({ ed: Object.assign({}, ED, { aT: e.target.value, msg: '' }) }), tyZ: (e) => set({ ed: Object.assign({}, ED, { zT: e.target.value, msg: '' }) }),
+        blA: () => { if (ED.aT == null) return; const v = parseT(ED.aT); set({ ed: Object.assign({}, ED, isNaN(v) ? {} : { a: v, aT: null }) }); },
+        blZ: () => { if (ED.zT == null) return; const v = parseT(ED.zT); set({ ed: Object.assign({}, ED, isNaN(v) ? {} : { z: v, zT: null }) }); },
+        kd: (e) => { if (e.key === 'Enter') { e.preventDefault(); saveBox(); } else if (e.key === 'Escape') set({ ed: null }); }, edBad: !!ED.msg, edMsg: ED.msg,
+        edDur: (() => { const m = Math.round((ED.z - ED.a) * 60), h = Math.floor(m / 60), r = m % 60; return (h ? h + ' h' : '') + (h && r ? ' ' : '') + (r ? r + ' min' : '') + ' block'; })(),
+        aDn: () => set({ ed: Object.assign({}, ED, { a: Math.max(H0, ED.a - 0.25), aT: null, msg: '' }) }), aUp: () => set({ ed: Object.assign({}, ED, { a: Math.min(ED.z - 0.25, ED.a + 0.25), aT: null, msg: '' }) }),
+        zDn: () => set({ ed: Object.assign({}, ED, { z: Math.max(ED.a + 0.25, ED.z - 0.25), zT: null, msg: '' }) }), zUp: () => set({ ed: Object.assign({}, ED, { z: Math.min(H0 + NH, ED.z + 0.25), zT: null, msg: '' }) }),
+        aDnOff: ED.a <= H0, aUpOff: ED.a >= ED.z - 0.25, zDnOff: ED.z <= ED.a + 0.25, zUpOff: ED.z >= H0 + NH,
+        edSt: 'top:' + Math.min((edB[2] - H0) * PX + 4, NH * PX - 150) + 'px;' + (i >= 4 ? 'right:3px' : 'left:3px'),
+        edX: () => set({ ed: null }), edOk: saveBox } : { edOn: false };
+      return Object.assign(edInfo, { dw: dw[i], dn: 12 + i, now: today, ghost: today && cal !== 'day',
+        hst: 'display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;background:#eef2f8;border-left:1px solid #98a1ae;border-bottom:1px solid #98a1ae;color:#667180',
+        ns: 'min-width:24px;height:24px;padding:0 4px;border-radius:6px;display:grid;place-items:center;font:700 13px Public Sans,sans-serif;letter-spacing:0;' + (today ? 'background:#15263b;color:#fff' : 'color:#15263b'),
+        ad: 'min-height:30px;padding:4px;border-left:1px solid #dfe3e9;border-bottom:1px solid #98a1ae;display:flex;flex-direction:column;gap:3px;' + (today ? 'background:#f4f7fb' : ''),
+        all: (ALL[i] || []).map(([t, k, tip]) => ({ t, tip, st: 'font:600 11px Public Sans,sans-serif;height:20px;line-height:20px;border-radius:3px;padding:0 6px 0 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#eef2f8;color:#15263b;box-shadow:inset 3px 0 0 ' + (k === 'f' ? '#be3434' : '#15263b') })),
+        body: 'position:relative;height:' + (NH * PX) + 'px;border-left:1px solid #dfe3e9;' + (today ? 'background:#f4f7fb' : (wk ? 'background:#fbfcfe' : '')),
+        blocks: B.filter(b => b[0] === i).map(b => ({ open: openBox(b), cls: 'blk' + (s.rzOn === b.k || (ED && ED.k === b.k) ? ' rz' : ''), top: grab(b, 't'), bot: grab(b, 'b'), t: b[3], time: fmt(b[1]) + ' to ' + fmt(b[2]) + (b[2] >= 12 ? 'pm' : 'am'), warn: !!b[6], st: blockSt(b), tip: b[3] + ' · ' + C[b[4]][0] + (b[6] ? ' · outside the task span' : '') }))
+      });
+    });
+    const tmpl = '52px repeat(' + dayIdx.length + ',minmax(' + (cal === 'day' ? 400 : 96) + 'px,1fr))';
+    const month = [];
+    const MEVR = { 5: [['TDS', '#1e7f55', 'KH', 'cmp']], 12: [['Bank A/c', '#db2777', 'BR', 'any']], 13: [['FC-GPR', '#0d9488', 'TL', 'cmp'], ['GSTR-1 QRMP', '#be3434', 'OL', 'cmp'], ['MCA remarks', '#0d9488', 'TL', 'inc']], 14: [['GST Reg', '#0284c7', 'KH', 'cmp'], ['SPICe+', '#0284c7', 'KH', 'inc']], 15: [['PF ECR', '#be3434', 'HF', 'cmp'], ['KYC', '#4f46e5', 'OL', 'inc']], 16: [['FIRMS', '#0d9488', 'TL', 'cmp'], ['Draft BR', '#16a34a', 'LA', 'inc'], ['Utility reminder', '#7c3aed', 'NT', 'inc']], 19: [['KYC due', '#4f46e5', 'OL', 'inc']], 20: [['GSTR-1', '#a35f00', 'HF', 'cmp'], ['TDS', '#a35f00', 'KH', 'cmp']], 21: [['BR due', '#16a34a', 'LA', 'inc']], 22: [['FC-GPR', '#eceff4', 'TL', 'cmp']], 25: [['PT', '#eceff4', 'NT', 'cmp']], 30: [['GST recon ↻', '#a16207', 'HF', 'cmp']] };
+    const MEV = {}; Object.keys(MEVR).forEach(d => { MEV[d] = MEVR[d].filter(e => live(e[2], e[3])); });
+    const cell = 'height:96px;padding:7px 8px;display:flex;flex-direction:column;gap:4px;overflow:hidden;border-right:1px solid #98a1ae;border-bottom:1px solid #98a1ae;background:#fff;';
+    const dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((l, i) => ({ l, st: 'padding:7px 8px;background:#eef2f8;border-bottom:1px solid #98a1ae;font:800 11px Public Sans,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#667180' + (i < 6 ? ';border-right:1px solid #98a1ae' : '') }));
+    const badge = (st) => 'min-width:24px;height:24px;padding:0 4px;border-radius:6px;display:grid;place-items:center;font:700 13px Public Sans,sans-serif;' + st;
+    const outDay = (n) => ({ n, cnt: '', ev: [], box: cell + (month.length % 7 === 6 ? 'border-right:0;' : ''), ns: badge('color:#a9b4c4') });
+    [28, 29, 30].forEach(n => month.push(outDay(n)));
+    for (let d = 1; d <= 31; d++) {
+      const ev = MEV[d] || [], pos = month.length % 7, today = d === 16;
+      const has = (c) => ev.some(e => e[1] === c);
+      const st = !ev.length ? 'color:#15263b' : (has('#be3434') ? 'background:#be3434;color:#fff' : (has('#a35f00') ? 'background:#a35f00;color:#fff' : 'background:#15263b;color:#fff'));
+      month.push({ n: d, cnt: ev.length > 1 ? ev.length : '', ns: badge(st),
+        box: cell + (pos === 6 ? 'border-right:0;' : '') + (today ? 'box-shadow:inset 0 0 0 2px #15263b;background:#eef2f8;' : ''),
+        ev: ev.slice(0, 2).map(([t, c]) => ({ t, st: 'display:flex;align-items:center;gap:6px;height:20px;flex:none;padding:0 6px 0 0;border-radius:3px;background:' + c + ';font:600 11px Public Sans,sans-serif;color:' + (c === '#eceff4' ? '#15263b' : '#fff') + ';overflow:hidden;white-space:nowrap;padding-left:6px',
+          bar: 'display:none' })) });
+    }
+    let nx = 1; while (month.length % 7) month.push(outDay(nx++));
+
+    // client-style month / year picker
+    const pk = s.pk || null;
+    const pkBtn = (on) => 'display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 8px;border:0;border-radius:6px;font:700 14px Public Sans,sans-serif;color:#15263b;cursor:pointer;background:' + (on ? '#eef2f8' : 'none');
+    const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const pkVals = pk === 'y' ? Array.from({ length: 20 }, (_, i) => String(2020 + i)) : MON;
+    const pkGrid = pkVals.map(l => { const on = l === '2026' || l === 'Oct'; return { l, on: on ? 'true' : 'false', pick: () => set({ pk: null }),
+      st: 'height:44px;border:0;border-radius:8px;font:700 15px Public Sans,sans-serif;cursor:pointer;' + (on ? 'background:#15263b;color:#fff' : 'background:none;color:#15263b') }; });
+    // my work · status counts [done, in progress, due soon, overdue, not started] and areas as [done, pending, overdue, total]
+    const MS = { st: [10, 5, 4, 2, 3], areas: [['MCA', 3, 3, 1, 7], ['GST', 3, 2, 0, 6], ['Income tax', 2, 2, 0, 4], ['Payroll', 1, 1, 1, 3], ['FEMA', 1, 1, 0, 4]] };
+    const MS_ST = [['Done', '#1e7f55'], ['In progress', '#2563a8'], ['Due soon', '#a35f00'], ['Overdue', '#be3434'], ['Not started', '#c4ccd8']];
+    const msTot = MS.st.reduce((x, y) => x + y, 0);
+    let msAcc = 0;
+    const msDonut = 'width:112px;height:112px;border-radius:99px;flex:none;display:grid;place-items:center;background:conic-gradient(' +
+      MS_ST.map(([, c], i) => { const a = msAcc; msAcc += MS.st[i] / msTot * 100; return c + ' ' + a + '% ' + msAcc + '%'; }).join(',') + ')';
+    // the tasks behind the counts: [task, client · step, detail, route]
+    const MS_T = [
+      [['Name Approval', 'Larkspur · Pre-5', 'Done Mon 12', 'lead-step'], ['MSME Udyam', 'Halcyon · Reg-9', 'Done Mon 12', 'lead-step'], ['INC-20A', 'Kestrel · Post-11', 'Done Tue 13', 'lead-step'], ['GSTR-1 QRMP · Q2', 'Orchid Lane · Filing', 'Filed 13 Oct', 'lead-filings'],
+       ['Capital structure', 'Northwind · Pre-6', 'Done 9 Oct', 'lead-step'], ['Subscriber details', 'Orchid Lane · Pre-9', 'Done 14 Oct', 'lead-step'], ['TDS/TCS challan', 'Kestrel · Filing', 'Filed 7 Oct', 'lead-filings'], ['PF ECR · Aug', 'Halcyon · Filing', 'Filed 15 Sep', 'lead-filings'],
+       ['Call Northwind about NOC', 'Northwind · My to-do', 'Done 9:40 today', 'lead-work'], ['Board minutes', 'Brightwave · Post-4', 'Done Wed 14', 'lead-step']],
+      [['GST Registration', 'Kestrel · Reg-1', 'Due Tue 20', 'lead-step'], ['KYC Review & DSC', 'Orchid Lane · Pre-10', 'Due Mon 19', 'lead-step'], ['Draft Board resolution', 'Larkspur · Pre-2', 'Due Wed 21', 'lead-step'],
+       ['Trademark Registration', 'Halcyon · Reg-15', 'Day 3 of 10', 'lead-step'], ['SPICe+ Filing', 'Kestrel · Pre-12', 'Due today', 'lead-step']],
+      [['GSTR-1 · Sep', 'Halcyon · Filing', 'Due 20 Oct', 'lead-filings'], ['TDS challan · Sep', 'Kestrel · Filing', 'Due 20 Oct', 'lead-filings'], ['Professional tax · Oct', 'Northwind · Filing', 'Due 25 Oct', 'lead-filings'], ['FC-GPR resubmission', 'Tidewater · Post-8', 'Due Thu 22', 'lead-step']],
+      [['Bank account opening', 'Brightwave · Post-3', 'Overdue 1d', 'lead-step'], ['PF ECR · Sep', 'Halcyon · Filing', 'Overdue 1d · was due 15 Oct', 'lead-filings']],
+      [['Proposed Directors', 'Northwind · Pre-8', 'Opens after Pre-7', 'lead-step'], ['Client details', 'Juniper · Pre-1', 'Waiting to start', 'lead-step'], ['ADT-1 auditor appointment', 'Tidewater · Filing', 'Window opens 1 Nov', 'lead-filings']]
+    ];
+    const msOpen = (active) => {
+      if (!window.vcfoDrill) return;
+      const tabs = MS_ST.map(([label, color], i) => ({ label, color, rows: MS_T[i].map(([t, c, d, go]) => [t, c + ' · ' + d, label, color, go]) }));
+      tabs.unshift({ label: 'All', rows: [].concat(tabs[3].rows, tabs[2].rows, tabs[1].rows, tabs[4].rows, tabs[0].rows) });
+      window.vcfoDrill({ title: 'My work · status', sub: msTot + ' tasks · ' + (msTot - MS.st[0]) + ' open · Sep to Oct', tabs, active: typeof active === 'number' ? active : 0,
+        link: { lead: 'Everything you are working on', text: 'Open board →', go: 'lead-work-board', where: 'the board' } });
+    };
+    const msLegend = MS_ST.map(([label, c], i) => ({ label, n: MS.st[i], sw: 'width:12px;height:12px;border-radius:3px;flex:none;background:' + c, open: () => msOpen(i + 1) }));
+    const msSeg = (n, t, c) => 'height:100%;flex:none;width:' + (n / t * 100) + '%;background:' + c + (n ? '' : ';display:none');
+    const msAreas = MS.areas.map(([name, d, p, o, t]) => ({ name, frac: d + '/' + t, tip: name + ': ' + d + ' done, ' + p + ' pending, ' + o + ' overdue, ' + (t - d - p - o) + ' not started',
+      done: msSeg(d, t, '#1e7f55'), pend: msSeg(p, t, '#a35f00'), late: msSeg(o, t, '#be3434') }));
+    return {
+      msDonut, msLegend, msAreas, msTot, msOpen: () => msOpen(0), msTip: 'My work: ' + MS_ST.map(([l], i) => l + ' ' + MS.st[i]).join(', '),
+      mode, setMode: (m) => set({ mode: m }),
+      pkOpen: !!pk, pkGrid, pkClose: () => set({ pk: null }),
+      pkM: () => set({ pk: pk === 'm' ? null : 'm' }), pkY: () => set({ pk: pk === 'y' ? null : 'y' }),
+      pkMs: pkBtn(pk === 'm'), pkYs: pkBtn(pk === 'y'), pkMe: pk === 'm' ? 'true' : 'false', pkYe: pk === 'y' ? 'true' : 'false',
+      calRange: cal === 'month' ? '' : (cal === 'day' ? 'Fri 16 Oct' : '12 to 18 Oct'),
+      popOn: !!s.pop, popX: () => set({ pop: null }),
+      popT: s.pop ? 'Due ' + TD[Math.max(s.pop.a, s.pop.b - 1)].split(' ')[1] + ' Oct · set by Pranay' : '',
+      popSt: s.pop ? 'position:absolute;top:' + (24 + (s.pop.row + 1) * 36 + 2) + 'px;z-index:6;width:268px;background:#fff;border:1px solid #e3e6eb;border-radius:8px;box-shadow:0 14px 32px -12px rgba(15,42,74,.4);padding:10px 12px;' +
+        (s.pop.b > 9 ? 'right:0' : 'left:calc(170px + (100% - 170px) * ' + s.pop.a + ' / 14)') : '',
+      views, calViews, dows, coChips, ...ddBar, tlDays, tl, todoGroups, hours, cols, month,
+      isGrid: cal !== 'month', isMonth: cal === 'month',
+      calTitle: cal === 'month' ? 'October 2026' : (cal === 'day' ? 'Friday, 16 October' : '12 to 18 October 2026'),
+      gridMin: 'min-width:' + (cal === 'day' ? 460 : 740) + 'px',
+      headCols: 'display:grid;grid-template-columns:' + tmpl,
+      bodyCols: 'display:grid;grid-template-columns:' + tmpl + ';padding-top:8px'
+    };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

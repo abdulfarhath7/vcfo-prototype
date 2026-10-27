@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ask VCFO launcher</title>
+<script src="./support.js"></script>
+<script src="./data.js"></script>
+<script src="./assign.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="{{root}}">
+  <sc-if value="{{bubble}}" hint-placeholder-val="{{false}}">
+    <div role="status" style="position: absolute; right: 0; bottom: 70px; width: 300px; box-sizing: border-box; border-radius: 10px; background: #fff; border: 1px solid #dde3ec; box-shadow: 0 12px 32px -12px rgba(15,42,74,.3); padding: 12px 12px 10px; display: flex; flex-direction: column; gap: 8px; font: 500 13px/1.45 Public Sans, system-ui, sans-serif; color: #0f1b2d">
+      <div style="display: flex; gap: 8px; align-items: flex-start"><span style="flex: 1">Hello Krishna. Ask me about your clients, steps or filings, or pick a question below.</span><button type="button" aria-label="Dismiss" style="width: 24px; height: 24px; border: 0; background: transparent; color: #667180; border-radius: 6px; cursor: pointer">✕</button></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px"><button type="button" style="min-height: 30px; padding: 0 10px; border-radius: 6px; border: 1px solid rgba(46,92,255,.35); background: #eef2ff; color: #2a4fd6; font: 600 12px Public Sans, sans-serif">What is late today?</button><button type="button" style="min-height: 30px; padding: 0 10px; border-radius: 6px; border: 1px solid rgba(46,92,255,.35); background: #eef2ff; color: #2a4fd6; font: 600 12px Public Sans, sans-serif">Who owes me documents?</button></div>
+    </div>
+  </sc-if>
+  <span style="{{charBox}}">
+    <span style="{{lift}}">
+      <svg viewBox="0 0 340 216" width="100%" height="100%" aria-hidden="true" focusable="false" style="display: block">
+        <style>
+.vpv-loop .vpv-eye{transform-box:fill-box;transform-origin:center}
+.vpv-loop .vpv-head{animation:vpvRise 20.5s infinite}
+.vpv-loop .vpv-eyes{animation:vpvLook 20.5s infinite ease-in-out}
+.vpv-loop .vpv-eye{animation:vpvBlink 20.5s infinite}
+.vpv-loop .vpv-hand{animation:vpvGrip 20.5s infinite ease-out;animation-fill-mode:backwards}
+.vpv-loop .vpv-hand-r{animation-delay:.09s}
+@keyframes vpvRise{0%,2.4%{transform:translateY(232px);animation-timing-function:cubic-bezier(.3,.75,.35,1)}14.1%,25.4%{transform:translateY(72px);animation-timing-function:cubic-bezier(.3,.75,.35,1)}33.2%,40%{transform:translateY(44px);animation-timing-function:cubic-bezier(.3,.75,.35,1)}48.3%,66.3%{transform:translateY(0);animation-timing-function:ease-in-out}74.6%,80%{transform:translateY(72px);animation-timing-function:cubic-bezier(.5,0,.75,.4)}89.3%,100%{transform:translateY(232px)}}
+@keyframes vpvLook{0%,14.1%{transform:translate(0,0)}15.5%,19.5%{transform:translate(-12px,-2px)}21%,24%{transform:translate(12px,-2px)}25.5%,50%{transform:translate(0,0)}51.5%,55%{transform:translate(-12px,3px)}56.5%,60%{transform:translate(12px,-4px)}61.5%,74.6%{transform:translate(0,0)}76%,79%{transform:translate(10px,-3px)}80.5%,100%{transform:translate(0,0)}}
+@keyframes vpvBlink{0%,25.6%,26.4%,34.4%,35.2%,35.8%,36.6%,63%,63.8%,100%{transform:scaleY(1)}26%,34.8%,36.2%,63.4%{transform:scaleY(.08)}}
+@keyframes vpvGrip{0%{opacity:0;translate:0 14px}2.4%,89.3%{opacity:1;translate:0 0}91.5%,100%{opacity:0;translate:0 16px}}
+@media (prefers-reduced-motion: reduce){.vpv-loop .vpv-head,.vpv-loop .vpv-eyes,.vpv-loop .vpv-eye{animation:none}.vpv-loop .vpv-head{transform:translateY(44px)}.vpv-loop .vpv-hand{animation:none;opacity:1}}
+        </style>
+        <defs>
+          <linearGradient id="{{u}}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DF8"></stop><stop offset="1" stop-color="#2563a8"></stop></linearGradient>
+          <linearGradient id="{{u}}k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DF8"></stop><stop offset="1" stop-color="#2563EB"></stop></linearGradient>
+          <filter id="{{u}}g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+          <clipPath id="{{u}}c"><rect x="0" y="0" width="340" height="200"></rect></clipPath>
+        </defs>
+        <g class="vpv-loop">
+          <g clip-path="url(#{{u}}c)"><g transform="translate(50 0)"><g class="vpv-head">
+            <line x1="120" y1="46" x2="120" y2="24" stroke="#1e5290" stroke-width="5" stroke-linecap="round"></line>
+            <circle cx="120" cy="18" r="8" fill="#2DD4BF"></circle>
+            <rect x="14" y="112" width="20" height="46" rx="10" fill="#1e5290"></rect>
+            <rect x="206" y="112" width="20" height="46" rx="10" fill="#1e5290"></rect>
+            <rect x="30" y="44" width="180" height="210" rx="56" fill="url(#{{u}}h)"></rect>
+            <path d="M62 56 q30 -10 60 -8" stroke="#fff" stroke-opacity=".28" stroke-width="5" stroke-linecap="round" fill="none"></path>
+            <rect x="50" y="84" width="140" height="82" rx="36" fill="#0B1736"></rect>
+            <rect x="64" y="91" width="54" height="7" rx="3.5" fill="#fff" fill-opacity=".08"></rect>
+            <g class="vpv-eyes" filter="url(#{{u}}g)" fill="#7DD3FC">
+              <rect class="vpv-eye" x="88" y="109" width="22" height="30" rx="11"></rect>
+              <rect class="vpv-eye" x="130" y="109" width="22" height="30" rx="11"></rect>
+              <path class="vpv-smile" d="M103 148 Q120 161 137 148" fill="none" stroke="#7DD3FC" stroke-width="5" stroke-linecap="round"></path>
+            </g>
+            <rect x="104" y="180" width="32" height="5" rx="2.5" fill="#1E3A8A" fill-opacity=".7"></rect>
+          </g></g></g>
+          <g class="vpv-hand" transform="translate(4 178)">
+            <rect x="2" y="4" width="46" height="22" rx="11" fill="url(#{{u}}k)" stroke="#2563a8" stroke-opacity=".5"></rect>
+            <g fill="#2563a8"><rect x="6" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="16" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="26" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="36" y="18" width="8.5" height="17" rx="4.25"></rect></g>
+            <path d="M12 10 h18" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"></path>
+          </g>
+          <g class="vpv-hand vpv-hand-r" transform="translate(286 178)">
+            <rect x="2" y="4" width="46" height="22" rx="11" fill="url(#{{u}}k)" stroke="#2563a8" stroke-opacity=".5"></rect>
+            <g fill="#2563a8"><rect x="6" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="16" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="26" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="36" y="18" width="8.5" height="17" rx="4.25"></rect></g>
+            <path d="M12 10 h18" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"></path>
+          </g>
+        </g>
+      </svg>
+    </span>
+  </span>
+  <button type="button" aria-label="{{pillLabel}}" style="{{pill}}">
+    <sc-if value="{{closed}}" hint-placeholder-val="{{true}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: #2DD4BF; box-shadow: 0 0 0 3px rgba(45,212,191,.22)"></span>Ask VCFO</sc-if>
+    <sc-if value="{{open}}" hint-placeholder-val="{{false}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>Close</sc-if>
+  </button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"phone":{"editor":"boolean","default":false},"bubble":{"editor":"boolean","default":false},"open":{"editor":"boolean","default":false},"inline":{"editor":"boolean","default":false},"$preview":{"width":320,"height":220}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.u = 'vpl' + Math.random().toString(36).slice(2, 8); }
+  renderVals() {
+    const phone = !!this.props.phone, open = !!this.props.open, inline = !!this.props.inline;
+    const w = phone ? 104 : 148, inset = phone ? 14 : 24, ph = phone ? 40 : 36;
+    return {
+      u: this.u, bubble: !!this.props.bubble && !open, open, closed: !open,
+      pillLabel: open ? 'Close Ask VCFO' : 'Open Ask VCFO',
+      root: (inline ? 'position:relative;margin-left:auto;width:max-content;' : 'position:absolute;right:' + inset + 'px;bottom:0;z-index:20;') + 'display:flex;align-items:flex-end;gap:4px;font-family:Public Sans,system-ui,sans-serif',
+      charBox: 'position:relative;display:block;flex:none;width:' + w + 'px;height:' + Math.round(w * 200 / 340) + 'px;overflow:hidden',
+      lift: 'display:block;width:100%;height:' + Math.round(w * 216 / 340) + 'px;' + (open ? 'transform:translateY(100%)' : ''),
+      pill: 'flex:none;display:inline-flex;align-items:center;gap:7px;height:' + ph + 'px;margin:0 0 ' + inset + 'px;padding:0 14px 0 12px;border:0;border-radius:8px;background:#15263b;color:#fff;font:700 13px/1 Public Sans,system-ui,sans-serif;white-space:nowrap;cursor:pointer;box-shadow:0 10px 24px -10px rgba(8,20,40,.6),inset 0 0 0 1px rgba(255,255,255,.08)'
+    };
+  }
+}
+</script>
+</body>
+</html>

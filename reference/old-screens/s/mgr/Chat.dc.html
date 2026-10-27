@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Manager · Ask VCFO chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc}
+.L *{box-sizing:border-box}
+.win{position:relative;width:100%;max-width:400px;height:620px;display:flex;flex-direction:column;background:#fff;border-radius:12px;border:1px solid #dde3ec;box-shadow:0 24px 60px -20px rgba(8,20,40,.5);font:500 13px/1.5 Public Sans,system-ui,sans-serif;color:#0f1b2d}
+.vh{position:relative;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 14px;background:#15263b;color:#fff;border-radius:11px 11px 0 0}
+.av{flex:0 0 auto;width:36px;height:36px;border-radius:50%;background:#fff;display:grid;place-items:center;overflow:hidden}
+.av img{width:31px;height:39px;margin-top:9px}
+.vh b{display:block;font:800 14px Public Sans,system-ui,sans-serif}.vh small{font-size:11.5px;color:#c7d2e2}
+.vh button{margin-left:auto;flex:none;width:36px;height:36px;border-radius:6px;border:0;background:rgba(255,255,255,.12);color:#fff;font:400 22px/1 Public Sans,system-ui,sans-serif;cursor:pointer}
+.ms{flex:1;min-height:0;overflow:auto;padding:12px 0}
+.m{margin:6px 14px;max-width:84%;padding:9px 12px;border-radius:10px}
+.u{margin-left:auto;background:#15263b;color:#fff;border-radius:10px 10px 2px 10px}
+.a{background:#f1f4f8;border-radius:10px 10px 10px 2px}
+.a button{margin-top:8px;min-height:32px;padding:0 10px;border-radius:6px;border:1px solid #dde3ec;background:#fff;font:700 12px Public Sans,system-ui,sans-serif;cursor:pointer;color:#15263b}
+.ty i{display:inline-block;width:6px;height:6px;margin-right:3px;border-radius:50%;background:#7a889c;animation:vpTh 1s infinite}.ty i:nth-child(2){animation-delay:.2s}.ty i:nth-child(3){animation-delay:.4s}
+@keyframes vpTh{0%,100%{opacity:.3}50%{opacity:1}}
+.sg{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px}
+.sg button{min-height:32px;padding:4px 10px;border-radius:6px;border:1px solid rgba(46,92,255,.35);background:#eef2ff;color:#2a4fd6;font:600 12px/1.3 Public Sans,system-ui,sans-serif;text-align:left;cursor:pointer}
+form{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #eef0f3;margin:0}
+form input{flex:1;min-width:0;height:40px;border-radius:8px;border:1px solid #dde3ec;padding:0 12px;font:500 14px Public Sans,system-ui,sans-serif}
+form button{flex:none;height:40px;padding:0 14px;border-radius:6px;border:0;background:#15263b;color:#fff;font:700 13px Public Sans,system-ui,sans-serif;cursor:pointer}
+.card{margin:6px 14px;padding:12px 14px 14px;border:1px solid #dde3ec;border-radius:10px;background:#fff;box-shadow:0 1px 2px rgba(15,27,45,.04),0 8px 20px -14px rgba(15,27,45,.25)}
+.card b.ct{display:block;font:800 14px/1.35 Public Sans,system-ui,sans-serif;margin:0 0 6px}
+.card p{margin:0;font-size:13.5px;line-height:1.55}
+.card .why{margin-top:10px;font-size:12.5px;line-height:1.5;color:#4a5a70}.card .why b{display:block;font:800 12px Public Sans,system-ui,sans-serif;color:#0f1b2d;margin-bottom:2px}
+.card .src{margin-top:8px;font-size:11.5px;color:#6b7a90}
+.card .go{display:inline-flex;align-items:center;gap:6px;margin-top:12px;min-height:34px;padding:0 12px;border-radius:6px;border:1px solid #2e5cff;background:#fff;color:#2a4fd6;font:700 12.5px Public Sans,system-ui,sans-serif;cursor:pointer}
+.pk{position:absolute;right:28px;bottom:100%;width:128px;height:81px;margin-bottom:-6px;pointer-events:none;z-index:2}
+.pk svg{display:block;width:100%;height:100%;overflow:visible}
+.ant-think{animation:vpvAnt 1s ease-in-out infinite}
+@keyframes vpvAnt{50%{opacity:.3}}
+@media (prefers-reduced-motion: reduce){.ty i,.ant-think{animation:none}}
+.cap{font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#98a1ae;margin-bottom:96px}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="today" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; position: relative">
+    <dc-import name="Top" crumb="Today" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <div style="flex: 1; position: relative; min-height: 900px; padding: 28px clamp(12px, 2vw, 28px) 120px; background: rgba(15,42,74,.06)">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; align-items: end">
+        <sc-for list="{{panels}}" as="p" hint-placeholder-count="3">
+          <div>
+            <div class="cap">{{p.cap}}</div>
+            <div class="win" role="dialog" aria-label="Ask VCFO">
+              <div class="pk">
+                <svg viewBox="0 0 340 216" aria-hidden="true" focusable="false">
+                  <defs>
+                    <linearGradient id="{{p.u}}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DF8"></stop><stop offset="1" stop-color="#2563a8"></stop></linearGradient>
+                    <linearGradient id="{{p.u}}k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C8DF8"></stop><stop offset="1" stop-color="#2563EB"></stop></linearGradient>
+                    <filter id="{{p.u}}g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+                    <clipPath id="{{p.u}}c"><rect x="0" y="0" width="340" height="200"></rect></clipPath>
+                  </defs>
+                  <g clip-path="url(#{{p.u}}c)"><g transform="translate(50 0)"><g style="{{p.mood}}">
+                    <line x1="120" y1="46" x2="120" y2="24" stroke="#1e5290" stroke-width="5" stroke-linecap="round"></line>
+                    <circle class="{{p.antCls}}" cx="120" cy="18" r="8" fill="{{p.ant}}"></circle>
+                    <rect x="14" y="112" width="20" height="46" rx="10" fill="#1e5290"></rect>
+                    <rect x="206" y="112" width="20" height="46" rx="10" fill="#1e5290"></rect>
+                    <rect x="30" y="44" width="180" height="210" rx="56" fill="url(#{{p.u}}h)"></rect>
+                    <path d="M62 56 q30 -10 60 -8" stroke="#fff" stroke-opacity=".28" stroke-width="5" stroke-linecap="round" fill="none"></path>
+                    <rect x="50" y="84" width="140" height="82" rx="36" fill="#0B1736"></rect>
+                    <rect x="64" y="91" width="54" height="7" rx="3.5" fill="#fff" fill-opacity=".08"></rect>
+                    <g filter="url(#{{p.u}}g)" fill="#7DD3FC" transform="{{p.look}}">
+                      <rect x="88" y="109" width="22" height="30" rx="11"></rect>
+                      <rect x="130" y="109" width="22" height="30" rx="11"></rect>
+                      <path d="M103 148 Q120 161 137 148" fill="none" stroke="#7DD3FC" stroke-width="5" stroke-linecap="round"></path>
+                    </g>
+                    <rect x="104" y="180" width="32" height="5" rx="2.5" fill="#1E3A8A" fill-opacity=".7"></rect>
+                  </g></g></g>
+                  <g transform="translate(4 178)"><rect x="2" y="4" width="46" height="22" rx="11" fill="url(#{{p.u}}k)" stroke="#2563a8" stroke-opacity=".5"></rect><g fill="#2563a8"><rect x="6" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="16" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="26" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="36" y="18" width="8.5" height="17" rx="4.25"></rect></g><path d="M12 10 h18" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"></path></g>
+                  <g transform="translate(286 178)"><rect x="2" y="4" width="46" height="22" rx="11" fill="url(#{{p.u}}k)" stroke="#2563a8" stroke-opacity=".5"></rect><g fill="#2563a8"><rect x="6" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="16" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="26" y="18" width="8.5" height="17" rx="4.25"></rect><rect x="36" y="18" width="8.5" height="17" rx="4.25"></rect></g><path d="M12 10 h18" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"></path></g>
+                </svg>
+              </div>
+              <div class="vh"><span class="av"><img src="vcfo-bin:s/home/assets/vcfo-bot-avatar.svg" alt=""></span><span><b>Ask VCFO</b><small>Your clients, steps and filings</small></span><button type="button" aria-label="Close">×</button></div>
+              <div class="ms">
+                <div class="m a">Hello Pranay. Ask me about your clients, steps or filings, or pick a question below.</div>
+                <sc-for list="{{p.msgs}}" as="m" hint-placeholder-count="2">
+                  <sc-if value="{{m.isU}}" hint-placeholder-val="{{false}}"><div class="m u">{{m.t}}</div></sc-if>
+                  <sc-if value="{{m.isA}}" hint-placeholder-val="{{false}}"><div class="m a">{{m.t}}<sc-if value="{{m.hand}}" hint-placeholder-val="{{false}}"><br><button type="button">Hand off to Pranay</button></sc-if></div></sc-if>
+                  <sc-if value="{{m.isTy}}" hint-placeholder-val="{{false}}"><div class="m a ty" aria-label="Thinking"><i></i><i></i><i></i></div></sc-if>
+                  <sc-if value="{{m.isCard}}" hint-placeholder-val="{{false}}"><div class="card" role="group" aria-label="Answer"><b class="ct">Bank account opening · Brightwave</b><p>The bank rejected the signatory list on 15 Oct. It must match the board resolution, so the client re-signs both.</p><div class="why"><b>Why it matters to you</b>The step is 1 day late and blocks FC-GPR, which has a fixed 30-day window.</div><div class="src">Source: Post-3 activity · bank email 15 Oct</div><button type="button" class="go">Open this step →</button></div></sc-if>
+                </sc-for>
+              </div>
+              <div class="sg"><sc-for list="{{p.sugg}}" as="s" hint-placeholder-count="3"><button type="button">{{s}}</button></sc-for></div>
+              <form><label for="{{p.u}}q" style="position: absolute; left: -9999px">Ask a question</label><input id="{{p.u}}q" placeholder="Ask a question…"><button type="button">Send</button></form>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const __m = (this.state && this.state.mode) || 'mixed';
+    const __set = (m) => this.setState({ mode: m });
+    const sugg = ['What is late today?', 'Who owes me documents?', 'Which filings are due this week?'];
+    const M = (t, k, extra) => Object.assign({ t, isU: k === 'u', isA: k === 'a', isTy: k === 'ty', isCard: k === 'card', hand: false }, extra || {});
+    const panels = [
+      { u: 'cpA', cap: 'HOME · ANTENNA TEAL', ant: '#2DD4BF', antCls: '', mood: '', look: 'translate(0 0)', sugg, msgs: [] },
+      { u: 'cpB', cap: 'THINKING · ANTENNA PULSES', ant: '#2DD4BF', antCls: 'ant-think', mood: '', look: 'translate(-12 -2)', sugg: [],
+        msgs: [M('Which filings are due this week?', 'u'), M('', 'ty')] },
+      { u: 'cpC', cap: 'ANSWERED · GREEN · HAND-OFF', ant: '#22C55E', antCls: '', mood: 'transform:translateY(-6px)', look: 'translate(0 0)', sugg: ['Draft an email to Daniel', 'Request a date change'],
+        msgs: [M('What is blocking Brightwave?', 'u'), M('', 'card'), M('I cannot see the bank portal. Want your manager to check it?', 'a', { hand: true })] }
+    ];
+    return { mode: __m, setMode: __set, panels, yes: true };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

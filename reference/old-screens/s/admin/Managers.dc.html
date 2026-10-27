@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin · Managers</title>
+<script src="./support.js"></script>
+<script src="./data.js"></script>
+<script src="./assign.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+.L svg{flex:none}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.06),0 1px 1px rgba(15,42,74,.04);min-width:0;position:relative}
+.ch{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;flex-wrap:wrap}
+.st{margin:0;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#15263b}
+.tile{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none;background:#eef0f3;color:#15263b}
+.cnt{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;background:#2563a8;color:#fff;font-size:11px;font-weight:600}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:600;line-height:16px;white-space:nowrap}
+.chip.sol{min-width:112px;color:#fff}
+.mut{color:#667180}
+.mono{font-family:'IBM Plex Mono',monospace}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;min-width:84px;padding:0 12px;border-radius:8px;font:600 13px Public Sans,sans-serif;border:1px solid #e3e6eb;background:#fff;color:#15263b;cursor:pointer;white-space:nowrap}
+.btnp{background:#2563a8;border-color:#2563a8;color:#fff}
+.lnk{font-size:12px;font-weight:600;color:#2563a8;background:none;border:0;cursor:pointer;padding:0}
+.cols{display:grid;grid-template-columns:minmax(300px,1fr) minmax(0,2fr);gap:16px;align-items:stretch}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.cols2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+@media (max-width:1100px){.cols,.cols2,.cols3{grid-template-columns:minmax(0,1fr)}}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.06em;background:#eef0f3;border-bottom:2px solid #15263b;white-space:nowrap}
+.tbl td{height:44px;padding:5px 12px;border-top:1px solid #e3e6eb;vertical-align:middle;white-space:nowrap}
+.tbl tbody tr:nth-child(even) td{background:rgba(238,242,247,.45)}
+.tbl tbody tr.go{cursor:pointer}
+.tbl tbody tr.go:hover td{background:#eef4fb}
+.ct{width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;font-size:10.5px;font-weight:600;flex:none}
+.pt{width:24px;height:24px;border-radius:8px;display:inline-grid;place-items:center;font-size:10px;font-weight:600;flex:none;background:#eef0f3;color:#15263b}
+.nm{display:flex;align-items:center;gap:9px;min-width:0}
+.nm b{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.pb{display:flex;gap:2px;height:8px;width:132px;border-radius:4px;overflow:hidden}
+.pb>span{display:block;height:100%}
+.sub{display:block;font-size:11.5px;color:#667180;margin-top:1px;overflow:hidden;text-overflow:ellipsis}
+.sc{overflow:auto;scrollbar-width:thin}
+.hero{position:relative;border-radius:10px;padding:16px 20px 0;background:linear-gradient(115deg,#15263b 0%,#1b3049 60%,#2563a8 100%);color:#fff;overflow:hidden}
+.hero h1{margin:2px 0 0;font-size:24px;line-height:1.2;font-weight:600}
+.hero .when{font-size:11px;letter-spacing:.06em;opacity:.75}
+.kp{display:flex;flex-wrap:wrap;margin-top:12px;border-top:1px solid rgba(255,255,255,.14)}
+.kp>span{display:flex;align-items:baseline;gap:7px;padding:11px 22px 13px 0;margin-right:22px;border-right:1px solid rgba(255,255,255,.14)}
+.kp>span:last-child{border-right:0}
+.kp b{font-size:22px;font-weight:600}
+.kp em{font-style:normal;font-size:12px;color:#c9d6e8}
+.kp b.hot{color:#ff9b8f}
+.mr{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px 44px;gap:8px;align-items:center;padding:10px 16px;border-top:1px solid #e3e6eb;cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;font:inherit;color:inherit}
+.mr:hover{background:#eef4fb}
+.mr .n{text-align:right;font-weight:600}
+.mr .h{font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.06em;text-align:right}
+.ld{height:6px;border-radius:3px;background:#e3e6eb;overflow:hidden;margin-top:6px}
+.ld>span{display:block;height:100%;background:#2563a8}
+.pipe{display:flex;align-items:stretch;gap:0;padding:4px 16px 16px;overflow-x:auto}
+.ps{flex:1;min-width:96px;border:1px solid #e3e6eb;border-radius:8px;padding:10px 12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.ps:hover{background:#eef4fb}
+.ps[aria-pressed="true"]{background:#e6effa;border-color:#c5d8f0}
+.ps>b{display:block;font-size:22px;font-weight:600;line-height:1.1}
+.ps>span{display:block;font-size:12px;color:#667180;margin-top:2px}
+.ps i{display:flex;gap:3px;margin-top:8px;font-style:normal}
+.ps i s{width:8px;height:8px;border-radius:2px;display:block;text-decoration:none}
+.arw{display:grid;place-items:center;width:22px;flex:none;color:#98a1ae}
+.dn{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;flex:none}
+.dn>div{width:80px;height:80px;border-radius:50%;background:#fff;display:grid;place-items:center;text-align:center}
+.dn b{display:block;font-size:22px;font-weight:600;line-height:1}
+.lg{all:unset;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 6px;border-radius:6px;font-size:12.5px;font-weight:600}
+.lg:hover{background:#f7f9fc}
+.lg[aria-pressed="true"]{background:#e6effa;box-shadow:inset 0 0 0 1px #c5d8f0;color:#2563a8}
+.lg:focus-visible,.mr:focus-visible,.ps:focus-visible{outline:2px solid #2563a8;outline-offset:1px}
+.sw{width:10px;height:10px;border-radius:3px;flex:none}
+.br{display:grid;grid-template-columns:110px minmax(0,1fr) 32px;gap:10px;align-items:center;font-size:12.5px;font-weight:600}
+.trk{height:8px;border-radius:4px;background:#e3e6eb;overflow:hidden;display:flex;gap:2px}
+.trk>span{display:block;height:100%}
+.it{display:flex;align-items:center;gap:10px;padding:9px 16px;border-top:1px solid #e3e6eb}
+.empty{padding:22px 16px;color:#667180}
+.corner{position:absolute;top:12px;right:12px}
+.ibtn{width:32px;height:32px;border-radius:8px;border:1px solid #e3e6eb;background:#fff;color:#667180;display:grid;place-items:center;cursor:pointer;padding:0}
+.ibtn:hover{background:#f7f9fc;color:#15263b}
+.seg2{display:inline-flex;border:1px solid #e3e6eb;border-radius:8px;overflow:hidden}
+.seg2 button{height:32px;padding:0 12px;border:0;background:#fff;color:#667180;font:600 13px Public Sans,sans-serif;cursor:pointer}
+.seg2 button[aria-pressed="true"]{background:#e6effa;color:#2563a8}
+.colsW{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(290px,1fr);gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+@media (max-width:1100px){.colsW{grid-template-columns:minmax(0,1fr)}}
+.cg{width:100%;border-collapse:collapse;table-layout:fixed}
+.cg th{background:#eef0f3;border-bottom:2px solid #15263b;padding:8px 4px;font-size:11px;font-weight:600;color:#667180;text-transform:uppercase;letter-spacing:.04em;text-align:center;white-space:nowrap}
+.cg th:first-child,.cg td:first-child{text-align:left;padding-left:16px;width:230px}
+.cg th:last-child,.cg td:last-child{padding-right:16px}
+.cg td{border-top:1px solid #e3e6eb;padding:6px 4px;text-align:center;font-size:12px;font-weight:600;height:40px}
+.cg td>span.c{display:grid;place-items:center;height:28px;border-radius:6px}
+.cg .d{background:#1e7f55;color:#fff}.cg .p{background:#2563a8;color:#fff}.cg .o{background:#be3434;color:#fff}.cg .w{background:#a35f00;color:#fff}
+.cg .n{background:#fff;box-shadow:inset 0 0 0 1.5px #c4ccd8;color:#56627a}
+.cg tbody tr.go:hover td{background:#eef4fb}
+
+.lr{display:grid;grid-template-columns:minmax(0,1fr) 54px 54px 160px 20px;gap:10px;align-items:center;padding:10px 16px;border-top:1px solid #e3e6eb;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.lr:hover{background:#eef4fb}
+.lr .n{text-align:right;font-weight:600}
+.lr svg{transition:transform .2s ease-out;color:#667180}
+.lr[aria-expanded="true"] svg{transform:rotate(180deg)}
+.lt{padding:0 16px 10px 50px;background:#f7f9fc;border-top:1px solid #e3e6eb}
+.lt>div{display:grid;grid-template-columns:minmax(0,1fr) 150px 120px 80px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid #e3e6eb;font-size:12.5px}
+.lt>div:first-child{border-top:0}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="managers" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Managers" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1400px; width: 100%; margin: 0 auto; padding: 18px clamp(12px, 2vw, 28px) 110px; display: flex; flex-direction: column; gap: 16px">
+
+      <!-- the manager picked in the sidebar -->
+      <div class="card" style="padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+        <sc-if value="{{ddAny}}" hint-placeholder-val="{{false}}"><div class="ds-scrim" onClick="{{ddClose}}" aria-hidden="true"></div></sc-if>
+        <span style="width: 40px; height: 40px; border-radius: 8px; background: #eef0f3; color: #15263b; display: grid; place-items: center; font-size: 13px; font-weight: 600; flex: none">{{ini}}</span>
+        <span style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0"><b style="font-size: 16px; font-weight: 600">{{name}}</b><span class="mut" style="font-size: 12px">Manager · {{nClients}} clients · {{nLeads}} project leads · {{open}} open · {{late}} overdue · {{onTime}}% on time</span></span>
+        <span style="margin-left: auto; display: flex; gap: 8px; align-items: center">
+          <button type="button" class="btn btnp" data-admin-assign="client">Assign client</button>
+          <span class="ds-ddw"><button type="button" class="ds-dd ds-icon" aria-haspopup="menu" aria-expanded="{{moreX}}" aria-label="More actions" title="More actions" onClick="{{moreTog}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button><sc-if value="{{moreOpen}}" hint-placeholder-val="{{false}}"><div class="ds-pop ds-pop-r" role="menu" aria-label="More actions"><button type="button" class="ds-opt" role="menuitem" data-admin-assign="task">Assign a task</button><button type="button" class="ds-opt" role="menuitem" onClick="{{exportIt}}">Export</button></div></sc-if></span>
+        </span>
+      </div>
+
+      <div class="cols2">
+        <section class="card" data-card="mgr-status">
+          <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.2 15.9A10 10 0 1 1 8 2.8 M22 12A10 10 0 0 0 12 2v10z"></path></svg></span><h2 class="st">{{first}} · status</h2>
+            <a href="#" class="lnk" data-go="admin-work" style="margin-left: auto">Open Work</a></div>
+          <div style="display: flex; gap: 18px; align-items: center; padding: 2px 16px 16px">
+            <div style="{{donut}}; cursor: pointer" data-donut="team-tasks" data-drill="{{drill}}" role="button" tabindex="0" title="Open the breakdown" aria-label="{{donutTip}} · open the breakdown"><div style="width: 80px; height: 80px; border-radius: 50%; background: #fff; display: grid; place-items: center; text-align: center"><div><b style="display: block; font-size: 22px; font-weight: 600; line-height: 1">{{tot}}</b><span class="mut" style="font-size: 11px">tasks</span></div></div></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px"><sc-for list="{{legend}}" as="c" hint-placeholder-count="6"><div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600"><span class="sw" style="{{c.sw}}"></span><span style="flex: 1">{{c.label}}</span><b>{{c.n}}</b></div></sc-for></div>
+          </div>
+        </section>
+        <section class="card" data-card="mgr-area">
+          <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16 M4 12h10 M4 18h7"></path></svg></span><h2 class="st">By area · Sep to Oct</h2>
+            <span class="mut" style="margin-left: auto; display: flex; gap: 12px; font-size: 11.5px"><span><i class="sw" style="display: inline-block; background: #1e7f55; vertical-align: -1px"></i> Done</span><span><i class="sw" style="display: inline-block; background: #a35f00; vertical-align: -1px"></i> Pending</span><span><i class="sw" style="display: inline-block; background: #be3434; vertical-align: -1px"></i> Overdue</span></span></div>
+          <div style="display: flex; flex-direction: column; gap: 12px; padding: 4px 16px 16px">
+            <sc-for list="{{areas}}" as="a" hint-placeholder-count="5"><div class="br" title="{{a.tip}}"><span>{{a.name}}</span><span class="trk"><span style="{{a.done}}"></span><span style="{{a.pend}}"></span><span style="{{a.late}}"></span></span><span style="text-align: right">{{a.frac}}</span></div></sc-for>
+          </div>
+        </section>
+      </div>
+
+      <!-- the manager's clients -->
+      <section class="card" data-card="mgr-clients">
+        <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2 M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2 M10 6h4 M10 10h4 M10 14h4 M10 18h4"></path></svg></span><h2 class="st">{{first}}'s clients</h2><span class="cnt">{{nClients}}</span></div>
+        <div class="sc">
+          <table class="tbl" style="min-width: 980px">
+            <thead><tr><th>Client</th><th>Now at</th><th>Progress</th><th>Project lead</th><th>Stage</th><th>Next</th><th>Health</th></tr></thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+                <tr class="go" data-go="admin-overview" title="Open {{r.name}}">
+                  <td><span class="nm"><span class="ct" style="{{r.ct}}">{{r.k}}</span><b>{{r.name}}</b></span></td>
+                  <td><b style="font-weight: 600">{{r.step}}</b><span class="sub"><span class="mono">{{r.code}}</span></span></td>
+                  <td><span style="display: flex; align-items: center; gap: 8px"><span class="pb" title="{{r.pct}} of 48 steps"><sc-for list="{{r.segs}}" as="g" hint-placeholder-count="4"><span style="{{g.st}}" title="{{g.tip}}"></span></sc-for></span><span class="mut" style="font-size: 12px">{{r.pct}}</span></span></td>
+                  <td><span class="nm"><span class="pt">{{r.lIni}}</span>{{r.lead}}</span></td>
+                  <td><span class="chip" style="{{r.stS}}; min-width: 104px">{{r.stage}}</span></td>
+                  <td>{{r.next}}</td>
+                  <td><span class="chip sol" style="{{r.hlS}}">{{r.hl}}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{noRows}}" hint-placeholder-val="{{false}}"><div class="empty">No clients yet. Assign one with Assign client.</div></sc-if>
+        </div>
+      </section>
+
+      <!-- the manager's project leads: overview only, no time blocks -->
+      <section class="card" data-card="mgr-leads">
+        <div class="ch"><span class="tile"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8a4 4 0 1 0 0-8"></path></svg></span><h2 class="st">Project leads</h2><span class="cnt">{{nLeads}}</span>
+          </div>
+        <div class="lr" style="cursor: default; background: #eef0f3; padding-top: 7px; padding-bottom: 7px; font-size: 11px; font-weight: 600; color: #667180; text-transform: uppercase; letter-spacing: .06em"><span>Project lead</span><span style="text-align: right">Open</span><span style="text-align: right">Late</span><span>Load</span><span></span></div>
+        <sc-for list="{{leads}}" as="l" hint-placeholder-count="3">
+          <div>
+            <button type="button" class="lr" aria-expanded="{{l.ex}}" onClick="{{l.tog}}"><span class="nm"><span class="pt">{{l.ini}}</span><span><b>{{l.name}}</b><span class="sub">{{l.cl}}</span></span></span><span class="n">{{l.open}}</span><span class="n" style="{{l.lateSt}}">{{l.late}}</span><span class="trk"><span style="{{l.lateBar}}"></span><span style="{{l.restBar}}"></span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+            <sc-if value="{{l.isOpen}}" hint-placeholder-val="{{false}}"><div class="lt"><sc-for list="{{l.tasks}}" as="t" hint-placeholder-count="4"><div><b style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{t.t}}</b><span class="nm"><span class="ct" style="{{t.ct}}; width: 22px; height: 22px; font-size: 9.5px">{{t.k}}</span>{{t.co}}</span><span class="chip sol" style="{{t.cs}}">{{t.st}}</span><span style="{{t.dueSt}}">{{t.due}}</span></div></sc-for></div></sc-if>
+          </div>
+        </sc-for>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const A = window.ADM, s = this.state || {}, set = (o) => this.setState(o);
+    if (!this.__l) { this.__l = 1; ['vcfo:mgr', 'vcfo:assign'].forEach(ev => window.addEventListener(ev, () => this.setState({ t: Date.now(), ex: '' }))); }
+    const mode = s.mode || 'mixed', dd = s.dd || '';
+    let id = ''; try { id = sessionStorage.getItem('vcfo.mgr') || ''; } catch (e) {} if (!A.ALLMGR[id]) id = 'pranay';
+    const m = A.ALLMGR[id], st = A.mgrStats(id), all = A.allClients(), byK = {}; all.forEach(c => { byK[c.k] = c; });
+    const ORD = ['bad', 'due', 'run', 'wait', 'none', 'done'], COL = { none: '#c4ccd8' };
+    const tasks = st.tasks, cnt = ORD.map(k => tasks.filter(t => t[3] === k).length);
+    const SO = { stuck: 0, over: 1, due: 2, wait: 3, run: 4, none: 5 };
+    const rows = st.clients.slice().sort((a, b) => SO[a.health] - SO[b.health]).map(c => ({ k: c.k, name: c.name, ct: 'background:' + c.soft + ';color:' + c.ink,
+      stage: c.stage === 'inc' ? 'Incorporating' : 'Compliance', stS: c.stage === 'inc' ? 'background:#fcefd8;color:#a35f00' : 'background:#e2f3ea;color:#1e7f55',
+      step: c.step, code: c.code, pct: c.pct + '%', segs: A.phaseBar(c.phases), lead: c.lead, lIni: A.ini(c.lead),
+      ball: c.ball + ' · ' + c.days + 'd', ballS: A.OWN[c.ball], next: c.next, hl: A.HEALTH[c.health][0], hlS: 'background:' + A.HEALTH[c.health][1] }));
+    const seg = (n, t, c) => 'background:' + c + ';width:' + (t ? n / t * 100 : 0) + '%' + (n ? '' : ';display:none');
+    const areas = [...new Set(tasks.map(t => t[5]))].map(g => { const l = tasks.filter(t => t[5] === g), d = l.filter(t => t[3] === 'done').length, o = l.filter(t => t[3] === 'bad').length, p = l.length - d - o;
+      return { name: g, frac: d + '/' + l.length, tip: g + ': ' + d + ' done, ' + p + ' pending, ' + o + ' overdue', done: seg(d, l.length, '#1e7f55'), pend: seg(p, l.length, '#a35f00'), late: seg(o, l.length, '#be3434') }; });
+    const leadNames = [...new Set(m.leads.concat(st.clients.map(c => c.lead)))];
+    const maxO = Math.max(1, ...leadNames.map(n => tasks.filter(t => t[2] === n && t[3] !== 'done').length));
+    const ex = s.ex || '';
+    const leads = leadNames.map(n => { const mine = tasks.filter(t => t[2] === n), open = mine.filter(t => t[3] !== 'done'), late = open.filter(t => t[3] === 'bad').length;
+      const cls = [...new Set(st.clients.filter(c => c.lead === n).map(c => c.name))];
+      return { name: n, ini: A.ini(n), open: open.length, late, lateSt: late ? 'color:#be3434' : '', cl: cls.length ? cls.join(', ') : 'No client yet',
+        lateBar: 'background:#be3434;width:' + (late / maxO * 100) + '%', restBar: 'background:#2563a8;width:' + ((open.length - late) / maxO * 100) + '%',
+        ex: ex === n ? 'true' : 'false', isOpen: ex === n, tog: () => set({ ex: ex === n ? '' : n }),
+        tasks: mine.slice().sort((a, b) => ORD.indexOf(a[3]) - ORD.indexOf(b[3]) || a[4] - b[4]).map(t => ({ t: t[0], k: t[1], co: byK[t[1]].name, ct: 'background:' + byK[t[1]].soft + ';color:' + byK[t[1]].ink,
+          st: A.ST[t[3]][0], cs: 'background:' + A.ST[t[3]][1], due: A.due(t[4]), dueSt: t[3] === 'bad' ? 'color:#be3434;font-weight:600' : '' })) }; });
+    const drillTabs = ORD.map(k => ({ label: A.ST[k][0], color: A.ST[k][1], rows: tasks.filter(t => t[3] === k).map(t => [t[0] + ' · ' + byK[t[1]].name, t[2] + ' · due ' + A.due(t[4]), A.ST[k][0], A.ST[k][1], 'lead-work']) }));
+    return { mode, setMode: (x) => set({ mode: x }), ini: m.ini, name: m.name, first: m.name.split(' ')[0], nClients: st.clients.length, nLeads: leadNames.length,
+      open: st.open, late: st.overdue, onTime: m.onTime, rows, noRows: rows.length === 0, areas, leads,
+      donut: A.donut(ORD.map((k, i) => [cnt[i], COL[k] || A.ST[k][1]])), donutTip: ORD.map((k, i) => A.ST[k][0] + ' ' + cnt[i]).join(', '), tot: tasks.length,
+      legend: ORD.map((k, i) => ({ label: A.ST[k][0], n: cnt[i], sw: 'background:' + (COL[k] || A.ST[k][1]) })),
+      drill: JSON.stringify({ title: m.name + ' · tasks', sub: tasks.length + ' tasks across ' + st.clients.length + ' clients', tabs: [{ label: 'All', rows: [].concat(...drillTabs.map(t => t.rows)) }].concat(drillTabs) }),
+      ddAny: !!dd, ddClose: () => set({ dd: '' }), moreOpen: dd === 'more', moreX: dd === 'more' ? 'true' : 'false', moreTog: () => set({ dd: dd === 'more' ? '' : 'more' }),
+      exportIt: () => { set({ dd: '' }); if (window.vcfoToast) window.vcfoToast('Exported ' + m.name + "'s work · this is a prototype"); } };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

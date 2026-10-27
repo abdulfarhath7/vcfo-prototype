@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Work · phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.P{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;font-variant-numeric:tabular-nums}
+.P *{box-sizing:border-box}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px}
+.st{margin:0;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.chip{display:inline-flex;align-items:center;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.mono{font-family:'IBM Plex Mono',monospace}
+.sg{font-family:sans-serif}
+.mut{color:#667180}
+.hd{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#98a1ae;padding:10px 12px 4px}
+</style>
+</helmet>
+<div class="P" style="width: 390px; height: 1900px; background: #f7f9fc; position: relative; overflow: hidden">
+  <header style="height: 56px; display: flex; align-items: center; gap: 6px; padding: 0 8px; background: #fff; border-bottom: 1px solid #e3e6eb">
+    <button type="button" aria-label="Open menu" style="width: 44px; height: 44px; border: 0; background: none; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15263b" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+    <b style="flex: 1; font-size: 15px">My work</b>
+    <button type="button" style="height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid #e9792f; background: #fcefd8; color: #a35f00; font: 600 12.5px Public Sans">Plan week</button>
+    <button type="button" aria-label="New to-do" style="width: 40px; height: 40px; border-radius: 6px; border: 0; background: #15263b; color: #fff; font-size: 20px">+</button>
+  </header>
+  <div style="padding: 12px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; padding: 2px; border-radius: 8px; background: #eef0f3"><span style="flex: 1; height: 40px; display: grid; place-items: center; border-radius: 6px; background: #15263b; color: #fff; font-weight: 700; font-size: 12.5px">Day</span><span style="flex: 1; height: 40px; display: grid; place-items: center; font-weight: 600; font-size: 12.5px; color: #667180">Week</span><span style="flex: 1; height: 40px; display: grid; place-items: center; font-weight: 600; font-size: 12.5px; color: #667180">Month</span><span style="flex: 1; height: 40px; display: grid; place-items: center; font-weight: 600; font-size: 12.5px; color: #667180">Board</span></div>
+
+    <section class="card" style="padding: 12px">
+      <div style="display: flex; align-items: center; margin-bottom: 8px"><h2 class="st">Timeline</h2><span class="mono mut" style="margin-left: auto; font-size: 10.5px">12 to 18 OCT</span></div>
+      <div style="position: relative; display: flex; flex-direction: column; gap: 6px">
+        <span style="position: absolute; top: 0; bottom: 0; left: 64%; width: 2px; background: #e9792f"></span>
+        <sc-for list="{{tl}}" as="r" hint-placeholder-count="5"><div style="height: 20px; position: relative"><span style="{{r.st}}">{{r.t}}</span></div></sc-for>
+      </div>
+    </section>
+
+    <section class="card" style="overflow: hidden">
+      <div style="display: flex; align-items: center; padding: 12px"><h2 class="st">Fri 16 · Today</h2><span class="mut" style="margin-left: auto; font-size: 11.5px">5.5 h planned</span></div>
+      <div style="display: flex; gap: 4px; padding: 0 12px 8px; flex-wrap: wrap"><span class="chip" style="background: #fbe6e6; color: #be3434">PF ECR · Halcyon · overdue</span><span class="chip" style="background: #eef0f3; color: #15263b">FC-GPR due · locked</span></div>
+      <sc-for list="{{agenda}}" as="a" hint-placeholder-count="4">
+        <div style="display: flex; gap: 10px; padding: 8px 12px; border-top: 1px solid #e3e6eb; min-height: 52px; align-items: center">
+          <span class="mono mut" style="width: 64px; font-size: 11px">{{a.w}}</span>
+          <span style="{{a.bar}}"><b style="display: block; font-size: 12.5px">{{a.t}}</b><span style="font-size: 11px; opacity: .8">{{a.c}}</span><sc-if value="{{a.warn}}" hint-placeholder-val="{{false}}"><span style="display: block; margin-top: 3px; font-size: 10.5px; font-weight: 700; color: #8a4a10">After task end 15 Oct</span></sc-if></span>
+        </div>
+      </sc-for>
+    </section>
+
+    <section class="card" style="padding-bottom: 6px">
+      <div style="display: flex; align-items: center; padding: 12px 12px 0"><h2 class="st">To-do</h2><span class="mut" style="margin-left: auto; font-size: 11px">Long-press to schedule</span></div>
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+        <div><div class="hd">{{g.h}}</div>
+          <sc-for list="{{g.items}}" as="t" hint-placeholder-count="2"><label style="display: flex; gap: 10px; align-items: center; min-height: 48px; padding: 0 12px; border-top: 1px solid #e3e6eb"><input type="checkbox" checked="{{t.done}}" style="width: 18px; height: 18px; accent-color: #1e7f55"><i style="{{t.dot}}"></i><span style="{{t.ts}}">{{t.t}}</span><span class="chip" style="{{t.cs}}">{{t.d}}</span></label></sc-for>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+  
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tl = [['Bank A/c ', '#db2777', 0, 57, 1], ['FC-GPR ', '#0d9488', 14, 72, 1], ['GST Reg ', '#0284c7', 28, 72, 1], ['Bank KYC pack', '#db2777', 43, 72, 0], ['Registered Office · client', '#7c3aed', 0, 100, 2]].map(([t, c, a, b, k]) => ({ t,
+      st: 'position:absolute;top:0;bottom:0;left:' + a + '%;width:' + (b - a) + '%;border-radius:6px;padding:0 6px;font-size:10.5px;font-weight:700;display:flex;align-items:center;white-space:nowrap;overflow:hidden;' + (k === 1 ? 'background:' + c + ';color:#fff' : (k === 0 ? 'border:1.5px dashed ' + c + ';color:' + c + ';background:#fff' : 'background:' + c + '22;color:' + c)) }));
+    const agenda = [['10:00', 'FC-GPR · FIRMS login', 'Tidewater · my to-do', '#0d9488', 0, 1], ['12:00', 'Draft Board resolution', 'Larkspur', '#16a34a'], ['2:30', 'Bank account opening', 'Brightwave', '#db2777', 1], ['4:30', 'Bank KYC pack', 'Brightwave · just added', '#db2777', 0, 1]].map(([w, t, c, col, warn, own]) => ({ w, t, c, warn: !!warn,
+      bar: 'flex:1;border-radius:6px;padding:6px 8px;' + (own ? 'border:1.5px dashed ' + col + ';color:' + col + ';background:' + col + '12' : 'background:' + col + ';color:#fff') + (warn ? ';outline:2px solid #a35f00;outline-offset:1px' : '') }));
+    const dot = (c) => 'width:8px;height:8px;border-radius:2px;flex:none;background:' + c;
+    const CS = { r: 'background:#be3434;color:#fff', a: 'background:#a35f00;color:#fff', g: 'background:#eef0f3;color:#667180', o: 'background:#e2f3ea;color:#1e7f55' };
+    const groups = [['Assigned by manager', [['Bank account opening', '#db2777', '1d late', 'r'], ['FC-GPR Filing', '#0d9488', 'Today', 'a']]], ['My to-dos', [['Bank KYC pack', '#db2777', 'Fri', 'g'], ['Call Northwind about NOC', '#7c3aed', 'Done', 'o', 1]]], ['Recurring this month', [['Weekly client status email', '#7c3aed', '↻ Fri', 'a']]]].map(([h, items]) => ({ h,
+      items: items.map(([t, c, d, cs, done]) => ({ t, d, done: !!done, dot: dot(c), cs: CS[cs], ts: 'flex:1;font-size:13px;' + (done ? 'color:#667180' : '') })) }));
+    return { yes: true,  tl, agenda, groups };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

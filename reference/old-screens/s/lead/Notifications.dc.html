@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Notifications</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+/* v7 page, scoped */
+.v7c{margin:0;-webkit-font-smoothing:antialiased}.v7c{--bg:oklch(97.4% 0.006 255);--panel:oklch(100% 0 0);--raised:oklch(96.6% 0.007 255);--border:oklch(92.2% 0.011 255);--hair:oklch(94.8% 0.007 255);--fg:oklch(21% 0.042 264);--muted:oklch(46% 0.028 258);--subtle:oklch(55% 0.022 255);
+--primary:oklch(54.6% 0.215 263);--primary-dark:oklch(48.8% 0.217 264);--primary-light:oklch(96.6% 0.02 260);--primary-chip:oklch(52% 0.21 263);
+--navy:#15263b;--navy-2:#1b3049;--navy-3:#2563a8;--gold:#e9792f;--gold-soft:#fcefd8;--gold-text:#a35f00;
+--ok:oklch(56% 0.13 168);--ok-light:oklch(96% 0.028 170);--ok-text:oklch(39% 0.09 172);--ok-chip:oklch(50% 0.12 168);
+--due:oklch(66% 0.17 48);--due-light:oklch(96.8% 0.04 55);--due-text:oklch(48% 0.14 42);--due-chip:oklch(55% 0.17 42);
+--over:oklch(57% 0.2 22);--over-light:oklch(96.4% 0.026 18);--over-text:oklch(46% 0.17 20);--over-chip:oklch(52% 0.2 22);
+--prog:oklch(55% 0.16 252);--prog-light:oklch(96% 0.026 250);--prog-text:oklch(43% 0.13 254);--prog-chip:oklch(51% 0.17 252);
+--up:oklch(82% 0.018 255);--up-light:oklch(96.6% 0.007 255);--up-text:oklch(46% 0.028 258);--up-chip:oklch(54% 0.026 258);
+--violet:oklch(54% 0.17 292);--violet-light:oklch(96.4% 0.032 292);--violet-chip:oklch(50% 0.17 292);
+--sky:oklch(58% 0.12 228);--sky-light:oklch(96.4% 0.026 228);--sky-chip:oklch(49% 0.12 230);
+--teal:oklch(55% 0.1 195);--teal-light:oklch(96.4% 0.026 195);--teal-chip:oklch(47% 0.09 195);
+--gst:oklch(52% 0.15 148);--it:oklch(53% 0.16 252);--mca:oklch(50% 0.18 300);--fema:oklch(55% 0.19 12);--labour:oklch(50% 0.12 200);
+--cat-tax:oklch(58% 0.14 70);--cat-labour:oklch(50% 0.12 200);--cat-business:oklch(52% 0.17 292);--cat-ip:oklch(52% 0.13 230);--cat-fema:oklch(55% 0.19 12);
+--shadow:0 1px 2px oklch(25% 0.04 264 / 0.04), 0 6px 18px -10px oklch(28% 0.06 264 / 0.18)}.v7c a{color:var(--primary);text-decoration:none;font-weight:700}.v7c a:hover{color:var(--primary-dark)}@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}.v7c .card{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column;transition:transform .25s ease,box-shadow .25s ease;animation:up .5s cubic-bezier(.2,.7,.2,1) backwards}.v7c .card:hover{transform:translateY(-2px);box-shadow:0 2px 4px oklch(25% 0.04 264 / 0.05), 0 14px 28px -12px oklch(28% 0.08 264 / 0.25)}.v7c .card.t::before{content:none;position:absolute;left:18px;top:-1px;width:38px;height:3px;border-radius:0 0 3px 3px;background:var(--gold)}.v7c .st{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--navy-ink,var(--navy));margin:0}.v7c .ic{width:30px;height:30px;border-radius:99px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}.v7c .chip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;letter-spacing:.01em;line-height:16px;white-space:nowrap}.v7c .cap{font-size:11px;color:var(--muted)}.v7c .lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.v7c .rt{font-size:13px;font-weight:600;color:var(--fg)}.v7c .metric{font-family:Public Sans,Public Sans,sans-serif;font-weight:600;letter-spacing:-.035em;color:var(--fg);font-feature-settings:"tnum"}.v7c .mono{font-family:"IBM Plex Mono",monospace;font-feature-settings:"tnum"}.v7c .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 14px;border-radius:6px;font:600 13px Public Sans,sans-serif;border:1px solid transparent;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background-color .15s,box-shadow .15s,transform .15s}.v7c .btn:active{transform:scale(.98)}.v7c .btn-o{background:var(--panel);color:var(--fg);border-color:var(--border)}.v7c th{text-align:left;padding:8px;font-size:10.5px;font-weight:800;color:var(--subtle);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)}.v7c td{white-space:nowrap;padding:9px 8px;border-top:1px solid var(--hair);vertical-align:middle}.v7c tbody tr:first-child td{border-top:0}.v7c .seg{position:relative;display:inline-grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:4px;border-radius:8px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--border)}.v7c .seg>.thumb{position:absolute;top:4px;bottom:4px;left:4px;border-radius:6px;background:var(--primary-light);box-shadow:inset 0 0 0 1px oklch(54.6% 0.215 263 / 0.28),0 1px 2px oklch(28% 0.06 264 / 0.08);transition:transform .38s cubic-bezier(.3,1.3,.5,1)}.v7c .seg button{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:none;height:28px;padding:0 12px;border-radius:6px;font:600 12px Public Sans,sans-serif;color:var(--muted);cursor:pointer;white-space:nowrap}.v7c .seg button.on{color:var(--navy-ink,var(--navy));font-weight:700}.v7c .seg .cnt{font:600 10.5px "IBM Plex Mono",monospace;color:var(--subtle)}.v7c .seg button.on .cnt{color:var(--primary)}@media (prefers-reduced-motion: reduce){.v7c *,.v7c *::before,.v7c *::after{animation:none!important;transition:none!important}}.v7c .seg{padding:2px;border-radius:8px;background:light-dark(oklch(96.5% 0.008 250), oklch(18.3% 0.008 250));box-shadow:inset 0 0 0 1px var(--border)}.v7c .seg>.thumb{top:2px;bottom:2px;left:2px;border-radius:6px;background:var(--navy);box-shadow:0 1px 2px oklch(21% 0.042 264 / .25);transition:transform .42s linear(0,0.0637,0.2021,0.3619,0.5141,0.6451,0.7506,0.8315,0.8909,0.9328,0.9613,0.9799,0.9914,0.9981,1.0016,1.0032,1.0036,1.0034,1.0029,1.0023,1.0018,1.0013,1.0009,1.0006,1.0004)}.v7c .seg button{height:28px;padding:0 10px;border-radius:6px;font:500 12px Public Sans,sans-serif;color:oklch(55% 0.022 255);transition:color .2s}.v7c .seg button:hover{color:light-dark(oklch(45% 0.03 255), oklch(82% 0.021 255))}.v7c .seg button.on{color:#fff;font-weight:500}.v7c .seg .cnt{color:oklch(55% 0.022 255)}.v7c .seg button.on .cnt{color:oklch(100% 0 0 / .72)}.v7c .card{transition:transform .16s cubic-bezier(.22,1,.36,1),box-shadow .16s cubic-bezier(.22,1,.36,1),border-color .16s}.v7c .card:hover{transform:translateY(-2px);border-color:oklch(54.6% 0.215 263 / .35);box-shadow:0 2px 4px oklch(32% 0.04 264 / .05),0 8px 22px -6px oklch(37.9% 0.146 266 / .1),0 16px 40px -12px oklch(37.9% 0.146 266 / .08)}.v7c .btn{transition:transform .12s cubic-bezier(.22,1,.36,1),background .15s}.v7c .btn:active{transform:scale(.98)}.v7c tbody tr{transition:background .15s}.v7c tbody tr:hover{background:light-dark(oklch(96.8% 0.006 250 / .7), oklch(17.8% 0.006 250 / 0.7))}.v7c a:focus-visible,.v7c button:focus-visible,.v7c input:focus-visible,.v7c textarea:focus-visible{outline:2px solid oklch(54.6% 0.215 263 / .4);outline-offset:2px}@keyframes v7fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@keyframes v7up{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}}@keyframes v7bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes v7react{0%{transform:scale(.9)}45%{transform:scale(1.1) rotate(-4deg)}75%{transform:scale(.98)}100%{transform:none}}@keyframes v7think{0%,100%{opacity:.35}50%{opacity:1}}.v7c .react{animation:v7react .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion: reduce){.v7c .seg>.thumb,.v7c .card,.v7c .btn{transition:none}.v7c .card:hover{transform:none}.v7c .react{animation:none}}.v7c .card:focus-within,.v7c section:focus-within{position:relative;z-index:30}@keyframes v7pulse{0%,100%{box-shadow:0 0 0 0 oklch(80% 0.12 85 / .7)}50%{box-shadow:0 0 0 5px oklch(80% 0.12 85 / 0)}}.v7c .pulse{animation:v7pulse 1.8s ease-in-out infinite}@media (prefers-reduced-motion: reduce){.v7c .pulse{animation:none}}.v7c{background:var(--bg)}.v7c .pg{padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}.v7c .h3{margin:0;font:700 13px Public Sans,sans-serif;color:var(--navy-ink,var(--navy))}.v7c .btn-sm{height:30px;padding:0 10px;font-size:12px}.v7c .ibtn{width:32px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}.v7c .ibtn:hover{color:var(--navy-ink,var(--navy));border-color:oklch(54.6% 0.215 263 / .35)}.v7c .udot{width:8px;height:8px;border-radius:99px;background:var(--primary-fill,var(--primary));flex:none}.v7c .row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--hair)}.v7c .row:first-child{border-top:0}.v7c .row.unread{background:light-dark(oklch(97.6% 0.014 260), oklch(16.6% 0.01 260))}.v7c .row.unread .rt{font-weight:800}.v7c .ov{position:absolute;inset:0;background:oklch(21% 0.042 264 / .42);display:flex;align-items:center;justify-content:center;z-index:20}.v7c .dlg{width:460px;max-width:calc(100% - 32px);background:var(--panel);border-radius:12px;box-shadow:0 24px 60px -20px oklch(21% 0.042 264 / .5);overflow:hidden}.v7c .dlg-h{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--hair)}@keyframes sk{0%{background-position:-200px 0}100%{background-position:200px 0}}.v7c .toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;border-radius:8px;background:var(--navy);color:#fff;font-size:13px;font-weight:600;box-shadow:0 16px 40px -14px oklch(21% 0.042 264 / .6);z-index:25}.v7c .toast a{color:oklch(86% 0.09 85)}@media (max-width:760px){.v7c .pg{padding:16px}}@keyframes tipin{from{opacity:0;transform:translate(-50%,3px)}to{opacity:1;transform:translate(-50%,0)}}@keyframes tipin2{from{opacity:0}to{opacity:1}}.v7c [data-tip]{position:relative}.v7c [data-tip]:hover::after,.v7c [data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 9px);transform:translateX(-50%);background:var(--navy);color:#fff;font:700 11.5px/1.25 Public Sans,sans-serif;letter-spacing:0;text-transform:none;padding:5px 9px;border-radius:6px;white-space:nowrap;z-index:70;pointer-events:none;box-shadow:0 6px 16px -6px oklch(21% 0.042 264 / .5);animation:tipin .12s ease both}.v7c [data-tip]:hover::before,.v7c [data-tip]:focus-visible::before{content:"";position:absolute;left:50%;bottom:calc(100% + 5px);width:8px;height:8px;margin-left:-4px;background:var(--navy);transform:rotate(45deg);z-index:70;pointer-events:none;animation:tipin2 .12s ease both}.v7c [data-tip-below]:hover::after,.v7c [data-tip-below]:focus-visible::after{bottom:auto;top:calc(100% + 9px)}.v7c [data-tip-below]:hover::before,.v7c [data-tip-below]:focus-visible::before{bottom:auto;top:calc(100% + 5px)}@media (prefers-reduced-motion: reduce){.v7c [data-tip]::after,.v7c [data-tip]::before{animation:none!important}}.v7c{margin:0}.v7c{--vp-side-w:248px}@media (max-width:1279px){.v7c{--vp-side-w:72px}}@media (max-width:767px){.v7c{--vp-side-w:0px}}.v7c .tb-main{flex:1;min-width:0}.v7c .pg.tb-wrap{width:100%;max-width:1600px;margin-inline:auto;box-sizing:border-box;padding:clamp(16px,2vw,24px) clamp(16px,2vw,24px) 96px}.v7c .tb-segx{max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;border-radius:8px;-webkit-overflow-scrolling:touch}.v7c .tb-segx::-webkit-scrollbar{display:none}.v7c .tb-segx>.seg{width:max-content;min-width:100%;box-sizing:border-box}.v7c .tb-m{display:none!important}.v7c .lbl{font-size:11px}.v7c .seg .cnt{font-size:11px}.v7c .tb-ov{position:fixed!important;inset:0;z-index:60!important;overflow:auto;padding:var(--ovt,12px) 12px 12px;box-sizing:border-box}.v7c .tb-ov.tb-top{--ovt:min(120px,12vh);align-items:flex-start!important}.v7c .tb-ov>.dlg{max-width:calc(100vw - 24px);max-height:calc(100dvh - var(--ovt,12px) - 12px);overflow:auto;flex:none;box-sizing:border-box}.v7c .tb-toast{position:fixed!important;left:calc(50% + var(--vp-side-w,248px) / 2)!important;bottom:24px;max-width:calc(100vw - 24px);box-sizing:border-box;z-index:61!important}@media (max-width:767px){.v7c .pg.tb-wrap{padding:16px 16px 104px}.v7c .tb-d{display:none!important}.v7c .tb-m{display:revert!important}.v7c .tb-ov.tb-top{--ovt:12px;align-items:center!important}.v7c .tb-toast{left:50%!important;bottom:96px}.v7c .tb-hd>.tb-segx{flex:1 1 100%;margin-left:0!important}.v7c .btn,.v7c .btn-sm{height:40px;min-height:40px}.v7c .ibtn{width:40px;height:40px}.v7c .seg button{height:40px}}.v7c .tb-g12{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-items:start}.v7c .tb-s9{grid-column:span 9}.v7c .tb-s3{grid-column:span 3;display:flex;flex-direction:column;gap:16px}@media (max-width:959px){.v7c .tb-s9{grid-column:1 / -1}.v7c .tb-s3{grid-column:1 / -1;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));align-items:start}}.v7c .tb-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hair);min-width:0}.v7c .tb-tl{display:flex;align-items:center;gap:4px 8px;flex-wrap:wrap;min-width:0}.v7c .dd-top{flex-wrap:wrap}@media (max-width:767px){.v7c .nt{padding:11px 0;margin:-11px 0}.v7c .udot.pulse{position:relative}.v7c .udot.pulse::before{content:"";position:absolute;inset:-16px}.v7c .tb-leg{min-height:40px}}.v7c .nkind{flex:none;width:104px;display:flex;align-items:center}.v7c .tb-d{flex:none;width:168px;text-align:right}@media (max-width:520px){.v7c .nkind{width:auto;justify-content:flex-end}}
+.v7c{--vp-side-w:0px;flex:1;min-width:0;background:var(--bg);color:var(--fg);font-family:Public Sans,system-ui,sans-serif;font-size:13px;position:relative}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="updates" sub="Notifications" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Updates › Notifications" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <div class="v7c" style="display: flex">
+  
+  <div class="tb-main">
+    
+    <main class="pg tb-wrap">
+
+      <div class="tb-g12">
+        <section class="card tb-s9">
+          <div class="tb-hd">
+            <div class="tb-segx"><div class="seg" role="tablist" aria-label="Filter notifications" style="grid-template-columns:repeat(7,minmax(0,1fr))"><span class="thumb" style="width:calc((100% - 4px)/7);{{thumb}}"></span><sc-for list="{{tabs}}" as="t" hint-placeholder-count="6"><button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" class="{{t.cls}}">{{t.label}}<span class="cnt">{{t.cnt}}</span></button></sc-for></div></div>
+          </div>
+          <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+            <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:56px 16px 64px">
+              <span class="react" style="display:flex;flex:none"><img src="vcfo-bin:s/home/assets/vcfo-bot-avatar.svg" alt="" style="width:52px;height:52px;object-fit:contain;display:block"></span>
+              <div role="status" style="max-width:300px;background:var(--panel);border:1px solid var(--border);border-radius:10px 10px 10px 3px;padding:10px 12px;box-shadow:var(--shadow)">
+                <div class="rt" style="font-weight:700">All caught up. Nothing unread.</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><button type="button" class="btn btn-o btn-sm" onClick="{{showAll}}">See all</button></div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+            <div>
+              <div class="lbl" style="padding:12px 16px 6px;color:var(--navy-ink,var(--navy))">{{g.label}}</div>
+              <sc-for list="{{g.items}}" as="n" hint-placeholder-count="3">
+                <div class="{{n.rowCls}}">
+                  <span class="nic" role="img" aria-label="{{n.tipText}}" style="{{n.icSt}}"><svg width="{{n.sz}}" height="{{n.sz}}" viewBox="0 0 24 24" fill="none" stroke="{{n.s1}}" stroke-width="{{n.w1}}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{n.p1}}"></path></svg></span>
+                  <div style="flex:1;min-width:0">
+                    <span class="tb-tl"><a href="#" class="rt nt" data-go="{{n.go}}" style="{{n.tw}}">{{n.t}}</a></span>
+                    <span class="nb"><sc-for list="{{n.parts}}" as="p" hint-placeholder-count="2"><sc-if value="{{p.isLink}}" hint-placeholder-val="{{true}}"><a href="{{p.href}}" target="{{p.tgt}}" rel="noopener" data-go="{{p.go}}">{{p.t}}</a></sc-if><sc-if value="{{p.isText}}" hint-placeholder-val="{{false}}"><span>{{p.t}}</span></sc-if><span>{{p.sep}}</span></sc-for></span>
+                    <span class="mono tb-m" style="font-size:11px;color:var(--muted);margin-top:2px"><sc-if value="{{n.whoLink}}" hint-placeholder-val="{{true}}"><a href="#" data-go="{{n.whoGo}}" class="nwho">{{n.who}}</a></sc-if><sc-if value="{{n.whoText}}" hint-placeholder-val="{{false}}">{{n.who}}</sc-if> · {{n.w}}</span>
+                  </div>
+                  <span class="nkind"><span class="chip" style="{{n.chip}}">{{n.kind}}</span></span>
+                  <span class="mono tb-d" style="font-size:11px;color:var(--muted);white-space:nowrap"><sc-if value="{{n.whoLink}}" hint-placeholder-val="{{true}}"><a href="#" data-go="{{n.whoGo}}" class="nwho">{{n.who}}</a></sc-if><sc-if value="{{n.whoText}}" hint-placeholder-val="{{false}}">{{n.who}}</sc-if> · {{n.w}}</span>
+                  <sc-if value="{{n.unread}}" hint-placeholder-val="{{true}}"><button type="button" class="udot pulse" aria-label="Unread · mark as read" onClick="{{n.read}}" style="border:0;padding:0;cursor:pointer"></button></sc-if>
+                  <sc-if value="{{n.isRead}}" hint-placeholder-val="{{false}}"><span style="width:8px"></span></sc-if>
+                  <a href="#" class="ibtn" data-go="{{n.go}}" aria-label="Open {{n.t}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14 M12 5l7 7-7 7"></path></svg></a>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </section>
+
+        <div class="tb-s3">
+          <section class="card t" style="padding:16px;gap:12px;align-items:center">
+            <h2 class="st" style="align-self:flex-start">This month</h2>
+            <div style="position:relative;width:140px;height:140px">
+              <svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true" style="transform:rotate(-90deg);overflow:visible">
+                <circle cx="70" cy="70" r="54" fill="none" stroke="var(--raised)" stroke-width="18"></circle>
+                <circle cx="70" cy="70" r="54" fill="none" stroke="var(--due-chip)" stroke-width="{{s0.w}}" stroke-dasharray="{{s0.da}}" stroke-dashoffset="{{s0.off}}" onMouseEnter="{{s0.enter}}" onMouseLeave="{{leave}}" onClick="{{s0.open}}" style="cursor:pointer;transition:stroke-width .15s"></circle>
+                <circle cx="70" cy="70" r="54" fill="none" stroke="var(--prog-chip)" stroke-width="{{s1.w}}" stroke-dasharray="{{s1.da}}" stroke-dashoffset="{{s1.off}}" onMouseEnter="{{s1.enter}}" onMouseLeave="{{leave}}" onClick="{{s1.open}}" style="cursor:pointer;transition:stroke-width .15s"></circle>
+                <circle cx="70" cy="70" r="54" fill="none" stroke="oklch(70% 0.15 80)" stroke-width="{{s2.w}}" stroke-dasharray="{{s2.da}}" stroke-dashoffset="{{s2.off}}" onMouseEnter="{{s2.enter}}" onMouseLeave="{{leave}}" onClick="{{s2.open}}" style="cursor:pointer;transition:stroke-width .15s"></circle>
+                <circle cx="70" cy="70" r="54" fill="none" stroke="var(--sky-chip)" stroke-width="{{s3.w}}" stroke-dasharray="{{s3.da}}" stroke-dashoffset="{{s3.off}}" onMouseEnter="{{s3.enter}}" onMouseLeave="{{leave}}" onClick="{{s3.open}}" style="cursor:pointer;transition:stroke-width .15s"></circle>
+              </svg>
+              <button type="button" onClick="{{openAll}}" onMouseEnter="{{enterAll}}" onMouseLeave="{{leave}}" aria-label="Show all {{total}} notifications" style="position:absolute;inset:26px;border-radius:99px;border:0;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font:inherit;color:inherit" data-tip="Show all {{total}} notifications"><span class="metric" style="font-size:30px;line-height:1">{{total}}</span><span class="cap">this month</span></button>
+              <sc-if value="{{hasTip}}" hint-placeholder-val="{{false}}"><span role="tooltip" style="position:absolute;left:50%;top:-6px;transform:translate(-50%,-100%);background:var(--navy);color:#fff;font:700 12px Public Sans;padding:4px 9px;border-radius:6px;white-space:nowrap;z-index:5;box-shadow:0 6px 16px -6px oklch(21% 0.042 264 / .5)">{{tip}}<span style="position:absolute;left:50%;bottom:-4px;width:8px;height:8px;background:var(--navy);transform:translateX(-50%) rotate(45deg)"></span></span></sc-if>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;align-self:stretch">
+              <sc-for list="{{legend}}" as="l" hint-placeholder-count="4"><button type="button" class="tb-leg" onClick="{{l.open}}" onMouseEnter="{{l.enter}}" onMouseLeave="{{leave}}" style="display:flex;align-items:center;gap:8px;font:600 12px Public Sans;color:var(--fg);border:0;background:none;padding:5px 6px;border-radius:6px;cursor:pointer;text-align:left;{{l.hl}}"><span style="width:10px;height:10px;border-radius:3px;{{l.c}}"></span><span style="flex:1">{{l.k}}</span><span class="mono">{{l.n}}</span></button></sc-for>
+            </div>
+          </section>
+          <section class="card" style="padding:14px 16px;gap:10px">
+            <h2 class="h3">Northwind gets these by</h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="chip" style="background:var(--prog-light);color:var(--prog-text);padding:4px 8px">✓ Email</span>
+              <span class="chip" style="background:var(--ok-light);color:var(--ok-text);padding:4px 8px">✓ WhatsApp</span>
+            </div>
+            <a href="#" style="font-size:12px">Change in Settings →</a>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="toast tb-toast"><span>All marked read</span><a href="#" onClick="{{undo}}">Undo</a></div></sc-if>
+  
+  <sc-if value="{{drillOpen}}" hint-placeholder-val="{{false}}">
+    <div class="ov tb-ov tb-top">
+      <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="nd-t" style="width:600px;display:flex;flex-direction:column"><div class="dd-top" style="display:flex;align-items:center;gap:8px;padding:9px 18px;background:var(--primary-light);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)"><span>{{dLinkLead}}</span><a href="#" data-go="{{dLinkGo}}" onClick="{{dLinkClick}}" style="margin-left:auto;font-weight:800;font-size:12.5px;white-space:nowrap">{{dLinkText}}</a></div>
+        <div class="dlg-h">
+          <span class="ic" style="background:var(--navy)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0 M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg></span>
+          <h2 id="nd-t" style="margin:0;font:700 16px Public Sans;color:var(--navy-ink,var(--navy))">Notifications this month</h2>
+          <button type="button" class="ibtn" aria-label="Close" style="margin-left:auto;border:0" onClick="{{closeDrill}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18 M6 6l12 12"></path></svg></button>
+        </div>
+        <div style="padding:12px 18px 0"><div class="tb-segx"><div class="seg" role="tablist" aria-label="Filter by type" style="grid-template-columns:repeat(5,minmax(0,1fr))"><span class="thumb" style="width:calc((100% - 4px)/5);{{dthumb}}"></span><sc-for list="{{dtabs}}" as="t" hint-placeholder-count="5"><button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" class="{{t.cls}}">{{t.label}}<span class="cnt">{{t.cnt}}</span></button></sc-for></div></div></div>
+        <div style="padding:8px 0 10px;max-height:min(420px,52dvh);overflow:auto">
+          <sc-for list="{{dItems}}" as="n" hint-placeholder-count="4">
+            <a href="#" class="row" data-go="{{n.go}}" style="color:inherit;font-weight:inherit;padding:10px 18px">
+              <span class="nic" role="img" aria-label="{{n.tipText}}" style="{{n.icSt}}"><svg width="{{n.sz}}" height="{{n.sz}}" viewBox="0 0 24 24" fill="none" stroke="{{n.s1}}" stroke-width="{{n.w1}}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{n.p1}}"></path></svg></span>
+              <span style="flex:1;min-width:0"><span class="rt" style="display:block">{{n.t}}</span><span class="mono cap">{{n.who}} · {{n.w}}</span></span>
+              <span class="chip" style="{{n.chip}}">{{n.kind}}</span>
+              <span style="color:var(--primary);display:flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14 M12 5l7 7-7 7"></path></svg></span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tab":{"editor":"enum","options":[0,1,2,3,4,5],"default":0},"allRead":{"editor":"boolean","default":false},"drill":{"editor":"enum","options":["",0,1,2,3,4],"default":""},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const o = this._rv();
+    o.mode = (this.state && this.state.mode) || 'mixed';
+    o.setMode = (m) => this.setState({ mode: m });
+    return o;
+  }
+  constructor(p) { super(p); this.state = {}; }
+  _rv() {
+    const s = this.state;
+    const tab = s.tab !== undefined ? s.tab : Number(this.props.tab ?? 0);
+    /* ====== notification icons: OPTION 4 (owner pick). Lucide 2 px glyph in a 32 px pale-tint tile, one glyph and one colour per type.
+       Glyphs are Lucide's own geometry (24 px grid, stroke 2, round caps and joins), merged into one path each.
+       To try another set: add a SETS entry and change ICON_SET. ====== */
+    const ICON_SET = 'OPTION4';
+    const SETS = {
+      OPTION4: {
+        document: { p1: "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z M14 2v5a1 1 0 0 0 1 1h5 M10 9H8 M16 13H8 M16 17H8", col: 'oklch(54.6% 0.215 263)', tint: 'light-dark(oklch(96.6% 0.02 260), oklch(24% 0.058 260))' },      // file-text
+        step: { p1: "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M16 9l-5.5 5.5L8 12", col: 'oklch(56% 0.13 168)', tint: 'light-dark(oklch(96% 0.028 170), oklch(24.4% 0.077 170))' },          // circle-check
+        deadline: { p1: "M16 14v2.2l1.6 1 M16 2v3 M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338 M3 9h5.859 M8 2v3 M10 16a6 6 0 1 0 12 0a6 6 0 1 0 -12 0", col: 'oklch(55% 0.17 42)', tint: 'light-dark(oklch(96.8% 0.04 55), oklch(23.9% 0.106 55))' },     // calendar-clock
+        email: { p1: "M22 7l-8.991 5.727a2 2 0 0 1-2.009 0L2 7 M4 4H20a2 2 0 0 1 2 2V18a2 2 0 0 1 -2 2H4a2 2 0 0 1 -2 -2V6a2 2 0 0 1 2 -2z", col: 'oklch(54% 0.17 292)', tint: 'light-dark(oklch(96.4% 0.032 292), oklch(24.2% 0.087 292))' },               // mail
+        announcement: { p1: "M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14 M8 6v8", col: 'oklch(52% 0.17 40)', tint: 'light-dark(oklch(96.6% 0.04 45), oklch(24% 0.106 45))' },      // megaphone
+        team: { p1: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M16 3.128a4 4 0 0 1 0 7.744 M22 21v-2a4 4 0 0 0-3-3.87 M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0", col: 'oklch(49% 0.12 230)', tint: 'light-dark(oklch(96.4% 0.026 228), oklch(24.2% 0.072 228))' }                // users
+      }
+    };
+    const K = Object.assign({ bot: { p1: 'M12 8V4H8 M4 8h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z M9 13v2 M15 13v2', col: '#1a73d6', tint: '#e3eefb' } }, SETS[ICON_SET]);
+    // notification kinds → icon type, filter group, chip, tooltip
+    const T = {
+      doc: ['document', 'Documents', 'Request', 'background:var(--due-light);color:var(--due-text)', 'Document request'],
+      back: ['document', 'Documents', 'Sent back', 'background:var(--over-light);color:var(--over-text)', 'Document sent back · fix needed'],
+      step: ['step', 'Steps', 'Step', 'background:var(--ok-light);color:var(--ok-text)', 'Step done'],
+      time: ['step', 'Steps', 'Timeline', 'background:var(--prog-light);color:var(--prog-text)', 'Timeline changed'],
+      deadline: ['deadline', 'Deadlines', 'Deadline', 'background:light-dark(oklch(96.8% 0.05 85), oklch(23.9% 0.12 85));color:light-dark(oklch(45% 0.12 70), oklch(82% 0.084 70))', 'Deadline coming up'],
+      mail: ['email', 'Messages', 'Email', 'background:var(--sky-light);color:var(--sky-chip)', 'Email sent to Northwind'],
+      ann: ['announcement', 'Messages', 'Announcement', 'background:light-dark(oklch(96.6% 0.04 55), oklch(24% 0.106 55));color:light-dark(oklch(48% 0.15 42), oklch(80.8% 0.105 42))', 'Announcement'],
+      bot: ['bot', 'Chatbot', 'Chatbot', 'background:#15263b;color:#fff', 'From the VCFO assistant'],
+      team: ['team', 'Messages', 'Team', 'background:light-dark(oklch(96.5% 0.03 230), oklch(24.1% 0.082 230));color:light-dark(oklch(45% 0.11 235), oklch(82% 0.077 235))', 'Team change']
+    };
+    // one renderer for every set: tile background = tint, glyph stroke = type colour
+    const icon = (ty) => {
+      const k = K[T[ty][0]];
+      return { p1: k.p1, sz: 18, s1: k.col, w1: 2, icSt: 'background:' + k.tint };
+    };
+    const N = [
+      { id: 12, g: 0, ty: 'bot', t: 'Kestrel Health is incorporated · COI 14 Oct 2026', b: [['It moved to Compliance. 6 filings are now on your calendar.', ''], ['Open calendar', 'compliances']], who: 'VCFO assistant', ini: 'AI', w: '12:31', u: true, go: 'compliances' },
+      { id: 13, g: 0, ty: 'bot', t: '2 steps are late, 6 filings need you', b: [['Start with the red rows in the action queue, then the Tuesday GST and TDS filings.', ''], ['Open the queue', 'home']], who: 'VCFO assistant', ini: 'AI', w: '12:31', u: true, go: 'home' },
+      { id: 1, g: 0, ty: 'doc', t: '2 documents requested', b: [['Utility bill for the office', 'inc-step-7'], ['Board resolution', 'board-resolution']], who: 'Pranay', ini: 'PN', w: '10:42', u: true, go: 'documents' },
+      { id: 2, g: 0, ty: 'back', t: 'Passport copy sent back', b: [['Photo page is blurred. Please upload again.', ''], ['Open the document', 'doc-viewer']], who: 'Pranay', ini: 'PN', w: '09:15', u: true, go: 'documents' },
+      { id: 3, g: 0, ty: 'deadline', t: 'GSTR-1 due 11 Oct', b: [['Sun 11 Oct · GST', 'filings'], ['GST portal ↗', 'https://www.gst.gov.in']], who: 'VCFO Suite', ini: 'VS', w: '09:00', u: false, go: 'filings' },
+      { id: 4, g: 0, ty: 'time', t: 'Phase 2 end date moved to 28 Oct', b: [['Approved by Pranay', 'team'], ['See the timeline', 'home']], who: 'Pranay', ini: 'PN', w: '08:30', u: true, go: 'inc-phase' },
+      { id: 5, g: 1, ty: 'step', t: 'Capital structure accepted', b: [['Step 6 of 14 is complete', 'inc-step-6']], who: 'Pranay', ini: 'PN', w: 'Tue 6 Oct', u: false, go: 'inc-step-6' },
+      { id: 6, g: 1, ty: 'step', t: 'Name approved by MCA', b: [['NORTHWIND TECHNOLOGIES INDIA PRIVATE LIMITED', ''], ['Name approval letter', 'doc-viewer']], who: 'Pranay', ini: 'PN', w: 'Tue 6 Oct', u: false, go: 'inc-step-5' },
+      { id: 7, g: 1, ty: 'ann', t: 'MCA V3 portal down 11-12 Oct', b: [['Official feed', 'announcements'], ['mca.gov.in ↗', 'https://www.mca.gov.in']], who: 'SBC', ini: 'SBC', w: 'Wed 7 Oct', u: false, go: 'announcements' },
+      { id: 8, g: 1, ty: 'mail', t: 'Email sent: Documents requested', b: [['To rohan@northwind.in', ''], ['Email settings', 'settings']], who: 'VCFO Suite', ini: 'VS', w: 'Tue 6 Oct', u: false, go: 'documents' },
+      { id: 9, g: 2, ty: 'team', t: 'Meera Iyer joined the project', b: [['Director · invited by Northwind', 'team']], who: 'Meera Iyer', ini: 'MI', w: '2 Oct', u: false, go: 'team' },
+      { id: 10, g: 2, ty: 'step', t: 'DIN allotted to both directors', b: [['Rohan Kumar · Meera Iyer', ''], ['Step 4 · DIN', 'inc-step-4']], who: 'Pranay', ini: 'PN', w: '29 Sep', u: false, go: 'inc-step-4' },
+      { id: 11, g: 2, ty: 'mail', t: 'Email sent: Welcome to VCFO Suite', b: [['To rohan@northwind.in', ''], ['Open Home', 'home']], who: 'VCFO Suite', ini: 'VS', w: '2 Sep', u: false, go: 'home' }
+    ];
+    const PEOPLE = { 'Pranay': 1, 'Pranay': 1, 'Meera Iyer': 1 };
+    const parts = (n) => n.b.map((p, i) => ({ t: p[0], go: /^https?:/.test(p[1]) ? '' : p[1], href: /^https?:/.test(p[1]) ? p[1] : '#', tgt: /^https?:/.test(p[1]) ? '_blank' : '_self', isLink: !!p[1], isText: !p[1], sep: i < n.b.length - 1 ? ' · ' : '' }));
+    const read = s.read || {};
+    const allRead = s.allRead !== undefined ? s.allRead : Boolean(this.props.allRead);
+    const isU = (n) => n.u && !allRead && !read[n.id];
+    const unread = N.filter(isU).length;
+    const grp = (n) => T[n.ty][1];
+    const TABS = [['All', () => true], ['Unread', isU], ['Documents', (n) => grp(n) === 'Documents'], ['Steps', (n) => grp(n) === 'Steps'], ['Deadlines', (n) => grp(n) === 'Deadlines'], ['Messages', (n) => grp(n) === 'Messages'], ['Chatbot', (n) => grp(n) === 'Chatbot']];
+    const tabs = TABS.map((t, i) => ({ label: t[0], cnt: N.filter(t[1]).length, cls: tab === i ? 'on' : '', sel: tab === i ? 'true' : 'false', pick: () => this.setState({ tab: i }) }));
+    const shown = N.filter(TABS[tab][1]);
+    const decorate = (n) => Object.assign({}, n, icon(n.ty), { kind: T[n.ty][2], chip: T[n.ty][3], tipText: T[n.ty][4], parts: parts(n), whoGo: PEOPLE[n.who] ? 'team' : '', whoLink: !!PEOPLE[n.who], whoText: !PEOPLE[n.who] });
+    const GL = ['Today', 'Earlier this week', 'Earlier'];
+    const groups = GL.map((label, gi) => ({ label, items: shown.filter((n) => n.g === gi).map((n) => {
+      const u = isU(n);
+      return Object.assign(decorate(n), { unread: u, isRead: !u, rowCls: u ? 'row unread' : 'row', tw: u ? 'font-weight:800;color:var(--fg)' : 'font-weight:600;color:var(--fg)',
+        read: () => this.setState({ read: Object.assign({}, read, { [n.id]: true }) }) });
+    }) })).filter((g) => g.items.length);
+    const cnt = (k) => N.filter((n) => grp(n) === k).length;
+    const tot = N.length;
+    // rule 14: hover → tooltip, click → drill-down pop-up with the clicked type pre-selected
+    const DT = ['All', 'Documents', 'Steps', 'Deadlines', 'Messages'];
+    const pd = this.props.drill;
+    const drill = s.drill !== undefined ? s.drill : (pd === undefined || pd === null || pd === '' ? null : Number(pd));
+    const hv = s.hv;
+    const C = 2 * Math.PI * 54;
+    let acc = 0;
+    const seg = (i) => {
+      const k = DT[i + 1], len = cnt(k) / tot * C, on = hv === i + 1;
+      const out = { w: on ? 24 : 18, da: Math.max(len - 2, 0) + ' ' + (C - len + 2), off: -acc,
+        enter: () => this.setState({ hv: i + 1 }), open: () => this.setState({ drill: i + 1, hv: undefined }) };
+      acc += len; return out;
+    };
+    const s0 = seg(0), s1 = seg(1), s2 = seg(2), s3 = seg(3);
+    const LC = ['background:var(--due-chip)', 'background:var(--prog-chip)', 'background:oklch(70% 0.15 80)', 'background:var(--sky-chip)'];
+    const legend = [1, 2, 3, 4].map((i) => ({ k: DT[i], n: cnt(DT[i]), c: LC[i - 1], hl: hv === i ? 'background:var(--raised)' : '',
+      enter: () => this.setState({ hv: i }), open: () => this.setState({ drill: i, hv: undefined }) }));
+    const hasTip = hv !== undefined && hv !== null;
+    const tip = hasTip ? (hv === 0 ? 'All · ' + tot : DT[hv] + ' · ' + cnt(DT[hv])) : '';
+    const dtabs = DT.map((l, i) => ({ label: l, cnt: i === 0 ? tot : cnt(l), cls: drill === i ? 'on' : '', sel: drill === i ? 'true' : 'false', pick: () => this.setState({ drill: i }) }));
+    const dItems = drill === null ? [] : N.filter((n) => drill === 0 || grp(n) === DT[drill]).map(decorate);
+    const LINK = [['These live in Northwind’s Notifications list', 'Show in the list ↓', ''], ['These items live in Documents', 'Open Documents →', 'documents'], ['These steps live in Incorporation', 'Open Incorporation →', 'incorporation'], ['These deadlines live in Compliances · Filings', 'Open Filings →', 'filings'], ['These messages live in Announcements', 'Open Announcements →', 'announcements']][drill || 0];
+    return {
+      tabs, groups, unread, sideCount: unread, isEmpty: groups.length === 0,
+      thumb: 'transform:translateX(' + (tab * 100) + '%)',
+      total: tot, s0, s1, s2, s3, legend, hasTip, tip,
+      leave: () => this.setState({ hv: undefined }),
+      enterAll: () => this.setState({ hv: 0 }), openAll: () => this.setState({ drill: 0, hv: undefined }),
+      drillOpen: drill !== null, dtabs, dItems, dthumb: 'transform:translateX(' + ((drill || 0) * 100) + '%)',
+      closeDrill: () => this.setState({ drill: null }), dLinkLead: LINK[0], dLinkText: LINK[1], dLinkGo: LINK[2], dLinkClick: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ drill: null }); setTimeout(() => window.scrollTo({ top: 200, behavior: 'smooth' }), 60); },
+      toast: Boolean(s.toast),
+      markAll: () => this.setState({ allRead: true, toast: true }),
+      undo: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ allRead: false, toast: false, read: {} }); },
+      showAll: () => this.setState({ tab: 0 })
+    };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

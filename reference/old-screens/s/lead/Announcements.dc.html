@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Announcements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+/* v7 page, scoped */
+.v7c{margin:0;-webkit-font-smoothing:antialiased}.v7c{--bg:oklch(97.4% 0.006 255);--panel:oklch(100% 0 0);--raised:oklch(96.6% 0.007 255);--border:oklch(92.2% 0.011 255);--hair:oklch(94.8% 0.007 255);--fg:oklch(21% 0.042 264);--muted:oklch(46% 0.028 258);--subtle:oklch(55% 0.022 255);
+--primary:oklch(54.6% 0.215 263);--primary-dark:oklch(48.8% 0.217 264);--primary-light:oklch(96.6% 0.02 260);--primary-chip:oklch(52% 0.21 263);
+--navy:#15263b;--navy-2:#1b3049;--navy-3:#2563a8;--gold:#e9792f;--gold-soft:#fcefd8;--gold-text:#a35f00;
+--ok:oklch(56% 0.13 168);--ok-light:oklch(96% 0.028 170);--ok-text:oklch(39% 0.09 172);--ok-chip:oklch(50% 0.12 168);
+--due:oklch(66% 0.17 48);--due-light:oklch(96.8% 0.04 55);--due-text:oklch(48% 0.14 42);--due-chip:oklch(55% 0.17 42);
+--over:oklch(57% 0.2 22);--over-light:oklch(96.4% 0.026 18);--over-text:oklch(46% 0.17 20);--over-chip:oklch(52% 0.2 22);
+--prog:oklch(55% 0.16 252);--prog-light:oklch(96% 0.026 250);--prog-text:oklch(43% 0.13 254);--prog-chip:oklch(51% 0.17 252);
+--up:oklch(82% 0.018 255);--up-light:oklch(96.6% 0.007 255);--up-text:oklch(46% 0.028 258);--up-chip:oklch(54% 0.026 258);
+--violet:oklch(54% 0.17 292);--violet-light:oklch(96.4% 0.032 292);--violet-chip:oklch(50% 0.17 292);
+--sky:oklch(58% 0.12 228);--sky-light:oklch(96.4% 0.026 228);--sky-chip:oklch(49% 0.12 230);
+--teal:oklch(55% 0.1 195);--teal-light:oklch(96.4% 0.026 195);--teal-chip:oklch(47% 0.09 195);
+--gst:oklch(52% 0.15 148);--it:oklch(53% 0.16 252);--mca:oklch(50% 0.18 300);--fema:oklch(55% 0.19 12);--labour:oklch(50% 0.12 200);
+--cat-tax:oklch(58% 0.14 70);--cat-labour:oklch(50% 0.12 200);--cat-business:oklch(52% 0.17 292);--cat-ip:oklch(52% 0.13 230);--cat-fema:oklch(55% 0.19 12);
+--shadow:0 1px 2px oklch(25% 0.04 264 / 0.04), 0 6px 18px -10px oklch(28% 0.06 264 / 0.18)}.v7c a{color:var(--primary);text-decoration:none;font-weight:700}.v7c a:hover{color:var(--primary-dark)}@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}.v7c .card{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column;transition:transform .25s ease,box-shadow .25s ease;animation:up .5s cubic-bezier(.2,.7,.2,1) backwards}.v7c .card:hover{transform:translateY(-2px);box-shadow:0 2px 4px oklch(25% 0.04 264 / 0.05), 0 14px 28px -12px oklch(28% 0.08 264 / 0.25)}.v7c .card.t::before{content:none;position:absolute;left:18px;top:-1px;width:38px;height:3px;border-radius:0 0 3px 3px;background:var(--gold)}.v7c .ic{width:30px;height:30px;border-radius:99px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}.v7c .chip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;letter-spacing:.01em;line-height:16px;white-space:nowrap}.v7c .cap{font-size:11px;color:var(--muted)}.v7c .lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.v7c .rt{font-size:13px;font-weight:600;color:var(--fg)}.v7c .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 14px;border-radius:6px;font:600 13px Public Sans,sans-serif;border:1px solid transparent;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background-color .15s,box-shadow .15s,transform .15s}.v7c .btn:active{transform:scale(.98)}.v7c .btn-o{background:var(--panel);color:var(--fg);border-color:var(--border)}.v7c th{text-align:left;padding:8px;font-size:10.5px;font-weight:800;color:var(--subtle);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)}.v7c td{white-space:nowrap;padding:9px 8px;border-top:1px solid var(--hair);vertical-align:middle}.v7c tbody tr:first-child td{border-top:0}.v7c .dtile{width:50px;height:54px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}.v7c .seg{position:relative;display:inline-grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:4px;border-radius:8px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--border)}.v7c .seg>.thumb{position:absolute;top:4px;bottom:4px;left:4px;border-radius:6px;background:var(--primary-light);box-shadow:inset 0 0 0 1px oklch(54.6% 0.215 263 / 0.28),0 1px 2px oklch(28% 0.06 264 / 0.08);transition:transform .38s cubic-bezier(.3,1.3,.5,1)}.v7c .seg button{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:none;height:28px;padding:0 12px;border-radius:6px;font:600 12px Public Sans,sans-serif;color:var(--muted);cursor:pointer;white-space:nowrap}.v7c .seg button.on{color:var(--navy-ink,var(--navy));font-weight:700}.v7c .seg .cnt{font:600 10.5px "IBM Plex Mono",monospace;color:var(--subtle)}.v7c .seg button.on .cnt{color:var(--primary)}@media (prefers-reduced-motion: reduce){.v7c *,.v7c *::before,.v7c *::after{animation:none!important;transition:none!important}}.v7c .seg{padding:2px;border-radius:8px;background:light-dark(oklch(96.5% 0.008 250), oklch(18.3% 0.008 250));box-shadow:inset 0 0 0 1px var(--border)}.v7c .seg>.thumb{top:2px;bottom:2px;left:2px;border-radius:6px;background:var(--navy);box-shadow:0 1px 2px oklch(21% 0.042 264 / .25);transition:transform .42s linear(0,0.0637,0.2021,0.3619,0.5141,0.6451,0.7506,0.8315,0.8909,0.9328,0.9613,0.9799,0.9914,0.9981,1.0016,1.0032,1.0036,1.0034,1.0029,1.0023,1.0018,1.0013,1.0009,1.0006,1.0004)}.v7c .seg button{height:28px;padding:0 10px;border-radius:6px;font:500 12px Public Sans,sans-serif;color:oklch(55% 0.022 255);transition:color .2s}.v7c .seg button:hover{color:light-dark(oklch(45% 0.03 255), oklch(82% 0.021 255))}.v7c .seg button.on{color:#fff;font-weight:500}.v7c .seg .cnt{color:oklch(55% 0.022 255)}.v7c .seg button.on .cnt{color:oklch(100% 0 0 / .72)}.v7c .card{transition:transform .16s cubic-bezier(.22,1,.36,1),box-shadow .16s cubic-bezier(.22,1,.36,1),border-color .16s}.v7c .card:hover{transform:translateY(-2px);border-color:oklch(54.6% 0.215 263 / .35);box-shadow:0 2px 4px oklch(32% 0.04 264 / .05),0 8px 22px -6px oklch(37.9% 0.146 266 / .1),0 16px 40px -12px oklch(37.9% 0.146 266 / .08)}.v7c .btn{transition:transform .12s cubic-bezier(.22,1,.36,1),background .15s}.v7c .btn:active{transform:scale(.98)}.v7c tbody tr{transition:background .15s}.v7c tbody tr:hover{background:light-dark(oklch(96.8% 0.006 250 / .7), oklch(17.8% 0.006 250 / 0.7))}.v7c a:focus-visible,.v7c button:focus-visible,.v7c input:focus-visible,.v7c textarea:focus-visible{outline:2px solid oklch(54.6% 0.215 263 / .4);outline-offset:2px}@keyframes v7fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@keyframes v7up{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}}@keyframes v7bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes v7react{0%{transform:scale(.9)}45%{transform:scale(1.1) rotate(-4deg)}75%{transform:scale(.98)}100%{transform:none}}@keyframes v7think{0%,100%{opacity:.35}50%{opacity:1}}@media (prefers-reduced-motion: reduce){.v7c .seg>.thumb,.v7c .card,.v7c .btn{transition:none}.v7c .card:hover{transform:none}}.v7c .card:focus-within,.v7c section:focus-within{position:relative;z-index:30}@keyframes v7pulse{0%,100%{box-shadow:0 0 0 0 oklch(80% 0.12 85 / .7)}50%{box-shadow:0 0 0 5px oklch(80% 0.12 85 / 0)}}.v7c .pulse{animation:v7pulse 1.8s ease-in-out infinite}@media (prefers-reduced-motion: reduce){.v7c .pulse{animation:none}}.v7c{background:var(--bg)}.v7c .pg{padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}.v7c .h3{margin:0;font:700 13px Public Sans,sans-serif;color:var(--navy-ink,var(--navy))}.v7c .btn-sm{height:30px;padding:0 10px;font-size:12px}.v7c .ibtn{width:32px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}.v7c .ibtn:hover{color:var(--navy-ink,var(--navy));border-color:oklch(54.6% 0.215 263 / .35)}.v7c .udot{width:8px;height:8px;border-radius:99px;background:var(--primary-fill,var(--primary));flex:none}.v7c .row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--hair)}.v7c .row:first-child{border-top:0}.v7c .row.unread{background:light-dark(oklch(97.6% 0.014 260), oklch(16.6% 0.01 260))}.v7c .row.unread .rt{font-weight:800}@keyframes sk{0%{background-position:-200px 0}100%{background-position:200px 0}}.v7c .dtile .d{font:700 18px/1 Public Sans,Public Sans,sans-serif}.v7c .dtile .m{font:800 9.5px Public Sans,sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-top:3px}@media (max-width:760px){.v7c .pg{padding:16px}}@keyframes tipin{from{opacity:0;transform:translate(-50%,3px)}to{opacity:1;transform:translate(-50%,0)}}@keyframes tipin2{from{opacity:0}to{opacity:1}}.v7c [data-tip]{position:relative}.v7c [data-tip]:hover::after,.v7c [data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 9px);transform:translateX(-50%);background:var(--navy);color:#fff;font:700 11.5px/1.25 Public Sans,sans-serif;letter-spacing:0;text-transform:none;padding:5px 9px;border-radius:6px;white-space:nowrap;z-index:70;pointer-events:none;box-shadow:0 6px 16px -6px oklch(21% 0.042 264 / .5);animation:tipin .12s ease both}.v7c [data-tip]:hover::before,.v7c [data-tip]:focus-visible::before{content:"";position:absolute;left:50%;bottom:calc(100% + 5px);width:8px;height:8px;margin-left:-4px;background:var(--navy);transform:rotate(45deg);z-index:70;pointer-events:none;animation:tipin2 .12s ease both}.v7c [data-tip-below]:hover::after,.v7c [data-tip-below]:focus-visible::after{bottom:auto;top:calc(100% + 9px)}.v7c [data-tip-below]:hover::before,.v7c [data-tip-below]:focus-visible::before{bottom:auto;top:calc(100% + 5px)}@media (prefers-reduced-motion: reduce){.v7c [data-tip]::after,.v7c [data-tip]::before{animation:none!important}}.v7c{margin:0}.v7c{--vp-side-w:248px}@media (max-width:1279px){.v7c{--vp-side-w:72px}}@media (max-width:767px){.v7c{--vp-side-w:0px}}.v7c .tb-main{flex:1;min-width:0}.v7c .pg.tb-wrap{width:100%;max-width:1600px;margin-inline:auto;box-sizing:border-box;padding:clamp(16px,2vw,24px) clamp(16px,2vw,24px) 96px}.v7c .tb-segx{max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;border-radius:8px;-webkit-overflow-scrolling:touch}.v7c .tb-segx::-webkit-scrollbar{display:none}.v7c .tb-segx>.seg{width:max-content;min-width:100%;box-sizing:border-box}.v7c .tb-m{display:none!important}.v7c .lbl{font-size:11px}.v7c .seg .cnt{font-size:11px}.v7c .dtile .m{font-size:11px;letter-spacing:.06em}@media (max-width:767px){.v7c .pg.tb-wrap{padding:16px 16px 104px}.v7c .tb-d{display:none!important}.v7c .tb-m{display:revert!important}.v7c .tb-m.tb-iflex{display:inline-flex!important}.v7c .tb-hd>.tb-segx{flex:1 1 100%;margin-left:0!important}.v7c .btn,.v7c .btn-sm{height:40px;min-height:40px}.v7c .ibtn{width:40px;height:40px}.v7c .seg button{height:40px}}.v7c .tb-g12{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-items:start}.v7c .tb-s8{grid-column:span 8}.v7c .tb-s4{grid-column:span 4}.v7c .tb-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hair);flex-wrap:wrap}.v7c .tb-hd .tb-segx{margin-left:auto}@media (max-width:959px){.v7c .tb-s8,.v7c .tb-s4{grid-column:1 / -1}}@media (max-width:767px){.v7c .tb-focus{flex-wrap:wrap;padding:12px 14px!important}.v7c .tb-focus .btn{margin-left:auto}}
+.v7c{--vp-side-w:0px;flex:1;min-width:0;background:var(--bg);color:var(--fg);font-family:Public Sans,system-ui,sans-serif;font-size:13px;position:relative}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="updates" sub="Announcements" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Updates › Announcements" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <div class="v7c" style="display: flex">
+  
+  <div class="tb-main">
+    
+    <main class="pg tb-wrap">
+      <sc-if value="{{hasFocus}}" hint-placeholder-val="{{true}}">
+        <section class="tb-focus" style="position:relative;display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:10px;background:var(--due-light);border:1px solid oklch(66% 0.17 48 / .35)">
+          <div class="dtile" style="background:var(--due-chip);color:#fff"><span class="d">20</span><span class="m">Oct</span></div>
+          <div style="flex:1;min-width:0"><div class="lbl" style="color:var(--due-text)">Next deadline · 20 Oct</div><div style="font:700 16px Public Sans;color:var(--fg);margin-top:3px">GSTR-3B for September</div></div>
+          <a href="#" class="btn btn-o btn-sm">Open</a>
+        </section>
+      </sc-if>
+
+      <div class="tb-g12">
+        <section class="card tb-s8">
+          <div class="tb-hd">
+            <h2 class="h3">Latest</h2>
+            <div class="tb-segx"><div class="seg" role="tablist" aria-label="Filter announcements"><span class="thumb" style="width:calc((100% - 4px)/3);{{thumb}}"></span><sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button type="button" role="tab" onClick="{{t.pick}}" class="{{t.cls}}">{{t.label}}<span class="cnt">{{t.cnt}}</span></button></sc-for></div></div>
+          </div>
+          <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+            <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:56px 16px 64px">
+              <span style="display:flex;flex:none"><img src="vcfo-bin:s/home/assets/vcfo-bot-avatar.svg" alt="" style="width:52px;height:52px;object-fit:contain;display:block"></span>
+              <div role="status" style="max-width:300px;background:var(--panel);border:1px solid var(--border);border-radius:10px 10px 10px 3px;padding:10px 12px;box-shadow:var(--shadow)">
+                <div class="rt" style="font-weight:700">No important updates right now.</div>
+                <div class="cap" style="margin-top:2px">Deadlines will show up here first.</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><button type="button" class="btn btn-o btn-sm" onClick="{{showAll}}">See all</button><a href="#" style="font-size:12px">Ask VCFO why</a></div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-for list="{{rows}}" as="a" hint-placeholder-count="6">
+            <a href="#" onClick="{{a.open}}" class="{{a.cls}}" style="color:inherit;font-weight:inherit;text-decoration:none">
+              <div class="dtile" style="{{a.tile}}"><span class="d">{{a.d}}</span><span class="m">{{a.m}}</span></div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:4px 8px;flex-wrap:wrap"><span class="chip" style="{{a.chip}}">{{a.kind}}</span><span class="cap">{{a.by}}</span><sc-if value="{{a.feed}}" hint-placeholder-val="{{false}}"><span class="chip tb-m tb-iflex" style="background:var(--raised);color:var(--muted);box-shadow:inset 0 0 0 1px var(--border)">{{a.host}}</span></sc-if></div>
+                <div class="rt" style="margin-top:4px;font-size:14px;{{a.tw}}">{{a.t}}</div>
+              </div>
+              <sc-if value="{{a.feed}}" hint-placeholder-val="{{false}}"><span class="chip tb-d" style="background:var(--raised);color:var(--muted);box-shadow:inset 0 0 0 1px var(--border)">{{a.host}}</span></sc-if>
+              <sc-if value="{{a.unread}}" hint-placeholder-val="{{true}}"><span class="udot" role="img" aria-label="Unread" data-tip="Unread"></span></sc-if>
+            </a>
+          </sc-for>
+        </section>
+
+        <section class="card t tb-s4">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 16px">
+            <span class="ic" style="background:var(--navy)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5h17 M5 20.5V10 M9.5 20.5V10 M14.5 20.5V10 M19 20.5V10 M3 10h18L12 3.5Z"></path></svg></span>
+            <h2 class="h3">Official portals</h2>
+          </div>
+          <div style="padding:0 16px 10px"><div class="seg" role="tablist" style="grid-template-columns:repeat(2,minmax(0,1fr));width:100%"><span class="thumb" style="width:calc((100% - 4px)/2);{{pthumb}}"></span><button type="button" role="tab" class="{{p0}}" onClick="{{pp0}}">Setup<span class="cnt">8</span></button><button type="button" role="tab" class="{{p1}}" onClick="{{pp1}}">Recurring<span class="cnt">4</span></button></div></div>
+          <div style="padding:0 16px 14px;display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{portals}}" as="g" hint-placeholder-count="3">
+              <div>
+                <div class="lbl" style="margin-bottom:6px">{{g.h}}</div>
+                <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--hair)">
+                    <span class="rt" style="flex:1;min-width:0">{{r}}</span>
+                    <a href="#" class="ibtn" aria-label="Open portal for {{r}}" title="Portal" data-tip="Open portal for {{r}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7 M9 7h8v8"></path></svg></a>
+                    <a href="#" class="ibtn" aria-label="Read circular for {{r}}" title="Circular" data-tip="Read circular for {{r}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4v13H7Z M14 3.5v4h4 M10 13h5 M10 16.5h5"></path></svg></a>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  
+</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tab":{"editor":"enum","options":[0,1,2],"default":0},"empty":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":950}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const o = this._rv();
+    o.mode = (this.state && this.state.mode) || 'mixed';
+    o.setMode = (m) => this.setState({ mode: m });
+    return o;
+  }
+  constructor(p) { super(p); this.state = {}; }
+  _rv() {
+    const s = this.state;
+    const tab = s.tab !== undefined ? s.tab : Number(this.props.tab ?? 0);
+    const empty = Boolean(this.props.empty) && s.tab === undefined;
+    const neutral = 'background:var(--raised);color:var(--navy-ink,var(--navy));box-shadow:inset 0 0 0 1px var(--border)';
+    const KC = { Deadline: 'background:var(--due-chip);color:#fff', Compliance: 'background:var(--prog-chip);color:#fff' };
+    const A = [
+      { id: 1, kind: 'Deadline', t: 'GSTR-3B for September is due on 20 Oct', by: 'From Pranay', d: '8', m: 'Oct', u: 1 },
+      { id: 2, kind: 'MCA', t: 'MCA V3 portal down 11-12 Oct for an upgrade', by: 'Official feed', host: 'mca.gov.in', d: '7', m: 'Oct', u: 1, feed: 1 },
+      { id: 3, kind: 'Compliance', t: 'DIR-3 KYC window is open for all directors', by: 'From Pranay', d: '3', m: 'Oct' },
+      { id: 4, kind: 'Tax', t: 'Advance tax: third instalment due 15 Dec', by: 'Official feed', host: 'incometax.gov.in', d: '1', m: 'Oct', feed: 1 },
+      { id: 5, kind: 'GST', t: 'GST invoice management system changes from 1 Nov', by: 'Official feed', host: 'gst.gov.in', d: '29', m: 'Sep', feed: 1 },
+      { id: 6, kind: 'Post-Incorp', t: 'After COI: open the current account within 30 days', by: 'From Pranay', d: '24', m: 'Sep' }
+    ];
+    const imp = (a) => a.kind === 'Deadline' || a.kind === 'Compliance';
+    const F = [() => true, imp, (a) => !imp(a)];
+    const list = empty ? A.filter((a) => !imp(a)) : A;
+    const tabs = ['All', 'Important', 'General'].map((l, i) => ({ label: l, cnt: list.filter(F[i]).length, cls: tab === i ? 'on' : '', pick: () => this.setState({ tab: i }) }));
+    const read = s.read || {};
+    const rows = list.filter(F[tab]).map((a) => {
+      const unread = Boolean(a.u) && !read[a.id];
+      return { ...a, feed: Boolean(a.feed), unread, chip: KC[a.kind] || neutral,
+        tile: a.kind === 'Deadline' ? 'background:var(--due-light);color:var(--due-text)' : 'background:var(--primary-light);color:var(--navy-ink,var(--navy))',
+        cls: unread ? 'row unread' : 'row', tw: unread ? 'font-weight:800' : 'font-weight:600',
+        open: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ read: { ...read, [a.id]: true } }); } };
+    });
+    const pt = s.pt || 0;
+    const P = pt === 0
+      ? [{ h: 'Incorporation', rows: ['Pre-incorporation', 'Post-incorporation'] }, { h: 'Registrations', rows: ['GST Registration', 'PF Registration', 'ESI Registration', 'PT Registration'] }, { h: 'FEMA', rows: ['FCGPR Filing', 'FLA Return'] }]
+      : [{ h: 'Monthly', rows: ['GSTR-1 and GSTR-3B', 'TDS payment'] }, { h: 'Quarterly', rows: ['TDS returns', 'Advance tax'] }];
+    return { tabs, rows, isEmpty: rows.length === 0, hasFocus: !empty,
+      thumb: 'transform:translateX(' + (tab * 100) + '%)', showAll: () => this.setState({ tab: 0 }),
+      portals: P, pthumb: 'transform:translateX(' + (pt * 100) + '%)', p0: pt === 0 ? 'on' : '', p1: pt === 1 ? 'on' : '',
+      pp0: () => this.setState({ pt: 0 }), pp1: () => this.setState({ pt: 1 }) };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

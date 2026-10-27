@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Manager · Clients</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.04),0 6px 18px -10px rgba(15,42,74,.18);min-width:0;position:relative}
+.chip{display:inline-flex;align-items:center;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;line-height:16px;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.mono{font-family:'IBM Plex Mono',monospace}
+.sg{font-family:sans-serif;letter-spacing:-.03em}
+.mut{color:#667180}
+.nd{height:22px;min-width:22px;border-radius:12px;display:grid;place-items:center;font-size:9.5px;font-weight:800;padding:0 4px;flex:none}
+.ln{flex:1;height:0;margin:0 3px;min-width:6px}
+.row{display:grid;grid-template-columns:240px 108px minmax(360px,1.6fr) minmax(170px,1fr) 52px 96px 16px;gap:16px;align-items:center;padding:11px 18px;border-top:1px solid #e3e6eb;color:#15263b}
+.row:hover{background:#f8fafc}
+.sb{display:flex;gap:3px;align-items:center}
+.sb>span{height:10px;border-radius:3px;display:block;min-width:14px}
+.sh{display:flex;gap:3px}
+.sh>span{min-width:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g{width:16px;height:16px;border-radius:99px;display:inline-grid;place-items:center;flex:none}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="clients" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Clients" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1360px; width: 100%; margin: 0 auto; padding: 20px clamp(12px, 2vw, 28px) 60px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+        <span class="chip" style="background: #15263b; color: #fff">8 active engagements</span>
+        <span style="display: inline-flex; padding: 2px; border-radius: 8px; background: #f1f4f8; box-shadow: inset 0 0 0 1px #e3e6eb"><span style="height: 28px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; background: #15263b; color: #fff">All <span class="mono">8</span></span><span style="height: 28px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #667180">Incorporating <span class="mono">{{nInc}}</span></span><span style="height: 28px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #667180">Compliance <span class="mono">{{nCmp}}</span></span></span>
+      </div>
+      <section class="card" style="overflow-x: auto">
+        <div style="min-width: 1000px">
+          <div class="row mono" style="border-top: 0; background: #eef0f3; font-size: 10.5px; color: #667180; letter-spacing: .04em; padding: 9px 18px; border-bottom: 1px solid #e3e6eb"><span>COMPANY</span><span>STAGE</span><span class="sh"><span style="flex: 5">P1</span><span style="flex: 9" title="Incorporation">P2 INC.</span><span style="flex: 11" title="Post-incorporation">P3 POST-INC.</span></span><span>NOW</span><span style="text-align: right">STEPS</span><span>STATUS</span><span></span></div>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+            <a class="row" href="#">
+              <span style="display: flex; gap: 10px; align-items: center; min-width: 0"><span style="{{r.avs}}">{{r.ini}}</span><span style="min-width: 0"><b style="display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</b><span class="mut" style="font-size: 11.5px">{{r.login}}</span></span></span>
+              <span><span class="chip" style="{{r.ss}}">{{r.stage}}</span></span>
+              <span class="sb" title="{{r.tip}}"><span style="{{r.s0}}" title="{{r.t0}}"></span><span style="{{r.s1}}" title="{{r.t1}}"></span><span style="{{r.s2}}" title="{{r.t2}}"></span></span>
+              <span style="display: flex; gap: 8px; align-items: center; min-width: 0"><span class="g" style="{{r.gs}}" title="{{r.who}}"></span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><span class="mono mut" style="font-size: 11.5px">{{r.code}}</span> · {{r.step}}</span></span>
+              <span class="mono" style="text-align: right; font-size: 12px; color: #667180">{{r.steps}}</span>
+              <span><span class="chip" style="{{r.stS}}">{{r.status}}</span></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#98a2b3" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+            </a>
+          </sc-for>
+        </div>
+      </section>
+      <div class="mut" style="display: flex; gap: 16px; font-size: 11.5px; flex-wrap: wrap"><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #1e7f55; vertical-align: -1px"></i> Done</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #15263b; vertical-align: -1px"></i> Current step</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #be3434; vertical-align: -1px"></i> Stuck</span><span><i style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #eceff4; vertical-align: -1px"></i> Not started</span><span><span class="g" style="background: #a35f00; vertical-align: -3px"></span> Your step</span><span><span class="g" style="background: #2563a8; vertical-align: -3px"></span> Waiting on the client</span><span><span class="g" style="background: #15263b; vertical-align: -3px"></span> With MCA</span></div>
+      <div role="tooltip" style="position: absolute; left: 690px; top: 446px; background: #15263b; color: #fff; border-radius: 6px; padding: 8px 11px; font-size: 12px; width: 230px; z-index: 3"><b>Part B · Incorporation</b><div style="color: #c9d6e8; margin-top: 2px">1 of 9 done · click to open that step</div></div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const __m = (this.state && this.state.mode) || 'mixed';
+    const __set = (m) => this.setState({ mode: m });
+    const tot = [5, 9, 11, 23], names = ['Part A · Name', 'Part B · Incorporation', 'Post-incorporation', 'Registration'];
+    const S = { d: 'background:#1e7f55;color:#fff', c: 'background:#15263b;color:#fff;box-shadow:0 0 0 3px rgba(201,162,75,.55)', s: 'background:#be3434;color:#fff', n: 'border:1.5px dashed #b4bcc7;background:#fff' };
+    const D = [
+      ['Brightwave Robotics', 'Daniel Ortiz', '#fde2ec', '#9d174d', 'ddsn', [5, 9, 2, 0], 'Post-3', 'Bank account opening', 'y', 'cmp'],
+      ['Tidewater Logistics', 'Mei Tanaka', '#ccf3ec', '#0f5f55', 'ddsn', [5, 9, 7, 0], 'Post-8', 'FC-GPR Filing', 'y', 'cmp'],
+      ['Kestrel Health', 'Lars Becker', '#dbeefe', '#0b5c8f', 'dddc', [5, 9, 11, 3], 'Reg-1', 'GST Registration', 'y', 'cmp'],
+      ['Halcyon Fintech', 'Jonas Weber', '#fdf0d2', '#8a5a06', 'dddc', [5, 9, 11, 19], 'Reg-15', 'Trademark Registration', 'c', 'cmp'],
+      ['Northwind Technologies', 'Rohan Kumar', '#ebe5ff', '#5b21b6', 'dcnn', [5, 1, 0, 0], 'Pre-7', 'Registered office address', 'c', 'inc'],
+      ['Orchid Lane Foods', 'Amara Okafor', '#e3e9ff', '#3730a3', 'dcnn', [5, 4, 0, 0], 'Pre-10', 'KYC Review & DSC', 'y', 'inc'],
+      ['Larkspur Analytics', 'Sofia Moreau', '#daf5e3', '#166534', 'cnnn', [2, 0, 0, 0], 'Pre-2', 'Draft Board resolution', 'y', 'inc'],
+      ['Juniper Bio', 'Elena Rossi', '#eef0f3', '#334155', 'cnnn', [0, 0, 0, 0], 'Pre-1', 'Client details', 'c', 'inc']
+    ];
+    const rows = D.map(([name, login, bg, fg, k, done, code, step, who, stg0]) => {
+      const stg = __m === 'before' ? 'inc' : (__m === 'after' ? 'cmp' : stg0);
+      const p = Math.round((done[0] + done[1]) / 14 * 100);
+      const r = { name, login, code, step, ini: name.split(' ').map(w => w[0]).join('').slice(0, 2),
+        avs: 'width:30px;height:30px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:11px;font-weight:800;background:' + bg + ';color:' + fg,
+        stage: stg === 'inc' ? 'Incorporating' : 'Compliance', ss: stg === 'inc' ? 'background:#fcefd8;color:#a35f00' : 'background:#e2f3ea;color:#1e7f55',
+        who: who === 'y' ? 'Your step' : 'Waiting on the client', gs: 'background:' + (who === 'y' ? '#a35f00' : '#2563a8'),
+        pct: p + '%', ring: 'width:32px;height:32px;border-radius:99px;display:grid;place-items:center;background:conic-gradient(#1e7f55 0 ' + p + '%,#eceff4 ' + p + '% 100%)' };
+      const SEG = (c, d, t) => { const a = (c === 'd' ? 100 : d / t * 100).toFixed(1), b = Math.min(100, (d + 1) / t * 100).toFixed(1);
+        const bg = c === 'd' ? '#1e7f55' : (c === 'n' ? '#eceff4' : 'linear-gradient(90deg,#1e7f55 0 ' + a + '%,' + (c === 's' ? '#be3434' : '#15263b') + ' ' + a + '% ' + b + '%,#eceff4 ' + b + '% 100%)');
+        return 'flex:' + t + ';background:' + bg + (c === 'c' ? ';box-shadow:0 0 0 2px rgba(201,162,75,.45)' : ''); };
+      k.split('').forEach((c, i) => { r['s' + i] = SEG(c, done[i], tot[i]); r['t' + i] = names[i] + ' · ' + done[i] + ' of ' + tot[i] + (c === 's' ? ' · stuck' : ''); });
+      const sum = done.reduce((a, b) => a + b, 0), stuck = k.indexOf('s') > -1;
+      r.steps = (done[0] + done[1] + done[2]) + '/25'; r.status = stuck ? 'Stuck' : (sum === 0 ? 'Not started' : 'In progress');
+      r.stS = 'min-width:84px;justify-content:center;' + (stuck ? 'background:#be3434;color:#fff' : (sum === 0 ? 'background:#eef0f3;color:#667180' : 'background:#e3eefb;color:#2563a8'));
+      r.tip = code + ' · ' + step;
+      return r;
+    });
+    return { mode: __m, setMode: __set, rows, nInc: rows.filter(r => r.stage === 'Incorporating').length, nCmp: rows.filter(r => r.stage === 'Compliance').length };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin · Profile</title>
+<script src="./support.js"></script>
+<script src="./data.js"></script>
+</head>
+<body>
+<x-dc>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative; background: #f5f6f8">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="profile" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Profile" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1200px; width: 100%; margin: 0 auto; padding: 18px clamp(12px, 2vw, 28px) 110px; box-sizing: border-box">
+      <dc-import name="Profile" who="admin" hint-size="100%,800px" style="display: block; width: 100%"></dc-import>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { const s = this.state || {}; return { mode: s.mode || 'mixed', setMode: (m) => this.setState({ mode: m }) }; }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

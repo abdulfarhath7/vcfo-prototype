@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Task drawer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.mono{font-family:'IBM Plex Mono',monospace}
+.sg{font-family:sans-serif;letter-spacing:-.03em}
+.mut{color:#667180}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 12px;border-radius:6px;font:600 12.5px Public Sans,sans-serif;border:1px solid #d0d5dd;background:#fff;color:#15263b;cursor:pointer;white-space:nowrap}
+.btnp{background:#15263b;border-color:#15263b;color:#fff}
+.lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#98a1ae;margin-bottom:6px}
+.f label{display:block;font-size:12px;font-weight:600;margin-bottom:5px}
+.f input,.f select,.f textarea{width:100%;border:1px solid #d0d5dd;border-radius:6px;padding:8px 10px;font:inherit;font-size:13px;color:#15263b;background:#fff}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="work" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Work › Bank account opening" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <div style="flex: 1; position: relative; min-height: 900px; overflow: hidden">
+      <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 28px; display: grid; grid-template-columns: 320px 1fr; gap: 16px; opacity: .5"><div style="background: #fff; border: 1px solid #e3e6eb; border-radius: 10px"></div><div style="background: #fff; border: 1px solid #e3e6eb; border-radius: 10px"></div></div>
+      <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(15,42,74,.35)"></div>
+
+      <!-- request change dialog -->
+      <div role="dialog" aria-label="Request a date change" class="f" style="position: absolute; left: clamp(16px, 6%, 80px); top: 120px; width: 360px; background: #fff; border-radius: 10px; box-shadow: 0 24px 50px -20px rgba(15,42,74,.6); padding: 18px; display: flex; flex-direction: column; gap: 12px; z-index: 3">
+        <div style="display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15263b" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect width="16" height="10" x="4" y="11" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><b class="sg" style="font-size: 16px">Request change</b><span class="chip" style="background: #fcefd8; color: #a35f00; margin-left: auto">NEW</span></div>
+        <div class="mut" style="font-size: 12px">Bank account opening · Brightwave · set by Pranay</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"><div><label for="d1">Current due</label><input id="d1" value="15 Oct 2026" disabled style="background: #f7f9fc; color: #98a1ae"></div><div><label for="d2">Ask for</label><input id="d2" value="19 Oct 2026"></div></div>
+        <div><label for="rs">Reason</label><textarea id="rs" rows="3">Bank needs a fresh board resolution with the new signatory. Client signs Monday.</textarea></div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end"><button type="button" class="btn">Cancel</button><button type="button" class="btn btnp">Send to Pranay</button></div>
+      </div>
+
+      <!-- task drawer -->
+      <aside role="dialog" aria-label="Task" style="position: absolute; top: 0; right: 0; bottom: 0; width: min(500px, 100%); background: #fff; box-shadow: -20px 0 40px -20px rgba(15,42,74,.45); display: flex; flex-direction: column">
+        <div style="padding: 16px 20px; border-bottom: 1px solid #e3e6eb; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: center; gap: 8px"><span style="width: 24px; height: 24px; border-radius: 6px; background: #fde2ec; color: #9d174d; display: grid; place-items: center; font-size: 10px; font-weight: 800">BR</span><span class="mut" style="font-size: 12px">Brightwave Robotics · Post-incorporation</span><span class="mono mut" style="font-size: 11px">Post-3</span><button type="button" aria-label="Close" style="margin-left: auto; width: 30px; height: 30px; border: 0; background: none; color: #667180; font-size: 16px">✕</button></div>
+          <b class="sg" style="font-size: 20px">Bank account opening</b>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap"><span class="chip" style="background: #be3434; color: #fff">Overdue 1d</span><span class="chip" style="background: #fcefd8; color: #a35f00">Pending with me</span><span class="chip" style="background: #eef0f3; color: #667180">Assigned by Pranay</span></div>
+        </div>
+        <div style="flex: 1; overflow: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 18px">
+          <div>
+            <div class="lbl">Span</div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #e3e6eb; border-radius: 8px; background: #eef0f3">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15263b" stroke-width="2.2" stroke-linecap="round" aria-label="Locked by manager" role="img"><rect width="16" height="10" x="4" y="11" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+              <span class="mono" style="font-size: 12.5px; font-weight: 600">12 Oct → 15 Oct</span><span class="mut" style="font-size: 11.5px">manager dates</span>
+              <button type="button" class="btn" style="margin-left: auto; height: 28px; box-shadow: 0 0 0 2px #e9792f">Request change</button>
+            </div>
+          </div>
+          <div>
+            <div class="lbl">Work sessions · on your calendar</div>
+            <sc-for list="{{sessions}}" as="s" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid #e3e6eb"><i style="width: 4px; height: 26px; border-radius: 2px; background: #db2777"></i><span class="mono" style="font-size: 12px; width: 150px">{{s.w}}</span><span style="flex: 1; font-size: 12px">{{s.n}}</span><sc-if value="{{s.warn}}" hint-placeholder-val="{{false}}"><span class="chip" style="background: #fff4e5; color: #8a4a10; border: 1px solid #f5c98f">After span</span></sc-if></div></sc-for>
+          </div>
+          <div>
+            <div class="lbl">Checklist · 3 of 5</div>
+            <sc-for list="{{check}}" as="c" hint-placeholder-count="5"><label style="display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 12.5px"><input type="checkbox" checked="{{c.on}}" style="width: 16px; height: 16px; accent-color: #1e7f55">{{c.t}}</label></sc-for>
+          </div>
+          <div>
+            <div class="lbl">Files</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap"><span class="chip" style="background: #eef0f3; color: #667180; height: 26px">Board resolution · bank.docx</span><span class="chip" style="background: #eef0f3; color: #667180; height: 26px">KYC · Daniel Ortiz.pdf</span></div>
+          </div>
+          <div>
+            <div class="lbl">Activity</div>
+            <div style="font-size: 12px; display: flex; flex-direction: column; gap: 8px">
+              <div><b>Bank</b> rejected the signatory list <span class="mut mono" style="font-size: 11px">· 15 Oct 4:10 PM</span></div>
+              <div><b>You</b> uploaded KYC pack <span class="mut mono" style="font-size: 11px">· 14 Oct</span></div>
+              <div><b>Pranay</b> set due 15 Oct <span class="mut mono" style="font-size: 11px">· 12 Oct</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 14px 20px; border-top: 1px solid #e3e6eb; background: #eef0f3; flex-wrap: wrap">
+          <button type="button" class="btn">Open step</button><button type="button" class="btn">Send reminder</button><span style="flex: 1"></span><button type="button" class="btn btnp">Mark done</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const __m = (this.state && this.state.mode) || 'mixed';
+    const __set = (m) => this.setState({ mode: m });
+    const sessions = [['Mon 12 · 10:00-12:00', 'Bank visit prep', 0], ['Thu 15 · 4:00-5:30', 'Signatory list', 0], ['Fri 16 · 2:30-4:00', 'Resubmit to bank', 1]].map(([w, n, warn]) => ({ w, n, warn: !!warn }));
+    const check = [['KYC of directors', 1], ['Board resolution for bank', 1], ['Address proof', 1], ['Signatory list re-signed', 0], ['Account number to client', 0]].map(([t, on]) => ({ t, on: !!on }));
+    return { mode: __m, setMode: __set,  sessions, check };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

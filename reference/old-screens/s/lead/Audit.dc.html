@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Audit log</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+/* v7 page, scoped */
+.v7c{margin:0;-webkit-font-smoothing:antialiased}.v7c{--bg:oklch(97.4% 0.006 255);--panel:oklch(100% 0 0);--raised:oklch(96.6% 0.007 255);--border:oklch(92.2% 0.011 255);--hair:oklch(94.8% 0.007 255);--fg:oklch(21% 0.042 264);--muted:oklch(46% 0.028 258);--subtle:oklch(55% 0.022 255);
+--primary:oklch(54.6% 0.215 263);--primary-dark:oklch(48.8% 0.217 264);--primary-light:oklch(96.6% 0.02 260);--primary-chip:oklch(52% 0.21 263);
+--navy:#15263b;--navy-2:#1b3049;--navy-3:#2563a8;--gold:#e9792f;--gold-soft:#fcefd8;--gold-text:#a35f00;
+--ok:oklch(56% 0.13 168);--ok-light:oklch(96% 0.028 170);--ok-text:oklch(39% 0.09 172);--ok-chip:oklch(50% 0.12 168);
+--due:oklch(66% 0.17 48);--due-light:oklch(96.8% 0.04 55);--due-text:oklch(48% 0.14 42);--due-chip:oklch(55% 0.17 42);
+--over:oklch(57% 0.2 22);--over-light:oklch(96.4% 0.026 18);--over-text:oklch(46% 0.17 20);--over-chip:oklch(52% 0.2 22);
+--prog:oklch(55% 0.16 252);--prog-light:oklch(96% 0.026 250);--prog-text:oklch(43% 0.13 254);--prog-chip:oklch(51% 0.17 252);
+--up:oklch(82% 0.018 255);--up-light:oklch(96.6% 0.007 255);--up-text:oklch(46% 0.028 258);--up-chip:oklch(54% 0.026 258);
+--violet:oklch(54% 0.17 292);--violet-light:oklch(96.4% 0.032 292);--violet-chip:oklch(50% 0.17 292);
+--sky:oklch(58% 0.12 228);--sky-light:oklch(96.4% 0.026 228);--sky-chip:oklch(49% 0.12 230);
+--teal:oklch(55% 0.1 195);--teal-light:oklch(96.4% 0.026 195);--teal-chip:oklch(47% 0.09 195);
+--gst:oklch(52% 0.15 148);--it:oklch(53% 0.16 252);--mca:oklch(50% 0.18 300);--fema:oklch(55% 0.19 12);--labour:oklch(50% 0.12 200);
+--cat-tax:oklch(58% 0.14 70);--cat-labour:oklch(50% 0.12 200);--cat-business:oklch(52% 0.17 292);--cat-ip:oklch(52% 0.13 230);--cat-fema:oklch(55% 0.19 12);
+--shadow:0 1px 2px oklch(25% 0.04 264 / 0.04), 0 6px 18px -10px oklch(28% 0.06 264 / 0.18)}.v7c a{color:var(--primary);text-decoration:none;font-weight:700}.v7c a:hover{color:var(--primary-dark)}@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}.v7c .card{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column;transition:transform .25s ease,box-shadow .25s ease;animation:up .5s cubic-bezier(.2,.7,.2,1) backwards}.v7c .card:hover{transform:translateY(-2px);box-shadow:0 2px 4px oklch(25% 0.04 264 / 0.05), 0 14px 28px -12px oklch(28% 0.08 264 / 0.25)}.v7c .card.t::before{content:none;position:absolute;left:18px;top:-1px;width:38px;height:3px;border-radius:0 0 3px 3px;background:var(--gold)}.v7c .st{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--navy-ink,var(--navy));margin:0}.v7c .chip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;letter-spacing:.01em;line-height:16px;white-space:nowrap}.v7c .cap{font-size:11px;color:var(--muted)}.v7c .lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.v7c .rt{font-size:13px;font-weight:600;color:var(--fg)}.v7c .metric{font-family:Public Sans,Public Sans,sans-serif;font-weight:600;letter-spacing:-.035em;color:var(--fg);font-feature-settings:"tnum"}.v7c .mono{font-family:"IBM Plex Mono",monospace;font-feature-settings:"tnum"}.v7c .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 14px;border-radius:6px;font:600 13px Public Sans,sans-serif;border:1px solid transparent;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background-color .15s,box-shadow .15s,transform .15s}.v7c .btn:active{transform:scale(.98)}.v7c .btn-o{background:var(--panel);color:var(--fg);border-color:var(--border)}.v7c .av{border-radius:99px;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;color:#fff;box-shadow:0 0 0 2px var(--panel)}.v7c th{text-align:left;padding:8px;font-size:10.5px;font-weight:800;color:var(--subtle);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)}.v7c td{white-space:nowrap;padding:9px 8px;border-top:1px solid var(--hair);vertical-align:middle}.v7c tbody tr:first-child td{border-top:0}.v7c .dtile{width:50px;height:54px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}.v7c .seg{position:relative;display:inline-grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:4px;border-radius:8px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--border)}.v7c .seg>.thumb{position:absolute;top:4px;bottom:4px;left:4px;border-radius:6px;background:var(--primary-light);box-shadow:inset 0 0 0 1px oklch(54.6% 0.215 263 / 0.28),0 1px 2px oklch(28% 0.06 264 / 0.08);transition:transform .38s cubic-bezier(.3,1.3,.5,1)}.v7c .seg button{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:none;height:28px;padding:0 12px;border-radius:6px;font:600 12px Public Sans,sans-serif;color:var(--muted);cursor:pointer;white-space:nowrap}.v7c .seg button.on{color:var(--navy-ink,var(--navy));font-weight:700}.v7c .seg .cnt{font:600 10.5px "IBM Plex Mono",monospace;color:var(--subtle)}.v7c .seg button.on .cnt{color:var(--primary)}@media (prefers-reduced-motion: reduce){.v7c *,.v7c *::before,.v7c *::after{animation:none!important;transition:none!important}}.v7c .seg{padding:2px;border-radius:8px;background:light-dark(oklch(96.5% 0.008 250), oklch(18.3% 0.008 250));box-shadow:inset 0 0 0 1px var(--border)}.v7c .seg>.thumb{top:2px;bottom:2px;left:2px;border-radius:6px;background:var(--navy);box-shadow:0 1px 2px oklch(21% 0.042 264 / .25);transition:transform .42s linear(0,0.0637,0.2021,0.3619,0.5141,0.6451,0.7506,0.8315,0.8909,0.9328,0.9613,0.9799,0.9914,0.9981,1.0016,1.0032,1.0036,1.0034,1.0029,1.0023,1.0018,1.0013,1.0009,1.0006,1.0004)}.v7c .seg button{height:28px;padding:0 10px;border-radius:6px;font:500 12px Public Sans,sans-serif;color:oklch(55% 0.022 255);transition:color .2s}.v7c .seg button:hover{color:light-dark(oklch(45% 0.03 255), oklch(82% 0.021 255))}.v7c .seg button.on{color:#fff;font-weight:500}.v7c .seg .cnt{color:oklch(55% 0.022 255)}.v7c .seg button.on .cnt{color:oklch(100% 0 0 / .72)}.v7c .card{transition:transform .16s cubic-bezier(.22,1,.36,1),box-shadow .16s cubic-bezier(.22,1,.36,1),border-color .16s}.v7c .card:hover{transform:translateY(-2px);border-color:oklch(54.6% 0.215 263 / .35);box-shadow:0 2px 4px oklch(32% 0.04 264 / .05),0 8px 22px -6px oklch(37.9% 0.146 266 / .1),0 16px 40px -12px oklch(37.9% 0.146 266 / .08)}.v7c .btn{transition:transform .12s cubic-bezier(.22,1,.36,1),background .15s}.v7c .btn:active{transform:scale(.98)}.v7c tbody tr{transition:background .15s}.v7c tbody tr:hover{background:light-dark(oklch(96.8% 0.006 250 / .7), oklch(17.8% 0.006 250 / 0.7))}.v7c a:focus-visible,.v7c button:focus-visible,.v7c input:focus-visible,.v7c textarea:focus-visible{outline:2px solid oklch(54.6% 0.215 263 / .4);outline-offset:2px}@keyframes v7fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@keyframes v7up{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}}@keyframes v7bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes v7react{0%{transform:scale(.9)}45%{transform:scale(1.1) rotate(-4deg)}75%{transform:scale(.98)}100%{transform:none}}@keyframes v7think{0%,100%{opacity:.35}50%{opacity:1}}@media (prefers-reduced-motion: reduce){.v7c .seg>.thumb,.v7c .card,.v7c .btn{transition:none}.v7c .card:hover{transform:none}}.v7c .card:focus-within,.v7c section:focus-within{position:relative;z-index:30}@keyframes v7pulse{0%,100%{box-shadow:0 0 0 0 oklch(80% 0.12 85 / .7)}50%{box-shadow:0 0 0 5px oklch(80% 0.12 85 / 0)}}.v7c .pulse{animation:v7pulse 1.8s ease-in-out infinite}@media (prefers-reduced-motion: reduce){.v7c .pulse{animation:none}}.v7c{background:var(--bg)}.v7c .pg{padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}.v7c .ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.v7c .ph h1{margin:0;font:700 22px/1.2 Public Sans,Public Sans,sans-serif;letter-spacing:-.02em;color:var(--navy-ink,var(--navy))}.v7c .ph .acts{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.v7c .inp{display:block;width:100%;box-sizing:border-box;height:36px;border:1px solid var(--border);border-radius:6px;padding:0 12px;font:500 13px Public Sans,sans-serif;background:var(--panel);color:var(--fg)}.v7c .inp:focus{outline:2px solid oklch(54.6% 0.215 263 / .4);outline-offset:1px}.v7c .btn-sm{height:30px;padding:0 10px;font-size:12px}.v7c .ibtn{width:32px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}.v7c .ibtn:hover{color:var(--navy-ink,var(--navy));border-color:oklch(54.6% 0.215 263 / .35)}.v7c .row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--hair)}.v7c .row:first-child{border-top:0}.v7c .row.unread{background:light-dark(oklch(97.6% 0.014 260), oklch(16.6% 0.01 260))}.v7c .row.unread .rt{font-weight:800}.v7c .ov{position:absolute;inset:0;background:oklch(21% 0.042 264 / .42);display:flex;align-items:center;justify-content:center;z-index:20}.v7c .dlg{width:460px;max-width:calc(100% - 32px);background:var(--panel);border-radius:12px;box-shadow:0 24px 60px -20px oklch(21% 0.042 264 / .5);overflow:hidden}.v7c .dlg-h{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--hair)}@keyframes sk{0%{background-position:-200px 0}100%{background-position:200px 0}}.v7c .dtile .d{font:700 18px/1 Public Sans,Public Sans,sans-serif}.v7c .dtile .m{font:800 9.5px Public Sans,sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-top:3px}.v7c .node{width:28px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;color:#fff;position:relative;z-index:1;box-shadow:0 0 0 3px var(--panel)}@media (max-width:760px){.v7c .pg{padding:16px}}@keyframes tipin{from{opacity:0;transform:translate(-50%,3px)}to{opacity:1;transform:translate(-50%,0)}}@keyframes tipin2{from{opacity:0}to{opacity:1}}.v7c [data-tip]{position:relative}.v7c [data-tip]:hover::after,.v7c [data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 9px);transform:translateX(-50%);background:var(--navy);color:#fff;font:700 11.5px/1.25 Public Sans,sans-serif;letter-spacing:0;text-transform:none;padding:5px 9px;border-radius:6px;white-space:nowrap;z-index:70;pointer-events:none;box-shadow:0 6px 16px -6px oklch(21% 0.042 264 / .5);animation:tipin .12s ease both}.v7c [data-tip]:hover::before,.v7c [data-tip]:focus-visible::before{content:"";position:absolute;left:50%;bottom:calc(100% + 5px);width:8px;height:8px;margin-left:-4px;background:var(--navy);transform:rotate(45deg);z-index:70;pointer-events:none;animation:tipin2 .12s ease both}.v7c [data-tip-below]:hover::after,.v7c [data-tip-below]:focus-visible::after{bottom:auto;top:calc(100% + 9px)}.v7c [data-tip-below]:hover::before,.v7c [data-tip-below]:focus-visible::before{bottom:auto;top:calc(100% + 5px)}@media (prefers-reduced-motion: reduce){.v7c [data-tip]::after,.v7c [data-tip]::before{animation:none!important}}.v7c{margin:0}.v7c{--vp-side-w:248px}@media (max-width:1279px){.v7c{--vp-side-w:72px}}@media (max-width:767px){.v7c{--vp-side-w:0px}}.v7c .tb-main{flex:1;min-width:0}.v7c .pg.tb-wrap{width:100%;max-width:1600px;margin-inline:auto;box-sizing:border-box;padding:clamp(16px,2vw,24px) clamp(16px,2vw,24px) 96px}.v7c .tb-segx{max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;border-radius:8px;-webkit-overflow-scrolling:touch}.v7c .tb-segx::-webkit-scrollbar{display:none}.v7c .tb-segx>.seg{width:max-content;min-width:100%;box-sizing:border-box}.v7c .tb-m{display:none!important}.v7c .lbl{font-size:11px}.v7c .seg .cnt{font-size:11px}.v7c .dtile .m{font-size:11px;letter-spacing:.06em}.v7c .tb-ov{position:fixed!important;inset:0;z-index:60!important;overflow:auto;padding:var(--ovt,12px) 12px 12px;box-sizing:border-box}.v7c .tb-ov.tb-top{--ovt:min(120px,12vh);align-items:flex-start!important}.v7c .tb-ov>.dlg{max-width:calc(100vw - 24px);max-height:calc(100dvh - var(--ovt,12px) - 12px);overflow:auto;flex:none;box-sizing:border-box}@media (max-width:767px){.v7c .pg.tb-wrap{padding:16px 16px 104px}.v7c .tb-d{display:none!important}.v7c .tb-m{display:revert!important}.v7c .tb-m.tb-flex{display:flex!important}.v7c .tb-ov.tb-top{--ovt:12px;align-items:center!important}.v7c .tb-hd>.tb-segx{flex:1 1 100%;margin-left:0!important}.v7c .btn,.v7c .btn-sm{height:40px;min-height:40px}.v7c .ibtn{width:40px;height:40px}.v7c .seg button{height:40px}}.v7c .tb-srch{position:relative;display:block;flex:0 1 240px;width:240px;max-width:100%;min-width:150px}.v7c .tb-14{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:6px}.v7c .tb-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hair);flex-wrap:wrap}.v7c .tb-hd .tb-segx+.tb-segx{margin-left:auto}.v7c .tb-day{display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;padding-top:14px}.v7c .tb-vl{position:absolute;left:79px;top:14px;bottom:14px;width:2px;background:var(--border)}.v7c .tb-ev{display:grid;grid-template-columns:52px 28px minmax(0,1fr) 190px 32px;gap:12px;align-items:center;padding:8px 0}.v7c .tb-facts{position:relative;margin:0 0 8px 92px;padding:12px 14px;border-radius:8px;background:var(--raised);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 16px}.v7c .tb-facts .rt{overflow-wrap:anywhere}.v7c .dd-top{flex-wrap:wrap}@media (max-width:959px){.v7c .tb-ev{grid-template-columns:48px 28px minmax(0,1fr) 150px 32px;gap:10px}.v7c .tb-vl{left:71px}.v7c .tb-facts{margin-left:86px}}@media (max-width:767px){.v7c .tb-14{gap:3px}.v7c .tb-hd .tb-segx+.tb-segx{margin-left:0}.v7c .tb-day{grid-template-columns:minmax(0,1fr);gap:4px}.v7c .tb-dayh{display:flex;align-items:center;gap:10px}.v7c .tb-dayh .dtile{width:50px!important;height:52px!important}.v7c .tb-dayh .cap{width:auto!important;margin:0!important;font-size:12px}.v7c .tb-ev{grid-template-columns:44px 28px minmax(0,1fr) 40px;gap:4px 10px}.v7c .tb-evw{grid-column:3 / -1;grid-row:2}.v7c .tb-vl{left:67px}.v7c .tb-facts{margin-left:0;grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}.v7c .ph .acts{flex:1 1 100%}.v7c .tb-srch{flex:1 1 150px;width:auto;max-width:none}}
+.v7c{--vp-side-w:0px;flex:1;min-width:0;background:var(--bg);color:var(--fg);font-family:Public Sans,system-ui,sans-serif;font-size:13px;position:relative}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="audit" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Audit" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <div class="v7c" style="display: flex">
+  
+  <div class="tb-main">
+    
+    <main class="pg tb-wrap">
+      <div class="ph">
+        <div class="acts">
+          <label class="tb-srch"><span style="position:absolute;left:10px;top:10px;color:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 4.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13Z M16 16l4 4"></path></svg></span><input class="inp" aria-label="Search the audit log" placeholder="Search" style="padding-left:32px"></label>
+          <button type="button" class="btn btn-o"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 15v3.5A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5V15 M12 4.5V15 M7.8 10.8 12 15l4.2-4.2"></path></svg>Export</button>
+        </div>
+      </div>
+
+      <section class="card t" style="padding:14px 18px 12px;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px"><h2 class="st">Last 14 days</h2><span class="metric" style="font-size:20px;margin-left:auto">{{total}}</span><span class="cap">events</span></div>
+        <div class="tb-14" style="position:relative;align-items:end;height:64px">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="14"><button type="button" onClick="{{b.open}}" onMouseEnter="{{b.enter}}" onMouseLeave="{{leave}}" disabled="{{b.empty}}" aria-label="{{b.tip}}" style="display:flex;flex-direction:column;justify-content:flex-end;height:100%;padding:0;border:0;background:none;cursor:pointer" data-tip="{{b.tip}}"><span style="display:block;width:100%;border-radius:3px 3px 0 0;transform-origin:bottom;animation:grow .9s cubic-bezier(.2,.7,.2,1) backwards;transition:opacity .15s;{{b.h}}"></span></button></sc-for>
+          <sc-if value="{{hasTip}}" hint-placeholder-val="{{false}}"><span role="tooltip" style="position:absolute;bottom:calc(100% + 4px);transform:translateX(-50%);background:var(--navy);color:#fff;font:700 12px Public Sans;padding:4px 9px;border-radius:6px;white-space:nowrap;z-index:5;pointer-events:none;box-shadow:0 6px 16px -6px oklch(21% 0.042 264 / .5);{{tipPos}}">{{tip}}<span style="position:absolute;left:50%;bottom:-4px;width:8px;height:8px;background:var(--navy);transform:translateX(-50%) rotate(45deg)"></span></span></sc-if>
+        </div>
+        <div class="tb-14"><sc-for list="{{bars}}" as="b" hint-placeholder-count="14"><span class="mono" style="font-size:11px;text-align:center;{{b.lc}}">{{b.d}}</span></sc-for></div>
+      </section>
+
+      <section class="card">
+        <div class="tb-hd">
+          <div class="tb-segx"><div class="seg" role="tablist" aria-label="Filter by type" style="grid-template-columns:repeat({{nT}},minmax(0,1fr))"><span class="thumb" style="width:calc((100% - 4px)/{{nT}});{{thumb}}"></span><sc-for list="{{tabs}}" as="t" hint-placeholder-count="6"><button type="button" role="tab" onClick="{{t.pick}}" class="{{t.cls}}">{{t.label}}<span class="cnt">{{t.cnt}}</span></button></sc-for></div></div>
+          <div class="tb-segx"><div class="seg" role="tablist" aria-label="Filter by who" style="grid-template-columns:repeat(3,minmax(0,1fr))"><span class="thumb" style="width:calc((100% - 4px)/3);{{wthumb}}"></span><sc-for list="{{whos}}" as="t" hint-placeholder-count="3"><button type="button" role="tab" onClick="{{t.pick}}" class="{{t.cls}}">{{t.label}}</button></sc-for></div></div>
+        </div>
+        <div style="padding:6px 16px 16px">
+          <sc-if value="{{noDays}}" hint-placeholder-val="{{false}}">
+            <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:40px 16px 24px">
+              <span style="display:flex;flex:none"><img src="vcfo-bin:s/home/assets/vcfo-bot-avatar.svg" alt="" style="width:48px;height:48px;object-fit:contain;display:block"></span>
+              <div role="status" style="max-width:300px;background:var(--panel);border:1px solid var(--border);border-radius:10px 10px 10px 3px;padding:10px 12px;box-shadow:var(--shadow)">
+                <div class="rt" style="font-weight:700">Nothing matches these filters yet.</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><button type="button" class="btn btn-o btn-sm" onClick="{{clearFilters}}">Clear filters</button><a href="#" style="font-size:12px">Ask VCFO why</a></div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-for list="{{days}}" as="d" hint-placeholder-count="3">
+            <div class="tb-day">
+              <div class="tb-dayh"><div class="dtile" style="width:60px;height:62px;{{d.tile}}"><span class="d">{{d.n}}</span><span class="m">{{d.m}}</span></div><div class="cap" style="text-align:center;width:60px;margin-top:4px;font-weight:700">{{d.wd}}</div></div>
+              <div style="position:relative">
+                <span class="tb-vl"></span>
+                <sc-for list="{{d.items}}" as="e" hint-placeholder-count="3">
+                  <div>
+                    <div class="tb-ev">
+                      <span class="mono" style="font-size:12px;font-weight:600;color:var(--navy-ink,var(--navy))">{{e.t}}</span>
+                      <span class="node" data-tip="{{e.tipText}}" aria-label="{{e.tipText}}" role="img" style="{{e.bg}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{e.icon}}" fill="{{e.fill}}"></path></svg></span>
+                      <div style="min-width:0"><span class="rt" style="font-weight:700">{{e.a}}</span><span style="color:var(--muted)"> · {{e.s}}</span></div>
+                      <div class="tb-evw" style="display:flex;align-items:center;gap:8px;min-width:0"><span class="av" style="width:24px;height:24px;font-size:11px;box-shadow:none;{{e.av}}">{{e.ini}}</span><span style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{e.who}}</span><span class="chip" style="{{e.rc}}">{{e.role}}</span></div>
+                      <button type="button" class="ibtn" onClick="{{e.toggle}}" aria-expanded="{{e.exp}}" aria-label="Details" data-tip="Details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="{{e.rot}}"><path d="M6 9l6 6 6-6"></path></svg></button>
+                    </div>
+                    <sc-if value="{{e.open}}" hint-placeholder-val="{{false}}">
+                      <div class="tb-facts">
+                        <sc-for list="{{e.facts}}" as="f" hint-placeholder-count="3"><div><div class="lbl">{{f.k}}</div><div class="rt" style="margin-top:3px">{{f.v}}</div></div></sc-for>
+                        <div style="grid-column:1 / -1;display:flex;gap:8px"><a href="#" class="btn btn-o btn-sm">{{e.cta}}</a></div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:center;padding-top:16px"><button type="button" class="btn btn-o btn-sm">Load older</button></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <sc-if value="{{drillOpen}}" hint-placeholder-val="{{false}}">
+    <div class="ov tb-ov tb-top">
+      <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="ab-t" style="width:760px"><div class="dd-top" style="display:flex;align-items:center;gap:8px;padding:9px 18px;background:var(--primary-light);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)"><span>{{dLinkLead}}</span><a href="#" data-go="{{dLinkGo}}" onClick="{{dLinkClick}}" style="margin-left:auto;font-weight:800;font-size:12.5px;white-space:nowrap">{{dLinkText}}</a></div>
+        <div class="dlg-h">
+          <div class="dtile" style="background:var(--navy);color:#fff"><span class="d">{{dDay}}</span><span class="m">{{dMon}}</span></div>
+          <div style="flex:1;min-width:0"><h2 id="ab-t" style="margin:0;font:700 16px Public Sans;color:var(--navy-ink,var(--navy))">{{dTitle}}</h2><div class="cap">{{dCount}}</div></div>
+          <button type="button" class="ibtn" aria-label="Close" style="border:0" onClick="{{closeDrill}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        </div>
+        <div style="padding:12px 18px 0"><div class="tb-segx"><div class="seg" role="tablist" aria-label="Pick a day" style="grid-template-columns:repeat({{dN}},minmax(0,1fr))"><span class="thumb" style="width:calc((100% - 4px)/{{dN}});{{dthumb}}"></span><sc-for list="{{dtabs}}" as="t" hint-placeholder-count="10"><button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" class="{{t.cls}}" style="padding:0 8px">{{t.label}}<span class="cnt">{{t.cnt}}</span></button></sc-for></div></div></div>
+        <div style="padding:8px 0 10px;max-height:min(420px,52dvh);overflow:auto">
+          <sc-for list="{{dItems}}" as="e" hint-placeholder-count="3">
+            <a href="#" class="row" style="color:inherit;font-weight:inherit;padding:10px 18px">
+              <span class="mono" style="width:44px;font-size:12px;font-weight:600;color:var(--navy-ink,var(--navy))">{{e.t}}</span>
+              <span class="node" data-tip="{{e.tipText}}" aria-label="{{e.tipText}}" role="img" style="box-shadow:none;{{e.bg}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{e.icon}}" fill="{{e.fill}}"></path></svg></span>
+              <span style="flex:1;min-width:0"><span class="rt" style="font-weight:700">{{e.a}}</span><span style="color:var(--muted)"> · {{e.s}}</span><span class="cap tb-m tb-flex" style="margin-top:3px;align-items:center;gap:6px"><span style="font-weight:600;color:var(--fg)">{{e.who}}</span><span class="chip" style="{{e.rc}}">{{e.role}}</span></span></span>
+              <span class="tb-d" style="font-size:12px;font-weight:600;white-space:nowrap">{{e.who}}</span>
+              <span class="chip tb-d" style="{{e.rc}}">{{e.role}}</span>
+              <span style="color:var(--primary);display:flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7 M9 7h8v8"></path></svg></span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tab":{"editor":"enum","options":[0,1,2,3,4],"default":0},"openId":{"editor":"int","default":0},"drillDay":{"editor":"enum","options":["",13,12,11,10],"default":""},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const o = this._rv();
+    o.mode = (this.state && this.state.mode) || 'mixed';
+    o.setMode = (m) => this.setState({ mode: m });
+    return o;
+  }
+  constructor(p) { super(p); this.state = {}; }
+  _rv() {
+    const s = this.state;
+    const tab = s.tab !== undefined ? s.tab : Number(this.props.tab ?? 0);
+    const who = s.who || 0;
+    const openId = s.openId !== undefined ? s.openId : Number(this.props.openId ?? 0);
+    // rule 18: status = set A solid glyphs
+    const IC = { req: 'M12 5.2a3.4 3.4 0 1 1 0 6.8a3.4 3.4 0 1 1 0-6.8Z M5.8 19.2a6.2 6.2 0 0 1 12.4 0Z', back: 'M12 6.5v7 M12 17.3h.01', up: 'M5.5 16 10 11.5l3 3 5.5-5.5 M14.5 9H18.5V13', ok: 'M6.5 12.5 10.5 16.5 17.5 8.5', time: 'M5.5 16 10 11.5l3 3 5.5-5.5 M14.5 9H18.5V13', mail: 'M5 5.5h14A1.5 1.5 0 0 1 20.5 7v10a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17V7A1.5 1.5 0 0 1 5 5.5Z M4.5 7.5l7.5 5.5 7.5-5.5', team: 'M9 12.5a3.5 3.5 0 1 0 0-7a3.5 3.5 0 1 0 0 7Z M3 20c.6-3.3 3-5 6-5s5.4 1.7 6 5 M18 8v6 M15 11h6' };
+    const TIP = { req: 'Waiting on Northwind', back: 'Sent back · fix needed', up: 'With SBC · to review', ok: 'Done', time: 'With SBC · timeline', mail: 'Email', team: 'Team change' };
+    const BG = { req: 'background:oklch(66% 0.17 55)', back: 'background:var(--over-chip)', up: 'background:oklch(55% 0.2 262)', ok: 'background:oklch(58% 0.15 155)', time: 'background:oklch(55% 0.2 262)', mail: 'background:var(--sky-chip)', team: 'background:var(--navy)' };
+    const PEOPLE = {
+      'Pranay': ['PN', 'background:oklch(55% 0.09 200)', 'Lead', 'sbc'], 'Pranay': ['PN', 'background:oklch(62% 0.08 40)', 'Manager', 'sbc'],
+      'Meera Iyer': ['MI', 'background:oklch(52% 0.13 330)', 'Client', 'you'], 'Northwind': ['RK', 'background:var(--primary-fill,var(--primary))', 'Client', 'you'], 'VCFO Suite': ['VS', 'background:var(--up);color:var(--fg)', 'System', 'sbc']
+    };
+    const E = [
+      { id: 1, day: 0, t: '10:42', ty: 'req', c: 'Documents', a: 'Documents requested', s: 'Utility bill, Board resolution', who: 'Pranay', facts: [['Items', '2'], ['Due', '12 Oct'], ['Step', '4 · Registered office']], cta: 'Open request' },
+      { id: 2, day: 0, t: '09:15', ty: 'back', c: 'Documents', a: 'Document sent back', s: 'Passport copy', who: 'Pranay', facts: [['Reason', 'Photo page is blurred'], ['Uploaded by', 'Meera Iyer'], ['File', 'passport_meera.pdf']], cta: 'Upload again' },
+      { id: 3, day: 0, t: '08:30', ty: 'time', c: 'Milestones', a: 'Timeline change approved', s: 'Phase 2 ends 28 Oct', who: 'Pranay', facts: [['Before', '24 Oct'], ['After', '28 Oct'], ['Slipped', '4 days']], cta: 'View timeline' },
+      { id: 4, day: 1, t: '18:20', ty: 'up', c: 'Documents', a: 'Document uploaded', s: 'Passport copy', who: 'Meera Iyer', facts: [['File', 'passport_meera.pdf'], ['Size', '240 KB'], ['Step', '3 · Director KYC']], cta: 'Preview file' },
+      { id: 5, day: 1, t: '16:05', ty: 'time', c: 'Milestones', a: 'Change request sent', s: 'Phase 2 +4 days', who: 'Northwind', facts: [['Reason', 'Directors travelling'], ['Asked', '24 → 28 Oct'], ['Status', 'Approved']], cta: 'View timeline' },
+      { id: 6, day: 1, t: '11:30', ty: 'mail', c: 'Email', a: 'Email sent', s: 'Documents requested', who: 'VCFO Suite', facts: [['To', 'Northwind'], ['Status', 'Delivered'], ['Also sent', 'WhatsApp reminder']], cta: 'View email' },
+      { id: 7, day: 2, t: '15:10', ty: 'ok', c: 'Milestones', a: 'Step accepted', s: 'Capital structure', who: 'Pranay', facts: [['Step', '6 of 14'], ['Submitted', '4 Oct'], ['Turnaround', '2 days']], cta: 'Open step' },
+      { id: 8, day: 2, t: '12:00', ty: 'team', c: 'Team', a: 'Colleague invited', s: 'Bharath', who: 'Northwind', facts: [['Invited', 'Bharath'], ['Access', 'Member'], ['Status', 'Invite sent']], cta: 'Open Team' }
+    ];
+    const credsRows = () => { try { return (JSON.parse(localStorage.getItem('vcfo.credsAudit')) || []).map((r, i) => { const d = new Date(r.t); return { id: 500 + i, day: 0, t: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'), ty: 'ok', c: 'Credentials', a: r.x, s: 'Credentials access log', who: 'Northwind', facts: [], cta: 'Open Credentials' }; }); } catch (e) { return []; } };
+    E.push(...credsRows());
+    const DAYS = [['8', 'Oct', 'Today', 'background:var(--navy);color:#fff'], ['7', 'Oct', 'Wed', 'background:var(--primary-light);color:var(--navy)'], ['6', 'Oct', 'Tue', 'background:var(--primary-light);color:var(--navy)']];
+    const CATS = ['All', 'Documents', 'Milestones', 'Team', 'Email', 'Credentials'];
+    const WHO = ['Everyone', 'SBC', 'Northwind'];
+    const fc = (e) => tab === 0 || e.c === CATS[tab];
+    const fw = (e) => who === 0 || PEOPLE[e.who][3] === (who === 1 ? 'sbc' : 'you');
+    const tabs = CATS.map((l, i) => ({ label: l, cnt: E.filter((e) => (i === 0 || e.c === l) && fw(e)).length, cls: tab === i ? 'on' : '', pick: () => this.setState({ tab: i }) }));
+    const whos = WHO.map((l, i) => ({ label: l, cls: who === i ? 'on' : '', pick: () => this.setState({ who: i }) }));
+    const days = DAYS.map((d, di) => ({ n: d[0], m: d[1], wd: d[2], tile: d[3], items: E.filter((e) => e.day === di && fc(e) && fw(e)).map((e) => {
+      const p = PEOPLE[e.who]; const open = openId === e.id;
+      return { ...e, bg: BG[e.ty], icon: IC[e.ty], fill: e.ty === 'req' ? 'currentColor' : 'none', tipText: TIP[e.ty], ini: p[0], av: p[1], role: p[2],
+        rc: p[3] === 'sbc' ? 'background:var(--navy);color:#fff' : 'background:var(--gold-soft);color:var(--gold-text)',
+        open, exp: open ? 'true' : 'false', rot: open ? 'transform:rotate(180deg)' : '',
+        facts: e.facts.map((f) => ({ k: f[0], v: f[1] })),
+        toggle: () => this.setState({ openId: open ? 0 : e.id }) };
+    }) })).filter((d) => d.items.length);
+    // rule 14: the 14-day strip. Hover a bar → tooltip; click → that day's events, day pill pre-selected.
+    const L = ['25', '26', '27', '28', '29', '30', '1', '2', '3', '4', '5', '6', '7', '8'];
+    const M = ['Sep', 'Sep', 'Sep', 'Sep', 'Sep', 'Sep', 'Oct', 'Oct', 'Oct', 'Oct', 'Oct', 'Oct', 'Oct', 'Oct'];
+    const WD = ['Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
+    const OLD = [
+      [10, '17:40', 'up', 'Document uploaded', 'Board resolution draft', 'Northwind'], [10, '10:05', 'ok', 'Step accepted', 'Registered office', 'Pranay'],
+      [7, '14:30', 'req', 'Documents requested', 'Director PAN, Aadhaar', 'Pranay'],
+      [7, '16:10', 'up', 'Document uploaded', 'PAN card', 'Northwind'], [7, '11:20', 'mail', 'Email sent', 'Step 5 accepted', 'VCFO Suite'],
+      [6, '18:00', 'ok', 'Step accepted', 'Director KYC', 'Pranay'], [6, '15:45', 'up', 'Document uploaded', 'Aadhaar card', 'Meera Iyer'], [6, '09:30', 'team', 'Colleague added', 'Dev Sharma', 'Northwind'],
+      [4, '12:15', 'ok', 'Name approved', 'MCA RUN', 'Pranay'],
+      [3, '16:50', 'time', 'Timeline set', 'Phase 2 ends 24 Oct', 'Pranay'], [3, '10:00', 'mail', 'Email sent', 'Welcome to Phase 2', 'VCFO Suite'],
+      [0, '11:00', 'req', 'Documents requested', 'Proof of address', 'Pranay']
+    ];
+    const ALL = E.map((e) => ({ ...e, di: 13 - e.day })).concat(OLD.map((o, k) => ({ id: 100 + k, di: o[0], t: o[1], ty: o[2], a: o[3], s: o[4], who: o[5] })));
+    const H = L.map((_, i) => ALL.filter((e) => e.di === i).length);
+    const hv = s.hv;
+    const pd = this.props.drillDay;
+    const dd = s.dd !== undefined ? s.dd : (pd === undefined || pd === null || pd === '' ? null : Number(pd));
+    const bars = H.map((h, i) => ({ d: L[i], empty: h === 0, tip: WD[i] + ' ' + L[i] + ' ' + M[i] + ' · ' + h + (h === 1 ? ' event' : ' events'),
+      h: 'height:' + Math.max(h * 14, 3) + 'px;background:' + (i === 13 ? 'var(--navy)' : h ? 'var(--navy-3)' : 'var(--border)') + ';opacity:' + (i === 13 || hv === i ? 1 : .55),
+      lc: i === 13 ? 'color:var(--navy-ink,var(--navy));font-weight:700' : 'color:var(--subtle)',
+      enter: () => this.setState({ hv: i }), open: () => { if (h) this.setState({ dd: i, hv: undefined }); } }));
+    const hasTip = hv !== undefined && hv !== null;
+    const active = L.map((_, i) => i).filter((i) => H[i] > 0).reverse();
+    const dtabs = active.map((i) => ({ label: L[i] + ' ' + M[i], cnt: H[i], cls: dd === i ? 'on' : '', sel: dd === i ? 'true' : 'false', pick: () => this.setState({ dd: i }) }));
+    const pos = Math.max(active.indexOf(dd), 0);
+    const dItems = dd === null ? [] : ALL.filter((e) => e.di === dd).map((e) => {
+      const p = PEOPLE[e.who];
+      return { ...e, bg: BG[e.ty], icon: IC[e.ty], fill: e.ty === 'req' ? 'currentColor' : 'none', tipText: TIP[e.ty], role: p[2], rc: p[3] === 'sbc' ? 'background:var(--navy);color:#fff' : 'background:var(--gold-soft);color:var(--gold-text)' };
+    });
+    return { tabs, whos, days, bars, nT: CATS.length, total: ALL.length, noDays: days.length === 0,
+      clearFilters: () => this.setState({ tab: 0, who: 0 }),
+      thumb: 'transform:translateX(' + (tab * 100) + '%)', wthumb: 'transform:translateX(' + (who * 100) + '%)',
+      hasTip, tip: hasTip ? bars[hv].tip : '', tipPos: hasTip ? 'left:calc(' + ((hv + 0.5) / 14 * 100) + '% )' : '',
+      leave: () => this.setState({ hv: undefined }),
+      drillOpen: dd !== null, dtabs, dN: active.length, dthumb: 'transform:translateX(' + (pos * 100) + '%)', dItems,
+      dDay: dd === null ? '' : L[dd], dMon: dd === null ? '' : M[dd],
+      dTitle: dd === null ? '' : (dd === 13 ? 'Today' : WD[dd]) + ', ' + (dd === null ? '' : L[dd] + ' ' + M[dd]),
+      dCount: dd === null ? '' : H[dd] + (H[dd] === 1 ? ' event' : ' events'),
+      closeDrill: () => this.setState({ dd: null }), dLinkLead: 'These events live in the Audit log', dLinkText: 'Show in the Audit log ↓', dLinkGo: '', dLinkClick: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ dd: null }); setTimeout(() => window.scrollTo({ top: 280, behavior: 'smooth' }), 60); } };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

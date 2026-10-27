@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lead · Work · board and list</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+.card{background:#fff;border:1px solid #e3e6eb;border-radius:10px;box-shadow:0 1px 2px rgba(15,42,74,.04),0 6px 18px -10px rgba(15,42,74,.18);min-width:0}
+.st{margin:0;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.chip{display:inline-flex;align-items:center;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;line-height:16px;white-space:nowrap}
+/* aligned columns: chips and row buttons share one width so they line up */
+td .chip,.row>.chip,.td>.chip,.sr .chip,.ql .chip{min-width:84px;justify-content:center;box-sizing:border-box}
+.row>.btn,td .btn,.td>.btn{min-width:84px;justify-content:center;box-sizing:border-box}
+.mono{font-family:'IBM Plex Mono',monospace}
+.sg{font-family:sans-serif;letter-spacing:-.03em}
+.mut{color:#667180}
+.btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;font:600 12px Public Sans,sans-serif;border:1px solid #d0d5dd;background:#fff;color:#15263b;cursor:pointer;white-space:nowrap}
+.seg{display:inline-flex;padding:2px;border-radius:8px;background:#f1f4f8;box-shadow:inset 0 0 0 1px #e3e6eb}
+.seg span{height:28px;padding:0 11px;border-radius:6px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;color:#667180}
+.kb{display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:12px;overflow-x:auto}
+.tc{background:#fff;border:1px solid #e3e6eb;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 2px rgba(15,42,74,.05)}
+.tbl{width:100%;border-collapse:collapse;min-width:820px}
+.tbl th{text-align:left;padding:8px 12px;font-size:10.5px;font-weight:800;color:#98a1ae;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid #e3e6eb;background:#eef0f3}
+.tbl td{padding:9px 12px;border-top:1px solid #e3e6eb;white-space:nowrap}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="work" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Work" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <main style="max-width: 1400px; width: 100%; margin: 0 auto; padding: 18px clamp(12px, 2vw, 28px) 40px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+        <span class="chip" style="background: #15263b; color: #fff">14 open · 8 companies</span>
+        <span class="seg"><span>Planner</span><span>List</span><span style="background: #15263b; color: #fff">Board</span></span>
+      </div>
+      <div class="kb">
+        <sc-for list="{{cols}}" as="c" hint-placeholder-count="4">
+          <section style="background: #eef0f3; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 420px">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 2px 2px 4px"><i style="{{c.dot}}"></i><h2 class="st">{{c.h}}</h2><span class="chip" style="background: #fff; color: #15263b; margin-left: auto">{{c.n}}</span></div>
+            <sc-for list="{{c.cards}}" as="t" hint-placeholder-count="3">
+              <div class="tc" style="{{t.edge}}">
+                <div style="display: flex; align-items: center; gap: 6px"><span style="{{t.av}}">{{t.ini}}</span><span class="mut" style="font-size: 11.5px; flex: 1">{{t.co}}</span><span class="mono mut" style="font-size: 10.5px">{{t.code}}</span></div>
+                <b style="font-size: 13px">{{t.t}}</b>
+                <div style="display: flex; align-items: center; gap: 6px"><span class="chip" style="{{t.cs}}">{{t.s}}</span><button type="button" class="btn" style="margin-left: auto; height: 26px">{{t.cta}}</button></div>
+              </div>
+            </sc-for>
+          </section>
+        </sc-for>
+      </div>
+
+      <section class="card" style="overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px"><h2 class="st">List view</h2><span class="mut" style="font-size: 11.5px; margin-left: auto"><span class="mono" style="box-shadow: inset 0 0 0 1px #e3e6eb; border-radius:6px; padding: 0 4px">J</span> <span class="mono" style="box-shadow: inset 0 0 0 1px #e3e6eb; border-radius:6px; padding: 0 4px">K</span> move · <span class="mono" style="box-shadow: inset 0 0 0 1px #e3e6eb; border-radius:6px; padding: 0 4px">Enter</span> open</span></div>
+        <div style="overflow-x: auto">
+          <table class="tbl">
+            <thead><tr><th>Step / filing</th><th>Company</th><th>State</th><th>Due</th><th></th></tr></thead>
+            <tbody>
+              <sc-for list="{{list}}" as="r" hint-placeholder-count="6">
+                <tr style="{{r.sel}}"><td><span class="mono mut" style="font-size: 11px">{{r.code}}</span> <b style="font-weight: 600">{{r.t}}</b></td><td><span style="display: inline-flex; align-items: center; gap: 6px"><i style="{{r.dot}}"></i>{{r.co}}</span></td><td><span class="chip" style="{{r.cs}}">{{r.s}}</span></td><td class="mono" style="font-size: 12px">{{r.due}}</td><td style="text-align: right"><button type="button" class="btn">{{r.cta}}</button></td></tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const __m = (this.state && this.state.mode) || 'mixed';
+    const __set = (m) => this.setState({ mode: m });
+    const C = { BR: ['Brightwave', '#db2777', '#fde2ec', '#9d174d'], TL: ['Tidewater', '#0d9488', '#ccf3ec', '#0f5f55'], KH: ['Kestrel', '#0284c7', '#dbeefe', '#0b5c8f'], HF: ['Halcyon', '#a16207', '#fdf0d2', '#8a5a06'], NT: ['Northwind', '#7c3aed', '#ebe5ff', '#5b21b6'], OL: ['Orchid Lane', '#4f46e5', '#e3e9ff', '#3730a3'], LA: ['Larkspur', '#16a34a', '#daf5e3', '#166534'], JB: ['Juniper', '#64748b', '#eef0f3', '#334155'] };
+    const CS = { red: 'background:#be3434;color:#fff', amb: 'background:#a35f00;color:#fff', gold: 'background:#fcefd8;color:#a35f00', blue: 'background:#e3edfb;color:#2563a8', ok: 'background:#e2f3ea;color:#1e7f55', grey: 'background:#eef0f3;color:#667180' };
+    const card = (k, code, t, s, cs, cta) => ({ ini: k, co: C[k][0], code, t, s, cs: CS[cs], cta,
+      av: 'width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:9px;font-weight:800;background:' + C[k][2] + ';color:' + C[k][3],
+      edge: 'box-shadow:0 0 0 0 transparent,0 1px 2px rgba(15,42,74,.05)' });
+    const cols = [
+      ['Needs action', '#a35f00', [card('BR', 'Post-3', 'Bank account opening', 'Rejected · fix', 'red', 'Open step'), card('OL', 'Pre-10', 'KYC Review & DSC', 'Client submitted · review', 'gold', 'Review'), card('LA', 'Pre-2', 'Draft Board resolution', 'Accepted · deliver', 'gold', 'Deliver'), card('KH', 'TDS', 'TDS challan · Sep', 'Filing · 20 Oct', 'amb', 'Open filing')]],
+      ['In progress', '#15263b', [card('KH', 'Reg-1', 'GST Registration', 'Due today', 'amb', 'Continue'), card('HF', 'Reg-15', 'Trademark Registration', 'Day 3 of 10', 'grey', 'Continue')]],
+      ['Waiting', '#2563a8', [card('NT', 'Pre-7', 'Registered office address', 'Waiting client · 5d', 'blue', 'Send reminder'), card('TL', 'Post-8', 'FC-GPR Filing', 'Waiting manager · 3d', 'blue', 'Email manager again'), card('JB', 'Pre-1', 'Client details', 'Document request', 'blue', 'Send reminder')]],
+      ['Done this week', '#1e7f55', [card('LA', 'Pre-1', 'Name Approval', 'Done Mon', 'ok', 'Open'), card('HF', 'Reg-9', 'MSME Udyam', 'Done Mon', 'ok', 'Open'), card('KH', 'Post-11', 'INC-20A', 'Done Tue', 'ok', 'Open')]]
+    ].map(([h, col, cards]) => ({ h, n: cards.length, cards, dot: 'width:10px;height:10px;border-radius:3px;background:' + col }));
+    const list = [
+      ['BR', 'Post-3', 'Bank account opening', 'Rejected · fix', 'red', '15 Oct', 'Open step', 1],
+      ['TL', 'Post-8', 'FC-GPR Filing', 'Waiting manager', 'blue', '16 Oct', 'Email manager again'],
+      ['KH', 'Reg-1', 'GST Registration', 'In progress', 'grey', '20 Oct', 'Continue'],
+      ['OL', 'Pre-10', 'KYC Review & DSC', 'Client submitted', 'gold', '19 Oct', 'Review'],
+      ['HF', 'GST', 'GSTR-1 · Sep', 'Filing', 'amb', '20 Oct', 'Open filing'],
+      ['NT', 'Pre-7', 'Registered office address', 'Waiting client', 'blue', '20 Oct', 'Send reminder']
+    ].map(([k, code, t, s, cs, due, cta, sel]) => ({ code, t, s, due, cta, co: C[k][0], cs: CS[cs],
+      dot: 'width:8px;height:8px;border-radius:2px;display:inline-block;background:' + C[k][1],
+      sel: sel ? 'background:#f1f6ff;box-shadow:0 0 0 0 transparent' : '' }));
+    return { mode: __m, setMode: __set,  cols, list };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>

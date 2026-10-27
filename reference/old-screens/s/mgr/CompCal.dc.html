@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Manager · Compliance calendar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563a8;text-decoration:none}
+.L{font-family:Public Sans,system-ui,sans-serif;color:#15263b;font-size:13px;background:#f7f9fc;font-variant-numeric:tabular-nums}
+.L *{box-sizing:border-box}
+/* v7 page, scoped */
+.v7c .mpk-lbl{display:flex;align-items:center;justify-content:center;min-width:150px}.v7c .mpk-b{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 8px;border:0;border-radius:6px;background:none;font:700 14px sans-serif;color:var(--fg);cursor:pointer}.v7c .mpk-b svg{color:var(--muted)}.v7c .mpk-b:hover,.v7c .mpk-b[aria-expanded=true]{background:var(--raised)}.v7c .mpk-b:focus-visible{outline:2px solid var(--navy);outline-offset:1px}.v7c [data-calnavr]{position:relative}.v7c .row-wrap:has(.calbar){flex-wrap:nowrap!important;position:relative;z-index:6}.v7c .row-wrap:has(.calbar)>.end{flex:none}.v7c .calbar{display:flex;align-items:center;gap:8px;flex:1 1 auto;min-width:0}.v7c .calbar>[data-calnavr]{flex:none;position:relative;z-index:30}.v7c .calbar>.mono{flex:none;align-self:stretch;display:inline-flex;align-items:center;font-size:10.5px!important;padding:0 8px!important;border-radius:8px!important}.v7c .calbar>.seg-scroll{flex:0 1 auto;min-width:0}.v7c .row-wrap:has(.calbar) .seg button{height:28px;padding:0 9px;font-size:12px;gap:4px}.v7c .row-wrap:has(.calbar) .seg .cnt{font-size:10px}.v7c .calbar [data-calnavr] .ibtn{width:24px!important;height:28px!important}.v7c .calbar .mpk-lbl{min-width:0}.v7c .calbar .mpk-b{height:28px;padding:0 6px;font-size:13px}.v7c{--bg:oklch(97.4% 0.006 255);--panel:oklch(100% 0 0);--raised:oklch(96.6% 0.007 255);--border:oklch(92.2% 0.011 255);--hair:oklch(94.8% 0.007 255);--fg:oklch(21% 0.042 264);--muted:oklch(46% 0.028 258);--subtle:oklch(55% 0.022 255);
+--primary:oklch(54.6% 0.215 263);--primary-dark:oklch(48.8% 0.217 264);--primary-light:oklch(96.6% 0.02 260);
+--navy:#15263b;--navy-2:#1b3049;--navy-3:#2563a8;--gold:#e9792f;--gold-soft:#fcefd8;--gold-text:#a35f00;
+--ok:oklch(56% 0.13 168);--ok-light:oklch(96% 0.028 170);--ok-text:oklch(39% 0.09 172);--ok-chip:oklch(50% 0.12 168);
+--due:oklch(66% 0.17 48);--due-light:oklch(96.8% 0.04 55);--due-text:oklch(48% 0.14 42);--due-chip:oklch(55% 0.17 42);
+--over:oklch(57% 0.2 22);--over-light:oklch(96.4% 0.026 18);--over-text:oklch(46% 0.17 20);--over-chip:oklch(52% 0.2 22);
+--prog:oklch(55% 0.16 252);--prog-light:oklch(96% 0.026 250);--prog-text:oklch(43% 0.13 254);
+--up:oklch(82% 0.018 255);--up-light:oklch(96.6% 0.007 255);--up-text:oklch(46% 0.028 258);
+--violet:oklch(54% 0.17 292);--violet-light:oklch(96.4% 0.032 292);
+--shadow:0 1px 2px oklch(25% 0.04 264 / .04),0 6px 18px -10px oklch(28% 0.06 264 / .18);
+--pop:0 16px 40px -12px oklch(21% 0.042 264 / .35);
+--spring:linear(0,0.0637,0.2021,0.3619,0.5141,0.6451,0.7506,0.8315,0.8909,0.9328,0.9613,0.9799,0.9914,0.9981,1.0016,1.0032,1.0036,1.0034,1.0029,1.0023,1.0018,1.0013,1.0009,1.0006,1.0004);
+--cv:oklch(93% 0.008 255)}.v7c *{box-sizing:border-box}.v7c{margin:0;background:var(--cv);font-family:Public Sans,system-ui,sans-serif;color:var(--fg);font-size:13px;-webkit-font-smoothing:antialiased}.v7c a{color:var(--primary);text-decoration:none;font-weight:700}.v7c button{font-family:inherit}.v7c .page{padding:22px 24px 120px;display:flex;flex-direction:column;gap:16px}.v7c .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);min-width:0;position:relative}.v7c .card.t::before{content:none;position:absolute;left:18px;top:-1px;width:38px;height:3px;border-radius:0 0 3px 3px;background:var(--gold)}.v7c .st{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--navy-ink,var(--navy));margin:0}.v7c .metric{font-family:Public Sans,Public Sans;font-weight:600;letter-spacing:-.035em;font-feature-settings:"tnum"}.v7c .mono{font-family:"IBM Plex Mono",monospace;font-feature-settings:"tnum"}.v7c .chip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;line-height:16px;white-space:nowrap}.v7c .c-ok{background:var(--ok-light);color:var(--ok-text)}.v7c .c-due{background:var(--due-light);color:var(--due-text)}.v7c .c-over{background:var(--over-light);color:var(--over-text)}.v7c .c-up{background:var(--up-light);color:var(--up-text);box-shadow:inset 0 0 0 1px var(--border)}.v7c .area{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:6px;font:700 11px "IBM Plex Mono";letter-spacing:.02em;color:var(--navy-ink,var(--navy));background:light-dark(oklch(95% 0.012 255), oklch(20.5% 0.01 255));box-shadow:inset 0 0 0 1px oklch(88% 0.02 255)}.v7c .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 14px;border-radius:6px;font:600 13px Public Sans;border:1px solid transparent;cursor:pointer;white-space:nowrap;transition:transform .12s,background .15s}.v7c .btn:active{transform:scale(.98)}.v7c .btn-o{background:var(--panel);color:var(--fg);border-color:var(--border)}.v7c .btn-s{height:30px;padding:0 10px;font-size:12px}.v7c .ibtn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--muted);display:grid;place-items:center;cursor:pointer}.v7c .ibtn:hover{color:var(--navy-ink,var(--navy));border-color:oklch(54.6% 0.215 263 / .35)}.v7c .seg{position:relative;display:inline-grid;grid-auto-flow:column;grid-auto-columns:auto;padding:2px;border-radius:8px;background:light-dark(oklch(96.5% 0.008 250), oklch(18.3% 0.008 250));box-shadow:inset 0 0 0 1px var(--border)}.v7c .seg>.thumb{position:absolute;top:2px;bottom:2px;left:0;border-radius:6px;background:var(--navy);box-shadow:0 1px 2px oklch(21% 0.042 264 / .25);transition:transform .42s var(--spring),width .42s var(--spring)}.v7c .seg button{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;border:0;background:none;height:30px;padding:0 12px;border-radius:6px;font:500 12.5px Public Sans;color:light-dark(oklch(50% 0.022 255), oklch(80% 0.015 255));cursor:pointer;white-space:nowrap;transition:color .2s}.v7c .seg button.on{color:#fff;font-weight:600}.v7c .seg .cnt{font:600 11px "IBM Plex Mono";color:oklch(55% 0.022 255)}.v7c .seg button.on .cnt{color:oklch(100% 0 0 / .72)}.v7c .info{position:relative;display:inline-flex;vertical-align:middle}.v7c .info>button{width:20px;height:20px;border:0;border-radius:6px;background:none;color:oklch(62% 0.02 255);display:grid;place-items:center;cursor:pointer;padding:0}.v7c .info>button:hover{color:var(--navy-ink,var(--navy))}.v7c .info .pop{position:absolute;left:50%;top:calc(100% + 8px);z-index:40;width:min(280px,calc(100vw - 24px));padding:10px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--border);box-shadow:var(--pop);font:500 12px/1.45 Public Sans;color:var(--fg);opacity:0;visibility:hidden;transform:translate(-50%,-4px);transition:.15s}.v7c .info .pop::before{content:"";position:absolute;left:50%;top:-6px;width:10px;height:10px;background:var(--panel);border-left:1px solid var(--border);border-top:1px solid var(--border);transform:translateX(-50%) rotate(45deg)}.v7c .info:focus-within .pop{opacity:1;visibility:visible;transform:translate(-50%,0)}.v7c .ask{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--hair);color:var(--primary);font-weight:700}.v7c .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.v7c .dow{font:800 11px Public Sans;letter-spacing:.08em;text-transform:uppercase;color:var(--subtle);padding:0 6px 2px}.v7c .dow.we{color:oklch(68% 0.02 255)}.v7c .day{position:relative;min-width:0;overflow:hidden;font:inherit;color:inherit;height:96px;border-radius:10px;background:var(--panel);border:1px solid var(--border);padding:7px;display:flex;flex-direction:column;gap:4px;cursor:pointer;transition:transform .16s,box-shadow .16s,border-color .16s;text-align:left}.v7c .day:hover{transform:translateY(-2px);border-color:oklch(54.6% 0.215 263 / .35);box-shadow:0 8px 22px -8px oklch(37.9% 0.146 266 / .18)}.v7c .day.out{background:transparent;border-style:dashed;border-color:light-dark(oklch(90% 0.01 255), oklch(26% 0.01 255));cursor:default}.v7c .day.out:hover{transform:none;box-shadow:none}.v7c .day.out .dn{color:oklch(75% 0.015 255)}.v7c .day.we:not(.out){background:light-dark(oklch(98.6% 0.004 255), oklch(15.1% 0.004 255))}.v7c .dn{display:flex;align-items:center;gap:6px}.v7c .dt{min-width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font:700 13px Public Sans;color:var(--fg)}.v7c .day.s-over{background:var(--over-light);border-color:light-dark(oklch(85% 0.07 20), oklch(32% 0.1 20))}.v7c .day.s-due{background:var(--due-light);border-color:light-dark(oklch(87% 0.08 60), oklch(32% 0.1 60))}.v7c .day.s-up .dt{background:var(--navy);color:#fff}.v7c .day.s-over .dt{background:var(--over);color:#fff}.v7c .day.s-due .dt{background:var(--due);color:#fff}.v7c .day.today{box-shadow:0 0 0 2px var(--navy)}.v7c .day.today .tlabel{font:800 11px Public Sans;letter-spacing:.04em;min-width:0;white-space:nowrap;text-transform:uppercase;color:var(--navy-ink,var(--navy));display:flex;align-items:center;gap:4px}.v7c .pulse{width:7px;height:7px;border-radius:99px;background:var(--gold);animation:pulse 1.8s ease-in-out infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 oklch(80% 0.12 85 / .7)}50%{box-shadow:0 0 0 5px oklch(80% 0.12 85 / 0)}}.v7c .ev{display:flex;align-items:center;gap:5px;height:20px;padding:0 6px 0 0;border-radius:6px;background:light-dark(oklch(100% 0 0 / .75), oklch(13% 0 0 / 0.75));font-size:11px;font-weight:700;color:var(--fg);overflow:hidden;white-space:nowrap}.v7c .ev i{width:3px;align-self:stretch;flex:none;border-radius:4px 0 0 4px}.v7c .ev .a{font:700 11px "IBM Plex Mono";color:var(--muted);flex:none}.v7c .ev .t{overflow:hidden;text-overflow:ellipsis}.v7c .ag-date{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--hair)}.v7c .ag-date:first-child{border-top:0}.v7c .dtile{width:44px;height:48px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;color:#fff}.v7c .dtile b{font:700 18px/1 Public Sans}.v7c .dtile small{font:800 11px Public Sans;letter-spacing:.03em;text-transform:uppercase;opacity:.85;margin-top:2px}.v7c .ag-items{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}.v7c .ag-it{display:flex;align-items:center;gap:8px;min-width:0}.v7c .ag-it .nm{font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}.v7c table{width:100%;border-collapse:collapse}.v7c th{text-align:left;padding:9px 10px;font-size:11px;font-weight:800;color:var(--subtle);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);white-space:nowrap}.v7c td{padding:10px;border-top:1px solid var(--hair);vertical-align:middle;white-space:nowrap}.v7c tbody tr{transition:background .15s;cursor:pointer}.v7c tbody tr:hover{background:light-dark(oklch(96.8% 0.006 250 / .7), oklch(17.8% 0.006 250 / 0.7))}.v7c tbody tr:first-child td{border-top:0}@keyframes botup{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}}@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.v7c [data-dd]{cursor:pointer}.v7c span[data-dd]:hover,.v7c div[data-dd]:not(.kpi):hover{filter:brightness(1.06);box-shadow:0 0 0 2px oklch(54.6% 0.215 263 / .25)}.v7c circle[data-dd]{transition:stroke-width .15s}.v7c circle[data-dd]:hover{stroke-width:15}.v7c .pbtn{width:18px;height:18px;border-radius:6px;display:inline-grid;place-items:center;color:var(--subtle);flex:none;transition:color .15s,background .15s}.v7c .pbtn:hover{color:var(--navy-ink,var(--navy));background:var(--primary-light)}.v7c .gly{display:inline-grid;place-items:center;border-radius:99px;flex:none;vertical-align:middle}.v7c .chip .gly{margin-left:-3px}@keyframes ftpulse{0%{box-shadow:0 0 0 0 var(--gold)}100%{box-shadow:0 0 0 9px transparent}}@media (prefers-reduced-motion: reduce){.v7c *,.v7c *::before,.v7c *::after{animation:none!important;transition:none!important}}.v7c .seg-scroll{min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none;border-radius:8px}.v7c .seg-scroll::-webkit-scrollbar{display:none}.v7c .seg-scroll>.seg{display:inline-grid;vertical-align:top}.v7c .cal-scroll{overflow-x:auto;padding:4px;margin:-4px}.v7c .cal-scroll>.cal{min-width:540px}.v7c .day{container-type:inline-size}.v7c .tlabel .tl-t{overflow:hidden}@container (max-width:96px){.v7c .tlabel .tl-t{display:none}.v7c .ev .a{display:none}}.v7c,.v7c body{background:var(--bg)}.v7c .page{width:100%;max-width:1600px;margin-inline:auto;padding:clamp(14px,1.6vw,22px) clamp(12px,1.8vw,24px) 120px;min-width:0}.v7c .row-wrap{display:flex;align-items:center;gap:10px 12px!important;flex-wrap:wrap}.v7c .row-wrap>.end{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;max-width:100%}.v7c .cal-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}.v7c .cal-rail{display:flex;flex-direction:column;gap:12px;min-width:0}.v7c [data-calnav] .seg button{padding:0 10px}.v7c [data-calnavr] b{min-width:108px!important}.v7c .donut svg{width:clamp(88px,5.6vw,112px);height:auto;flex:none}@media (max-width:1179px){.v7c .cal-layout{grid-template-columns:minmax(0,1fr)!important}.v7c .cal-rail{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));align-items:start}.v7c .cal-rail>:last-child{grid-column:1/-1}}@media (max-width:767px){.v7c .row-wrap>.end{margin-left:0!important}.v7c .seg button{height:40px}.v7c .btn-s,.v7c .btn{height:40px}.v7c .ibtn{width:40px!important;height:40px!important}.v7c .pbtn{width:40px;height:40px;margin:-11px -6px}.v7c .donut{flex-wrap:wrap}}.v7c .cal{gap:0;border:1px solid #98a1ae;border-bottom:0;border-radius:8px;overflow:hidden;background:var(--panel)}.v7c .cal .dow{padding:7px 8px;background:light-dark(#eef2f8, oklch(19% 0.009 258.3));border-bottom:1px solid #98a1ae;color:var(--muted)}.v7c .cal .dow.we{color:var(--muted)}.v7c .cal .day{height:96px;border:0;border-radius:0;border-right:1px solid #98a1ae;border-bottom:1px solid #98a1ae;background:var(--panel);padding:7px 8px;transition:background .15s}.v7c .cal>:nth-child(7n){border-right:0}.v7c .cal .day:hover{transform:none;box-shadow:none;border-color:#98a1ae;background:light-dark(#f7f9fc, oklch(15.8% 0.005 258.3))}.v7c .cal .day.out,.v7c .cal .day.out:hover{background:var(--panel);border-style:solid;border-color:#98a1ae}.v7c .cal .day.out .dt{color:#a9b4c4}.v7c .cal .day.we:not(.out),.v7c .cal .day.s-over,.v7c .cal .day.s-due{background:var(--panel);border-color:#98a1ae}.v7c .cal .day.we:not(.out):hover,.v7c .cal .day.s-over:hover,.v7c .cal .day.s-due:hover{background:light-dark(#f7f9fc, oklch(15.8% 0.005 258.3))}.v7c .cal .dt{min-width:24px;height:24px;border-radius:6px;font:700 13px Public Sans,sans-serif}.v7c .cal .day.today{box-shadow:inset 0 0 0 2px var(--navy);background:light-dark(#eef2f8, oklch(19% 0.009 258.3))}.v7c .cal .day.today .tlabel{display:none}.v7c .cal .ev{height:20px;padding:0 6px 0 0;gap:6px;border-radius:3px;background:light-dark(#eef2f8, oklch(19% 0.009 258.3));font-weight:600}.v7c .cal .ev i{border-radius:3px 0 0 3px}.v7c .cal .ev .a{display:none}
+.v7c{flex:1;min-width:0;background:var(--bg);color:var(--fg);font-family:Public Sans,system-ui,sans-serif;font-size:13px}
+.v7c>.page{max-width:1600px;margin:0 auto;padding:20px clamp(12px,2vw,28px) 60px;display:flex;flex-direction:column;gap:16px}
+.v7c .one-row{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none}
+.v7c .one-row::-webkit-scrollbar{display:none}
+.v7c .one-row>*{flex:none}
+.v7c .one-row [data-calnav]{flex-wrap:nowrap!important}
+</style>
+</helmet>
+<div class="L" style="display: flex; flex-wrap: wrap; min-height: 100vh; position: relative">
+  <div style="flex: 1 1 248px; max-width: 248px; background: #15263b"><dc-import name="Side" active="compliances" sub="Calendar" mode="{{mode}}" hint-size="248px,1000px"></dc-import></div>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <dc-import name="Top" crumb="Today › Compliances › Calendar" mode="{{mode}}" on-mode="{{setMode}}" hint-size="100%,56px"></dc-import>
+    <div class="v7c"><div class="page"><div class="row-wrap one-row" style="display:flex;align-items:center;gap:12px"><button type="button" class="btn btn-o" style="height:36px;flex:none;color:var(--navy-ink,var(--navy))">All companies<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+    <div data-calnav="" class="calbar"><div data-calnavr=""><div style="display:flex;align-items:center;gap:2px;background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:2px"><button class="ibtn" style="border:0;width:28px;height:28px" aria-label="Previous month" data-tip="Previous month"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button><span class="mpk-lbl"><button type="button" class="mpk-b" data-pk="m" aria-haspopup="dialog" aria-label="Choose month"><span>October</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button><button type="button" class="mpk-b" data-pk="y" aria-haspopup="dialog" aria-label="Choose year"><span>2026</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button></span><button class="ibtn" style="border:0;width:28px;height:28px" aria-label="Next month" data-tip="Next month"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button></div></div><span class="mono" style="flex:none;font-size:11px;font-weight:600;padding:5px 8px;border-radius:6px;background:var(--gold-soft);color:var(--gold-text)">FY 2026-27</span><div class="seg-scroll"><div class="seg" id="seg0" role="tablist"><span class="thumb" style="width: 49px; transform: translateX(2px);"></span><button role="tab" class="on" aria-selected="true">All<span class="cnt">13</span></button><button role="tab" class="" aria-selected="false">MCA<span class="cnt">2</span></button><button role="tab" class="" aria-selected="false">GST<span class="cnt">3</span></button><button role="tab" class="" aria-selected="false">Income tax<span class="cnt">4</span></button><button role="tab" class="" aria-selected="false">Payroll<span class="cnt">2</span></button><button role="tab" class="" aria-selected="false">FEMA<span class="cnt">2</span></button></div></div></div>
+    <div class="end" style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      
+      <span data-calview="" style="display:contents"><div class="seg" id="seg1" role="tablist"><span class="thumb" style="width: 53px; transform: translateX(2px);"></span><button role="tab" class="on" aria-selected="true">Month</button><button role="tab" class="" aria-selected="false">Year</button><button role="tab" class="" aria-selected="false">Timeline</button></div></span>
+      <a class="btn btn-o btn-s" style="color:var(--navy-ink,var(--navy))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20.5H7Z M14 3.5v4h4 M9.5 12.5h6 M9.5 16h6"></path></svg> Filings</a>
+    </div></div>
+   <div class="cal-layout" style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start">
+     <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+       
+       <div class="card t" data-calbody="" style="padding:12px" id="live-grid"><div class="cal-scroll"><div class="cal"><div class="dow ">Mon</div><div class="dow ">Tue</div><div class="dow ">Wed</div><div class="dow ">Thu</div><div class="dow ">Fri</div><div class="dow we">Sat</div><div class="dow we">Sun</div><div class="day out"><div class="dn"><span class="dt">28</span></div></div><div class="day out"><div class="dn"><span class="dt">29</span></div></div><div class="day out"><div class="dn"><span class="dt">30</span></div></div><button class="day    " data-iso="2026-10-01" aria-label="Thursday, 1 October, 0 filings">
+      <div class="dn"><span class="dt">1</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-02" aria-label="Friday, 2 October, 0 filings">
+      <div class="dn"><span class="dt">2</span></div>
+      
+      
+    </button><button class="day we   " data-iso="2026-10-03" aria-label="Saturday, 3 October, 0 filings">
+      <div class="dn"><span class="dt">3</span></div>
+      
+      
+    </button><button class="day we   " data-iso="2026-10-04" aria-label="Sunday, 4 October, 0 filings">
+      <div class="dn"><span class="dt">4</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-05" aria-label="Monday, 5 October, 0 filings">
+      <div class="dn"><span class="dt">5</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-06" aria-label="Tuesday, 6 October, 0 filings">
+      <div class="dn"><span class="dt">6</span></div>
+      
+      
+    </button><button class="day  s-over  " data-iso="2026-10-07" data-tip="Wed, 7 Oct · 2 filings" aria-label="Wednesday, 7 October, 2 filings">
+      <div class="dn"><span class="dt">7</span><span class="mono" style="margin-left:auto;font-size:11px;color:var(--muted)">2</span></div>
+      <span class="ev" data-s="ok"><i style="background:var(--ok)"></i><span class="a">IT</span><span class="t">TDS/TCS challan</span></span><span class="ev" data-s="over"><i style="background:var(--over)"></i><span class="a">FEMA</span><span class="t">ECB-2 return</span></span>
+      
+    </button><button class="day   today " data-iso="2026-10-08" aria-label="Thursday, 8 October, 0 filings">
+      <div class="dn"><span class="dt">8</span><span class="tlabel"><span class="pulse"></span><span class="tl-t">Today</span></span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-09" aria-label="Friday, 9 October, 0 filings">
+      <div class="dn"><span class="dt">9</span></div>
+      
+      
+    </button><button class="day we s-due  " data-iso="2026-10-10" data-tip="Sat, 10 Oct · 1 filing" aria-label="Saturday, 10 October, 1 filings">
+      <div class="dn"><span class="dt">10</span></div>
+      <span class="ev" data-s="due"><i style="background:var(--due)"></i><span class="a">PAY</span><span class="t">Professional tax payment</span></span>
+      
+    </button><button class="day we s-due  " data-iso="2026-10-11" data-tip="Sun, 11 Oct · 1 filing" aria-label="Sunday, 11 October, 1 filings">
+      <div class="dn"><span class="dt">11</span></div>
+      <span class="ev" data-s="due"><i style="background:var(--due)"></i><span class="a">GST</span><span class="t">GSTR-1</span></span>
+      
+    </button><button class="day    " data-iso="2026-10-12" aria-label="Monday, 12 October, 0 filings">
+      <div class="dn"><span class="dt">12</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-13" aria-label="Tuesday, 13 October, 0 filings">
+      <div class="dn"><span class="dt">13</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-14" aria-label="Wednesday, 14 October, 0 filings">
+      <div class="dn"><span class="dt">14</span></div>
+      
+      
+    </button><button class="day  s-due  " data-iso="2026-10-15" data-tip="Thu, 15 Oct · 2 filings" aria-label="Thursday, 15 October, 2 filings">
+      <div class="dn"><span class="dt">15</span><span class="mono" style="margin-left:auto;font-size:11px;color:var(--muted)">2</span></div>
+      <span class="ev" data-s="due"><i style="background:var(--due)"></i><span class="a">PAY</span><span class="t">PF &amp; ESI payment</span></span><span class="ev" data-s="due"><i style="background:var(--due)"></i><span class="a">IT</span><span class="t">TCS return Q2</span></span>
+      
+    </button><button class="day    " data-iso="2026-10-16" aria-label="Friday, 16 October, 0 filings">
+      <div class="dn"><span class="dt">16</span></div>
+      
+      
+    </button><button class="day we   " data-iso="2026-10-17" aria-label="Saturday, 17 October, 0 filings">
+      <div class="dn"><span class="dt">17</span></div>
+      
+      
+    </button><button class="day we   " data-iso="2026-10-18" aria-label="Sunday, 18 October, 0 filings">
+      <div class="dn"><span class="dt">18</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-19" aria-label="Monday, 19 October, 0 filings">
+      <div class="dn"><span class="dt">19</span></div>
+      
+      
+    </button><button class="day  s-up  " data-iso="2026-10-20" data-tip="Tue, 20 Oct · 1 filing" aria-label="Tuesday, 20 October, 1 filings">
+      <div class="dn"><span class="dt">20</span></div>
+      <span class="ev" data-s="up"><i style="background:var(--up)"></i><span class="a">GST</span><span class="t">GSTR-3B</span></span>
+      
+    </button><button class="day    " data-iso="2026-10-21" aria-label="Wednesday, 21 October, 0 filings">
+      <div class="dn"><span class="dt">21</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-22" aria-label="Thursday, 22 October, 0 filings">
+      <div class="dn"><span class="dt">22</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-23" aria-label="Friday, 23 October, 0 filings">
+      <div class="dn"><span class="dt">23</span></div>
+      
+      
+    </button><button class="day we   " data-iso="2026-10-24" aria-label="Saturday, 24 October, 0 filings">
+      <div class="dn"><span class="dt">24</span></div>
+      
+      
+    </button><button class="day we s-up  " data-iso="2026-10-25" data-tip="Sun, 25 Oct · 1 filing" aria-label="Sunday, 25 October, 1 filings">
+      <div class="dn"><span class="dt">25</span></div>
+      <span class="ev" data-s="up"><i style="background:var(--up)"></i><span class="a">GST</span><span class="t">ITC-04</span></span>
+      
+    </button><button class="day    " data-iso="2026-10-26" aria-label="Monday, 26 October, 0 filings">
+      <div class="dn"><span class="dt">26</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-27" aria-label="Tuesday, 27 October, 0 filings">
+      <div class="dn"><span class="dt">27</span></div>
+      
+      
+    </button><button class="day    " data-iso="2026-10-28" aria-label="Wednesday, 28 October, 0 filings">
+      <div class="dn"><span class="dt">28</span></div>
+      
+      
+    </button><button class="day  s-up  " data-iso="2026-10-29" data-tip="Thu, 29 Oct · 1 filing" aria-label="Thursday, 29 October, 1 filings">
+      <div class="dn"><span class="dt">29</span></div>
+      <span class="ev" data-s="up"><i style="background:var(--up)"></i><span class="a">MCA</span><span class="t">AOC-4 (financial statements)</span></span>
+      
+    </button><button class="day  s-up  " data-iso="2026-10-30" data-tip="Fri, 30 Oct · 2 filings" aria-label="Friday, 30 October, 2 filings">
+      <div class="dn"><span class="dt">30</span><span class="mono" style="margin-left:auto;font-size:11px;color:var(--muted)">2</span></div>
+      <span class="ev" data-s="up"><i style="background:var(--up)"></i><span class="a">MCA</span><span class="t">MSME-1</span></span><span class="ev" data-s="up"><i style="background:var(--up)"></i><span class="a">FEMA</span><span class="t">Softex filing</span></span>
+      
+    </button><button class="day we s-up  " data-iso="2026-10-31" data-tip="Sat, 31 Oct · 2 filings" aria-label="Saturday, 31 October, 2 filings">
+      <div class="dn"><span class="dt">31</span><span class="mono" style="margin-left:auto;font-size:11px;color:var(--muted)">2</span></div>
+      <span class="ev" data-s="up"><i style="background:var(--up)"></i><span class="a">IT</span><span class="t">TDS return Q2</span></span><span class="ev" data-s="up"><i style="background:var(--up)"></i><span class="a">IT</span><span class="t">Income tax return (ITR-6)</span></span>
+      
+    </button><div class="day out"><div class="dn"><span class="dt">1</span></div></div></div></div></div>
+     </div>
+     <div class="cal-rail" style="display:flex;flex-direction:column;gap:12px"><div class="card t donut" data-donut="comp-month" role="button" tabindex="0" title="Open the breakdown" style="cursor:pointer;padding:12px 16px;display:flex;gap:16px;align-items:center"><svg width="88" height="88" viewBox="0 0 88 88"><circle data-dd="status" data-k="ok" data-set="oct" data-tip="Filed · 1" cx="44" cy="44" r="35" fill="none" stroke="var(--ok)" stroke-width="11" stroke-dasharray="14.916268134714269 219.9114857512855" stroke-dashoffset="0" transform="rotate(-90 44 44)"></circle><circle data-dd="status" data-k="due" data-set="oct" data-tip="Due soon · 4" cx="44" cy="44" r="35" fill="none" stroke="var(--due)" stroke-width="11" stroke-dasharray="65.66507253885707 219.9114857512855" stroke-dashoffset="-16.91626813471427" transform="rotate(-90 44 44)"></circle><circle data-dd="status" data-k="over" data-set="oct" data-tip="Overdue · 1" cx="44" cy="44" r="35" fill="none" stroke="var(--over)" stroke-width="11" stroke-dasharray="14.916268134714269 219.9114857512855" stroke-dashoffset="-84.58134067357135" transform="rotate(-90 44 44)"></circle><circle data-dd="status" data-k="up" data-set="oct" data-tip="Upcoming · 7" cx="44" cy="44" r="35" fill="none" stroke="var(--up)" stroke-width="11" stroke-dasharray="116.41387694299989 219.9114857512855" stroke-dashoffset="-101.49760880828562" transform="rotate(-90 44 44)"></circle><circle data-dd="status" data-k="all" data-set="oct" data-tip="All filings · 13" cx="44" cy="44" r="29" fill="transparent"></circle><text pointer-events="none" x="44" y="42" text-anchor="middle" font-family=Public Sans font-weight="600" font-size="20" fill="var(--fg)">13</text><text pointer-events="none" x="44" y="57" text-anchor="middle" font-family="Public Sans" font-weight="600" font-size="11" fill="var(--muted)">October</text></svg>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px 16px;flex:1 1 220px;min-width:0"><div data-dd="status" data-k="ok" data-set="oct" data-tip="Filed · 1" style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600"><i style="width:10px;height:10px;border-radius:3px;background:var(--ok)"></i><span style="flex:1">Filed</span><b class="mono">1</b></div><div data-dd="status" data-k="due" data-set="oct" data-tip="Due soon · 4" style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600"><i style="width:10px;height:10px;border-radius:3px;background:var(--due)"></i><span style="flex:1">Due soon</span><b class="mono">4</b></div><div data-dd="status" data-k="over" data-set="oct" data-tip="Overdue · 1" style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600"><i style="width:10px;height:10px;border-radius:3px;background:var(--over)"></i><span style="flex:1">Overdue</span><b class="mono">1</b></div><div data-dd="status" data-k="up" data-set="oct" data-tip="Upcoming · 7" style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600"><i style="width:10px;height:10px;border-radius:3px;background:var(--up)"></i><span style="flex:1">Upcoming</span><b class="mono">7</b></div></div></div><div class="card" style="background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow);padding:16px 16px 14px;color:var(--fg);overflow:hidden">
+    <div style="display:flex;align-items:center;gap:6px;font:800 11px Public Sans;letter-spacing:.08em;text-transform:uppercase;color:var(--navy)"><span class="pulse"></span>Next deadline</div>
+    <div style="display:flex;gap:14px;align-items:center;margin-top:10px">
+      <div data-dd="status" data-k="due" data-set="oct" data-tip="GSTR-1 · due Sun 11 Oct" style="width:58px;height:62px;border-radius:10px;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none"><b class="metric" style="font-size:28px;line-height:1;color:inherit">3</b><small style="font:800 11px Public Sans;letter-spacing:.04em;opacity:.85">DAYS</small></div>
+      <div style="min-width:0;flex:1"><div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;font:700 18px Public Sans;letter-spacing:-.02em">GSTR-1 · Sep 2026 <a class="pbtn" href="https://www.gst.gov.in/" target="_blank" rel="noopener" data-tip="Open GST portal" aria-label="Open GST portal" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"></path></svg></a><span class="info "><button aria-label="About this" data-notip=""><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 11v5M12 7.8v.2"></path></svg></button><span class="pop">GSTR-1 for Sep 2026 · due Sun 11 Oct · filed on the GSTN portal. Sales data received 3 Oct.<span class="ask">Ask VCFO about this</span></span></span></div><div style="margin-top:7px;display:flex;flex-wrap:wrap;gap:6px"><span class="area" data-tip="Goods &amp; Services Tax" aria-label="Goods &amp; Services Tax">GST</span><span class="chip c-ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg> Data received</span></div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-s" style="background:var(--navy);color:#fff;flex:1">Open filing <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button><button class="btn btn-s" style="background:var(--panel);color:var(--fg);border-color:var(--border)">Remind me</button></div>
+    <div data-dd="status" data-k="over" data-set="oct" data-tip="Overdue · 1" style="margin:14px -16px -14px;padding:10px 16px;border-top:1px solid var(--hair);display:flex;align-items:center;gap:8px;font-size:12.5px">
+      <i style="width:8px;height:8px;border-radius:99px;background:var(--over);flex:none"></i><b style="font-weight:700">ECB-2 return</b><span style="color:var(--over-text);font-weight:700">1 day late</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+  </div><div class="card" style="padding:14px 16px 6px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><p class="st" style="flex:1">Coming up</p><span class="mono" style="font-size:11px;color:var(--muted)">7</span></div>
+   <div class="ag-date"><div class="dtile" style="background:var(--over);"><b>7</b><small>Wed</small></div><div class="ag-items"><div class="ag-it"><span class="area" data-tip="Income tax" aria-label="Income tax">IT</span><span class="nm">TDS/TCS challan</span><span class="chip c-ok" aria-label="Filed" data-notip=""><span class="gly" style="width:12px;height:12px;background:var(--ok);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 12.5l3.2 3.2L17 9"></path></svg></span>Filed</span></div><div class="ag-it"><span class="area" data-tip="FEMA · RBI &amp; STPI" aria-label="FEMA · RBI &amp; STPI">FEMA</span><span class="nm">ECB-2 return</span><span class="chip c-over" data-tip="Late · past the due date" aria-label="Late · past the due date"><span class="gly" style="width:12px;height:12px;background:var(--over);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7.5v5.5M12 16.3v.2"></path></svg></span>Overdue</span></div></div></div><div class="ag-date"><div class="dtile" style="background:var(--due);"><b>10</b><small>Sat</small></div><div class="ag-items"><div class="ag-it"><span class="area" data-tip="Payroll · PF, ESI, PT" aria-label="Payroll · PF, ESI, PT">PAY</span><span class="nm">Professional tax payment</span><span class="chip c-due" data-tip="Due this week" aria-label="Due this week"><span class="gly" style="width:12px;height:12px;background:var(--navy);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f3d58a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 9.5V12l1.8 1.2"></path></svg></span>Due soon</span></div></div></div><div class="ag-date"><div class="dtile" style="background:var(--due);"><b>11</b><small>Sun</small></div><div class="ag-items"><div class="ag-it"><span class="area" data-tip="Goods &amp; Services Tax" aria-label="Goods &amp; Services Tax">GST</span><span class="nm">GSTR-1</span><span class="chip c-due" data-tip="Due this week" aria-label="Due this week"><span class="gly" style="width:12px;height:12px;background:var(--navy);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f3d58a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 9.5V12l1.8 1.2"></path></svg></span>Due soon</span></div></div></div><div class="ag-date"><div class="dtile" style="background:var(--due);"><b>15</b><small>Thu</small></div><div class="ag-items"><div class="ag-it"><span class="area" data-tip="Payroll · PF, ESI, PT" aria-label="Payroll · PF, ESI, PT">PAY</span><span class="nm">PF &amp; ESI payment</span><span class="chip c-due" data-tip="Due this week" aria-label="Due this week"><span class="gly" style="width:12px;height:12px;background:var(--navy);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f3d58a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 9.5V12l1.8 1.2"></path></svg></span>Due soon</span></div><div class="ag-it"><span class="area" data-tip="Income tax" aria-label="Income tax">IT</span><span class="nm">TCS return Q2</span><span class="chip c-due" data-tip="Due this week" aria-label="Due this week"><span class="gly" style="width:12px;height:12px;background:var(--navy);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f3d58a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 9.5V12l1.8 1.2"></path></svg></span>Due soon</span></div></div></div><div class="ag-date"><div class="dtile" style="background:var(--up);background:var(--navy)"><b>20</b><small>Tue</small></div><div class="ag-items"><div class="ag-it"><span class="area" data-tip="Goods &amp; Services Tax" aria-label="Goods &amp; Services Tax">GST</span><span class="nm">GSTR-3B</span><span class="chip c-up" aria-label="Upcoming" data-notip=""><span class="gly" style="width:12px;height:12px;background:oklch(93% 0.008 255);box-shadow:inset 0 0 0 1.5px oklch(84% 0.015 255);"></span>Upcoming</span></div></div></div>
+  </div></div>
+   </div></div></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const __m = (this.state && this.state.mode) || 'mixed';
+    const __set = (m) => this.setState({ mode: m });
+    const A = { MCA: '#7c3aed', GST: '#15803d', 'Income tax': '#2563a8', Payroll: '#0e7490', FEMA: '#be123c' };
+    const areas = Object.keys(A).map(n => ({ n, sw: 'width:10px;height:10px;border-radius:3px;background:' + A[n] }));
+    const ST = { f: ['background:#e2f3ea;color:#1e7f55', 'Filed'], d: ['background:#fdf0e3;color:#8a4a10', 'Due soon'], o: ['background:#fbe6e6;color:#be3434', 'Overdue'], u: ['background:#f1f4f8;color:#667180', 'Upcoming'] };
+    const EV = { 7: [['TDS · 6', 'Income tax', 'f']], 11: [['GSTR-1 · 5', 'GST', 'f']], 13: [['GSTR-1 QRMP · 1', 'GST', 'f']], 15: [['PF ECR · 4', 'Payroll', 'o'], ['ESI · 4', 'Payroll', 'f']], 20: [['GSTR-3B · 3', 'GST', 'd'], ['TDS challan · 2', 'Income tax', 'd']], 22: [['FC-GPR · 1', 'FEMA', 'u']], 25: [['PT · 3', 'Payroll', 'u']], 30: [['DIR-3 KYC · 2', 'MCA', 'u'], ['ADT-1 · 1', 'MCA', 'u']], 31: [['TDS Q2 · 6', 'Income tax', 'u']] };
+    const cal = [];
+    const cell = 'min-height:108px;padding:6px;display:flex;flex-direction:column;gap:3px;border-right:1px solid #e3e6eb;border-bottom:1px solid #e3e6eb;';
+    for (let i = 0; i < 3; i++) cal.push({ n: '', ev: [], box: cell + 'background:#eef0f3', ns: '' });
+    for (let d = 1; d <= 31; d++) {
+      const today = d === 16, wk = (d + 2) % 7 >= 5;
+      cal.push({ n: d, ns: 'font-size:12px;' + (today ? 'color:#a35f00' : 'color:#667180;font-weight:600'),
+        box: cell + (today ? 'background:#fcefd8;box-shadow:inset 0 0 0 2px #e9792f' : (wk ? 'background:#eef0f3' : 'background:#fff')),
+        ev: (EV[d] || []).map(([t, ar, s]) => ({ t, tip: ar + ' · ' + ST[s][1], st: 'font-size:11px;font-weight:700;border-radius:6px;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 0 0 0 transparent;' + ST[s][0] })) });
+    }
+    while (cal.length % 7) cal.push({ n: '', ev: [], box: cell + 'background:#eef0f3', ns: '' });
+    const pop = [['GSTR-3B', 'Halcyon', 'd', '#15803d'], ['GSTR-3B', 'Orchid Lane', 'd', '#15803d'], ['GSTR-3B', 'Brightwave', 'f', '#15803d'], ['TDS challan', 'Kestrel', 'd', '#2563a8'], ['TDS challan', 'Tidewater', 'd', '#2563a8']].map(([t, c, s, col]) => ({ t, c, s: ST[s][1], cs: ST[s][0], dot: 'width:8px;height:8px;border-radius:2px;flex:none;background:' + col }));
+    return { mode: __m, setMode: __set,  areas, cal, pop };
+  }
+}
+</script>
+<script src="../../routes.js"></script><script src="../../proto.js"></script>
+</body>
+</html>
