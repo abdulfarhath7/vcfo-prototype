@@ -30,7 +30,7 @@ export function Contact({ p }: { p: Pick<Person, "name" | "phone" | "email"> }) 
       <a href={`mailto:${p.email}`} className={btn} aria-label={`Email ${p.name}`} title="Email">
         <Mail size={15} strokeWidth={1.5} />
       </a>
-      <a href="#" className={btn} aria-label={`Teams ${p.name}`} title="Teams">
+      <a href={`https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(p.email)}`} target="_blank" rel="noreferrer" className={btn} aria-label={`Teams ${p.name}`} title="Teams">
         <Video size={15} strokeWidth={1.5} />
       </a>
     </span>

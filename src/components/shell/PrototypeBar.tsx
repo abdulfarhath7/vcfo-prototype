@@ -172,7 +172,7 @@ export function PrototypeBar({ portal, incorporated = false }: { portal: Portal;
         )}
       >
         <span className="flex-none px-2 text-11 font-extrabold uppercase tracking-[.08em] text-brand">Prototype</span>
-        <button type="button" onClick={() => router.back()} aria-label="Back to the previous screen" className="h-[30px] flex-none rounded-md bg-white/[.12] px-2.5 text-12 font-bold leading-[1.05] hover:bg-white/[.2]">
+        <button type="button" onClick={() => (window.history.length > 1 ? router.back() : router.push(PORTALS[portal].home))} aria-label="Back to the previous screen" className="h-[30px] flex-none rounded-md bg-white/[.12] px-2.5 text-12 font-bold leading-[1.05] hover:bg-white/[.2]">
           &lsaquo;<br />Back
         </button>
         <Seg

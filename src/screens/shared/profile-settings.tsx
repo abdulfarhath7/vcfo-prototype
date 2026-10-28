@@ -323,12 +323,12 @@ export function NotificationsCard({ portal, toast, remind: showRemind = true }: 
   const prefs = NOTIF_PREFS.filter((p) => !p.only || p.only.includes(portal));
   const email = client ? "rohan@northwind.in" : `${portal === "super" ? "mithilesh" : portal === "dev" ? "farhath" : portal === "manager" ? "pranay" : portal === "admin" ? "krishna" : "bharath"}@sbcllp.in`;
 
-  const flip = (set: React.Dispatch<React.SetStateAction<Record<string, boolean>>>, key: string, label: string, ch: string) =>
-    set((s) => {
-      const v = !s[key];
-      toast.show(`${label} · ${ch} ${v ? "on" : "off"}`, () => set((x) => ({ ...x, [key]: !v })));
-      return { ...s, [key]: v };
-    });
+  // The toast is set outside the state updater: an updater must not change another component's state.
+  const flip = (cur: Record<string, boolean>, set: React.Dispatch<React.SetStateAction<Record<string, boolean>>>, key: string, label: string, ch: string) => {
+    const v = !cur[key];
+    set((s) => ({ ...s, [key]: v }));
+    toast.show(`${label} · ${ch} ${v ? "on" : "off"}`, () => set((x) => ({ ...x, [key]: !v })));
+  };
 
   return (
     <SectionCard title="Notifications" flush>
@@ -386,7 +386,7 @@ export function NotificationsCard({ portal, toast, remind: showRemind = true }: 
                     </span>
                   ) : (
                     <span className="inline-flex">
-                      <Switch on={!!em[p.key]} onChange={() => flip(setEm, p.key, p.label, "email")} label={`${p.label} by email`} />
+                      <Switch on={!!em[p.key]} onChange={() => flip(em, setEm, p.key, p.label, "email")} label={`${p.label} by email`} />
                     </span>
                   )}
                 </td>
@@ -395,7 +395,7 @@ export function NotificationsCard({ portal, toast, remind: showRemind = true }: 
                     <span className="text-faint">-</span>
                   ) : (
                     <span className={cn("inline-flex", !waOn && "pointer-events-none opacity-40")} aria-disabled={!waOn}>
-                      <Switch on={waOn && !!wa[p.key]} onChange={() => flip(setWa, p.key, p.label, "WhatsApp")} label={`${p.label} on WhatsApp`} />
+                      <Switch on={waOn && !!wa[p.key]} onChange={() => flip(wa, setWa, p.key, p.label, "WhatsApp")} label={`${p.label} on WhatsApp`} />
                     </span>
                   )}
                 </td>
