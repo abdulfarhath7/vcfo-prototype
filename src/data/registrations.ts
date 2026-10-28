@@ -126,7 +126,7 @@ const RAW: Raw[] = [
     id: "gst", name: "GST registration", regulator: "GST", authority: "GSTN", form: "GST REG-01", team: "Indirect Tax Team",
     about: "A tax identity for the business. Once registered, it can charge GST, claim input tax credit and file GST returns.",
     rule: "Turnover above ₹40 lakh (goods) or ₹20 lakh (services), or exports", why: "Exports services to the parent",
-    docs: ["Company PAN", "Certificate of incorporation", "MOA and AOA", "Board resolution naming the signatory", "Signatory PAN, Aadhaar and photo", "Office electricity bill", "Rent agreement", "Owner's NOC", "Cancelled cheque"],
+    docs: ["Company PAN", "Certificate of incorporation", "MOA and AOA", "Board resolution naming the signatory", "Signatory PAN, Aadhaar and photo", "Office electricity bill (last 2 months)", "Rent agreement", "Owner's NOC", "Cancelled cheque"],
     steps: [["s", "Documents received"], ["s", "Part A filed · TRN"], ["s", "Part B filed · ARN"], ["a", "Clarification asked (REG-03)"], ["s", "Reply filed (REG-04)"], ["a", "Approved · certificate (REG-06)"]],
     renewal: "None", obligations: ["gstr1", "gstr3b", "gstr9", "itc04"], status: "Granted", done: 6, started: d(2026, 9, 12), granted: d(2026, 9, 24),
     idLabel: "GSTIN", idValue: "29AAKCN4821M1Z5", typical: "7–10 working days",

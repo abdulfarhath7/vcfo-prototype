@@ -12,13 +12,23 @@ import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard, ListRow } from "@/components/cards/SectionCard";
 import { StackedBar } from "@/components/cards/StackedBar";
-import { ActivityList } from "@/components/cards/ActivityList";
+import { STAFF_TODAY, daysFrom, fmt } from "@/lib/dates";
+import { initials } from "@/components/ui/Avatar";
 import { CAP, FIRM_CLIENTS, MANAGERS, REASSIGN, STAFF, type Staff } from "@/data/super";
 import { ADMINS, ADMIN_FEED, MANAGER_ROWS, clientsOfAdmin, type Admin, type ManagerRow } from "@/data/super-firm";
 import { AssignDialog } from "./assign";
 
 // Ported from reference/old-patch/super/Team.dc.html: "Admins · this month", "Managers" with days to COI and load,
-// "What admins did". The staff grid, capacity and reassign cards stay from the first build.
+// "What admins did" (tile, full sentence, who and when). The staff grid, capacity and reassign cards stay from the first build.
+
+const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+/** Old feed times: "Today 11:20", "Yesterday", "Wed 14 Oct". */
+function when(date: Date, time?: string) {
+  const n = daysFrom(date, STAFF_TODAY);
+  if (n === 0) return `Today ${time ?? ""}`.trim();
+  if (n === -1) return "Yesterday";
+  return `${DAY[date.getDay()]} ${fmt(date)}`;
+}
 
 const loadTone = (pct: number) => (pct > 80 ? "bad" : pct >= 70 ? "warn" : "accent");
 
@@ -51,7 +61,7 @@ const columns: Column<Staff>[] = [
 
 const adminCols: Column<Admin>[] = [
   { key: "name", label: "Admin", render: (a) => person(a.name, "Admin") },
-  { key: "managers", label: "Managers", render: (a) => <span className="block max-w-[200px] truncate">{a.managers.join(", ")}</span> },
+  { key: "managers", label: "Managers", render: (a) => a.managers.join(", ") },
   { key: "clients", label: "Clients", align: "right", width: 76, render: (a) => clientsOfAdmin(a) },
   { key: "assigned", label: "Assigned", align: "right", width: 84 },
   { key: "reassigned", label: "Reassigned", align: "right", width: 96 },
@@ -106,28 +116,22 @@ export function TeamScreen() {
       <Cols>
         <Col>
           <DataGrid title="Managers" columns={managerCols} rows={MANAGER_ROWS} rowKey={(m) => m.id} />
-          <DataGrid
-            title="Staff"
-            columns={columns}
-            rows={rows}
-            rowKey={(s) => s.id}
-            filters={
-              <Tabs
-                items={[
-                  { key: "managers", label: "Managers", count: STAFF.filter((s) => s.role === "Manager").length },
-                  { key: "leads", label: "Leads", count: STAFF.filter((s) => s.role === "Project lead").length },
-                  { key: "admins", label: "Admins", count: STAFF.filter((s) => s.role === "Admin").length },
-                  { key: "all", label: "All", count: STAFF.length },
-                ]}
-                value={tab}
-                onChange={setTab}
-              />
-            }
-          />
         </Col>
         <Col>
-          <SectionCard title="What admins did" meta="This week" flush>
-            <ActivityList rows={ADMIN_FEED} />
+          <SectionCard title="What admins did" flush>
+            {ADMIN_FEED.map((f) => (
+              <ListRow key={f.id} className="items-start">
+                <span className="mt-0.5 inline-grid h-6 w-6 flex-none place-items-center rounded-md bg-raised text-[10px] font-semibold text-ink-2" aria-hidden>
+                  {initials(f.who)}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-13 leading-snug">{f.text}</span>
+                  <span className="block text-12 text-muted">
+                    {f.who} · {when(f.date, f.time)}
+                  </span>
+                </span>
+              </ListRow>
+            ))}
           </SectionCard>
           <SectionCard title="Capacity" meta={`${CAP} clients per manager`} icon={{ Icon: Gauge, tone: "blue" }}>
             <StackedBar total={`${used} / ${total}`} segments={[...per, { label: "Room", value: total - used, tone: "idle" }]} />
@@ -160,6 +164,24 @@ export function TeamScreen() {
           </SectionCard>
         </Col>
       </Cols>
+      <DataGrid
+        title="Staff"
+        columns={columns}
+        rows={rows}
+        rowKey={(s) => s.id}
+        filters={
+          <Tabs
+            items={[
+              { key: "managers", label: "Managers", count: STAFF.filter((s) => s.role === "Manager").length },
+              { key: "leads", label: "Leads", count: STAFF.filter((s) => s.role === "Project lead").length },
+              { key: "admins", label: "Admins", count: STAFF.filter((s) => s.role === "Admin").length },
+              { key: "all", label: "All", count: STAFF.length },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
+        }
+      />
       <AssignDialog open={assign.open} mode={assign.mode} onOpenChange={(v) => setAssign((a) => ({ ...a, open: v }))} onDone={(m) => toast.show(m)} />
       {toast.node}
     </div>

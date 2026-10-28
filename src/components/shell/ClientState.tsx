@@ -18,6 +18,14 @@ export function ClientStateProvider({ children }: { children: React.ReactNode })
       setInc(localStorage.getItem("vcfo-client-state") === "after");
     } catch {}
   }, []);
+  // Follow a switch made in another frame (the Mobile 390 preview and the page around it).
+  React.useEffect(() => {
+    const on = (e: StorageEvent) => {
+      if (e.key === "vcfo-client-state" && e.newValue) setInc(e.newValue === "after");
+    };
+    window.addEventListener("storage", on);
+    return () => window.removeEventListener("storage", on);
+  }, []);
   const set = (v: boolean) => {
     setInc(v);
     try {

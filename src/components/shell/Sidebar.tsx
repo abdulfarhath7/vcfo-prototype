@@ -2,15 +2,20 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, LogOut, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Headphones, LogOut, Mail, MessageCircle, MessagesSquare, Phone, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui/Avatar";
-import { PORTALS, navFor, type NavItem, type Portal } from "@/data/nav";
+import { CLIENT_TEAM, PORTALS, navFor, type NavItem, type Portal, type TeamContact } from "@/data/nav";
 import { ClientsFold, FoldButton, LeadsFold, ManagersFold, MiniCalendar, NewTag, ReportsTo, showsCompliancesNew, useStaffFold } from "./StaffSidebarExtras";
 import { SuperClientsFold, SuperManagersFold, useSuperFold } from "./SuperSidebarExtras";
+import { BeforeAfter } from "./BeforeAfter";
 
 type StaffPortal = "lead" | "manager" | "admin";
 const isStaff = (p: Portal): p is StaffPortal => p === "lead" || p === "manager" || p === "admin";
+
+// Ported from reference/old-screens/shell.js (client) and s/<portal>/Side.dc.html (staff, super, dev).
+// 248 px wide. Logo band with a hairline. Rows 36 px with a 16 px glyph. The picked row has a soft pill and an orange edge.
+const PICKED = "bg-navy-on font-semibold text-white shadow-[inset_3px_0_0_var(--brand)]";
 
 /** A folded list under a nav row: people or clients (old Side.dc.html). */
 interface Fold {
@@ -23,16 +28,24 @@ interface Fold {
 function Count({ n, hot }: { n?: string | number; hot?: boolean }) {
   if (n === undefined) return null;
   return (
-    <span className={cn("ml-auto inline-grid h-[18px] min-w-[20px] place-items-center rounded-sm px-1.5 text-11 font-bold", hot ? "bg-bad-soft text-bad" : "bg-white/[.12] text-white")}>
+    <span className={cn("ml-auto inline-grid h-5 min-w-5 flex-none place-items-center rounded-md px-1.5 text-11 font-bold text-white", hot ? "bg-bad-mid" : "bg-white/[.12]")}>
       {n}
     </span>
   );
 }
 
-function Item({ item, path, depth = 0, fold, tag }: { item: NavItem; path: string; depth?: number; fold?: Fold; tag?: React.ReactNode }) {
+function Glyph({ item, on }: { item: NavItem; on: boolean }) {
+  const Icon = item.icon;
+  if (!Icon) return null;
+  return <Icon size={16} strokeWidth={1.5} className={cn("flex-none", on ? "text-white" : "text-navy-faint")} aria-hidden />;
+}
+
+function Item({ item, path, portal, depth = 0, fold, tag }: { item: NavItem; path: string; portal: Portal; depth?: number; fold?: Fold; tag?: React.ReactNode }) {
+  const client = portal === "client";
   const active = !!item.href && (path === item.href || path.startsWith(item.href + "/"));
   const holds = item.kids?.some((k) => k.href && path.startsWith(k.href)) ?? false;
-  const [open, setOpen] = React.useState(holds);
+  // Client groups open when they hold the page (shell.js). Staff groups start open (old Side.dc.html) and fold (K-36).
+  const [open, setOpen] = React.useState(client ? holds : true);
   React.useEffect(() => {
     if (holds) setOpen(true);
   }, [holds]);
@@ -45,38 +58,60 @@ function Item({ item, path, depth = 0, fold, tag }: { item: NavItem; path: strin
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           className={cn(
-            "flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-13.5 font-medium text-navy-ink hover:bg-white/[.06]",
-            holds && !open && "text-white font-semibold",
+            "flex h-9 w-full items-center gap-[11px] rounded-lg px-2.5 text-13.5 font-medium text-navy-ink hover:bg-white/[.06] hover:text-white",
+            holds && "font-semibold text-white",
           )}
         >
-          <span>{item.label}</span>
+          <Glyph item={item} on={holds} />
+          <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
           {tag}
-          <Count n={item.count} hot={item.hot} />
-          <ChevronDown size={14} strokeWidth={1.5} className={cn("transition-transform", item.count === undefined && "ml-auto", open && "rotate-180")} aria-hidden />
+          {/* shell.js hides the group count while the group is open */}
+          {!(client && open) && <Count n={item.count} hot={item.hot} />}
+          {client ? (
+            <ChevronRight size={14} strokeWidth={1.5} className={cn("flex-none text-navy-faint transition-transform", open && "rotate-90")} aria-hidden />
+          ) : (
+            <ChevronDown size={14} strokeWidth={1.5} className={cn("flex-none text-navy-faint transition-transform", open && "rotate-180")} aria-hidden />
+          )}
         </button>
-        {open && (
-          <div className="mb-1 grid gap-0.5 pl-3">
-            {item.kids.map((k) => (
-              <Item key={k.label} item={k} path={path} depth={depth + 1} />
-            ))}
-          </div>
-        )}
+        {open &&
+          (client ? (
+            <div className="relative mb-1 grid gap-0.5 before:absolute before:bottom-1 before:left-[18px] before:top-1 before:w-px before:bg-white/[.14]">
+              {item.kids.map((k) => (
+                <Item key={k.label} item={k} path={path} portal={portal} depth={depth + 1} />
+              ))}
+            </div>
+          ) : (
+            <div className="mb-1 grid pl-[27px]">
+              {item.kids.map((k) => (
+                <Item key={k.label} item={k} path={path} portal={portal} depth={depth + 1} />
+              ))}
+            </div>
+          ))}
       </div>
     );
   }
+
+  const kidCls = client
+    ? cn(
+        "h-8 pl-[37px] text-13 text-navy-ink",
+        // tree dot on the line (shell.js .vps-sub .vps-i:after)
+        "after:absolute after:left-4 after:top-1/2 after:-mt-[2.5px] after:h-[5px] after:w-[5px] after:rounded-full after:bg-navy-faint",
+        active && "after:bg-accent-line after:ring-[3px] after:ring-white/[.12]",
+      )
+    : "h-[26px] text-12.5 text-navy-faint";
 
   const link = (
     <Link
       href={item.href ?? "#"}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-2.5 font-medium",
-        depth ? "h-[30px] text-12.5 text-navy-faint" : "h-9 text-13.5 text-navy-ink",
-        "hover:bg-white/[.06]",
-        active && "bg-navy-on font-semibold text-white shadow-[inset_3px_0_0_var(--brand)]",
+        "relative flex min-w-0 flex-1 items-center gap-[11px] rounded-lg px-2.5 font-medium hover:bg-white/[.06] hover:text-white",
+        depth ? kidCls : "h-9 text-13.5 text-navy-ink",
+        active && PICKED,
       )}
     >
-      <span className="truncate">{item.label}</span>
+      {!depth && <Glyph item={item} on={active} />}
+      <span className="min-w-0 flex-1 truncate">{item.label}</span>
       {tag}
       <Count n={item.count} hot={item.hot} />
     </Link>
@@ -118,9 +153,56 @@ function NavRows({ portal, items, path }: { portal: Portal; items: NavItem[]; pa
   return (
     <nav className="grid gap-0.5" aria-label="Main">
       {items.map((it) => (
-        <Item key={it.label} item={it} path={path} fold={foldFor(it.label)} tag={tagFor(it.label)} />
+        <Item key={it.label} item={it} path={path} portal={portal} fold={foldFor(it.label)} tag={tagFor(it.label)} />
       ))}
     </nav>
+  );
+}
+
+const CONTACT = [
+  { key: "wa", verb: "WhatsApp", Icon: MessageCircle },
+  { key: "call", verb: "Call", Icon: Phone },
+  { key: "mail", verb: "Email", Icon: Mail },
+  { key: "teams", verb: "Teams", Icon: MessagesSquare },
+] as const;
+
+/** One team row: avatar, "Name · Role". Contact buttons show on hover and focus (shell.js .vps-p). */
+function TeamRow({ p }: { p: TeamContact }) {
+  const who = p.support ? "support" : p.name;
+  return (
+    <div tabIndex={0} role="group" aria-label={`${p.name}, ${p.role} · contact`} className="group relative flex h-[38px] items-center gap-[9px] rounded-lg px-2 outline-none hover:bg-white/[.06] focus-within:bg-white/[.06]">
+      <span className="grid h-[26px] w-[26px] flex-none place-items-center rounded-full bg-white/[.12] text-11 font-bold text-navy-ink ring-[1.5px] ring-white/[.22]" aria-hidden>
+        {p.support ? <Headphones size={14} strokeWidth={1.5} /> : p.ini}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-12.5 text-white">
+        <b className="font-bold">{p.name}</b> <small className="text-[11.5px] text-navy-faint">· {p.role}</small>
+      </span>
+      <span className="invisible absolute right-1.5 top-1/2 flex -translate-y-1/2 gap-[3px] bg-navy pl-2 opacity-0 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+        {CONTACT.map(({ key, verb, Icon }) => (
+          <button
+            key={key}
+            type="button"
+            aria-label={`${verb} ${who}`}
+            title={`${verb} ${who}`}
+            className={cn("grid h-6 w-6 place-items-center rounded-md text-white", key === "wa" ? "bg-ok-mid hover:bg-ok" : "bg-white/[.12] hover:bg-white/[.22]")}
+          >
+            <Icon size={14} strokeWidth={1.5} aria-hidden />
+          </button>
+        ))}
+      </span>
+    </div>
+  );
+}
+
+/** "Northwind's team" block above the account row (client portal only). */
+function TeamBlock() {
+  return (
+    <div className="flex-none border-t border-navy-line px-0 pb-1 pt-2.5">
+      <div className="mx-2 mb-1.5 text-11 font-bold text-warn-mid">Northwind&rsquo;s team</div>
+      {CLIENT_TEAM.map((p) => (
+        <TeamRow key={p.name} p={p} />
+      ))}
+    </div>
   );
 }
 
@@ -128,38 +210,45 @@ export function Sidebar({ portal, incorporated, onClose }: { portal: Portal; inc
   const path = usePathname();
   const meta = PORTALS[portal];
   const items = navFor(portal, incorporated);
+  const client = portal === "client";
 
   return (
-    <aside className="flex h-full w-side flex-none flex-col bg-navy px-3 pb-3 pt-4 text-navy-ink" aria-label="Sidebar">
-      <div className="flex h-9 flex-none items-center gap-2 px-2 pb-4">
-        <Link href="/" className="flex items-center gap-2" aria-label="VCFO Suite · home">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-brand text-12 font-bold text-white">V</span>
-          <span className="text-14.5 font-semibold text-white">VCFO Suite</span>
+    <aside className="flex h-full w-[248px] flex-none flex-col bg-navy text-navy-ink" aria-label="Sidebar">
+      <div className={cn("flex flex-none items-center gap-2 border-b border-navy-line pl-4 pr-2.5", client ? "h-16" : "h-14")}>
+        <Link href={meta.home} className="flex min-w-0 items-center" aria-label="VCFO Suite · home">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/vcfo-logo-on-black.webp" alt="VCFO Suite by SBC" className={cn("block w-auto max-w-full object-contain object-left", client ? "h-[34px]" : "h-[26px]")} />
         </Link>
         {onClose && (
-          <button type="button" onClick={onClose} className="ml-auto grid h-8 w-8 place-items-center rounded-md hover:bg-white/[.08]" aria-label="Close menu">
+          <button type="button" onClick={onClose} className="ml-auto grid h-10 w-10 flex-none place-items-center rounded-lg bg-white/[.08] hover:bg-white/[.14]" aria-label="Close menu">
             <X size={18} strokeWidth={1.5} />
           </button>
         )}
       </div>
-      <div className="grid min-h-0 flex-1 content-start gap-4 overflow-y-auto pb-3 [scrollbar-width:thin]">
+      {client && onClose && (
+        <div className="flex-none border-b border-navy-line px-3 pb-3.5 pt-1">
+          <BeforeAfter onNavy className="h-[46px] w-full" />
+        </div>
+      )}
+      <div className="grid min-h-0 flex-1 content-start gap-4 overflow-y-auto px-2 py-3 [scrollbar-width:none]">
         <NavRows portal={portal} items={items} path={path} />
         {isStaff(portal) && (
-          <div className="grid gap-3 px-1">
+          <div className="grid gap-3 px-1.5">
             {portal !== "admin" && <MiniCalendar portal={portal} />}
             <ReportsTo portal={portal} />
           </div>
         )}
       </div>
-      <div className="flex flex-none items-center gap-2.5 border-t border-navy-line pt-3">
-        <Link href={meta.profile} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-1 py-1 hover:bg-white/[.06]" title="Your profile">
-          <Avatar name={meta.person} size={30} onNavy />
+      {client && <TeamBlock />}
+      <div className="flex flex-none items-center gap-2.5 border-t border-navy-line px-2.5 pb-3 pt-2">
+        <Link href={meta.profile} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-1.5 hover:bg-white/[.06]" title="Your profile">
+          <Avatar name={meta.person} size={30} onNavy className={client ? "rounded-full" : undefined} />
           <span className="min-w-0">
             <b className="block truncate text-13 font-semibold text-white">{meta.person}</b>
-            <span className="block truncate text-12 text-navy-faint">{meta.role}</span>
+            <span className="block truncate text-11 text-navy-faint">{meta.role}</span>
           </span>
         </Link>
-        <Link href="/sign-in" className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-navy-faint hover:bg-white/[.08] hover:text-white" aria-label="Sign out" title="Sign out">
+        <Link href="/sign-in" className="grid h-[30px] w-[30px] flex-none place-items-center rounded-lg text-navy-faint hover:bg-white/[.12] hover:text-white" aria-label="Sign out" title="Sign out">
           <LogOut size={16} strokeWidth={1.5} />
         </Link>
       </div>

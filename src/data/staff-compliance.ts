@@ -57,11 +57,10 @@ function redoc(docs: ItemDoc[], status: DocStatus, short: string, end: Date): It
 
 /** Obligation ids each compliance client has. */
 const OB_SET: Record<string, string[]> = {
-  zenith: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "dir3kyc", "tds-26q", "tds-24q", "aoc4", "adv-tax", "mgt7", "gstr9"],
-  arcadia: ["tds-pay", "gstr1", "gstr3b", "tds-26q", "adv-tax", "lutren", "gstr9"],
-  corvid: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "tds-24q", "ecb2", "aoc4", "mgt7", "dpt3", "fla"],
-  delta: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "tds-26q", "aoc4", "mgt7", "seren", "posh"],
-  fjord: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "itc04", "softex", "msme1", "aoc4", "mgt7", "lutren"],
+  kestrel: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "dir3kyc", "tds-26q", "tds-24q", "aoc4", "adv-tax", "mgt7", "gstr9"],
+  halcyon: ["tds-pay", "gstr1", "gstr3b", "tds-26q", "adv-tax", "lutren", "gstr9"],
+  tidewater: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "tds-24q", "ecb2", "aoc4", "mgt7", "dpt3", "fla"],
+  brightwave: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "tds-26q", "aoc4", "mgt7", "seren", "posh"],
   saffron: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "aoc4", "mgt7", "seren"],
   indigo: ["tds-pay", "gstr1", "gstr3b", "tds-26q", "mgt14", "aoc4", "mgt7"],
   coral: ["tds-pay", "gstr1", "gstr3b", "pf-esi", "adt1", "aoc4", "mgt7", "posh"],
@@ -69,11 +68,10 @@ const OB_SET: Record<string, string[]> = {
 
 /** Status, due date and period that differ from the Northwind base. */
 const OB_OVR: Record<string, Record<string, [ObStatus, Date?, string?]>> = {
-  zenith: { gstr3b: ["In progress"], dir3kyc: ["Filed"] },
-  arcadia: { gstr3b: ["Overdue", d(2026, 9, 20), "Aug 2026"] },
-  corvid: { gstr1: ["Filed"], "pf-esi": ["In progress"] },
-  delta: { "pf-esi": ["Overdue", d(2026, 9, 15), "Aug 2026"] },
-  fjord: { "pf-esi": ["Overdue", d(2026, 9, 15), "Aug 2026"], softex: ["In progress"] },
+  kestrel: { gstr3b: ["In progress"], dir3kyc: ["Filed"] },
+  halcyon: { gstr3b: ["Overdue", d(2026, 9, 20), "Aug 2026"] },
+  tidewater: { gstr1: ["Filed"], "pf-esi": ["In progress"] },
+  brightwave: { "pf-esi": ["Overdue", d(2026, 9, 15), "Aug 2026"] },
   saffron: { gstr3b: ["In progress"] },
   indigo: { "tds-pay": ["Filed"] },
   coral: { "pf-esi": ["In progress"] },
@@ -128,11 +126,10 @@ export const staffObligation = (key: string) => STAFF_OBLIGATIONS.find((o) => o.
 
 /** Filings with a status that differs from the Northwind base. Key: "form|period". */
 const FIL_OVR: Record<string, Record<string, FilingStatus>> = {
-  zenith: { "DIR-3 KYC · Director 2|FY 2026-27": "Filed" },
-  arcadia: { "GSTR-3B|Aug 2026": "Overdue" },
-  corvid: { "GSTR-1|Sep 2026": "Filed" },
-  delta: { "EPF ECR|Aug 2026": "Overdue", "ESI contribution|Aug 2026": "Overdue" },
-  fjord: { "EPF ECR|Aug 2026": "Overdue" },
+  kestrel: { "DIR-3 KYC · Director 2|FY 2026-27": "Filed" },
+  halcyon: { "GSTR-3B|Aug 2026": "Overdue" },
+  tidewater: { "GSTR-1|Sep 2026": "Filed" },
+  brightwave: { "EPF ECR|Aug 2026": "Overdue", "ESI contribution|Aug 2026": "Overdue" },
   indigo: { "TDS payment|Sep 2026": "Filed" },
 };
 

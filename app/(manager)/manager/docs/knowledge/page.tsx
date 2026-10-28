@@ -1,5 +1,5 @@
-import { LibraryScreen } from "@/screens/shared/LibraryScreen";
+import { KnowledgeBankScreen } from "@/screens/shared/KnowledgeBankScreen";
 
 export default function Page() {
-  return <LibraryScreen portal="manager" title="Knowledge bank" />;
+  return <KnowledgeBankScreen />;
 }

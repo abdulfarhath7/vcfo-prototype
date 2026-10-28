@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { UserPlus } from "lucide-react";
-import { fmt, urgency } from "@/lib/dates";
+import { STAFF_TODAY, fmt, urgency } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -9,13 +9,17 @@ import { Select } from "@/components/ui/Select";
 import { PhaseBar } from "@/components/ui/PhaseBar";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { AREAS, FIRM_CLIENTS, HEALTH_TONE, MANAGERS, stageLabel, stageTone, type FirmClient } from "@/data/super";
-import { ADMINS, HEALTH_ORDER, PHASE_NAMES, PHASE_TOTALS, adminOf, codeOf, holderOf, phasesOf, progressOf } from "@/data/super-firm";
-import { ClientName, clientHref, opts } from "./parts";
+import { AREAS, FIRM_CLIENTS, HEALTH_TONE, HEALTH_WORD, MANAGERS, stageLabel, stageTone, type FirmClient } from "@/data/super";
+import { initials } from "@/components/ui/Avatar";
+import { ADMINS, HEALTH_ORDER, PHASE_NAMES, PHASE_TOTALS, adminOf, phasesOf, progressOf } from "@/data/super-firm";
+import { ClientTile, clientHref, opts } from "./parts";
 import { AssignDialog, useAssignments } from "./assign";
 
 // Ported from reference/old-screens/s/super/Clients.dc.html: every column, the Admin, Manager and Stage filters,
-// the row count, Clear, the empty state and "Assign client".
+// the row count, Clear, the empty state and "Assign client". Rows: client code tile, "Now at" with the old step code and lead,
+// the manager with an initials tile, and the old health words ("Due this week", "Waiting on client").
+
+const short = (n: string) => n.replace(/ (Pvt Ltd|LLP)$/, "");
 
 export function ClientsScreen() {
   const { managerOf } = useAssignments();
@@ -35,15 +39,25 @@ export function ClientsScreen() {
   const any = !!(admin || manager || stage || area);
 
   const columns: Column<FirmClient>[] = [
-    { key: "client", label: "Client", render: (c) => <ClientName client={c} className="max-w-[240px]" /> },
+    {
+      key: "client",
+      label: "Client",
+      width: 200,
+      render: (c) => (
+        <span className="flex min-w-0 items-center gap-2.5">
+          <ClientTile client={c} />
+          <span className="min-w-0 font-semibold leading-snug">{short(c.name)}</span>
+        </span>
+      ),
+    },
     {
       key: "now",
       label: "Now at",
       render: (c) => (
-        <span className="block min-w-0 max-w-[240px]">
-          <span className="block truncate font-semibold">{c.step}</span>
+        <span className="block min-w-[160px]">
+          <span className="line-clamp-2 font-semibold leading-snug">{c.step}</span>
           <span className="block truncate text-12 text-muted">
-            <span className="font-mono">{codeOf(c)}</span> · {c.lead} · {holderOf(c)}
+            {c.code} · {c.lead}
           </span>
         </span>
       ),
@@ -59,28 +73,36 @@ export function ClientsScreen() {
         </span>
       ),
     },
-    { key: "admin", label: "Admin", className: "whitespace-nowrap", render: (c) => adminOf(managerOf(c)) },
-    { key: "manager", label: "Manager", className: "whitespace-nowrap", render: (c) => managerOf(c) },
+    { key: "admin", label: "Admin", width: 96, render: (c) => adminOf(managerOf(c)) },
+    {
+      key: "manager",
+      label: "Manager",
+      width: 130,
+      render: (c) => (
+        <span className="flex items-center gap-2">
+          <span className="inline-grid h-6 w-6 flex-none place-items-center rounded-md bg-raised text-[10px] font-semibold text-ink-2" aria-hidden>
+            {initials(managerOf(c))}
+          </span>
+          <span className="min-w-0 leading-snug">{managerOf(c)}</span>
+        </span>
+      ),
+    },
     {
       key: "stage",
       label: "Stage",
-      width: 124,
+      width: 120,
       render: (c) => (
         <Chip fixed tone={stageTone(c)}>
           {stageLabel(c)}
         </Chip>
       ),
     },
-    { key: "next", label: "Next", width: 76, render: (c) => <span className={cn("whitespace-nowrap", urgency(c.next) === "bad" && "font-semibold text-bad")}>{fmt(c.next)}</span> },
+    { key: "next", label: "Next", width: 64, render: (c) => <span className={cn("whitespace-nowrap", urgency(c.next, STAFF_TODAY) === "bad" && "font-semibold text-bad")}>{fmt(c.next)}</span> },
     {
       key: "health",
       label: "Health",
-      width: 124,
-      render: (c) => (
-        <Chip fixed tone={HEALTH_TONE[c.health]}>
-          {c.health}
-        </Chip>
-      ),
+      width: 150,
+      render: (c) => <Chip tone={HEALTH_TONE[c.health]}>{HEALTH_WORD[c.health]}</Chip>,
     },
   ];
 

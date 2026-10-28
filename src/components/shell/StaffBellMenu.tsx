@@ -123,8 +123,9 @@ export function StaffNotificationsBell({ portal }: { portal: StaffPortal }) {
   );
 }
 
-/** Announcements bell: All / Important / General, link to the Announcements page. */
-export function StaffAnnouncementsBell({ portal }: { portal: StaffPortal }) {
+/** Announcements bell: All / Important / General, link to the Announcements page. Super admin and developer have no Announcements page, so they get the menu without the link. */
+export function StaffAnnouncementsBell({ portal }: { portal: StaffPortal | "super" | "dev" }) {
+  const page = portal !== "super" && portal !== "dev";
   const [f, setF] = React.useState("all");
   const rows = BELL_ANNOUNCEMENTS.filter((a) => f === "all" || (f === "important" ? a.important : !a.important));
   return (
@@ -152,9 +153,11 @@ export function StaffAnnouncementsBell({ portal }: { portal: StaffPortal }) {
         </span>
       }
       footer={
-        <Link href={`/${portal}/updates/announcements`} className={cn(FOOT, "mr-auto")}>
-          View all announcements ›
-        </Link>
+        page ? (
+          <Link href={`/${portal}/updates/announcements`} className={cn(FOOT, "mr-auto")}>
+            View all announcements ›
+          </Link>
+        ) : undefined
       }
     >
       {rows.length === 0 ? (

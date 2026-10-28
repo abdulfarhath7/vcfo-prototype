@@ -5,7 +5,7 @@ import type { Portal } from "@/data/nav";
 /*
  * Data for Announcements, Notifications, Audit and Profile (Team, Settings).
  * Ported from reference/old-screens/s/team/*_redesign.dc.html and old-patch/shared/Profile.dc.html.
- * Old dates are 2 days later than here: the old "today" was 8 Oct, the new TODAY is 6 Oct.
+ * Announcement dates are the old ones (8 Oct to 24 Sep).
  */
 
 /* ---------- Links between portals ---------- */
@@ -29,7 +29,7 @@ export function portalHref(portal: Portal, href?: string): string | undefined {
 
 /* ---------- Announcements (ann_redesign, ann_detail) ---------- */
 
-export type AnnKind = "Deadline" | "MCA" | "Compliance" | "Tax" | "GST" | "Post-incorporation";
+export type AnnKind = "Deadline" | "MCA" | "Compliance" | "Tax" | "GST" | "Post-Incorp";
 
 export interface Ann {
   id: string;
@@ -47,19 +47,19 @@ export interface Ann {
   href?: string;
 }
 
-export const ANN_TONE: Record<AnnKind, ChipTone> = { Deadline: "warn", MCA: "violet", Compliance: "prog", Tax: "idle", GST: "teal", "Post-incorporation": "idle" };
+export const ANN_TONE: Record<AnnKind, ChipTone> = { Deadline: "warn", MCA: "violet", Compliance: "prog", Tax: "idle", GST: "idle", "Post-Incorp": "idle" };
 export const isImportant = (a: Ann) => a.kind === "Deadline" || a.kind === "Compliance";
 
-const PRANAY = { name: "Pranay", role: "Manager", ini: "PN", phone: "+91 98480 11223", email: "pranay@sbcllp.in" };
+export const ANN_PRANAY = { name: "Pranay", role: "Manager", ini: "PN", phone: "+91 98480 11223", email: "pranay@sbcllp.in" };
 const BHARATH = { name: "Bharath", role: "Project lead", ini: "BH", phone: "+91 98480 33445", email: "bharath@sbcllp.in" };
 
 export const ANNS: Ann[] = [
-  { id: "a1", date: d(2026, 10, 6), time: "09:05", kind: "Deadline", title: "GSTR-3B for September is due on 20 Oct", body: "Share the September sales and purchase invoices by 15 Oct so SBC can file on time. Late filing costs ₹50 a day.", by: PRANAY, unread: true, href: "/client/filings" },
-  { id: "a2", date: d(2026, 10, 5), time: "18:30", kind: "MCA", title: "MCA V3 portal down 11-12 Oct for an upgrade", body: "MCA forms are offline from 20:00 on 11 Oct to 06:00 on 12 Oct. Filings due in that window move to the next working day.", by: "feed", host: "mca.gov.in", unread: true },
-  { id: "a3", date: d(2026, 10, 1), time: "11:40", kind: "Compliance", title: "DIR-3 KYC window is open for all directors", body: "Each director files DIR-3 KYC once a year. Rohan Kumar and Meera Iyer file by 15 Oct without a late fee.", by: PRANAY, href: "/client/obligations" },
-  { id: "a4", date: d(2026, 9, 29), time: "10:00", kind: "Tax", title: "Advance tax: third instalment due 15 Dec", body: "75% of the estimated tax for FY 2026-27 is due by 15 Dec.", by: "feed", host: "incometax.gov.in" },
-  { id: "a5", date: d(2026, 9, 27), time: "16:15", kind: "GST", title: "GST invoice management system changes from 1 Nov", body: "Buyers accept, reject or keep each supplier invoice in the IMS before GSTR-3B. Unactioned invoices count as accepted.", by: "feed", host: "gst.gov.in" },
-  { id: "a6", date: d(2026, 9, 22), time: "12:20", kind: "Post-incorporation", title: "After COI: open the current account within 30 days", body: "The bank needs the COI, MOA, AOA, PAN and the board resolution. SBC sends the bank pack on the day the COI arrives.", by: BHARATH, href: "/client/incorporation/phase/3" },
+  { id: "a1", date: d(2026, 10, 8), time: "09:05", kind: "Deadline", title: "GSTR-3B for September is due on 20 Oct", body: "Share the September sales and purchase invoices by 15 Oct so SBC can file on time. Late filing costs ₹50 a day.", by: ANN_PRANAY, unread: true, href: "/client/filings" },
+  { id: "a2", date: d(2026, 10, 7), time: "18:30", kind: "MCA", title: "MCA V3 portal down 11-12 Oct for an upgrade", body: "MCA forms are offline from 20:00 on 11 Oct to 06:00 on 12 Oct. Filings due in that window move to the next working day.", by: "feed", host: "mca.gov.in", unread: true },
+  { id: "a3", date: d(2026, 10, 3), time: "11:40", kind: "Compliance", title: "DIR-3 KYC window is open for all directors", body: "Each director files DIR-3 KYC once a year. Rohan Kumar and Meera Iyer file by 15 Oct without a late fee.", by: ANN_PRANAY, href: "/client/obligations" },
+  { id: "a4", date: d(2026, 10, 1), time: "10:00", kind: "Tax", title: "Advance tax: third instalment due 15 Dec", body: "75% of the estimated tax for FY 2026-27 is due by 15 Dec.", by: "feed", host: "incometax.gov.in" },
+  { id: "a5", date: d(2026, 9, 29), time: "16:15", kind: "GST", title: "GST invoice management system changes from 1 Nov", body: "Buyers accept, reject or keep each supplier invoice in the IMS before GSTR-3B. Unactioned invoices count as accepted.", by: "feed", host: "gst.gov.in" },
+  { id: "a6", date: d(2026, 9, 24), time: "12:20", kind: "Post-Incorp", title: "After COI: open the current account within 30 days", body: "The bank needs the COI, MOA, AOA, PAN and the board resolution. SBC sends the bank pack on the day the COI arrives.", by: BHARATH, href: "/client/incorporation/phase/3" },
 ];
 
 /** Official portals card: Setup and Recurring tabs, each with groups. */
@@ -77,8 +77,8 @@ export const OFFICIAL_PORTALS: Record<"setup" | "recurring", Array<{ group: stri
 
 /* ---------- Notifications (notif_redesign, notif_drill, notif_empty) ---------- */
 
-export type NotifType = "doc" | "back" | "step" | "time" | "deadline" | "mail" | "ann" | "team";
-export type NotifGroup = "Documents" | "Steps" | "Deadlines" | "Messages";
+export type NotifType = "doc" | "back" | "step" | "time" | "deadline" | "mail" | "ann" | "team" | "bot";
+export type NotifGroup = "Documents" | "Steps" | "Deadlines" | "Messages" | "Chatbot";
 
 export const NOTIF_TYPE: Record<NotifType, { group: NotifGroup; chip: string; tone: ChipTone; tip: string }> = {
   doc: { group: "Documents", chip: "Request", tone: "warn", tip: "Document request" },
@@ -86,9 +86,10 @@ export const NOTIF_TYPE: Record<NotifType, { group: NotifGroup; chip: string; to
   step: { group: "Steps", chip: "Step", tone: "ok", tip: "Step done" },
   time: { group: "Steps", chip: "Timeline", tone: "prog", tip: "Timeline changed" },
   deadline: { group: "Deadlines", chip: "Deadline", tone: "warn", tip: "Deadline coming up" },
-  mail: { group: "Messages", chip: "Email", tone: "teal", tip: "Email sent to Northwind" },
-  ann: { group: "Messages", chip: "Announcement", tone: "violet", tip: "Announcement" },
-  team: { group: "Messages", chip: "Team", tone: "idle", tip: "Team change" },
+  mail: { group: "Messages", chip: "Email", tone: "prog", tip: "Email sent to Northwind" },
+  ann: { group: "Messages", chip: "Announcement", tone: "warn", tip: "Announcement" },
+  team: { group: "Messages", chip: "Team", tone: "prog", tip: "Team change" },
+  bot: { group: "Chatbot", chip: "Chatbot", tone: "prog", tip: "From the VCFO assistant" },
 };
 
 /** Where each group lives, for the drill pop-up link. */
@@ -97,6 +98,7 @@ export const NOTIF_GROUP_HOME: Record<NotifGroup, { label: string; href: string 
   Steps: { label: "Open Incorporation", href: "/client/incorporation" },
   Deadlines: { label: "Open Filings", href: "/client/filings" },
   Messages: { label: "Open Announcements", href: "/client/announcements" },
+  Chatbot: { label: "Open Today", href: "/client/home" },
 };
 
 export interface Notif {
@@ -125,13 +127,20 @@ export const NOTIFS: Notif[] = [
   { id: "n2", g: 0, type: "back", title: "Passport copy sent back", parts: [{ text: "Photo page is blurred. Upload it again." }, { text: "Open the document", href: "/client/documents/view/d1" }], who: "Bharath", person: true, when: "09:15", unread: true, href: "/client/incorporation/step/8", cta: "Open step 8", step: { n: 8, title: "Proposed directors", status: "Sent back" } },
   { id: "n3", g: 0, type: "deadline", title: "GSTR-1 due 11 Oct", parts: [{ text: "Sun 11 Oct · GST", href: "/client/filings" }, { text: "GST portal", href: "https://www.gst.gov.in" }], who: "VCFO Suite", when: "09:00", unread: false, href: "/client/filings", cta: "Open Filings" },
   { id: "n4", g: 0, type: "time", title: "Phase 2 end date moved to 28 Oct", parts: [{ text: "Approved by Pranay", href: "/client/profile?tab=team" }, { text: "See the timeline", href: "/client/home" }], who: "Pranay", person: true, when: "08:30", unread: true, href: "/client/incorporation/phase/2", cta: "Open phase 2" },
-  { id: "n5", g: 2, type: "step", title: "Capital structure accepted", parts: [{ text: "Step 6 of 25 is complete", href: "/client/incorporation/step/6" }], who: "Pranay", person: true, when: "26 Sep", unread: false, href: "/client/incorporation/step/6", cta: "Open step 6", step: { n: 6, title: "Capital structure", status: "Completed" } },
-  { id: "n6", g: 2, type: "step", title: "Name approved by MCA", parts: [{ text: "NORTHWIND TECHNOLOGIES INDIA PRIVATE LIMITED" }, { text: "Name approval letter", href: "/client/documents/view/d2" }], who: "Bharath", person: true, when: "24 Sep", unread: false, href: "/client/incorporation/step/5", cta: "Open step 5", step: { n: 5, title: "Name approval", status: "Completed" } },
-  { id: "n7", g: 1, type: "ann", title: "MCA V3 portal down 11-12 Oct", parts: [{ text: "Official feed", href: "/client/announcements" }, { text: "mca.gov.in", href: "https://www.mca.gov.in" }], who: "SBC", when: "Mon 5 Oct", unread: false, href: "/client/announcements", cta: "Open Announcements" },
-  { id: "n8", g: 1, type: "mail", title: "Email sent: Documents requested", parts: [{ text: "To rohan@northwind.in" }, { text: "Email settings", href: "/client/profile?tab=settings" }], who: "VCFO Suite", when: "Sun 4 Oct", unread: false, href: "/client/documents", cta: "Open Documents" },
-  { id: "n9", g: 2, type: "team", title: "Meera Iyer joined the project", parts: [{ text: "Director · invited by Northwind", href: "/client/profile?tab=team" }], who: "Meera Iyer", person: true, when: "30 Sep", unread: false, href: "/client/profile?tab=team", cta: "Open Team" },
-  { id: "n10", g: 2, type: "step", title: "DIN allotted to both directors", parts: [{ text: "Rohan Kumar · Meera Iyer" }, { text: "Step 8 · Proposed directors", href: "/client/incorporation/step/8" }], who: "Bharath", person: true, when: "27 Sep", unread: false, href: "/client/incorporation/step/8", cta: "Open step 8", step: { n: 8, title: "Proposed directors", status: "In progress" } },
-  { id: "n11", g: 2, type: "mail", title: "Email sent: Welcome to VCFO Suite", parts: [{ text: "To rohan@northwind.in" }, { text: "Open Home", href: "/client/home" }], who: "VCFO Suite", when: "31 Aug", unread: false, href: "/client/home", cta: "Open Home" },
+  { id: "n5", g: 1, type: "step", title: "Capital structure accepted", parts: [{ text: "Step 6 of 14 is complete", href: "/client/incorporation/step/6" }], who: "Pranay", person: true, when: "Tue 6 Oct", unread: false, href: "/client/incorporation/step/6", cta: "Open step 6", step: { n: 6, title: "Capital structure", status: "Completed" } },
+  { id: "n6", g: 1, type: "step", title: "Name approved by MCA", parts: [{ text: "Northwind technologies India private limited" }, { text: "Name approval letter", href: "/client/documents/view/f8" }], who: "Bharath", person: true, when: "Tue 6 Oct", unread: false, href: "/client/incorporation/step/5", cta: "Open step 5", step: { n: 5, title: "Name approval", status: "Completed" } },
+  { id: "n7", g: 1, type: "ann", title: "MCA V3 portal down 11-12 Oct", parts: [{ text: "Official feed", href: "/client/announcements" }, { text: "mca.gov.in", href: "https://www.mca.gov.in" }], who: "SBC", when: "Wed 7 Oct", unread: false, href: "/client/announcements", cta: "Open Announcements" },
+  { id: "n8", g: 1, type: "mail", title: "Email sent: Documents requested", parts: [{ text: "To rohan@northwind.in" }, { text: "Email settings", href: "/client/profile?tab=settings" }], who: "VCFO Suite", when: "Tue 6 Oct", unread: false, href: "/client/documents", cta: "Open Documents" },
+  { id: "n9", g: 2, type: "team", title: "Meera Iyer joined the project", parts: [{ text: "Director · invited by Northwind", href: "/client/profile?tab=team" }], who: "Meera Iyer", person: true, when: "2 Oct", unread: false, href: "/client/profile?tab=team", cta: "Open Team" },
+  { id: "n10", g: 2, type: "step", title: "DIN allotted to both directors", parts: [{ text: "Rohan Kumar · Meera Iyer" }, { text: "Step 4 · DIN", href: "/client/incorporation/step/4" }], who: "Bharath", person: true, when: "29 Sep", unread: false, href: "/client/incorporation/step/4", cta: "Open step 4", step: { n: 4, title: "DIN", status: "Completed" } },
+  { id: "n11", g: 2, type: "mail", title: "Email sent: Welcome to VCFO Suite", parts: [{ text: "To rohan@northwind.in" }, { text: "Open Home", href: "/client/home" }], who: "VCFO Suite", when: "2 Sep", unread: false, href: "/client/home", cta: "Open Home" },
+];
+
+/** s/lead/Notifications (manager and admin too): two assistant items first, and Pranay in place of Bharath. 13 in all. */
+export const STAFF_NOTIFS: Notif[] = [
+  { id: "b1", g: 0, type: "bot", title: "Kestrel Health is incorporated · COI 14 Oct 2026", parts: [{ text: "It moved to Compliance. 6 filings are now on your calendar." }, { text: "Open calendar", href: "/client/compliances/calendar" }], who: "VCFO assistant", when: "12:31", unread: true, href: "/client/compliances/calendar", cta: "Open calendar" },
+  { id: "b2", g: 0, type: "bot", title: "2 steps are late, 6 filings need you", parts: [{ text: "Start with the red rows in the action queue, then the Tuesday GST and TDS filings." }, { text: "Open the queue", href: "/client/home" }], who: "VCFO assistant", when: "12:31", unread: true, href: "/client/home", cta: "Open the queue" },
+  ...NOTIFS.map((n) => (n.who === "Bharath" ? { ...n, who: "Pranay" } : n)),
 ];
 
 export const NOTIF_GROUPS = ["Today", "Earlier this week", "Earlier"] as const;
@@ -223,8 +232,8 @@ export interface Member {
 export const MEMBERS: Member[] = [
   { id: "rohan", name: "Rohan Kumar", ini: "RK", email: "rohan@northwind.in", role: "Director", kind: "primary", when: "Since 2 Sep", you: true },
   { id: "meera", name: "Meera Iyer", ini: "MI", email: "meera@northwind.in", role: "Director", kind: "member", when: "Since 12 Sep" },
-  { id: "dev", name: "Dev Sharma", ini: "DS", email: "dev.sharma@northwind.in", role: "Finance", kind: "member", when: "Since 28 Sep" },
-  { id: "ananya", name: "Ananya Rao", ini: "AR", email: "ananya@northwind.in", role: "Operations", kind: "invited", when: "Sent 4 Oct" },
+  { id: "dev", name: "Dev Sharma", ini: "DS", email: "dev.sharma@northwind.in", role: "Finance", kind: "member", when: "Since 30 Sep" },
+  { id: "ananya", name: "Ananya Rao", ini: "AR", email: "ananya@northwind.in", role: "Operations", kind: "invited", when: "Sent 6 Oct" },
 ];
 
 export const MEMBER_LABEL: Record<MemberKind, string> = { primary: "Primary", member: "Member", invited: "Invite sent" };

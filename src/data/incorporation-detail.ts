@@ -5,6 +5,19 @@ import type { BarTone } from "@/components/ui/Bar";
 // Ported from reference/old-screens/s/inc/*.html (shared script: STEPS[].i, SUBS, X, DOCS_B, WEEK_B)
 // and reference/refresh/incorporation.html (needs rows, "Who holds it now" rows).
 
+/**
+ * Incorporation page timeline (old phasesCard: AX0, AX1, PLAN).
+ * Part A was planned to end 21 Sep. MCA approved the name on 24 Sep: 3 days late.
+ * Part B runs from 29 Sep to the expected COI (old PLAN[2]). Post-incorporation runs from the COI.
+ * The phase pages show these dates too.
+ */
+export const INC_AXIS = { start: d(2026, 9, 8), end: d(2026, 11, 30) };
+export const INC_PLAN: Record<1 | 2 | 3, [Date, Date]> = {
+  1: [d(2026, 9, 12), d(2026, 9, 21)],
+  2: [d(2026, 9, 29), d(2026, 10, 28)],
+  3: [d(2026, 10, 28), d(2026, 11, 27)],
+};
+
 /** What each step captures: label and an optional hint (old STEPS[].i). */
 export const STEP_CAPTURES: Record<number, Array<[label: string, hint?: string]>> = {
   1: [
@@ -118,14 +131,14 @@ export interface StatSeg {
 export const DOCS_FROM_CLIENT: StatSeg[] = [
   { label: "Submitted", tone: "ok", items: ["PAN · Director 1", "PAN · Director 2", "Aadhaar · Director 1", "Address proof · Director 1", "Photo · Director 1", "Photo · Director 2", "Signed Board resolution", "Rent agreement"] },
   { label: "Under review", tone: "accent", items: ["Subscriber sheet"] },
-  { label: "Pending", tone: "warn", items: ["Utility bill for the office", "NOC from property owner", "Passport · Director 2"] },
+  { label: "Pending", tone: "warn", items: ["Utility bill for the office", "NOC from property owner"] },
   { label: "Sent back", tone: "bad", items: ["Passport · Director 1 · scan not legible"] },
 ];
 
 export const DOCS_BY_SBC: StatSeg[] = [
   { label: "Generated", tone: "accent", items: ["Draft Board resolution", "Name application (RUN)", "Name approval letter", "Capital structure sheet", "KYC review notes"] },
   { label: "Pending", tone: "idle", items: ["MOA", "AOA", "INC-9", "DIR-8", "INC-22", "AGILE-PRO-S", "SPICe+ Part B"] },
-  { label: "Signed by Northwind", tone: "ok", items: ["Signed Board resolution"] },
+  { label: "Signed by Northwind", tone: "ok", items: ["Signed Board resolution", "DIR-2 · Rohan Kumar"] },
 ];
 
 const open = (s: Step) => s.status !== "Completed";

@@ -208,6 +208,7 @@ export function TeamSection() {
 
   return (
     <div className="grid grid-cols-1 gap-5">
+      {/* C-0028 (owner, confirmed 28 Oct 2026): one card for the SBC team. */}
       <SectionCard title="Northwind's SBC team" flush>
         {team.map((p) => (
           <ListRow key={p.id} className="flex-wrap sm:flex-nowrap">
@@ -219,7 +220,7 @@ export function TeamSection() {
                   {p.role}
                 </Chip>
               </span>
-              <span className="block truncate font-mono text-12 text-muted">
+              <span className="block truncate text-12 text-muted">
                 {p.email}
                 {p.id === "support" && ` · ${p.phone}`}
               </span>
@@ -254,8 +255,8 @@ export function TeamSection() {
             ),
           },
           { key: "role", label: "Role", width: 120 },
-          { key: "email", label: "Email", mono: true },
-          { key: "when", label: "Since", width: 110, render: (m) => <span className="font-mono text-12.5 text-muted">{m.when}</span> },
+          { key: "email", label: "Email" },
+          { key: "when", label: "Since", width: 110, render: (m) => <span className="whitespace-nowrap text-12.5 text-muted">{m.when}</span> },
           { key: "access", label: "Access", width: 132, render: (m) => <Chip tone={MEMBER_TONE[m.kind]} fixed>{MEMBER_LABEL[m.kind]}</Chip> },
           {
             key: "act",

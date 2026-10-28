@@ -70,7 +70,7 @@ export function AssignDialog({
   const cur = STAFF_CLIENTS.find((c) => c.id === cid);
   const [mgr, setMgr] = React.useState("");
   const [task, setTask] = React.useState("");
-  const [due, setDue] = React.useState("2026-10-13");
+  const [due, setDue] = React.useState("2026-10-19");
   React.useEffect(() => {
     if (!open) return;
     const id = clientId ?? options[0].value;
@@ -233,7 +233,7 @@ export function ReassignDialog({
           </div>
         </fieldset>
         <Field label="Note to the project lead">
-          <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Divya is on leave Thursday" />
+          <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Sneha Kulkarni is on leave Thursday" />
         </Field>
       </div>
     </Modal>

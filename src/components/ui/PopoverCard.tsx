@@ -14,6 +14,7 @@ export function PopoverCard({
   width = 300,
   open,
   onOpenChange,
+  label,
 }: {
   trigger: React.ReactNode;
   title?: React.ReactNode;
@@ -24,6 +25,8 @@ export function PopoverCard({
   width?: number;
   open?: boolean;
   onOpenChange?: (v: boolean) => void;
+  /** Accessible name when the title is not plain text. */
+  label?: string;
 }) {
   return (
     <P.Root open={open} onOpenChange={onOpenChange}>
@@ -33,6 +36,7 @@ export function PopoverCard({
           align={align}
           side={side}
           sideOffset={6}
+          aria-label={label}
           collisionPadding={12}
           className={cn("z-50 max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-line bg-surface text-ink shadow-pop outline-none")}
           style={{ width }}

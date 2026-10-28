@@ -2,19 +2,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { Building2, Mail, Phone, Send } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { TODAY, daysFrom, fmt } from "@/lib/dates";
+import { Send } from "lucide-react";
+import { STAFF_TODAY as TODAY, fmt } from "@/lib/dates";
 import { STEPS, PHASES, stepTone } from "@/data/incorporation";
-import { clientById, healthTone, PHASE_TOTALS, CONTACTS, incDone, doneSteps, type StaffClient } from "@/data/staff-clients";
-import { docsOf, auditOf, ganttOf, notesOf, type RecordNote } from "@/data/staff-record";
+import { clientById, PHASE_TOTALS, CONTACTS, incDone, doneSteps, type StaffClient } from "@/data/staff-clients";
+import { docsOf, auditOf, ganttOf, notesOf, preCoiRegsOf, DOCS_EXPECTED, docsTabCount, type RecordNote } from "@/data/staff-record";
 import { registrationsFor, obligationsFor, staffObHref, staffRegHref, type StaffObligation, type StaffRegistration } from "@/data/staff-compliance";
 import { currentStepN, stepState } from "@/data/staff-steps";
 import { feesOf, rupees, type Invoice } from "@/data/staff-fees";
-import { Row } from "@/components/shell/Page";
-import { Bar } from "@/components/ui/Bar";
 import { Button } from "@/components/ui/Button";
-import { Chip, OwnerChip, Tag, type ChipTone } from "@/components/ui/Chip";
+import { Chip, OwnerChip, type ChipTone } from "@/components/ui/Chip";
 import { Field, Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
@@ -24,11 +21,14 @@ import { SectionCard, Empty, HeadLink, ListRow } from "@/components/cards/Sectio
 import { KeyValue } from "@/components/cards/KeyValue";
 import { GanttTimeline, type GanttRow } from "@/components/cards/GanttTimeline";
 import { PhaseRows, type Phase } from "@/components/cards/PhaseRows";
+import { FREQ_LABEL, OB_TYPES, type ObType, type RegType } from "@/data/staff-regs-table";
+import { DAYS_TO_COI } from "@/data/staff-today";
+import { AboutStepPanel } from "./step-parts";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { DocList } from "@/components/cards/DocList";
 import { ActivityList } from "@/components/cards/ActivityList";
-import { identityTile, personOf, stepHrefFor, type StaffPortal } from "./parts";
-import { HolderDot } from "./grids";
+import { personOf, stepHrefFor, type StaffPortal } from "./parts";
+import { ClientTile } from "./grids";
 import { AssignDialog, ReassignDialog, assignLead, leadOf, managerOf, useAssignments } from "./record-parts";
 
 type TabKey = "overview" | "registrations" | "obligations" | "documents" | "notes" | "fees" | "timeline" | "audit";
@@ -37,6 +37,8 @@ const stepLabel = (c: StaffClient, n: number) => {
   const st = stepState(c, n);
   if (st.status === "Completed" && st.done) return `Done ${fmt(st.done)}`;
   if (st.status === "Upcoming") return STEPS[n - 1].time;
+  // Old record: the step with the client shows "Client · 5d".
+  if (st.status === "Waiting") return `Client · ${c.days}d`;
   return st.to ? `Due ${fmt(st.to)}` : STEPS[n - 1].time;
 };
 
@@ -54,73 +56,58 @@ function phasesOf(c: StaffClient, portal: StaffPortal): Phase[] {
       tone: (status === "Done" ? "ok" : status === "In progress" ? "prog" : "idle") as ChipTone,
       steps: STEPS.filter((s) => s.phase === p.n).map((s) => {
         const st = stepState(c, s.n).status;
-        return { n: s.n, title: s.title, owner: s.owner, ownerLabel: s.owner === "client" ? c.short : undefined, status: st, tone: stepTone[st], time: stepLabel(c, s.n), href: stepHrefFor(portal, c.id, s.n) };
+        return {
+          n: s.n,
+          title: s.title,
+          owner: s.owner,
+          ownerLabel: s.owner === "client" ? c.short : undefined,
+          status: st,
+          tone: stepTone[st],
+          time: stepLabel(c, s.n),
+          href: stepHrefFor(portal, c.id, s.n),
+        };
       }),
     };
   });
   if (c.stage === "compliance") {
     const reg = c.phases[3];
-    rows.push({ id: "phase-4", name: "Registrations", done: reg, total: PHASE_TOTALS[3], status: reg === PHASE_TOTALS[3] ? "Done" : "In progress", tone: reg === PHASE_TOTALS[3] ? "ok" : "prog" });
+    rows.push({
+      id: "phase-4",
+      name: "Registrations",
+      done: reg,
+      total: PHASE_TOTALS[3],
+      status: reg === PHASE_TOTALS[3] ? "Done" : "In progress",
+      tone: reg === PHASE_TOTALS[3] ? "ok" : "prog",
+    });
   }
   return rows;
 }
 
-const regTone: Record<StaffRegistration["status"], ChipTone> = { Granted: "ok", "In progress": "prog", "Waiting on client": "warn", "Not started": "idle", "Not needed": "idle" };
-const obTone: Record<StaffObligation["status"], ChipTone> = { Filed: "ok", "In progress": "prog", "Waiting on client": "warn", Upcoming: "idle", Overdue: "bad" };
-const feeTone: Record<Invoice["status"], ChipTone> = { Paid: "ok", Due: "warn", Overdue: "bad" };
+const regTone: Record<StaffRegistration["status"], ChipTone> = {
+  Granted: "ok",
+  "In progress": "prog",
+  "Waiting on client": "warn",
+  "Not started": "idle",
+  "Not needed": "idle",
+};
+const obTone: Record<StaffObligation["status"], ChipTone> = {
+  Filed: "ok",
+  "In progress": "prog",
+  "Waiting on client": "warn",
+  Upcoming: "idle",
+  Overdue: "bad",
+};
+const feeTone: Record<Invoice["status"], ChipTone> = {
+  Paid: "ok",
+  Due: "warn",
+  Overdue: "bad",
+};
 
 const iso = (x: Date) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
 const fromIso = (s: string) => {
   const [y, m, dd] = s.split("-").map(Number);
   return new Date(y, m - 1, dd);
 };
-
-/** Practice areas for one client (reference/old-patch/shared/v7c_practice.dc.html). */
-function PracticeAreas({ c, regs, obs, portal }: { c: StaffClient; regs: StaffRegistration[]; obs: StaffObligation[]; portal: StaffPortal }) {
-  const cur = currentStepN(c);
-  const coi = stepState(c, 14);
-  const incDoneAll = incDone(c) === 25;
-  const granted = regs.filter((r) => r.status === "Granted");
-  const needed = regs.filter((r) => r.status !== "Not needed");
-  const counts = {
-    Filed: obs.filter((o) => o.status === "Filed").length,
-    "Due soon": obs.filter((o) => o.status === "In progress" || o.status === "Waiting on client").length,
-    Overdue: obs.filter((o) => o.status === "Overdue").length,
-    Upcoming: obs.filter((o) => o.status === "Upcoming").length,
-  };
-  return (
-    <Row cols={3}>
-      <SectionCard title="Incorporation" right={<Chip tone={incDoneAll ? "ok" : "prog"}>{incDoneAll ? "Done" : "In progress"}</Chip>}>
-        <p className="text-22 font-semibold">{incDoneAll ? "Incorporated" : `Step ${cur} of 25`}</p>
-        <Bar pct={Math.round((incDone(c) / 25) * 100)} tone={incDoneAll ? "ok" : "accent"} className="mt-3" />
-        <p className="mt-2 truncate text-12.5 text-muted">
-          {incDoneAll ? `Post-incorporation ${c.phases[2]} of 11` : `${c.step}${coi.to && c.phases[1] < 9 ? ` · certificate expected ${fmt(coi.to)}` : ""}`}
-        </p>
-      </SectionCard>
-      <SectionCard title="Registrations" right={<Chip tone={c.stage === "incorporating" ? "idle" : granted.length === needed.length ? "ok" : "prog"}>{c.stage === "incorporating" ? "Not started" : granted.length === needed.length ? "Done" : "In progress"}</Chip>}>
-        <p className="text-22 font-semibold">{c.stage === "incorporating" ? "After the certificate" : `${granted.length} of ${needed.length} registered`}</p>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {needed.slice(0, 8).map((r) => (
-            <Link key={r.id} href={staffRegHref(portal, r.id)}>
-              <Tag tone={r.status === "Granted" ? "ok" : r.status === "Not started" ? "idle" : "prog"}>{r.name.replace(" registration", "")}</Tag>
-            </Link>
-          ))}
-        </div>
-      </SectionCard>
-      <SectionCard title="Compliances" right={counts.Overdue ? <Chip tone="bad">{counts.Overdue} overdue</Chip> : <Chip tone={obs.length ? "ok" : "idle"}>{obs.length ? "On track" : "Not started"}</Chip>}>
-        <div className="grid grid-cols-4 gap-2">
-          {(Object.keys(counts) as Array<keyof typeof counts>).map((k) => (
-            <span key={k} className="min-w-0">
-              <b className={cn("block text-22 font-semibold", k === "Overdue" && counts[k] > 0 && "text-bad", k === "Filed" && "text-ok")}>{counts[k]}</b>
-              <span className="block truncate text-12 text-muted">{k}</span>
-            </span>
-          ))}
-        </div>
-        <p className="mt-2 text-12.5 text-muted">{obs.length ? `${obs.length} filings this year` : "Filings begin after the certificate"}</p>
-      </SectionCard>
-    </Row>
-  );
-}
 
 function Record({ portal }: { portal: StaffPortal }) {
   const params = useParams<{ id: string }>();
@@ -130,6 +117,7 @@ function Record({ portal }: { portal: StaffPortal }) {
   const s = useAssignments();
   const toast = useUndoToast();
   const [tab, setTab] = React.useState<TabKey>("overview");
+  const [about, setAbout] = React.useState<number | null>(null);
   const [gantt, setGantt] = React.useState<GanttRow[]>(() => (c ? ganttOf(c).rows : []));
   const [editing, setEditing] = React.useState(false);
   const [draftEnds, setDraftEnds] = React.useState<Record<string, string>>({});
@@ -149,37 +137,108 @@ function Record({ portal }: { portal: StaffPortal }) {
   const fees = feesOf(c);
   const contact = CONTACTS[c.id];
   const cur = currentStepN(c);
-  const coi = stepState(c, 14);
   const manager = managerOf(c, s);
   const lead = leadOf(c, s);
   const inc = c.stage === "incorporating";
 
   const regCols: Column<StaffRegistration>[] = [
-    { key: "name", label: "Registration", render: (r) => <span className="font-semibold">{r.name}</span> },
+    {
+      key: "name",
+      label: "Registration",
+      render: (r) => <span className="font-semibold">{r.name}</span>,
+    },
     { key: "authority", label: "Authority", width: 110 },
     { key: "form", label: "Form", width: 110, mono: true },
-    { key: "idValue", label: "Number", width: 190, mono: true, render: (r) => r.idValue ?? "" },
-    { key: "owner", label: "Owner", width: 110, render: (r) => <OwnerChip owner={r.owner} label={r.owner === "client" ? c.short : undefined} /> },
-    { key: "next", label: "Next", width: 150, render: (r) => r.nextLabel ?? "" },
-    { key: "status", label: "Status", width: 130, render: (r) => <Chip tone={regTone[r.status]} fixed>{r.status}</Chip> },
+    {
+      key: "idValue",
+      label: "Number",
+      width: 190,
+      mono: true,
+      render: (r) => r.idValue ?? "",
+    },
+    {
+      key: "owner",
+      label: "Owner",
+      width: 110,
+      render: (r) => <OwnerChip owner={r.owner} label={r.owner === "client" ? c.short : undefined} />,
+    },
+    {
+      key: "next",
+      label: "Next",
+      width: 150,
+      render: (r) => r.nextLabel ?? "",
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: 130,
+      render: (r) => (
+        <Chip tone={regTone[r.status]} fixed>
+          {r.status}
+        </Chip>
+      ),
+    },
   ];
   const obCols: Column<StaffObligation>[] = [
-    { key: "name", label: "Obligation", render: (o) => <span className="font-semibold">{o.name}</span> },
+    {
+      key: "name",
+      label: "Obligation",
+      render: (o) => <span className="font-semibold">{o.name}</span>,
+    },
     { key: "form", label: "Form", width: 110, mono: true },
     { key: "area", label: "Area", width: 110 },
     { key: "frequency", label: "Frequency", width: 100 },
     { key: "period", label: "Period", width: 110 },
-    { key: "due", label: "Due", width: 80, render: (o) => <span className={o.status === "Overdue" ? "font-semibold text-bad" : undefined}>{fmt(o.due)}</span> },
-    { key: "owner", label: "Owner", width: 110, render: (o) => <OwnerChip owner={o.owner} label={o.owner === "client" ? c.short : undefined} /> },
-    { key: "status", label: "Status", width: 140, render: (o) => <Chip tone={obTone[o.status]} fixed>{o.status}</Chip> },
+    {
+      key: "due",
+      label: "Due",
+      width: 80,
+      render: (o) => <span className={o.status === "Overdue" ? "font-semibold text-bad" : undefined}>{fmt(o.due)}</span>,
+    },
+    {
+      key: "owner",
+      label: "Owner",
+      width: 110,
+      render: (o) => <OwnerChip owner={o.owner} label={o.owner === "client" ? c.short : undefined} />,
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: 140,
+      render: (o) => (
+        <Chip tone={obTone[o.status]} fixed>
+          {o.status}
+        </Chip>
+      ),
+    },
   ];
   const invCols: Column<Invoice>[] = [
     { key: "number", label: "Invoice", width: 140, mono: true },
     { key: "date", label: "Date", width: 80, render: (i) => fmt(i.date) },
     { key: "item", label: "For" },
-    { key: "amount", label: "Amount", width: 110, align: "right", render: (i) => rupees(i.amount) },
-    { key: "due", label: "Due", width: 80, render: (i) => <span className={i.status === "Overdue" && !paid.has(i.id) ? "font-semibold text-bad" : undefined}>{fmt(i.due)}</span> },
-    { key: "status", label: "Status", width: 130, render: (i) => <Chip tone={paid.has(i.id) ? "ok" : feeTone[i.status]} fixed>{paid.has(i.id) ? "Paid" : i.status}</Chip> },
+    {
+      key: "amount",
+      label: "Amount",
+      width: 110,
+      align: "right",
+      render: (i) => rupees(i.amount),
+    },
+    {
+      key: "due",
+      label: "Due",
+      width: 80,
+      render: (i) => <span className={i.status === "Overdue" && !paid.has(i.id) ? "font-semibold text-bad" : undefined}>{fmt(i.due)}</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: 130,
+      render: (i) => (
+        <Chip tone={paid.has(i.id) ? "ok" : feeTone[i.status]} fixed>
+          {paid.has(i.id) ? "Paid" : i.status}
+        </Chip>
+      ),
+    },
     {
       key: "act",
       label: "",
@@ -207,125 +266,183 @@ function Record({ portal }: { portal: StaffPortal }) {
       title="Timeline"
       flush
       right={
-        portal !== "admin" && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setDraftEnds(Object.fromEntries(gantt.map((r) => [r.id, iso(r.bars[r.bars.length - 1].to)])));
-              setEditing(true);
-            }}
-          >
-            Edit
-          </Button>
-        )
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setDraftEnds(Object.fromEntries(gantt.filter((r) => r.bars.length).map((r) => [r.id, iso(r.bars[r.bars.length - 1].to)])));
+            setEditing(true);
+          }}
+        >
+          Edit
+        </Button>
       }
     >
-      <GanttTimeline start={g.start} end={g.end} ticks={g.ticks} rows={gantt} />
+      <GanttTimeline start={g.start} end={g.end} ticks={g.ticks} rows={gantt} today={TODAY} wideNames={inc} noCount={inc} />
     </SectionCard>
   );
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <SectionCard
-        title={c.name}
-        icon={{ Icon: Building2, tone: identityTile[c.tone] }}
-        meta={<Chip tone={inc ? "violet" : "teal"}>{inc ? "Incorporating" : "Compliance"}</Chip>}
-        right={
-          <Button size="sm" variant="outline" onClick={() => setTab("documents")}>
-            Documents {docs.length}
-          </Button>
-        }
-      >
-        <div className="grid gap-4">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-13">
+      {/* Old record head (s/lead/Overview.dc.html): grey band with the name, contact, step count, days to COI, holder and the current step. */}
+      <section className="overflow-hidden rounded-lg bg-line-soft" aria-label={c.name}>
+        <div className="grid gap-3 px-4 pb-3 pt-4 md:px-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <ClientTile c={c} size={36} />
+            <h1 className="min-w-0 flex-1 truncate text-22 font-semibold tracking-tight">{c.name}</h1>
+            <Chip tone={inc ? "warn" : "teal"}>{inc ? "Incorporating" : "Compliance"}</Chip>
+            <Button size="sm" variant="outline" onClick={() => setTab("documents")}>
+              Documents {docs.length}
+              {DOCS_EXPECTED[c.id] ? `/${DOCS_EXPECTED[c.id]}` : ""}
+            </Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-13 text-ink-2">
             {contact && (
               <>
-                <span className="font-semibold">{contact.name}</span>
-                <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-1.5 text-accent hover:underline">
-                  <Mail size={14} strokeWidth={1.5} /> {contact.email}
-                </a>
-                <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-1.5 text-ink-2 hover:underline">
-                  <Phone size={14} strokeWidth={1.5} /> {contact.phone}
+                <span>{contact.name}</span>
+                <a href={`mailto:${contact.email}`} className="hover:underline">
+                  {contact.email}
                 </a>
               </>
             )}
             {portal !== "lead" && (
               <span className="inline-flex items-center gap-2 text-muted">
                 {portal === "admin" && (
-                  <>
+                  <span>
                     Manager <b className="font-semibold text-ink">{manager}</b> ·
-                  </>
+                  </span>
                 )}
-                Project lead <b className="font-semibold text-ink">{lead}</b>
+                <span>
+                  Project lead <b className="font-semibold text-ink">{lead}</b>
+                </span>
                 <Button size="sm" variant="link" onClick={() => setReassign(true)}>
                   Reassign
                 </Button>
               </span>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3 border-t border-line-soft pt-3 md:grid-cols-4">
-            <span>
-              <b className="block text-22 font-semibold">{cur ? `Step ${cur}` : "Incorporated"}</b>
-              <span className="text-12.5 text-muted">{cur ? "of 25" : `${c.phases[3]} of 23 registrations`}</span>
-            </span>
-            <span>
-              <b className="block text-22 font-semibold">{inc && coi.to ? daysFrom(coi.to) : `${doneSteps(c)}/48`}</b>
-              <span className="text-12.5 text-muted">{inc ? "days to COI" : "steps done"}</span>
-            </span>
-            <span>
-              <b className={cn("block text-22 font-semibold", c.days > 4 && "text-bad")}>{c.days}d</b>
-              <span className="text-12.5 text-muted">with {c.pendingWith === "Client" ? "client" : c.pendingWith}</span>
-            </span>
-            <Link href={cur ? stepHrefFor(portal, c.id, cur) : `/${portal}/registrations`} className="col-span-2 min-w-0 rounded-md border border-line px-3 py-2 hover:bg-raised md:col-span-1">
-              <span className="flex items-center gap-2 text-12.5 text-muted">
-                <HolderDot c={c} /> Now
-              </span>
-              <b className="block truncate text-13.5 font-semibold">
-                {c.code} · {c.step}
-              </b>
-              <Chip tone={healthTone[c.health]} className="mt-1">
-                {c.health}
-              </Chip>
-            </Link>
-          </div>
-          <KeyValue
-            cols={3}
-            rows={[
-              { k: "CIN", v: c.cin ?? "", mono: true },
-              { k: "PAN", v: c.pan ?? "", mono: true },
-              { k: "GSTIN", v: c.gstin ?? "", mono: true },
-            ]}
-          />
         </div>
-        <div className="-mx-4 mt-4 overflow-x-auto border-t border-line-soft px-4 pt-3 md:-mx-5 md:px-5">
-          <Tabs
-            items={[
-              { key: "overview", label: "Incorporation", count: `${incDone(c)}/25` },
-              { key: "registrations", label: "Registrations", count: regs.filter((r) => r.status !== "Not needed").length },
-              { key: "obligations", label: "Obligations", count: obs.length },
-              { key: "documents", label: "Documents", count: docs.length },
-              { key: "notes", label: "Notes", count: notes.length },
-              { key: "fees", label: "Fees" },
-              { key: "timeline", label: "Timeline" },
-              { key: "audit", label: "Audit" },
-            ]}
-            value={tab}
-            onChange={(k) => setTab(k as TabKey)}
-          />
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-4 pb-4 pt-1 md:px-5">
+          <span className="flex items-baseline gap-1.5">
+            <b className="text-22 font-semibold">{cur ? `Step ${cur}` : "Incorporated"}</b>
+            <span className="text-12.5 text-muted">{cur ? `of ${cur <= 14 ? 14 : 25}` : `${c.phases[3]} of 23 registrations`}</span>
+          </span>
+          {inc && DAYS_TO_COI[c.id] !== undefined && (
+            <span className="flex items-baseline gap-1.5">
+              <b className="text-22 font-semibold">{DAYS_TO_COI[c.id]}</b>
+              <span className="text-12.5 text-muted">days to COI</span>
+            </span>
+          )}
+          <span className="flex items-baseline gap-1.5">
+            <b className="text-22 font-semibold">{c.days}d</b>
+            <span className="text-12.5 text-muted">with {c.pendingWith === "Client" ? "client" : c.pendingWith}</span>
+          </span>
+          <Link href={cur ? stepHrefFor(portal, c.id, cur) : `/${portal}/registrations`} className="flex min-w-0 flex-wrap items-center gap-2 text-13 hover:underline">
+            <span className="text-muted">Now</span>
+            <b className="truncate font-semibold">
+              {c.code} · {c.step}
+            </b>
+            <Chip tone={c.pendingWith === "Client" ? "warn" : c.pendingWith === "MCA" ? "violet" : "prog"}>{c.pendingWith === "Client" ? "Waiting on client" : `With ${c.pendingWith}`}</Chip>
+          </Link>
         </div>
-      </SectionCard>
+      </section>
+      <div className="overflow-x-auto">
+        <Tabs
+          items={[
+            {
+              key: "overview",
+              label: "Incorporation",
+              count: inc && cur ? `${cur}/14` : `${incDone(c)}/25`,
+            },
+            {
+              key: "registrations",
+              label: "Registrations",
+              count: regs.length ? regs.filter((r) => r.status !== "Not needed").length : preCoiRegsOf(c).length,
+            },
+            {
+              key: "obligations",
+              label: "Obligations",
+              count: obs.length || OB_TYPES.length,
+            },
+            { key: "documents", label: "Documents", count: docsTabCount(c.id, docs.length) },
+            { key: "notes", label: "Notes", count: notes.length },
+          ]}
+          value={tab}
+          onChange={(k) => setTab(k as TabKey)}
+        />
+      </div>
 
       {tab === "overview" && (
         <>
-          <PracticeAreas c={c} regs={regs} obs={obs} portal={portal} />
           {timelineCard}
-          <SectionCard title="Steps" meta={`${doneSteps(c)} of 48 tasks${cur ? ` · Step ${cur} of 25` : ""}`} flush right={cur && <HeadLink href={stepHrefFor(portal, c.id, cur)}>Open current step ›</HeadLink>}>
-            <PhaseRows key={phase ?? "none"} phases={phasesOf(c, portal)} openId={phase ? `phase-${phase}` : cur ? `phase-${STEPS[cur - 1].phase}` : undefined} />
+          <SectionCard title="Steps" meta={`${doneSteps(c)} of 48 tasks${cur ? ` · Step ${cur} of ${cur <= 14 ? 14 : 25}` : ""}`} flush right={cur && <HeadLink href={stepHrefFor(portal, c.id, cur)}>Open current step ›</HeadLink>}>
+            <PhaseRows key={phase ?? "none"} phases={phasesOf(c, portal)} openId={phase ? `phase-${phase}` : cur ? `phase-${STEPS[cur - 1].phase}` : undefined} onAbout={setAbout} />
           </SectionCard>
+          <AboutStepPanel key={about ?? 0} open={about !== null} onOpenChange={(v) => !v && setAbout(null)} n={about ?? 1} />
         </>
       )}
-      {tab === "registrations" && (
+      {tab === "registrations" && regs.length === 0 && (
+        <DataGrid
+          title="Registrations"
+          meta="After the certificate"
+          columns={[
+            {
+              key: "name",
+              label: "Registration",
+              render: (r: RegType) => <span className="font-semibold">{r.name}</span>,
+            },
+            { key: "auth", label: "Authority", width: 160 },
+            { key: "form", label: "Form", width: 160, mono: true },
+            {
+              key: "status",
+              label: "Status",
+              width: 130,
+              render: () => (
+                <Chip tone="idle" fixed>
+                  After COI
+                </Chip>
+              ),
+            },
+          ]}
+          rows={preCoiRegsOf(c)}
+          rowKey={(r) => r.id}
+          pageSize={16}
+        />
+      )}
+      {tab === "obligations" && obs.length === 0 && (
+        <DataGrid
+          title="Obligations"
+          meta="After the certificate"
+          columns={[
+            {
+              key: "name",
+              label: "Obligation",
+              render: (o: ObType) => <span className="font-semibold">{o.name}</span>,
+            },
+            { key: "law", label: "Law", width: 130 },
+            {
+              key: "fr",
+              label: "Frequency",
+              width: 120,
+              render: (o: ObType) => FREQ_LABEL[o.fr],
+            },
+            {
+              key: "status",
+              label: "Status",
+              width: 130,
+              render: () => (
+                <Chip tone="idle" fixed>
+                  After COI
+                </Chip>
+              ),
+            },
+          ]}
+          rows={OB_TYPES}
+          rowKey={(o) => o.id}
+          pageSize={25}
+        />
+      )}
+      {tab === "registrations" && regs.length > 0 && (
         <DataGrid
           title="Registrations"
           meta={`${regs.filter((r) => r.status === "Granted").length} granted`}
@@ -334,10 +451,17 @@ function Record({ portal }: { portal: StaffPortal }) {
           rowKey={(r) => r.id}
           rowHref={(r) => staffRegHref(portal, r.id)}
           empty="None"
-          filters={<Select value={regStatus} onChange={(e) => setRegStatus(e.target.value)} options={[{ value: "", label: "All statuses" }, ...(["Granted", "In progress", "Waiting on client", "Not started", "Not needed"] as const).map((x) => ({ value: x, label: x }))]} aria-label="Status" />}
+          filters={
+            <Select
+              value={regStatus}
+              onChange={(e) => setRegStatus(e.target.value)}
+              options={[{ value: "", label: "All statuses" }, ...(["Granted", "In progress", "Waiting on client", "Not started", "Not needed"] as const).map((x) => ({ value: x, label: x }))]}
+              aria-label="Status"
+            />
+          }
         />
       )}
-      {tab === "obligations" && (
+      {tab === "obligations" && obs.length > 0 && (
         <DataGrid
           title="Obligations"
           meta="FY 2026-27"
@@ -349,8 +473,18 @@ function Record({ portal }: { portal: StaffPortal }) {
           empty={inc ? "Filings begin after the certificate" : "None"}
           filters={
             <>
-              <Select value={obFreq} onChange={(e) => setObFreq(e.target.value)} options={[{ value: "", label: "All frequencies" }, ...["Monthly", "Quarterly", "Half-yearly", "Annual", "Event"].map((x) => ({ value: x, label: x }))]} aria-label="Frequency" />
-              <Select value={obStatus} onChange={(e) => setObStatus(e.target.value)} options={[{ value: "", label: "All statuses" }, ...["Overdue", "Waiting on client", "In progress", "Upcoming", "Filed"].map((x) => ({ value: x, label: x }))]} aria-label="Status" />
+              <Select
+                value={obFreq}
+                onChange={(e) => setObFreq(e.target.value)}
+                options={[{ value: "", label: "All frequencies" }, ...["Monthly", "Quarterly", "Half-yearly", "Annual", "Event"].map((x) => ({ value: x, label: x }))]}
+                aria-label="Frequency"
+              />
+              <Select
+                value={obStatus}
+                onChange={(e) => setObStatus(e.target.value)}
+                options={[{ value: "", label: "All statuses" }, ...["Overdue", "Waiting on client", "In progress", "Upcoming", "Filed"].map((x) => ({ value: x, label: x }))]}
+                aria-label="Status"
+              />
             </>
           }
         />
@@ -374,7 +508,15 @@ function Record({ portal }: { portal: StaffPortal }) {
             onSubmit={(e) => {
               e.preventDefault();
               if (!draft.trim()) return;
-              setNotes([{ id: `n${notes.length + 1}-${Date.now()}`, who: personOf(portal), date: TODAY, text: draft.trim() }, ...notes]);
+              setNotes([
+                {
+                  id: `n${notes.length + 1}-${Date.now()}`,
+                  who: personOf(portal),
+                  date: TODAY,
+                  text: draft.trim(),
+                },
+                ...notes,
+              ]);
               setDraft("");
             }}
           >
@@ -404,10 +546,22 @@ function Record({ portal }: { portal: StaffPortal }) {
             <KeyValue
               cols={3}
               rows={[
-                { k: "Billed this year", v: rupees(fees.paid + fees.outstanding) },
-                { k: "Paid", v: rupees(fees.paid + (fees.outstanding - outstanding)) },
-                { k: "Outstanding", v: <span className={outstanding ? "font-semibold text-bad" : undefined}>{rupees(outstanding)}</span> },
-                { k: "Oldest open invoice", v: outstanding && fees.days ? `${fees.days} days` : "" },
+                {
+                  k: "Billed this year",
+                  v: rupees(fees.paid + fees.outstanding),
+                },
+                {
+                  k: "Paid",
+                  v: rupees(fees.paid + (fees.outstanding - outstanding)),
+                },
+                {
+                  k: "Outstanding",
+                  v: <span className={outstanding ? "font-semibold text-bad" : undefined}>{rupees(outstanding)}</span>,
+                },
+                {
+                  k: "Oldest open invoice",
+                  v: outstanding && fees.days ? `${fees.days} days` : "",
+                },
                 { k: "Engagement", v: fees.engagement },
                 { k: "Bills to", v: contact?.email ?? "" },
               ]}
@@ -439,7 +593,7 @@ function Record({ portal }: { portal: StaffPortal }) {
                 setGantt(
                   gantt.map((r) => {
                     const v = draftEnds[r.id];
-                    if (!v) return r;
+                    if (!v || !r.bars.length) return r;
                     const bars = [...r.bars];
                     const last = bars[bars.length - 1];
                     const to = fromIso(v);
@@ -457,11 +611,13 @@ function Record({ portal }: { portal: StaffPortal }) {
         }
       >
         <div className="grid gap-3">
-          {gantt.map((r) => (
-            <Field key={r.id} label={`${r.name} · planned end`}>
-              <Input type="date" value={draftEnds[r.id] ?? ""} onChange={(e) => setDraftEnds({ ...draftEnds, [r.id]: e.target.value })} />
-            </Field>
-          ))}
+          {gantt
+            .filter((r) => r.bars.length)
+            .map((r) => (
+              <Field key={r.id} label={`${r.name} · planned end`}>
+                <Input type="date" value={draftEnds[r.id] ?? ""} onChange={(e) => setDraftEnds({ ...draftEnds, [r.id]: e.target.value })} />
+              </Field>
+            ))}
         </div>
       </Modal>
       {portal === "admin" && <AssignDialog open={reassign} onOpenChange={setReassign} mode="client" clientId={c.id} onDone={(t) => toast.show(t)} />}
@@ -491,4 +647,3 @@ export function ClientRecordScreen({ portal }: { portal: StaffPortal }) {
     </React.Suspense>
   );
 }
-

@@ -1,99 +1,94 @@
 "use client";
 import * as React from "react";
-import Link from "next/link";
-import { Calendar } from "lucide-react";
-import { TODAY, daysFrom, fmt, relative, urgency } from "@/lib/dates";
-import { AREAS, AREA_TONE, FREQUENCIES, OB_STATUS_TONE, type ObStatus } from "@/data/compliance";
-import { clientById } from "@/data/staff-clients";
-import { complianceClients, obligationsFor, staffObHref, type StaffObligation } from "@/data/staff-compliance";
+import { AlertTriangle, Calendar, CalendarClock, CircleCheck, User } from "lucide-react";
+import { staffObHref } from "@/data/staff-compliance";
+import { itemExists } from "@/data/staff-item";
+import { FREQ_LABEL, LAW_AREA, LAW_GROUPS, OB_STATE, REG_CLIENTS, dueSoon, lawTone, obRows, type Freq, type ObRow } from "@/data/staff-regs-table";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
-import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
-import { type Tile, type TileGroup } from "@/components/cards/TileGrid";
-import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
-import { StackedBar } from "@/components/cards/StackedBar";
-import { ClientDot, ClientName, type StaffPortal } from "./parts";
-import { FoldingGroups, KeyHint, PortalLink, useListKeys } from "./comp-parts";
-import { ClientSelect, identityTag } from "./filters";
+import { type Column } from "@/components/cards/DataGrid";
+import { type StaffPortal } from "./parts";
+import { KeyHint, useListKeys } from "./comp-parts";
+import { FilterStrip, FlowCard, GroupedGrid, RailCard, type GridGroup, type StripItem } from "./register-parts";
 
-type Fil = "" | ObStatus | "soon";
-// The old number strip is gone (C-0018). Its five states stay as one compact filter (R-10).
-const FILTERS: Array<{ value: Fil; label: string }> = [
-  { value: "", label: "All states" },
-  { value: "Overdue", label: "Overdue" },
-  { value: "soon", label: "Due in 15 days" },
-  { value: "Waiting on client", label: "Waiting on client" },
-  { value: "In progress", label: "In progress" },
-  { value: "Filed", label: "Filed" },
-  { value: "Upcoming", label: "Upcoming" },
-];
+// Staff Obligations, as in reference/old-screens/s/lead/Register.dc.html (kind "ob", who "staff"):
+// number strip, a table grouped by frequency or by law, and a rail with "Filed recently".
+// C-0018 to C-0020 changed only the client page.
+
+type Fil = "" | "bad" | "soon" | "wait" | "done" | "none";
+
+const FREQ_DOT: Record<Freq, string> = { m: "bg-accent", q: "bg-violet", h: "bg-teal", a: "bg-warn-mid" };
+const AREA_DOT: Record<string, string> = { GST: "bg-teal", "Income tax": "bg-accent", Payroll: "bg-warn-mid", MCA: "bg-violet", FEMA: "bg-ok-mid", Labour: "bg-faint" };
 
 export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
   const [view, setView] = React.useState("freq");
   const [client, setClient] = React.useState("");
-  const [sent, setSent] = React.useState<Record<string, true>>({});
   const [fil, setFil] = React.useState<Fil>("");
   const listRef = React.useRef<HTMLElement>(null);
   const filterRef = React.useRef<HTMLSpanElement>(null);
   useListKeys(listRef, filterRef);
-  const all = obligationsFor(portal, client);
-  const soon = (o: (typeof all)[number]) => o.status !== "Filed" && daysFrom(o.due) >= 0 && daysFrom(o.due) <= 15;
-  const obs = all.filter((o) => !fil || (fil === "soon" ? soon(o) : o.status === fil));
 
-  // R-35: the tag carries the client name in its identity colour.
-  const tile = (o: StaffObligation): Tile => {
-    const c = clientById(o.client)!;
-    return {
-      id: o.id,
-      name: o.name,
-      tag: { label: c.short, tone: identityTag[c.tone] },
-      chip: { label: o.status, tone: OB_STATUS_TONE[o.status] },
-      date: o.status === "Filed" && o.filed ? `Filed ${fmt(o.filed)}` : `Due ${fmt(o.due)}`,
-      late: o.status === "Overdue",
-      href: staffObHref(portal, o.id),
-    };
-  };
+  const items = obRows(client);
+  const match = (x: ObRow, f: Fil) => (f === "soon" ? dueSoon(x) : x.state === f);
+  const shown = items.filter((x) => !fil || match(x, fil));
+  const count = (f: Fil) => items.filter((x) => match(x, f)).length;
+  const hrefOf = (x: ObRow) => (itemExists("ob", x.key) ? staffObHref(portal, x.key) : undefined);
 
-  const groups: TileGroup[] =
-    view === "freq"
-      ? FREQUENCIES.map((f) => ({ label: f, tiles: obs.filter((o) => o.frequency === f).map(tile) }))
-      : AREAS.map((a) => ({ label: a, tiles: obs.filter((o) => o.area === a).map(tile) }));
-
-  const due: AttentionRow[] = all
-    .filter((o) => o.status !== "Filed" && daysFrom(o.due) <= 15)
-    .sort((a, b) => a.due.getTime() - b.due.getTime())
-    .slice(0, 10)
-    .map((o) => {
-      const late = o.due < TODAY;
-      return {
-        id: o.id,
-        date: o.due,
-        title: `${o.name} · ${o.period}`,
-        sub: `${clientById(o.client)?.short} · ${o.area}`,
-        chip: { label: relative(o.due), tone: urgency(o.due) },
-        urgent: late,
-        action: late ? { label: "Open", href: staffObHref(portal, o.id) } : undefined,
-        href: late ? undefined : staffObHref(portal, o.id),
-      };
-    });
-
-  const waiting = all.filter((o) => o.owner === "client" && o.status !== "Filed").sort((a, b) => a.due.getTime() - b.due.getTime());
-
-  const tabs = [
-    { key: "freq", label: "By frequency" },
-    { key: "law", label: "By law" },
-    { key: "list", label: "List" },
+  const strip: StripItem[] = [
+    { key: "bad", label: "Overdue", value: count("bad"), Icon: AlertTriangle, tone: "red", valueClass: "text-bad" },
+    { key: "soon", label: "Due in 15 days", value: count("soon"), Icon: Calendar, tone: "teal", valueClass: "text-warn" },
+    { key: "wait", label: "Waiting on client", value: count("wait"), Icon: User, tone: "amber", valueClass: "text-warn" },
+    { key: "done", label: "Filed", value: count("done"), Icon: CircleCheck, tone: "green", valueClass: "text-ok" },
+    { key: "none", label: "Upcoming", value: count("none"), Icon: CalendarClock, tone: "blue" },
   ];
+
+  const groups: GridGroup<ObRow>[] =
+    view === "law"
+      ? LAW_GROUPS.map((g) => ({ id: g.area, label: g.label, dot: AREA_DOT[g.area], rows: shown.filter((x) => LAW_AREA[x.ob.law] === g.area) }))
+      : (Object.keys(FREQ_LABEL) as Freq[]).map((f) => ({ id: f, label: FREQ_LABEL[f], dot: FREQ_DOT[f], rows: shown.filter((x) => x.ob.fr === f) }));
+
+  const cols: Column<ObRow>[] = [
+    {
+      key: "name",
+      label: "Obligation",
+      render: (x) => (
+        <span className="block min-w-0">
+          <b className="block truncate text-13 font-semibold">{x.ob.name}</b>
+          <span className="block truncate text-12 text-muted">{x.clientName}</span>
+        </span>
+      ),
+    },
+    { key: "law", label: "Law", width: 150, render: (x) => <Tag tone={lawTone(x.ob.law)}>{x.ob.law}</Tag> },
+    { key: "last", label: "Last filed", width: 150, render: (x) => <span className="text-muted">{x.ob.last}</span> },
+    { key: "status", label: "Status", width: 132, render: (x) => <Chip tone={OB_STATE[x.state].tone} fixed>{OB_STATE[x.state].label}</Chip> },
+    {
+      key: "due",
+      label: "Next due",
+      width: 120,
+      render: (x) => (
+        <span className={x.state === "bad" ? "font-semibold text-bad" : "text-muted"} title={`Late: ${x.ob.pen}`}>
+          {x.due}
+        </span>
+      ),
+    },
+  ];
+
   const head = (
     <>
       <span ref={filterRef} className="inline-flex">
-        <ClientSelect clients={complianceClients(portal)} value={client} onChange={setClient} />
+        <Select aria-label="Client" value={client} onChange={(e) => setClient(e.target.value)} options={[{ value: "", label: "All my clients" }, ...REG_CLIENTS.map((c) => ({ value: c.id, label: c.name }))]} />
       </span>
-      <Select aria-label="State" value={fil} onChange={(e) => setFil(e.target.value as Fil)} options={FILTERS} />
+      <Tabs
+        items={[
+          { key: "freq", label: "By frequency" },
+          { key: "law", label: "By law" },
+        ]}
+        value={view}
+        onChange={setView}
+      />
       {(fil || client) && (
         <Button
           size="sm"
@@ -106,94 +101,55 @@ export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
           Clear
         </Button>
       )}
-      <Tabs items={tabs} value={view} onChange={setView} className="hidden sm:inline-flex" />
     </>
   );
-  // Old staff list columns: obligation, client, law, last filed, status, next due.
-  const listCols: Column<StaffObligation>[] = [
-    {
-      key: "name",
-      label: "Obligation",
-      render: (o) => (
-        <span className="flex items-center gap-1.5 font-semibold">
-          {o.name}
-          <PortalLink area={o.area} />
-        </span>
-      ),
-    },
-    { key: "client", label: "Client", width: 150, render: (o) => <ClientName id={o.client} short /> },
-    { key: "law", label: "Law", width: 150, render: (o) => <Tag tone={AREA_TONE[o.area]}>{o.law}</Tag> },
-    { key: "last", label: "Last filed", width: 100, render: (o) => (o.lastFiled ? fmt(o.lastFiled) : "-") },
-    { key: "status", label: "Status", width: 132, render: (o) => <Chip tone={OB_STATUS_TONE[o.status]} fixed>{o.status}</Chip> },
-    { key: "due", label: "Next due", width: 90, render: (o) => <span className={o.status === "Overdue" ? "font-semibold text-bad" : undefined} title={`Late: ${o.penalty}`}>{fmt(o.due)}</span> },
-  ];
+
+  const done = items.filter((x) => x.state === "done");
+  const soon = items.filter(dueSoon).slice(0, 5);
+  const wait = items.filter((x) => x.state === "wait").slice(0, 4);
+  const filed = done.slice(0, 4);
 
   return (
-    <Cols>
-      <Col>
-        <section ref={listRef} className="min-w-0">
-          {view === "list" ? (
-            <div className="grid gap-3">
-              <div className="sm:hidden">
-                <Tabs items={tabs} value={view} onChange={setView} />
-              </div>
-              <DataGrid title="Obligations" meta={`${obs.length}`} columns={listCols} rows={obs} rowKey={(o) => o.id} rowHref={(o) => staffObHref(portal, o.id)} rowLate={(o) => o.status === "Overdue"} filters={head} pageSize={12} footer={<KeyHint />} />
-            </div>
-          ) : (
-            <SectionCard title="Obligations" meta={<span className="hidden sm:inline">{obs.length}</span>} flush right={<div className="flex flex-wrap items-center justify-end gap-2">{head}</div>}>
-              <div className="border-b border-line-soft px-4 py-2.5 sm:hidden">
-                <Tabs items={tabs} value={view} onChange={setView} />
-              </div>
-              <FoldingGroups groups={groups} />
-              <div className="border-t border-line-soft px-4 py-2 md:px-5">
-                <KeyHint />
-              </div>
-            </SectionCard>
-          )}
-        </section>
-      </Col>
-      <Col>
-        <SectionCard title="Due in the next 15 days" icon={{ Icon: Calendar, tone: "teal" }} flush>
-          <AttentionList rows={due} />
-        </SectionCard>
-        <SectionCard title="Waiting on client" meta={waiting.length || undefined} flush>
-          {waiting.length === 0 ? (
-            <Empty />
-          ) : (
-            waiting.map((o) => {
-              const c = clientById(o.client)!;
-              return (
-                <ListRow key={o.id}>
-                  <ClientDot tone={c.tone} />
-                  <span className="min-w-0 flex-1">
-                    <Link href={staffObHref(portal, o.id)} className="block truncate font-semibold hover:underline">
-                      {c.short} · {o.name}
-                    </Link>
-                    <span className="block truncate text-12.5 text-muted">{o.needs[0]}</span>
-                  </span>
-                  {sent[o.id] ? (
-                    <Chip tone="ok">Sent</Chip>
-                  ) : (
-                    <Button size="sm" onClick={() => setSent({ ...sent, [o.id]: true })}>
-                      Send reminder
-                    </Button>
-                  )}
-                </ListRow>
-              );
-            })
-          )}
-        </SectionCard>
-        <SectionCard title="Progress flow">
-          <StackedBar
-            segments={[
-              { label: "Data from client", value: all.filter((o) => o.status === "Waiting on client" || o.status === "Overdue").length, tone: "warn" },
-              { label: "Prepared", value: all.filter((o) => o.status === "In progress").length, tone: "accent" },
-              { label: "Filed", value: all.filter((o) => o.status === "Filed").length, tone: "ok" },
-              { label: "Upcoming", value: all.filter((o) => o.status === "Upcoming").length, tone: "idle" },
+    <div className="grid gap-4">
+      <FilterStrip items={strip} value={fil} onChange={(k) => setFil(k as Fil)} />
+      <Cols>
+        <Col>
+          <section ref={listRef} className="min-w-0">
+            <GroupedGrid
+              title="Obligations"
+              right={head}
+              columns={cols}
+              groups={groups}
+              rowKey={(x) => x.key}
+              rowHref={hrefOf}
+              footer={
+                <span className="ml-auto flex items-center gap-3">
+                  <span>Started by your registrations</span>
+                  <KeyHint />
+                </span>
+              }
+            />
+          </section>
+        </Col>
+        <Col>
+          <FlowCard
+            title="This month"
+            steps={[
+              { label: "Data from client", value: count("wait") },
+              { label: "Prepared", value: items.filter((x) => x.state === "run").length },
+              { label: "Filed", value: done.length },
+              { label: "Acknowledged", value: Math.max(0, done.length - 1) },
             ]}
           />
-        </SectionCard>
-      </Col>
-    </Cols>
+          <RailCard
+            title="Due in the next 15 days"
+            count={soon.length}
+            items={soon.map((x) => ({ key: x.key, title: x.ob.name, sub: x.clientName, right: x.due, rightClass: x.state === "bad" ? "font-semibold text-bad" : undefined, href: hrefOf(x) }))}
+          />
+          <RailCard title="Waiting on client" count={wait.length} items={wait.map((x) => ({ key: x.key, title: x.ob.name, sub: x.clientName, right: "3 days", rightClass: "font-semibold text-warn", href: hrefOf(x) }))} />
+          <RailCard title="Filed recently" count={filed.length} items={filed.map((x) => ({ key: x.key, title: x.ob.name, sub: x.clientName, right: x.ob.last, href: hrefOf(x) }))} />
+        </Col>
+      </Cols>
+    </div>
   );
 }

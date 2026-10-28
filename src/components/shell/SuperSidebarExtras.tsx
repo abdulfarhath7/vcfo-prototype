@@ -17,7 +17,7 @@ import { FIRM_CLIENTS, MANAGERS } from "@/data/super";
 const PICKED = "bg-navy-on font-semibold text-white shadow-[inset_3px_0_0_var(--brand)]";
 const CHILD = "flex h-7 items-center gap-2 rounded-md px-2 text-12.5 hover:bg-white/[.06]";
 const PILL = "flex-none rounded-sm bg-white/[.1] px-1.5 text-[10px] font-semibold leading-[16px] text-navy-ink";
-const FOLD_IDS = ["northwind", "bluefin", "corvid", "zenith"];
+const FOLD_IDS = ["northwind", "orchid", "tidewater", "kestrel"];
 
 /** Fold state per block, kept for the browser tab (old prototype: sessionStorage "vcfo.nav.<key>"). */
 export function useSuperFold(key: "clients" | "managers"): [boolean, () => void] {

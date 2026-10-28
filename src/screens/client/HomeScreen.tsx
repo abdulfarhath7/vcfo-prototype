@@ -240,8 +240,8 @@ export function HomeScreen() {
               <ActivityCard rows={ACTIVITY} className="max-lg:order-7" />
             </Col>
             <Col className="max-lg:contents">
-              <HoldsCard onDrill={open} className="max-lg:order-2" />
               <AlertsCard rows={ALERTS_30} today={TODAY} className="max-lg:order-4" />
+              <HoldsCard onDrill={open} className="max-lg:order-2" />
               <SbcCard items={SBC_DOING} className="max-lg:order-5" />
             </Col>
           </Cols>

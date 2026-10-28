@@ -71,20 +71,23 @@ export interface GreetingCardProps {
   tag?: React.ReactNode;
   actions?: React.ReactNode;
   stats: StatItem[];
+  /** Clock after the date: "12:31 PM" on staff portals, as in the old greeting. */
+  time?: string;
 }
 
 /** R-17: navy band with date, name and actions. White number strip below. Same on every portal. */
-export function GreetingCard({ date, name, eyebrow, tag, actions, stats }: GreetingCardProps) {
+export function GreetingCard({ date, name, eyebrow, tag, actions, stats, time }: GreetingCardProps) {
+  const when = time ? `${fmtLong(date)} · ${time}` : fmtLong(date);
   return (
     <section className="overflow-hidden rounded-lg border border-line bg-surface" aria-label="Summary">
       <div className="flex flex-wrap items-center gap-3 bg-navy px-4 py-4 text-white md:px-6 md:py-[18px]">
         <div className="min-w-0">
-          <div className="text-12.5 text-navy-ink">{eyebrow ?? fmtLong(date)}</div>
+          <div className="text-12.5 text-navy-ink">{eyebrow ?? when}</div>
           <h1 className="flex flex-wrap items-center gap-2.5 text-[20px] font-semibold leading-tight tracking-tight md:text-22">
             <span className="truncate">{name}</span>
             {tag}
           </h1>
-          {eyebrow && <div className="text-12.5 text-navy-ink">{fmtLong(date)}</div>}
+          {eyebrow && <div className="text-12.5 text-navy-ink">{when}</div>}
         </div>
         {actions && <div className="ml-auto flex flex-wrap items-center gap-2">{actions}</div>}
       </div>

@@ -1,6 +1,6 @@
 # Status
 
-Updated 27 Oct 2026.
+Updated 28 Oct 2026, late evening.
 
 ## Branch
 
@@ -45,7 +45,7 @@ The owner found the new prototype missing many parts of the old one, plus the la
 - A headless Chromium sweep loads 127 pages in four modes (1440 and 390 px, light and dark). All 508 loads return 200, with no page error, no console error and no sideways scroll.
 - A smoke test passes for search, sidebar folds, bell menus, Ask VCFO, the upload dialog, sign-in demo accounts and the dev connection detail.
 - C-0043 to C-0046 stay ◐. Each portal has many more dialogs, drags and timers than the smoke test covers. Click through them before you set ✓.
-- `src/screens/staff/StaffSettingsSection.tsx` is not mounted. The shared Settings tab already holds password, Outlook and alerts for staff. Delete the file or merge its photo controls into `profile-settings.tsx`.
+- `src/screens/staff/StaffSettingsSection.tsx` is mounted under Profile › Settings since the repair round (C-0064).
 - The Chrome extension was not connected. Checks ran in headless Chromium from `~/Documents/vcfo-suite/node_modules/playwright-core`.
 
 Owner decisions open:
@@ -54,6 +54,59 @@ Owner decisions open:
 3. Landing quick answers: the old panel had 12 questions; all 12 are back. Cut to 3 if wanted.
 4. Dark mode lifts the main button to #2B4766 (C-0051). Confirm.
 5. Developer Overview dropped "Deploys this week" and "Cost this month" from the number strip to fit six tiles. Both still show lower on the page.
+
+## Repair round (28 Oct 2026)
+
+The owner said the parity round "ruined" the UI, the calendar first. `docs/PARITY-AUDIT.md` lists about 60 ✗ parts. Seven agents restored them from `docs/RESTORE-BRIEF.md`. Rows C-0052 to C-0071 in `CHANGES.md` record the work.
+
+- Checks: `npx tsc --noEmit`, `npx eslint src app` and `vitest` are clean. All 90 audited routes return 200.
+- Each agent took its routes at 1440 light, 1440 dark and 390 light, and ran a Playwright click script. The scripts are in the session scratchpad.
+- Staff and super admin data sit on Fri 16 Oct 2026 (`STAFF_TODAY`). The client portal stays on 6 Oct; the client calendar uses 8 Oct, as in the old one.
+- `PhaseRowsWithHelp` was folded into `PhaseRows` (`onAbout`).
+
+Open after the repair round:
+1. Staff Filings and Obligations keep the old statuses, so 10 and 15 Oct still show "Due soon" against 16 Oct.
+2. Staff Work: calendar blocks do not drag or resize as in the old calendar.
+3. Admin Work shows Status as a stacked bar (R-25), not the old donut. Owner to confirm.
+4. Step page approval bar sits in the page flow, not fixed to the window bottom, so the prototype bar does not hide it.
+5. Bharath has two task lists: his own Today and Work use the old lead lists; team views follow `people.ts`.
+6. The old staff top bar had a "PREVIEW · All incorporating / Mixed / All compliance" switch. It is not built.
+7. Board resolution signer is Rohan Kumar; the old screen showed J. Carter.
+
+## Repair round 2 (28 Oct 2026)
+
+An independent review compared all 93 old and new screens. Five agents finished the open items from `docs/HANDOFF.md`. Rows C-0072 to C-0084 in `CHANGES.md` record the work.
+
+- Checks: `npx tsc --noEmit`, `npx eslint src app` and `vitest` are clean.
+- `sweep.cjs` loads all 90 routes at 390 light and 1440 dark. No page error, no sideways scroll.
+- Each agent took its routes at 1440 light, 1440 dark and 390 light, and clicked its tabs and dialogs.
+- `AttentionRow` takes `alert`: a red alert tile in place of the date tile.
+- The manager sidebar marks the picked project lead. It has no "Your admin" row.
+
+Owner decisions after round 2: decided on 28 Oct 2026. See D-12 to D-16 in `docs/DECISIONS.md`.
+
+## Gaps and click-through round (28 Oct 2026, evening)
+
+Rows C-0085 to C-0093 in `CHANGES.md` record this round. C-0044, C-0045 and C-0046 are now ✓.
+
+- Checks at the last run: `npx tsc --noEmit`, `npx eslint src app` and `vitest` are clean.
+- Click scripts for each portal are in the session scratchpad: `click-dev/`, `click-super/`, `click-staff-a/`, `click-staff-b/`, `click-client/`, `step7/`. The scratchpad is `/tmp/claude-1000/-home-farhath-Documents-vcfo-prototype/49d54c99-238a-49b4-b27f-a2085755dd75/scratchpad`. `/tmp` may be gone after a restart.
+- `shared-check.cjs` and `undo-check.cjs` in the scratchpad check the shared fixes.
+
+Not finished when the session stopped:
+1. The client portal and public pages click-through (C-0043) was still running. Its report did not arrive. Rerun it: every route under `app/(client)` and the public routes, both COI states, 1440 and 390 px. Then set C-0043 to ✓.
+2. After that, run the full sweep (`node $R/sweep.cjs $R/routes.txt`) and the checks again.
+
+Open after this round:
+1. Drag-to-plan in Work and the Leads calendar is not built. The old calendars let you drag a block to change its start and end.
+2. Larkspur's old data is inconsistent: 2 of 5 Phase 1 steps done, but the step code is "Step 2".
+3. The Northwind Documents tab says 18 (D-15). The head button says 6/11 and the Documents card lists 6 files.
+4. Super admin Practice pages use their own client data in `src/data/super.ts`. Its phase counts for Monsoon, Saffron and Coral still disagree with their step codes.
+5. Knowledge bank shelves are not links. Only the GST shelf has files. Only search reaches the reader.
+6. Profile › Appearance: Density and Text size save but do not change the page.
+7. Staff Profile has no Team section. R-42 names only the client. Owner to confirm.
+8. `SBC_CONTACTS` in `src/data/updates-team.ts` has no user since D-12. Remove it.
+9. Board resolution "Send to client" is a `mailto:` link.
 
 ## Next refactors
 

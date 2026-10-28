@@ -14,6 +14,7 @@ import { Chevron } from "@/components/ui/Chevron";
 import { FileBadge } from "@/components/ui/FileBadge";
 import { Checkbox, Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
+import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
 import { TileGrid, type TileGroup } from "@/components/cards/TileGrid";
 import { KeyValue } from "@/components/cards/KeyValue";
@@ -127,44 +128,54 @@ export interface Proof {
 
 /** Proof of a filing: acknowledgement, challan, reference. Opens from the "Proof" chip. */
 export function ProofDialog({ proof, onOpenChange }: { proof: Proof | null; onOpenChange: (v: boolean) => void }) {
+  const toast = useUndoToast();
   const c = proof ? clientById(proof.client) : undefined;
   const files = proof ? [`${proof.title.replace(/[^A-Za-z0-9]+/g, "_")}_${proof.period.replace(/\s+/g, "")}_ack.pdf`, ...(proof.area === "GST" || proof.area === "Income tax" || proof.area === "Payroll" ? [`Challan_${proof.period.replace(/\s+/g, "")}.pdf`] : [])] : [];
   return (
-    <Modal
-      open={!!proof}
-      onOpenChange={onOpenChange}
-      title={proof ? `${proof.title} · ${proof.period}` : ""}
-      eyebrow={c?.name}
-      size="sm"
-      flush
-      footer={
-        <Button variant="primary" onClick={() => onOpenChange(false)}>
-          <Download size={16} strokeWidth={1.5} /> Download all
-        </Button>
-      }
-    >
-      {proof && (
-        <>
-          <div className="border-b border-line-soft px-4 py-4 md:px-5">
-            <KeyValue
-              rows={[
-                { k: "Filed on", v: proof.filed ? fmtYear(proof.filed) : "-" },
-                { k: "Reference", v: proof.arn ?? "-", mono: true },
-              ]}
-            />
-          </div>
-          {files.map((f) => (
-            <ListRow key={f}>
-              <FileBadge type="PDF" />
-              <span className="min-w-0 flex-1 truncate font-mono text-12.5">{f}</span>
-              <Button size="iconSm" variant="ghost" aria-label={`Download ${f}`}>
-                <Download size={16} strokeWidth={1.5} />
-              </Button>
-            </ListRow>
-          ))}
-        </>
-      )}
-    </Modal>
+    <>
+      <Modal
+        open={!!proof}
+        onOpenChange={onOpenChange}
+        title={proof ? `${proof.title} · ${proof.period}` : ""}
+        eyebrow={c?.name}
+        size="sm"
+        flush
+        footer={
+          <Button
+            variant="primary"
+            onClick={() => {
+              toast.show(files.length === 1 ? `Downloaded ${files[0]}` : `Downloaded ${files.length} files`);
+              onOpenChange(false);
+            }}
+          >
+            <Download size={16} strokeWidth={1.5} /> Download all
+          </Button>
+        }
+      >
+        {proof && (
+          <>
+            <div className="border-b border-line-soft px-4 py-4 md:px-5">
+              <KeyValue
+                rows={[
+                  { k: "Filed on", v: proof.filed ? fmtYear(proof.filed) : "-" },
+                  { k: "Reference", v: proof.arn ?? "-", mono: true },
+                ]}
+              />
+            </div>
+            {files.map((f) => (
+              <ListRow key={f}>
+                <FileBadge type="PDF" />
+                <span className="min-w-0 flex-1 truncate font-mono text-12.5">{f}</span>
+                <Button size="iconSm" variant="ghost" aria-label={`Download ${f}`} onClick={() => toast.show(`Downloaded ${f}`)}>
+                  <Download size={16} strokeWidth={1.5} />
+                </Button>
+              </ListRow>
+            ))}
+          </>
+        )}
+      </Modal>
+      {toast.node}
+    </>
   );
 }
 

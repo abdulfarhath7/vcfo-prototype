@@ -68,12 +68,9 @@ const DELAY = [5.1, 4.8, 5.3, 4.6, 6.0, 4.9, 4.2, 3.4, 3.0, 2.2, 1.6, 1.3];
 export const RATE_TARGET = 95;
 export const DELAY_BENCHMARK = 2;
 
-// Old KPI strip (lead): Projects 8 (+1), Steps completed 126 (+18), Waiting on client 6 (+2), Overdue steps 3 (−1).
-const KPIS: Record<StaffPortal, Array<[string, number, string, boolean]>> = {
-  lead: [["Projects", 8, "+1", true], ["Steps completed", 126, "+18", true], ["Waiting on client", 6, "+2", false], ["Overdue steps", 3, "−1", true]],
-  manager: [["Projects", 8, "+1", true], ["Steps completed", 284, "+31", true], ["Waiting on client", 11, "+3", false], ["Overdue steps", 6, "−2", true]],
-  admin: [["Projects", 14, "+2", true], ["Steps completed", 512, "+57", true], ["Waiting on client", 19, "+4", false], ["Overdue steps", 9, "−3", true]],
-};
+// Old KPI strip, the same on lead, manager and admin Analytics: Projects 8 (+1), Steps completed 126 (+18), Waiting on client 6 (+2), Overdue steps 3 (−1).
+const OLD_KPIS: Array<[string, number, string, boolean]> = [["Projects", 8, "+1", true], ["Steps completed", 126, "+18", true], ["Waiting on client", 6, "+2", false], ["Overdue steps", 3, "−1", true]];
+const KPIS: Record<StaffPortal, Array<[string, number, string, boolean]>> = { lead: OLD_KPIS, manager: OLD_KPIS, admin: OLD_KPIS };
 
 const SCALE: Record<StaffPortal, number> = { admin: 1, manager: 0.48, lead: 0.2 };
 
@@ -88,27 +85,27 @@ function build(portal: StaffPortal): Analytics {
   const stepTime: StepTime[] = {
     lead: [
       { id: "s1", step: "Registered office address", median: 4, longest: 5, longestClient: "Northwind" },
-      { id: "s2", step: "KYC review and DSC", median: 3, longest: 4, longestClient: "Bluefin" },
-      { id: "s3", step: "GST registration", median: 9, longest: 12, longestClient: "Zenith" },
-      { id: "s4", step: "Trademark registration", median: 6, longest: 8, longestClient: "Arcadia" },
-      { id: "s5", step: "FC-GPR filing", median: 5, longest: 6, longestClient: "Corvid" },
+      { id: "s2", step: "KYC review and DSC", median: 3, longest: 4, longestClient: "Orchid Lane" },
+      { id: "s3", step: "GST registration", median: 9, longest: 12, longestClient: "Kestrel" },
+      { id: "s4", step: "Trademark registration", median: 6, longest: 8, longestClient: "Halcyon" },
+      { id: "s5", step: "FC-GPR filing", median: 5, longest: 6, longestClient: "Tidewater" },
       { id: "s6", step: "Subscriber details", median: 2, longest: 3, longestClient: "Northwind" },
     ],
     manager: [
       { id: "s1", step: "Registered office address", median: 4, longest: 6, longestClient: "Northwind" },
-      { id: "s2", step: "KYC review and DSC", median: 3, longest: 4, longestClient: "Bluefin" },
-      { id: "s3", step: "Bank account opening", median: 7, longest: 11, longestClient: "Delta" },
-      { id: "s4", step: "GST registration", median: 9, longest: 12, longestClient: "Zenith" },
-      { id: "s5", step: "Auditor appointment (ADT-1)", median: 5, longest: 7, longestClient: "Fjord" },
-      { id: "s6", step: "Trademark registration", median: 6, longest: 8, longestClient: "Arcadia" },
-      { id: "s7", step: "Draft Board resolution", median: 2, longest: 2, longestClient: "Ember" },
+      { id: "s2", step: "KYC review and DSC", median: 3, longest: 4, longestClient: "Orchid Lane" },
+      { id: "s3", step: "Bank account opening", median: 7, longest: 11, longestClient: "Brightwave" },
+      { id: "s4", step: "GST registration", median: 9, longest: 12, longestClient: "Kestrel" },
+      { id: "s5", step: "Auditor appointment (ADT-1)", median: 5, longest: 7, longestClient: "Coral" },
+      { id: "s6", step: "Trademark registration", median: 6, longest: 8, longestClient: "Halcyon" },
+      { id: "s7", step: "Draft Board resolution", median: 2, longest: 2, longestClient: "Larkspur" },
     ],
     admin: [
       { id: "s1", step: "Name resubmission after RUN rejection", median: 6, longest: 8, longestClient: "Banyan" },
       { id: "s2", step: "MCA remarks on SPICe+", median: 5, longest: 6, longestClient: "Monsoon" },
       { id: "s3", step: "Registered office address", median: 4, longest: 6, longestClient: "Northwind" },
-      { id: "s4", step: "Bank account opening", median: 7, longest: 11, longestClient: "Delta" },
-      { id: "s5", step: "GST registration", median: 9, longest: 12, longestClient: "Zenith" },
+      { id: "s4", step: "Bank account opening", median: 7, longest: 11, longestClient: "Brightwave" },
+      { id: "s5", step: "GST registration", median: 9, longest: 12, longestClient: "Kestrel" },
       { id: "s6", step: "PF registration", median: 4, longest: 5, longestClient: "Indigo" },
       { id: "s7", step: "Auditor appointment (ADT-1)", median: 5, longest: 7, longestClient: "Coral" },
       { id: "s8", step: "Share certificates (SH-1)", median: 3, longest: 4, longestClient: "Saffron" },

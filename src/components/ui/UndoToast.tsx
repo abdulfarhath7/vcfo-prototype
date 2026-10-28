@@ -21,7 +21,7 @@ export function useUndoToast(ms = 5000) {
   }, [t, ms]);
   const show = React.useCallback((text: string, onUndo?: () => void) => setT({ id: Date.now(), text, onUndo }), []);
   const node = t ? (
-    <div role="status" aria-live="polite" className="fixed bottom-5 left-1/2 z-[60] flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-3 rounded-md bg-navy px-4 py-2.5 text-13 text-white shadow-pop md:left-[calc(236px+20px)] md:translate-x-0">
+    <div role="status" aria-live="polite" className="fixed bottom-[132px] left-1/2 z-[80] flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-3 rounded-md bg-navy px-4 py-2.5 text-13 text-white shadow-pop md:bottom-16 md:left-[calc(248px+20px)] md:translate-x-0">
       <span className="min-w-0 truncate">{t.text}</span>
       {t.onUndo && (
         <button

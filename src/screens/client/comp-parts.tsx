@@ -54,7 +54,7 @@ const addDays = (date: Date, n: number) => new Date(date.getFullYear(), date.get
 export function eventFiling(e: YearEvent): Filing {
   const byId = e.id.startsWith("c-f") ? FILINGS.find((f) => `c-${f.id}` === e.id) : undefined;
   if (byId) return byId;
-  const filed = e.status === "Filed" ? addDays(e.date, -2) : undefined;
+  const filed = e.status === "Filed" ? e.filed ?? addDays(e.date, -2) : undefined;
   return { id: e.id, form: e.name, period: e.period, due: e.date, filed, status: e.status, docs: 0, area: e.kind, frequency: e.frequency, fy: "2026-27", obligationId: e.obligationId };
 }
 
@@ -108,7 +108,7 @@ function FilingFacts({ f }: { f: Filing }) {
 }
 
 /** Proof files with Preview and Download. A filed row without files shows "Proof pending". */
-export function ProofList({ f, onPreview }: { f: Filing; onPreview: () => void }) {
+export function ProofList({ f, onPreview, onDownload }: { f: Filing; onPreview: () => void; onDownload?: (name: string) => void }) {
   const files = filingProofs(f);
   if (f.status !== "Filed") return <p className="px-5 py-3 text-13 text-faint">None</p>;
   if (files.length === 0)
@@ -131,7 +131,7 @@ export function ProofList({ f, onPreview }: { f: Filing; onPreview: () => void }
           <Button size="iconSm" variant="ghost" aria-label={`Preview ${x.name}`} onClick={onPreview}>
             <Eye size={16} strokeWidth={1.5} />
           </Button>
-          <Button size="iconSm" variant="ghost" aria-label={`Download ${x.name}`}>
+          <Button size="iconSm" variant="ghost" aria-label={`Download ${x.name}`} onClick={() => onDownload?.(x.name)}>
             <Download size={16} strokeWidth={1.5} />
           </Button>
         </li>
@@ -159,7 +159,7 @@ export function AssistBlock({ f }: { f: Filing }) {
   );
 }
 
-function FilingBody({ f, onPreview }: { f: Filing; onPreview: () => void }) {
+function FilingBody({ f, onPreview, onDownload }: { f: Filing; onPreview: () => void; onDownload: (name: string) => void }) {
   return (
     <>
       <PanelSection>
@@ -172,7 +172,7 @@ function FilingBody({ f, onPreview }: { f: Filing; onPreview: () => void }) {
         <AssistBlock f={f} />
       </div>
       <PanelSection title="Proof" flush>
-        <ProofList f={f} onPreview={onPreview} />
+        <ProofList f={f} onPreview={onPreview} onDownload={onDownload} />
       </PanelSection>
     </>
   );
@@ -201,8 +201,9 @@ function FilingTitle({ f }: { f: Filing }) {
 }
 
 /** Filings: the record opens in a side panel so the grid stays visible (old owner decision, 9 Oct). */
-export function FilingPanel({ filing, onClose }: { filing: Filing | null; onClose: () => void }) {
+export function FilingPanel({ filing, onClose, onNotify }: { filing: Filing | null; onClose: () => void; onNotify: (text: string) => void }) {
   const [preview, setPreview] = React.useState(false);
+  const download = (name: string) => onNotify(`Downloaded ${name}`);
   const f = filing;
   return (
     <>
@@ -221,9 +222,9 @@ export function FilingPanel({ filing, onClose }: { filing: Filing | null; onClos
           ) : undefined
         }
       >
-        {f && <FilingBody f={f} onPreview={() => setPreview(true)} />}
+        {f && <FilingBody f={f} onPreview={() => setPreview(true)} onDownload={download} />}
       </SidePanel>
-      {f && <AckPreview filing={f} open={preview} onOpenChange={setPreview} />}
+      {f && <AckPreview filing={f} open={preview} onOpenChange={setPreview} onDownload={download} />}
     </>
   );
 }
@@ -232,6 +233,7 @@ export function FilingPanel({ filing, onClose }: { filing: Filing | null; onClos
 export function EventDialog({ event, onClose, onRemind }: { event: YearEvent | null; onClose: () => void; onRemind: (text: string) => void }) {
   const [preview, setPreview] = React.useState(false);
   const f = event ? eventFiling(event) : null;
+  const download = (name: string) => onRemind(`Downloaded ${name}`);
   return (
     <>
       <Modal
@@ -255,15 +257,15 @@ export function EventDialog({ event, onClose, onRemind }: { event: YearEvent | n
           )
         }
       >
-        {f && <FilingBody f={f} onPreview={() => setPreview(true)} />}
+        {f && <FilingBody f={f} onPreview={() => setPreview(true)} onDownload={download} />}
       </Modal>
-      {f && <AckPreview filing={f} open={preview} onOpenChange={setPreview} />}
+      {f && <AckPreview filing={f} open={preview} onOpenChange={setPreview} onDownload={download} />}
     </>
   );
 }
 
 /** The acknowledgement page, as the portal issues it (index.html docPreview). */
-export function AckPreview({ filing: f, open, onOpenChange }: { filing: Filing; open: boolean; onOpenChange: (v: boolean) => void }) {
+export function AckPreview({ filing: f, open, onOpenChange, onDownload }: { filing: Filing; open: boolean; onOpenChange: (v: boolean) => void; onDownload?: (name: string) => void }) {
   return (
     <Modal
       open={open}
@@ -272,7 +274,7 @@ export function AckPreview({ filing: f, open, onOpenChange }: { filing: Filing; 
       eyebrow={`${f.form} · ${f.period}${f.filed ? ` · filed ${fmt(f.filed)}` : ""}`}
       title={<span className="font-mono text-14">{f.form} acknowledgement.pdf</span>}
       footer={
-        <Button variant="primary">
+        <Button variant="primary" onClick={() => onDownload?.(`${f.form} acknowledgement.pdf`)}>
           <Download size={16} strokeWidth={1.5} /> Download
         </Button>
       }
@@ -340,7 +342,7 @@ const drillColumns: Column<DrillRow>[] = [
 ];
 
 /** Dialog with status tabs and an e-Filing grid of the rows behind a number or a chart. */
-export function ComplianceDrill({ open, onOpenChange, title, rows, initial = "all", onPick }: { open: boolean; onOpenChange: (v: boolean) => void; title: string; rows: DrillRow[]; initial?: string; onPick?: (r: DrillRow) => void }) {
+export function ComplianceDrill({ open, onOpenChange, title, rows, initial = "all", onPick, asOf = TODAY, statuses }: { open: boolean; onOpenChange: (v: boolean) => void; title: string; rows: DrillRow[]; initial?: string; onPick?: (r: DrillRow) => void; asOf?: Date; statuses?: FilingStatus[] }) {
   const [tab, setTab] = React.useState(initial);
   React.useEffect(() => {
     if (open) setTab(initial);
@@ -353,7 +355,7 @@ export function ComplianceDrill({ open, onOpenChange, title, rows, initial = "al
       size="lg"
       flush
       title={title}
-      eyebrow={`As of ${fmt(TODAY)}`}
+      eyebrow={`As of ${fmt(asOf)}`}
       footer={
         <Button asChild variant="primary">
           <Link href="/client/filings">Open filings</Link>
@@ -361,7 +363,7 @@ export function ComplianceDrill({ open, onOpenChange, title, rows, initial = "al
       }
     >
       <div className="border-b border-line-soft px-4 py-3 md:px-5">
-        <Tabs items={DRILL_TABS.map((t) => ({ key: t.key, label: t.label, count: rows.filter((r) => t.key === "all" || r.status === t.key).length }))} value={tab} onChange={setTab} />
+        <Tabs items={DRILL_TABS.filter((t) => t.key === "all" || !statuses || statuses.includes(t.key)).map((t) => ({ key: t.key, label: t.label, count: rows.filter((r) => t.key === "all" || r.status === t.key).length }))} value={tab} onChange={setTab} />
       </div>
       <DataGrid inset columns={drillColumns} rows={shown} rowKey={(r) => r.id} pageSize={7} empty="None" onRowClick={onPick} />
     </Modal>
@@ -476,7 +478,7 @@ export function PeopleStack({ people }: { people: Array<{ name: string; role: st
   return (
     <span className="flex items-center -space-x-1.5" aria-label="People on it">
       {people.map((p) => (
-        <span key={p.name} title={`${p.name} · ${p.role}`} className="rounded-md ring-2 ring-surface">
+        <span key={`${p.role}-${p.name}`} title={`${p.name} · ${p.role}`} className="rounded-md ring-2 ring-surface">
           <Avatar name={p.name} size={30} />
         </span>
       ))}

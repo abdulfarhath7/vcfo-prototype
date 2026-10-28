@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Check, Download, Eye, MessageSquare, PenLine, RefreshCw } from "lucide-react";
+import { Check, Clock, Download, Eye, MessageSquare, PenLine, RefreshCw, TrendingUp, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TODAY, fmt, fmtYear } from "@/lib/dates";
 import { STEPS, stepHref, type Step } from "@/data/incorporation";
@@ -123,7 +123,7 @@ export function AnswersCard({ step, about, rows, notify, onChange, onMessage }: 
 
 const fileFor = (name: string) => FILES.find((f) => f.name.replace(/\.[a-z]+$/i, "").toLowerCase() === name.toLowerCase());
 
-export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify }: { docs: ItemDoc[]; canUpload: boolean; uploaded: Record<string, string>; onUpload: (id: string, file: string | null) => void; notify: Notify }) {
+export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify, due, by = "Bharath" }: { docs: ItemDoc[]; canUpload: boolean; uploaded: Record<string, string>; onUpload: (id: string, file: string | null) => void; notify: Notify; due?: Date; by?: string }) {
   if (docs.length === 0) return null;
   const isAsk = (x: ItemDoc) => (x.status === "Asked" || x.status === "Sent back") && !uploaded[x.id];
   const ok = docs.filter((x) => !isAsk(x) && (x.status === "Accepted" || uploaded[x.id])).length;
@@ -132,11 +132,20 @@ export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify }: { 
       {docs.map((x) => {
         if (isAsk(x) && canUpload && x.from === "client")
           return (
-            <div key={x.id} className="border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5">
+            <div key={x.id} className="grid gap-2 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5">
+              <div className="flex min-w-0 items-center gap-2 text-12.5 text-muted">
+                <StatusCircle status="current" className="h-4 w-4 bg-warn-soft text-warn" />
+                <span className="truncate">
+                  {x.note ?? x.name} · requested by {by}
+                </span>
+              </div>
               <DropZone
                 label={x.name}
-                hint={x.note}
-                chip={<Chip tone={x.status === "Sent back" ? "bad" : "warn"} className="hidden sm:inline-flex">{x.status === "Sent back" ? "Sent back" : "Asked"}</Chip>}
+                chip={
+                  <Chip tone={x.status === "Sent back" || (due && due < TODAY) ? "bad" : "warn"} className="hidden sm:inline-flex">
+                    {x.status === "Sent back" ? "Sent back" : due ? `Due ${fmt(due)}` : "Asked"}
+                  </Chip>
+                }
                 onFile={(f) => {
                   onUpload(x.id, f);
                   notify(`${x.name} uploaded · Bharath checks it`, () => onUpload(x.id, null));
@@ -194,23 +203,26 @@ export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify }: { 
   );
 }
 
-/* ---------- Needed from Northwind: checklist, progress, Request a change and Approve ---------- */
+/* ---------- Needed from Northwind: the checklist. Approve sits in the approval bar (old actBar). ---------- */
 
 export function StepNeedsCard({
   step,
   items,
+  on,
+  setOn,
   blocked,
   notify,
   onChange,
 }: {
   step: Step;
   items: NeedItem[];
-  /** Approve needs a file first: the name of the missing file. */
+  on: Record<string, boolean>;
+  setOn: (id: string, v: boolean) => void;
+  /** Submit needs a file first: the name of the missing file. */
   blocked?: string;
   notify: Notify;
   onChange: () => void;
 }) {
-  const [on, setOn] = React.useState<Record<string, boolean>>(() => Object.fromEntries(items.map((i) => [i.id, i.done])));
   const [sent, setSent] = React.useState(false);
   const left = items.filter((i) => !on[i.id]).length;
   const pct = Math.round(((items.length - left) / items.length) * 100);
@@ -222,37 +234,153 @@ export function StepNeedsCard({
       ) : (
         items.map((i) => (
           <label key={i.id} className="flex cursor-pointer items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 hover:bg-raised md:px-5">
-            <Checkbox checked={!!on[i.id]} onChange={(v) => setOn((x) => ({ ...x, [i.id]: v }))} label={i.label} />
+            <Checkbox checked={!!on[i.id]} onChange={(v) => setOn(i.id, v)} label={i.label} />
             <span className={cn("min-w-0 flex-1", on[i.id] && "text-muted line-through")}>{i.label}</span>
             <span className={cn("flex-none text-12.5", i.due < TODAY && !on[i.id] ? "font-semibold text-bad" : "text-muted")}>{fmt(i.due)}</span>
           </label>
         ))
       )}
-      <div className="grid gap-3 border-t border-line-soft px-4 py-3 md:px-5">
-        <div className="flex items-center gap-3 text-12.5 text-muted">
-          <span className="flex-none font-semibold text-ink">{waiting ? "Awaiting Northwind's approval" : "Answers to submit"}</span>
-          <Bar pct={Math.max(pct, 6)} tone={left ? "warn" : "ok"} className="flex-1" />
+      {!waiting && (
+        <div className="grid gap-3 border-t border-line-soft px-4 py-3 md:px-5">
+          <div className="flex items-center gap-3 text-12.5 text-muted">
+            <span className="flex-none font-semibold text-ink">Answers to submit</span>
+            <Bar pct={Math.max(pct, 6)} tone={left ? "warn" : "ok"} className="flex-1" />
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button onClick={onChange}>
+              <MessageSquare size={16} strokeWidth={1.5} /> Request a change
+            </Button>
+            <Button
+              variant="primary"
+              disabled={sent}
+              onClick={() => {
+                if (blocked) {
+                  notify(`Upload the ${blocked} first`);
+                  return;
+                }
+                setSent(true);
+                notify("Submitted for review · Bharath checks it", () => setSent(false));
+              }}
+            >
+              <Check size={16} strokeWidth={1.5} /> {sent ? "Submitted" : "Submit for review"}
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button onClick={onChange}>
+      )}
+    </SectionCard>
+  );
+}
+
+/**
+ * Approval bar at the foot of a step that waits on Northwind (old actBar).
+ * It sticks to the foot of the window, above the prototype controls and the Ask VCFO button.
+ * The offsets clear them: 68 px on desktop, 132 px on phones (they sit higher there).
+ */
+export function ApprovalBar({ pct, blocked, notify, onChange }: { pct: number; blocked?: string; notify: Notify; onChange: () => void }) {
+  const [sent, setSent] = React.useState(false);
+  return (
+    <div className="sticky bottom-[132px] z-20 rounded-lg border border-line bg-surface px-4 py-3 md:bottom-[68px] md:px-5" role="region" aria-label="Approval">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-full", sent ? "bg-ok-soft text-ok" : "bg-warn text-surface")} aria-hidden>
+            {sent ? <Check size={13} strokeWidth={2.4} /> : <User size={13} strokeWidth={2} />}
+          </span>
+          <span className="min-w-0">
+            <b className="block truncate text-13.5 font-semibold">{sent ? "Approved by Northwind" : "Awaiting Northwind’s approval"}</b>
+            <span className="mt-1 block h-1 w-[200px] max-w-full overflow-hidden rounded-full bg-line-soft" aria-hidden>
+              <i className={cn("block h-full rounded-full", sent ? "bg-ok-mid" : "bg-accent")} style={{ width: `${sent ? 100 : Math.max(pct, 6)}%` }} />
+            </span>
+          </span>
+        </div>
+        <div className="flex flex-none gap-2">
+          <Button onClick={onChange} className="max-sm:flex-1">
             <MessageSquare size={16} strokeWidth={1.5} /> Request a change
           </Button>
           <Button
             variant="primary"
             disabled={sent}
+            className="max-sm:flex-1"
             onClick={() => {
               if (blocked) {
                 notify(`Upload the ${blocked} first`);
                 return;
               }
               setSent(true);
-              notify(waiting ? "Approved and submitted · Bharath files it next" : "Submitted for review · Bharath checks it", () => setSent(false));
+              notify("Approved and submitted · Bharath files it next", () => setSent(false));
             }}
           >
-            <Check size={16} strokeWidth={1.5} /> {sent ? "Submitted" : waiting ? "Approve" : "Submit for review"}
+            <Check size={16} strokeWidth={1.5} /> {sent ? "Approved" : "Approve"}
           </Button>
         </div>
       </div>
-    </SectionCard>
+    </div>
+  );
+}
+
+/* ---------- Side list of the phase (old naRail): status, name, owner ---------- */
+
+const PHASE_LABEL = ["SPICe+ Part A", "SPICe+ Part B", "Post-incorporation"] as const;
+const ownerTone = { client: "text-warn", sbc: "text-accent", mca: "text-violet" } as const;
+const ownerName = { client: "Northwind", sbc: "SBC", mca: "MCA" } as const;
+
+function RailIcon({ step, index }: { step: Step; index: number }) {
+  const k = stepKind(step);
+  const base = "grid h-6 w-6 flex-none place-items-center rounded-full";
+  if (k === "done")
+    return (
+      <span className={cn(base, "bg-ok text-surface")} role="img" aria-label="Done">
+        <Check size={13} strokeWidth={2.6} />
+      </span>
+    );
+  if (k === "you")
+    return (
+      <span className={cn(base, "bg-warn text-surface")} role="img" aria-label="Waiting on Northwind">
+        <User size={13} strokeWidth={2.2} />
+      </span>
+    );
+  if (k === "prog")
+    return (
+      <span className={cn(base, "bg-btn text-white")} role="img" aria-label="In progress">
+        <Clock size={13} strokeWidth={2.2} />
+      </span>
+    );
+  if (k === "with")
+    return (
+      <span className={cn(base, "bg-accent text-surface")} role="img" aria-label={`With ${step.owner === "mca" ? "MCA" : "SBC"}`}>
+        <TrendingUp size={13} strokeWidth={2.2} />
+      </span>
+    );
+  return (
+    <span className={cn(base, "font-mono text-11 text-muted shadow-[inset_0_0_0_1.5px_var(--line)]")} role="img" aria-label="Upcoming">
+      {index}
+    </span>
+  );
+}
+
+export function PhaseStepsRail({ step }: { step: Step }) {
+  const list = STEPS.filter((x) => x.phase === step.phase);
+  return (
+    <aside className="min-w-0 rounded-lg border border-line bg-surface px-3 py-4 md:px-4" aria-label={`${PHASE_LABEL[step.phase - 1]} steps`}>
+      <h2 className="px-2 font-mono text-11.5 font-semibold text-muted">{PHASE_LABEL[step.phase - 1]}</h2>
+      <ol className="mt-3 grid gap-0.5">
+        {list.map((x, i) => {
+          const cur = x.n === step.n;
+          return (
+            <li key={x.n} className="relative">
+              {i < list.length - 1 && <span className={cn("absolute left-[19px] top-8 h-[calc(100%-20px)] w-px md:left-[19px]", stepKind(x) === "done" ? "bg-ok-mid" : "bg-line")} aria-hidden />}
+              <Link
+                href={stepHref("client", x.n)}
+                aria-current={cur ? "page" : undefined}
+                className={cn("relative flex min-h-[44px] items-center gap-3 rounded-md px-2 py-1.5 text-13.5 hover:bg-raised", cur && "bg-raised font-semibold shadow-[inset_0_0_0_1px_var(--line)]")}
+              >
+                <RailIcon step={x} index={i + 1} />
+                <span className="min-w-0 flex-1 leading-snug">{x.title}</span>
+                <User size={14} strokeWidth={1.5} className={cn("flex-none", ownerTone[x.owner])} aria-label={`Owner · ${ownerName[x.owner]}`} />
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
+    </aside>
   );
 }

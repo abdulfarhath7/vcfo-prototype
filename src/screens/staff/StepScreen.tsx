@@ -2,260 +2,322 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Check, Copy, List, Send, Upload } from "lucide-react";
+import { ArrowRight, Calendar, Check, Clock, User } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { TODAY, d, fmt } from "@/lib/dates";
-import { STEPS, PHASES, stepTone, type StepStatus } from "@/data/incorporation";
-import { clientById } from "@/data/staff-clients";
-import { CONTACTS } from "@/data/staff-clients";
-import { stepState, stepHistory, stepForm, assistText, fieldTone, type FormField, type FieldState } from "@/data/staff-steps";
-import { Cols, Col } from "@/components/shell/Page";
+import { STAFF_TODAY as TODAY, fmt } from "@/lib/dates";
+import { PORTALS } from "@/data/nav";
+import { STEPS, PHASES, type StepStatus } from "@/data/incorporation";
+import { clientById, CONTACTS } from "@/data/staff-clients";
+import { stepState, stepHistory, stepForm, stepDocs, assistText, fieldTone, type FormField, type FieldState } from "@/data/staff-steps";
 import { Button } from "@/components/ui/Button";
-import { Chip, OwnerChip } from "@/components/ui/Chip";
+import { Chip, Tag } from "@/components/ui/Chip";
 import { Field, Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
-import { SectionCard, ListRow, Empty, HeadLink } from "@/components/cards/SectionCard";
-import { KeyValue } from "@/components/cards/KeyValue";
+import { SectionCard, Empty } from "@/components/cards/SectionCard";
 import { Thread, type ThreadStep } from "@/components/cards/Thread";
-import { identityTile, ClientDot, personOf, stepHrefFor, clientHref, type StaffPortal } from "./parts";
+import type { StaffPortal } from "./parts";
 import { AboutStepPanel } from "./step-parts";
 
-// Ported from reference/old-screens/s/lead/Step.dc.html (lead, manager and admin share it). Dates move back 10 days.
+// Ported from reference/old-screens/s/lead/Step.dc.html. Lead, manager, admin and super admin share it (the old pages are the same).
+// K-27: the step code is "Step 7", not "Pre-7". R-11: picked tab is navy. R-15, R-16: card heads with a tile.
 
-const STEP7_NOTES = [
-  { id: "n1", who: "Bharath", date: d(2026, 10, 4), text: "Ask for a fresh bill if it is older than 15 Aug." },
-  { id: "n2", who: "Pranay", date: d(2026, 10, 2), text: "Bill must show the same address as the agreement." },
-];
+export type StepPortal = StaffPortal | "super";
 
-const dot: Record<FieldState, string> = { Accepted: "bg-ok-mid", Review: "bg-accent", Asked: "bg-warn-mid", "Not asked": "bg-line" };
+const stepHref = (portal: StepPortal, id: string, n: number) => `/${portal}/clients/${id}/step/${n}`;
+const packHref = (portal: StepPortal) => `/${portal}/documents`;
+
 const iso = (x?: Date) => (x ? `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}` : "");
 const fromIso = (s: string) => {
   const [y, m, dd] = s.split("-").map(Number);
   return new Date(y, m - 1, dd);
 };
 
-function FieldRow({ f, onChange, onState, onRemind }: { f: FormField; onChange: (v: string) => void; onState: (s: FieldState, note?: string) => void; onRemind: () => void }) {
-  const fileRef = React.useRef<HTMLInputElement>(null);
+/** Status glyph of the step: the old 20 px circle next to the step code. */
+const STATUS_GLYPH: Record<StepStatus, { cls: string; Icon: typeof Check; label: string }> = {
+  Completed: { cls: "bg-ok text-surface", Icon: Check, label: "Done" },
+  Waiting: {
+    cls: "bg-accent text-surface",
+    Icon: ArrowRight,
+    label: "Waiting on the client",
+  },
+  "In progress": {
+    cls: "bg-btn text-white",
+    Icon: Clock,
+    label: "In progress",
+  },
+  "Sent back": {
+    cls: "bg-bad text-surface",
+    Icon: ArrowRight,
+    label: "Sent back",
+  },
+  Upcoming: { cls: "bg-faint text-surface", Icon: Clock, label: "Upcoming" },
+};
+
+/** Row glyph of a form field: green tick, blue arrow, red "!" for a review with a problem. */
+function FieldGlyph({ f }: { f: FormField }) {
+  if (f.state === "Not asked") return <span className="h-5 w-5 rounded-full border-[1.5px] border-dashed border-faint" aria-label="Not asked" />;
+  const bad = f.state === "Review" && !!f.note;
+  const cls = f.state === "Accepted" ? "bg-ok" : bad ? "bg-bad" : f.state === "Review" ? "bg-warn" : "bg-accent";
   return (
-    <ListRow className="flex-wrap items-start md:flex-nowrap">
-      <i className={cn("mt-1.5 h-2.5 w-2.5 flex-none rounded-full", dot[f.state])} aria-hidden />
-      <span className="grid min-w-0 flex-1 gap-1">
-        <b className="font-semibold">
-          {f.label}
-          {f.required && f.state !== "Accepted" && <span className="text-bad"> *</span>}
-        </b>
-        {f.kind === "text" ? (
-          <Input value={f.value} onChange={(e) => onChange(e.target.value)} aria-label={f.label} className="h-8 text-13" disabled={f.state === "Accepted"} />
-        ) : f.value ? (
-          <span className="truncate text-12.5 text-muted">
-            <span className="font-mono">{f.value}</span>
-            {f.note && <span className="text-bad"> · {f.note}</span>}
-          </span>
-        ) : (
-          <span className="text-12.5 text-muted">
-            Drop a file or{" "}
-            <button type="button" className="font-semibold text-accent hover:underline" onClick={() => fileRef.current?.click()}>
-              browse
-            </button>
-            {f.note && <span> · {f.note}</span>}
-            <input
-              ref={fileRef}
-              type="file"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  onChange(file.name);
-                  onState("Review");
-                }
-              }}
-            />
-          </span>
-        )}
-      </span>
-      <span className="flex flex-none flex-wrap items-center gap-1.5">
-        <Chip tone={fieldTone[f.state]} fixed>
-          {f.state === "Asked" ? `Asked${f.note?.match(/\d+/) ? ` · ${f.note.match(/\d+/)![0]}d` : ""}` : f.state}
-        </Chip>
-        <span className="w-[52px] text-right font-mono text-12 text-muted">{f.date ? fmt(f.date) : ""}</span>
-        {f.state === "Asked" && (
-          <Button size="sm" variant="outline" onClick={onRemind}>
-            Send reminder
-          </Button>
-        )}
-        {f.state === "Review" && (
-          <>
-            <Button size="sm" variant="soft" onClick={() => onState("Accepted")}>
-              Accept
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => onState("Asked", "Sent back")}>
-              Reject
-            </Button>
-          </>
-        )}
-        {f.state === "Accepted" && f.kind === "file" && (
-          <Upload size={14} strokeWidth={1.5} className="text-faint" aria-hidden />
-        )}
-      </span>
-    </ListRow>
+    <span className={cn("grid h-5 w-5 place-items-center rounded-full text-11 font-bold text-surface", cls)} aria-label={f.state}>
+      {f.state === "Accepted" ? <Check size={11} strokeWidth={3} /> : bad ? "!" : <ArrowRight size={11} strokeWidth={3} />}
+    </span>
   );
 }
 
-function StepView({ portal, id, n }: { portal: StaffPortal; id: string; n: number }) {
+/** "rent-agreement-2026.pdf · 2.1 MB": file name in mono (R-28), the rest in the interface font. */
+function FileLine({ value }: { value: string }) {
+  const [head, ...rest] = value.split(" · ");
+  const isFile = /\.[a-z0-9]{2,4}$/i.test(head);
+  return (
+    <>
+      <span className={cn(isFile && "font-mono")}>{head}</span>
+      {rest.length > 0 && ` · ${rest.join(" · ")}`}
+    </>
+  );
+}
+
+function DropZone({ onFile }: { onFile: (name: string) => void }) {
+  const ref = React.useRef<HTMLInputElement>(null);
+  const [over, setOver] = React.useState(false);
+  return (
+    <span
+      className={cn("mt-1.5 flex h-10 items-center gap-1 rounded-md border border-dashed px-3 text-12", over ? "border-accent bg-accent-soft" : "border-faint bg-raised")}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setOver(true);
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) onFile(file.name);
+      }}
+    >
+      Drop a file or
+      <button type="button" className="font-semibold text-accent hover:underline" onClick={() => ref.current?.click()}>
+        browse
+      </button>
+      <input
+        ref={ref}
+        type="file"
+        className="hidden"
+        aria-label="Upload a file"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFile(file.name);
+        }}
+      />
+    </span>
+  );
+}
+
+/** One form row: glyph, name and detail, 120 px chip column, action column (old .fr grid). */
+function FieldRow({ f, onChange, onState, onRemind }: { f: FormField; onChange: (v: string) => void; onState: (s: FieldState, note?: string) => void; onRemind: () => void }) {
+  const days = f.note?.match(/\d+/)?.[0];
+  return (
+    <div className="grid grid-cols-[28px_minmax(0,1fr)] items-center gap-x-3 gap-y-2 border-t border-line px-4 py-[11px] sm:grid-cols-[28px_minmax(0,1fr)_120px_150px] md:px-[18px]">
+      <FieldGlyph f={f} />
+      <span className="min-w-0">
+        <b className="block font-semibold">
+          {f.label}
+          {f.required && f.state === "Asked" && <span className="text-bad"> *</span>}
+        </b>
+        {f.state === "Accepted" ? (
+          <span className="block text-11.5 text-muted">
+            <FileLine value={f.value} />
+          </span>
+        ) : f.kind === "text" && f.state !== "Not asked" ? (
+          <Input value={f.value} onChange={(e) => onChange(e.target.value)} aria-label={f.label} className="mt-1.5 h-8 text-13" />
+        ) : f.state === "Review" ? (
+          <span className="block text-11.5 text-muted">
+            <FileLine value={f.value} />
+            {f.date && ` · client submitted ${fmt(f.date)}`}
+            {f.note && ` · ${f.note}`}
+          </span>
+        ) : f.state === "Asked" ? (
+          <DropZone
+            onFile={(name) => {
+              onChange(name);
+              onState("Review");
+            }}
+          />
+        ) : null}
+      </span>
+      <span className="col-start-2 flex flex-wrap items-center gap-2 sm:contents">
+        <Chip tone={fieldTone[f.state]} fixed>
+          {f.state === "Asked" && days ? `Asked · ${days}d` : f.state}
+        </Chip>
+        <span className="flex items-center gap-1">
+          {f.state === "Accepted" && <span className="font-mono text-11.5 text-muted">{f.date ? fmt(f.date) : ""}</span>}
+          {f.state === "Asked" && (
+            <Button size="sm" variant="outline" className="h-7 text-11.5" onClick={onRemind}>
+              Send reminder
+            </Button>
+          )}
+          {f.state === "Review" && (
+            <>
+              <Button size="sm" variant="outline" className="h-7 px-2 text-11.5" onClick={() => onState("Accepted")}>
+                Accept
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 px-2 text-11.5 text-bad" onClick={() => onState("Asked", "Sent back")}>
+                Reject
+              </Button>
+            </>
+          )}
+        </span>
+      </span>
+    </div>
+  );
+}
+
+const groupHead = "bg-raised px-4 py-2 font-mono text-11 tracking-[.06em] text-faint md:px-[18px]";
+
+export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n: number }) {
   const c = clientById(id);
   const step = STEPS.find((s) => s.n === n);
   const base = c && step ? stepState(c, n) : undefined;
   const toast = useUndoToast();
+  const me = PORTALS[portal].person;
   const [status, setStatus] = React.useState<StepStatus>(base?.status ?? "Upcoming");
   const [win, setWin] = React.useState({ from: base?.from, to: base?.to });
-  const [editWin, setEditWin] = React.useState<{ from: string; to: string } | null>(null);
+  const [editWin, setEditWin] = React.useState<{
+    from: string;
+    to: string;
+  } | null>(null);
   const [fields, setFields] = React.useState<FormField[]>(() => (c && step ? stepForm(c, n) : []));
-  const [dirty, setDirty] = React.useState(false);
   const [history, setHistory] = React.useState<ThreadStep[]>(() => (c && step ? stepHistory(c, n) : []));
-  const [notes, setNotes] = React.useState(id === "northwind" && n === 7 ? STEP7_NOTES : []);
-  const [draft, setDraft] = React.useState("");
-  const [reminded, setReminded] = React.useState(false);
   const [tab, setTab] = React.useState("forms");
   const [about, setAbout] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
   if (!c || !step) return <SectionCard title="Step">{<Empty>No step</Empty>}</SectionCard>;
   const done = status === "Completed";
-  const owner = step.by ?? (step.owner === "client" ? c.short : step.owner === "mca" ? "MCA" : c.lead);
-  const holder = step.owner === "client" ? CONTACTS[c.id]?.name ?? c.short : step.owner === "mca" ? "MCA" : owner;
+  const holder = step.owner === "client" ? (CONTACTS[c.id]?.name ?? c.short) : step.owner === "mca" ? "MCA" : (step.by ?? c.lead);
   const filed = fields.filter((f) => f.state === "Accepted");
   const toFile = fields.filter((f) => f.state !== "Accepted");
   const phaseSteps = STEPS.filter((s) => s.phase === step.phase);
   const phase = PHASES[step.phase - 1];
-  const states = phaseSteps.map((s) => stepState(c, s.n).status);
-  const docsReady = states.filter((x) => x === "Completed").length;
-  const docsWaiting = states.filter((x) => x === "Waiting" || x === "Sent back").length;
-  const docsNeed = states.length - docsReady - docsWaiting;
+  const states = phaseSteps.map((s) => (s.n === n ? status : stepState(c, s.n).status));
+  const docs = stepDocs(c, n);
+  const glyph = STATUS_GLYPH[status];
 
-  const patch = (fid: string, p: Partial<FormField>) => {
-    setFields((fs) => fs.map((x) => (x.id === fid ? { ...x, ...p } : x)));
-    setDirty(true);
-  };
+  const patch = (fid: string, p: Partial<FormField>) => setFields((fs) => fs.map((x) => (x.id === fid ? { ...x, ...p } : x)));
   const log = (title: string, owner?: ThreadStep["owner"]) =>
     setHistory((h) => {
       const doneRows = h.filter((x) => x.state === "done");
       const rest = h.filter((x) => x.state !== "done");
-      return [...doneRows, { id: `l${Date.now()}`, title, state: "done", date: TODAY, by: personOf(portal), owner }, ...rest];
+      return [
+        ...doneRows,
+        {
+          id: `l${Date.now()}`,
+          title,
+          state: "done",
+          date: TODAY,
+          by: me,
+          owner,
+        },
+        ...rest,
+      ];
     });
 
   return (
-    <div className="grid grid-cols-1 gap-5">
-      <SectionCard
-        title={`Step ${step.n} · ${step.title}`}
-        icon={{ Icon: List, tone: identityTile[c.tone] }}
-        meta={
-          <Link href={clientHref(portal, c.id)} className="inline-flex items-center gap-1.5 hover:underline">
-            <ClientDot tone={c.tone} />
-            {c.short}
-          </Link>
-        }
-        right={
-          <Button size="sm" variant="outline" onClick={() => setAbout(true)}>
-            About this step
-          </Button>
-        }
-      >
-        <KeyValue
-          cols={3}
-          rows={[
-            { k: "Status", v: <Chip tone={stepTone[status]}>{status}</Chip> },
-            { k: "Owner", v: <OwnerChip owner={step.owner} label={step.owner === "client" ? c.short : undefined} /> },
-            { k: "Works it", v: owner },
-            {
-              k: "Window",
-              v: (
-                <span className="inline-flex items-center gap-2">
-                  <span className="font-mono text-12.5">
-                    {win.from ? fmt(win.from) : ""} to {win.to ? fmt(win.to) : ""}
-                  </span>
-                  {!done && (
-                    <Button size="sm" variant="link" onClick={() => setEditWin({ from: iso(win.from), to: iso(win.to) })}>
-                      Edit
-                    </Button>
-                  )}
-                </span>
-              ),
-            },
-            { k: "Typical time", v: step.time },
-            { k: "Phase", v: `Phase ${step.phase} · ${phase.short}` },
-          ]}
-        />
-        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line-soft pt-3">
-          <HeadLink href={`/${portal}/documents`}>Open in document pack ›</HeadLink>
-          <Button
-            size="sm"
-            variant="outline"
-            className="ml-auto"
-            onClick={() => {
-              try {
-                void navigator.clipboard?.writeText(assistText(c, n));
-              } catch {}
-              setCopied(true);
-              window.setTimeout(() => setCopied(false), 1500);
-            }}
-          >
-            {copied ? <Check size={14} strokeWidth={1.5} /> : <Copy size={14} strokeWidth={1.5} />} {copied ? "Copied" : "Copy for Assist"}
-          </Button>
-        </div>
-      </SectionCard>
+    <div className="grid grid-cols-1 gap-3.5">
+      {/* Compact head: step code, status glyph, "What's this?" */}
+      <div className="flex flex-wrap items-center gap-2.5">
+        <Tag tone="idle" className="font-mono">
+          Step {step.n}
+        </Tag>
+        <span className={cn("grid h-5 w-5 place-items-center rounded-full", glyph.cls)} title={glyph.label} role="img" aria-label={glyph.label}>
+          <glyph.Icon size={11} strokeWidth={3} />
+        </span>
+        <Button size="sm" variant="outline" className="h-7 border-brand bg-warn-soft text-warn hover:bg-warn-soft hover:brightness-95" onClick={() => setAbout(true)}>
+          What&apos;s this?
+        </Button>
+      </div>
 
-      <Cols>
-        <Col>
-          <SectionCard
-            title={tab === "forms" ? "Forms" : "Activity"}
-            meta={tab === "forms" ? `${filed.length} of ${fields.length} filed` : `${history.filter((h) => h.state !== "upcoming").length} events`}
-            flush
-            right={
-              <Tabs
-                items={[
-                  { key: "forms", label: "Forms", count: fields.length },
-                  { key: "activity", label: "Activity", count: history.filter((h) => h.state !== "upcoming").length },
-                ]}
-                value={tab}
-                onChange={setTab}
-              />
-            }
-          >
-            {tab === "forms" ? (
-              <>
-                {fields.length === 0 && <Empty />}
-                {filed.length > 0 && <h3 className="bg-raised px-4 py-1.5 font-mono text-11.5 text-muted md:px-5">FILED · {filed.length}</h3>}
-                {filed.map((f) => (
-                  <FieldRow key={f.id} f={f} onChange={(v) => patch(f.id, { value: v })} onState={(st, note) => patch(f.id, { state: st, note, date: TODAY })} onRemind={() => toast.show(`Reminder sent for ${f.label}`)} />
-                ))}
-                {toFile.length > 0 && <h3 className="border-t border-line-soft bg-raised px-4 py-1.5 font-mono text-11.5 text-muted md:px-5">TO FILE · {toFile.length}</h3>}
-                {toFile.map((f) => (
-                  <FieldRow
-                    key={f.id}
-                    f={f}
-                    onChange={(v) => patch(f.id, { value: v })}
-                    onState={(st, note) => {
-                      patch(f.id, { state: st, note, date: TODAY });
-                      if (st === "Accepted") log(`${f.label} accepted`, "sbc");
-                      if (note === "Sent back") log(`${f.label} sent back`, "sbc");
-                    }}
-                    onRemind={() => {
-                      patch(f.id, { note: "Reminder sent today" });
-                      toast.show(`Reminder sent to ${holder} for ${f.label}`);
-                    }}
-                  />
-                ))}
-                <footer className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
-                  <span className="mr-auto inline-flex items-center gap-1.5 text-12.5 text-muted">
-                    <i className={cn("h-1.5 w-1.5 rounded-full", dirty ? "bg-warn-mid" : "bg-ok-mid")} aria-hidden />
-                    {dirty ? "Unsaved changes" : "Draft saved"}
-                  </span>
-                  <Button size="sm" variant="outline" disabled={!dirty} onClick={() => setDirty(false)}>
-                    Save
-                  </Button>
-                  {!done && (
+      {/* Window bar */}
+      <div className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-surface px-3 py-2">
+        <Calendar size={15} strokeWidth={1.5} className="text-muted" aria-hidden />
+        <span className="text-12 text-muted">Window</span>
+        <span className="font-mono text-12 font-semibold">From {win.from ? fmt(win.from) : ""}</span>
+        <span className="text-muted" aria-hidden>
+          →
+        </span>
+        <span className="font-mono text-12 font-semibold">To {win.to ? fmt(win.to) : ""}</span>
+        {!done && (
+          <Button size="sm" variant="outline" className="h-[26px] text-11.5" onClick={() => setEditWin({ from: iso(win.from), to: iso(win.to) })}>
+            Edit
+          </Button>
+        )}
+        <span className="hidden h-[18px] w-px bg-line sm:block" aria-hidden />
+        <Link href={packHref(portal)} className="text-12 font-bold text-accent hover:underline">
+          Open in document pack →
+        </Link>
+        <Button
+          size="sm"
+          variant="outline"
+          className="ml-auto h-[26px] text-11.5"
+          onClick={() => {
+            try {
+              navigator.clipboard?.writeText(assistText(c, n)).catch(() => undefined);
+            } catch {}
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1500);
+          }}
+        >
+          {copied ? "Copied" : "Copy for Assist"}
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <section className="min-w-0 overflow-hidden rounded-lg border border-line bg-surface" aria-label={tab === "forms" ? "Forms" : "Activity"}>
+          <header className="flex min-h-head items-center border-b border-line px-4 py-2 md:px-[18px]">
+            <Tabs
+              items={[
+                { key: "forms", label: "Forms", count: fields.length },
+                { key: "activity", label: "Activity", count: history.length },
+              ]}
+              value={tab}
+              onChange={setTab}
+            />
+          </header>
+          {tab === "forms" ? (
+            <>
+              {fields.length === 0 && <Empty />}
+              {filed.length > 0 && <h3 className={groupHead}>FILED · {filed.length}</h3>}
+              {filed.map((f) => (
+                <FieldRow key={f.id} f={f} onChange={(v) => patch(f.id, { value: v })} onState={(st, note) => patch(f.id, { state: st, note, date: TODAY })} onRemind={() => toast.show(`Reminder sent for ${f.label}`)} />
+              ))}
+              {toFile.length > 0 && <h3 className={cn(groupHead, "border-t border-line")}>TO FILE · {toFile.length}</h3>}
+              {toFile.map((f) => (
+                <FieldRow
+                  key={f.id}
+                  f={f}
+                  onChange={(v) => patch(f.id, { value: v })}
+                  onState={(st, note) => {
+                    patch(f.id, { state: st, note, date: TODAY });
+                    if (st === "Accepted") log(`${f.label} accepted`, "sbc");
+                    if (st === "Review") log(`${f.label} uploaded by SBC`, "sbc");
+                    if (note === "Sent back") log(`${f.label} sent back`, "sbc");
+                  }}
+                  onRemind={() => {
+                    log(`Reminder sent for ${f.label}`, "sbc");
+                    toast.show(`Reminder sent to ${holder} for ${f.label}`);
+                  }}
+                />
+              ))}
+              <footer className="flex flex-wrap items-center gap-2 border-t border-line bg-raised px-4 py-3 md:px-[18px]">
+                <span className="inline-flex items-center gap-1.5 text-12 text-muted">
+                  <i className="h-[7px] w-[7px] rounded-full bg-ok" aria-hidden />
+                  Draft saved
+                </span>
+                <span className="flex-1" />
+                {!done && (
+                  <>
                     <Button
                       size="sm"
                       variant="outline"
@@ -266,8 +328,6 @@ function StepView({ portal, id, n }: { portal: StaffPortal; id: string; n: numbe
                     >
                       Request client to fill
                     </Button>
-                  )}
-                  {!done && portal === "lead" && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -278,108 +338,97 @@ function StepView({ portal, id, n }: { portal: StaffPortal; id: string; n: numbe
                     >
                       Request manager approval
                     </Button>
-                  )}
-                  {!done && (
                     <Button
                       size="sm"
                       variant="primary"
                       onClick={() => {
-                        setFields(fields.map((f) => (f.state === "Accepted" ? f : { ...f, state: "Accepted", date: TODAY, note: undefined })));
+                        const before = { fields, history };
+                        setFields(
+                          fields.map((f) =>
+                            f.state === "Accepted"
+                              ? f
+                              : {
+                                  ...f,
+                                  state: "Accepted",
+                                  date: TODAY,
+                                  note: undefined,
+                                },
+                          ),
+                        );
                         setStatus("Completed");
-                        setDirty(false);
-                        setHistory((h) => [...h.filter((x) => x.state === "done"), { id: "fin", title: "Step complete", state: "done", date: TODAY, by: personOf(portal) }]);
-                        toast.show(`Step ${n} marked complete`);
+                        setHistory((h) => [
+                          ...h.filter((x) => x.state === "done"),
+                          {
+                            id: "fin",
+                            title: "Step complete",
+                            state: "done",
+                            date: TODAY,
+                            by: me,
+                          },
+                        ]);
+                        toast.show(`Step ${n} marked complete`, () => {
+                          setFields(before.fields);
+                          setHistory(before.history);
+                          setStatus(base?.status ?? "Upcoming");
+                        });
                       }}
                     >
                       Mark all complete
                     </Button>
-                  )}
-                </footer>
-              </>
-            ) : (
-              <div className="px-4 py-4 md:px-5">
-                <Thread steps={history} />
-              </div>
-            )}
-          </SectionCard>
+                  </>
+                )}
+              </footer>
+            </>
+          ) : (
+            <div className="px-4 py-4 md:px-[18px]">
+              <Thread steps={history} />
+            </div>
+          )}
+        </section>
 
-          <SectionCard title="Notes" meta={notes.length ? String(notes.length) : undefined} flush>
-            {notes.map((x) => (
-              <ListRow key={x.id} className="items-start">
-                <span className="w-[64px] flex-none font-mono text-12 text-muted">{fmt(x.date)}</span>
-                <span className="min-w-0 flex-1">{x.text}</span>
-                <span className="flex-none text-12.5 text-muted">{x.who}</span>
-              </ListRow>
-            ))}
-            <form
-              className="flex items-center gap-2 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!draft.trim()) return;
-                setNotes([{ id: `n${notes.length + 1}`, who: personOf(portal), date: TODAY, text: draft.trim() }, ...notes]);
-                setDraft("");
-              }}
-            >
-              <Input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Add a note" aria-label="Note" />
-              <Button type="submit">Add</Button>
-            </form>
-          </SectionCard>
-        </Col>
-        <Col>
-          <SectionCard
-            title="Who holds it now"
-            right={
-              reminded ? (
-                <Chip tone="ok">Reminder sent</Chip>
-              ) : (
-                <Button size="sm" variant="primary" onClick={() => setReminded(true)} disabled={done || status === "Upcoming"}>
-                  <Send size={14} strokeWidth={1.5} /> Send reminder
-                </Button>
-              )
-            }
-          >
-            <KeyValue
-              cols={1}
-              rows={[
-                { k: "Holder", v: done ? "Nobody" : status === "Upcoming" ? "Not open yet" : holder },
-                { k: "Side", v: done || status === "Upcoming" ? "" : step.owner === "client" ? c.short : step.owner === "mca" ? "MCA" : "SBC" },
-                { k: "Since", v: done || status === "Upcoming" ? "" : win.from ? fmt(win.from) : "" },
-                { k: "Days", v: done || status === "Upcoming" ? "" : String(c.days) },
-                { k: "Last reminder", v: reminded ? fmt(TODAY) : done || status === "Upcoming" ? "" : fmt(d(2026, 10, 3)) },
-              ]}
-            />
-          </SectionCard>
-
-          <SectionCard title={phase.name} meta={`${states.filter((x) => x === "Completed").length} of ${phaseSteps.length}`} flush>
-            {phaseSteps.map((s, i) => {
-              const st = states[i];
-              const cur = s.n === n;
-              return (
-                <ListRow key={s.n} href={stepHrefFor(portal, c.id, s.n)} className={cn("py-2", cur && "bg-warn-soft hover:bg-warn-soft")}>
-                  <span
-                    className={cn(
-                      "grid h-5 w-5 flex-none place-items-center rounded-full text-11 font-bold",
-                      st === "Completed" ? "bg-ok-mid text-white" : st === "Upcoming" ? "text-faint shadow-[inset_0_0_0_1.5px_var(--line)]" : "bg-btn text-white",
-                    )}
+        <div className="grid min-w-0 grid-cols-1 gap-3.5">
+          <SectionCard title={step.phase === 2 ? "SPICe+ Part B" : phase.name} meta={`${states.filter((x) => x === "Completed").length} of ${phaseSteps.length}`} bodyClassName="px-4 py-3">
+            <div className="relative">
+              <span className="absolute bottom-3.5 left-[11px] top-3.5 w-0.5 bg-line" aria-hidden />
+              {phaseSteps.map((s, i) => {
+                const st = states[i];
+                const cur = s.n === n;
+                const who = s.owner === "client" ? "Client" : s.owner === "mca" ? "MCA" : "Project lead";
+                return (
+                  <Link
+                    key={s.n}
+                    href={stepHref(portal, c.id, s.n)}
+                    aria-current={cur ? "step" : undefined}
+                    className={cn("relative grid grid-cols-[24px_minmax(0,1fr)_16px] items-center gap-2.5 py-1.5 text-12.5 hover:underline", cur && "-mx-1.5 rounded-md bg-warn-soft px-1.5")}
                   >
-                    {st === "Completed" ? <Check size={11} strokeWidth={2.4} /> : s.n}
-                  </span>
-                  <span className={cn("min-w-0 flex-1 truncate", cur && "font-semibold")}>{s.title}</span>
-                  <span className="flex-none text-12 text-muted">{s.owner === "client" ? "Client" : s.owner === "mca" ? "MCA" : "Project lead"}</span>
-                </ListRow>
-              );
-            })}
-          </SectionCard>
-
-          <SectionCard title={`${phase.short} documents`} flush right={<HeadLink href={`/${portal}/documents`}>Open document pack ›</HeadLink>}>
-            <div className="flex flex-wrap gap-2 px-4 py-3 md:px-5">
-              <Chip tone="ok">{docsReady} ready</Chip>
-              <Chip tone="warn">{docsNeed} need inputs</Chip>
-              <Chip tone="prog">{docsWaiting} waiting</Chip>
+                    <span
+                      className={cn(
+                        "relative z-[1] grid h-[22px] w-[22px] place-items-center rounded-full text-[10px] font-extrabold",
+                        st === "Completed" ? "bg-ok text-surface" : cur ? "bg-btn text-white ring-[3px] ring-warn-mid" : "border-[1.5px] border-dashed border-faint bg-surface text-faint",
+                      )}
+                    >
+                      {st === "Completed" ? <Check size={11} strokeWidth={3} /> : s.n}
+                    </span>
+                    <span className={cn("min-w-0 truncate", cur && "font-bold")}>{s.title}</span>
+                    <User size={14} strokeWidth={1.5} className={s.owner === "client" ? "text-faint" : "text-ink"} role="img" aria-label={who} />
+                  </Link>
+                );
+              })}
             </div>
           </SectionCard>
-        </Col>
-      </Cols>
+
+          <SectionCard title={step.phase === 3 ? "Post-incorporation documents" : "Pre-incorporation documents"} bodyClassName="px-4 py-3">
+            <div className="flex flex-wrap gap-1.5">
+              <Tag tone="ok">{docs.ready} ready</Tag>
+              <Tag tone="warn">{docs.need} need inputs</Tag>
+              <Tag tone="idle">{docs.waiting} waiting</Tag>
+            </div>
+            <Link href={packHref(portal)} className="mt-2.5 inline-block text-12 font-bold text-accent hover:underline">
+              Open document pack →
+            </Link>
+          </SectionCard>
+        </div>
+      </div>
 
       <AboutStepPanel open={about} onOpenChange={setAbout} n={n} />
       <Modal
@@ -397,7 +446,10 @@ function StepView({ portal, id, n }: { portal: StaffPortal; id: string; n: numbe
               variant="primary"
               onClick={() => {
                 if (editWin) {
-                  setWin({ from: editWin.from ? fromIso(editWin.from) : win.from, to: editWin.to ? fromIso(editWin.to) : win.to });
+                  setWin({
+                    from: editWin.from ? fromIso(editWin.from) : win.from,
+                    to: editWin.to ? fromIso(editWin.to) : win.to,
+                  });
                   log(`Window moved to ${editWin.to ? fmt(fromIso(editWin.to)) : ""}`, "sbc");
                   toast.show("Window saved. The client sees the new date.");
                 }

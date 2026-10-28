@@ -60,8 +60,8 @@ function PickRow({ r, on, onPick }: { r: Recipient; on: boolean; onPick: () => v
 }
 
 /** "To" field: chips, a text input and a pop-down with Client, Team and Groups. Enter picks the first match. */
-export function RecipientField({ value, onChange }: { value: To[]; onChange: (v: To[]) => void }) {
-  const [q, setQ] = React.useState("");
+export function RecipientField({ value, onChange, bare, initialQuery = "" }: { value: To[]; onChange: (v: To[]) => void; bare?: boolean; initialQuery?: string }) {
+  const [q, setQ] = React.useState(initialQuery);
   const [open, setOpen] = React.useState(false);
   const has = (t: To) => value.some((v) => v.kind === t.kind && v.id === t.id);
   const query = q.trim().toLowerCase();
@@ -78,7 +78,7 @@ export function RecipientField({ value, onChange }: { value: To[]; onChange: (v:
 
   return (
     <div className="relative">
-      <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-md border border-line bg-surface px-2 py-1 focus-within:ring-2 focus-within:ring-accent-line">
+      <div className={cn("flex min-h-9 flex-wrap items-center gap-1.5", bare ? "py-1" : "rounded-md border border-line bg-surface px-2 py-1 focus-within:ring-2 focus-within:ring-accent-line")}>
         {value.map((t) => (
           <ToChip key={`${t.kind}:${t.id}`} t={t} onRemove={() => onChange(value.filter((v) => !(v.kind === t.kind && v.id === t.id)))} />
         ))}
@@ -221,27 +221,27 @@ export function TemplateDialog({ open, onOpenChange, initial, onSave }: { open: 
   );
 }
 
-/** Template list with Create, Edit and Delete. Delete asks first (R-40). */
-export function TemplateList({ templates, active, onUse, onEdit, onDelete, onCreate }: { templates: MailTemplate[]; active?: string; onUse: (id: string) => void; onEdit: (t: MailTemplate) => void; onDelete: (id: string) => void; onCreate: () => void }) {
+/** Template list with Edit and Delete. Delete asks first (R-40). The old rail puts Create in the card head. */
+export function TemplateList({ templates, active, onUse, onEdit, onDelete, onCreate }: { templates: MailTemplate[]; active?: string; onUse: (id: string) => void; onEdit: (t: MailTemplate) => void; onDelete: (id: string) => void; onCreate?: () => void }) {
   const [asking, setAsking] = React.useState<string | null>(null);
   return (
     <div>
-      <button type="button" onClick={() => onUse("")} className={cn("flex w-full items-center gap-2 border-b border-line-soft px-4 py-2.5 text-left text-13.5 text-muted hover:bg-raised md:px-5", active === "" && "bg-raised")}>
-        <Plus size={16} strokeWidth={1.5} /> Write without a template
+      <button type="button" onClick={() => onUse("")} className={cn("flex w-full items-center gap-2 border-b border-line-soft px-4 py-2.5 text-left text-13.5 text-muted hover:bg-raised", active === "" && "bg-raised")}>
+        Write without a template
       </button>
       {templates.map((t) => (
         <div key={t.id} className="border-b border-line-soft last:border-b-0">
-          <div className={cn("flex items-center gap-2 px-4 py-2.5 md:px-5", active === t.id && "bg-warn-soft")}>
-            <button type="button" onClick={() => onUse(t.id)} className="min-w-0 flex-1 text-left">
-              <b className="block truncate text-13.5 font-semibold">{t.name}</b>
-              <span className="block truncate text-12.5 text-muted">{t.style}</span>
+          <div className={cn("flex items-center gap-3 px-4 py-2.5 hover:bg-raised", active === t.id && "bg-warn-soft hover:bg-warn-soft")}>
+            <button type="button" onClick={() => onUse(t.id)} className="min-w-0 flex-1 text-left" aria-pressed={active === t.id}>
+              <b className="block truncate text-13 font-semibold">{t.name}</b>
+              <span className="block truncate text-12 text-muted">{t.style}</span>
             </button>
-            <Button size="sm" variant="ghost" onClick={() => onEdit(t)}>
+            <button type="button" onClick={() => onEdit(t)} className="text-12.5 font-semibold text-accent hover:underline">
               Edit
-            </Button>
-            <Button size="sm" variant="ghost" className="text-bad" onClick={() => setAsking(t.id)}>
+            </button>
+            <button type="button" onClick={() => setAsking(t.id)} className="text-12.5 font-semibold text-bad hover:underline">
               Delete
-            </Button>
+            </button>
           </div>
           {asking === t.id && (
             <InlineConfirm
@@ -256,11 +256,13 @@ export function TemplateList({ templates, active, onUse, onEdit, onDelete, onCre
           )}
         </div>
       ))}
-      <div className="flex justify-end border-t border-line-soft px-4 py-2.5 md:px-5">
-        <Button size="sm" onClick={onCreate}>
-          <Plus size={16} strokeWidth={1.5} /> Create
-        </Button>
-      </div>
+      {onCreate && (
+        <div className="flex justify-end border-t border-line-soft px-4 py-2.5">
+          <Button size="sm" onClick={onCreate}>
+            <Plus size={16} strokeWidth={1.5} /> Create
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

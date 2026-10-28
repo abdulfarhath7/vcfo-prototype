@@ -25,6 +25,8 @@ export interface GanttRow {
   /** Right column: "5/5", "3d late". */
   count?: string;
   note?: { text: string; bad?: boolean };
+  /** Text right after the last bar or the diamond: "Done 28 Sep", "11%", "9 Nov" (old record timeline). */
+  label?: string;
   /** Rows that expand show this. */
   detail?: React.ReactNode;
 }
@@ -62,15 +64,32 @@ export interface GanttTimelineProps {
   ticks: Date[];
   rows: GanttRow[];
   today?: Date;
+  /** 280 px name column so "Phase 1 · Name application" fits on one line. */
+  wideNames?: boolean;
+  /** Drop the right count column when rows use `label`. */
+  noCount?: boolean;
   className?: string;
 }
 
 /** R-21: Gantt with 46 px rows, 16 px bars with 6 px corners, orange today line, orange COI diamond. */
-export function GanttTimeline({ start, end, ticks, rows, today = TODAY, className }: GanttTimelineProps) {
+export function GanttTimeline({ start, end, ticks, rows, today = TODAY, wideNames, noCount, className }: GanttTimelineProps) {
   const [open, setOpen] = React.useState<string | null>(null);
   const x = (d: Date) => `${frac(d, start, end) * 100}%`;
   const todayX = x(today);
-  const cols = "grid-cols-[minmax(140px,200px)_minmax(0,1fr)_72px] md:grid-cols-[230px_minmax(0,1fr)_100px]";
+  const cols = cn(
+    noCount ? "grid-cols-[minmax(140px,200px)_minmax(0,1fr)_16px]" : "grid-cols-[minmax(140px,200px)_minmax(0,1fr)_72px]",
+    wideNames
+      ? noCount
+        ? "md:grid-cols-[280px_minmax(0,1fr)_56px]"
+        : "md:grid-cols-[280px_minmax(0,1fr)_100px]"
+      : noCount
+        ? "md:grid-cols-[230px_minmax(0,1fr)_56px]"
+        : "md:grid-cols-[230px_minmax(0,1fr)_100px]",
+  );
+  const endOf = (r: GanttRow) => {
+    const t = Math.max(r.milestone ? r.milestone.getTime() : 0, ...r.bars.map((b) => b.to.getTime()));
+    return t ? new Date(t) : null;
+  };
 
   return (
     <div className={cn("overflow-x-auto", className)}>
@@ -122,6 +141,11 @@ export function GanttTimeline({ start, end, ticks, rows, today = TODAY, classNam
                     <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[2px] bg-brand" style={{ left: x(r.milestone) }} aria-label={`Milestone ${fmt(r.milestone)}`} />
                   )}
                   <span className="absolute inset-y-0 border-l-[1.5px] border-brand" style={{ left: todayX }} aria-hidden />
+                  {r.label && endOf(r) && (
+                    <span className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap pl-2.5 text-12.5 font-medium text-muted" style={{ left: x(endOf(r)!) }}>
+                      {r.label}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center justify-end gap-1.5 whitespace-nowrap text-12.5 text-muted">
                   {r.count && <b className="font-semibold text-ink">{r.count}</b>}

@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { TODAY } from "@/lib/dates";
+import { STAFF_TODAY } from "@/lib/dates";
 import { RESULT_TONE, stamp, type AuditEntry } from "@/data/dev";
 import { Chip } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
@@ -32,7 +32,7 @@ export function AuditScreen() {
 
   const actors = Array.from(new Set(all.map((a) => a.actor))).sort();
   const actions = Array.from(new Set(all.map((a) => a.action))).sort();
-  const end = new Date(TODAY.getTime() + 86400000);
+  const end = new Date(STAFF_TODAY.getTime() + 86400000);
   const rows = all.filter((a) => {
     if (actor !== "all" && a.actor !== actor) return false;
     if (action !== "all" && a.action !== action) return false;

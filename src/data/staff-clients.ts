@@ -1,9 +1,9 @@
-import { d } from "@/lib/dates";
+import { STAFF_TODAY, d } from "@/lib/dates";
 import { CLIENTS, type Client } from "@/data/people";
 
 // Staff view of each client: stage, current step, progress and health.
 // Pranay's eight clients come from people.ts. Six more belong to Priya Raman and Arjun Mehta (admin view).
-// Ported from reference/old-screens/s/admin/data.js. Dates move back 10 days: the old "today" was 16 Oct, ours is 6 Oct.
+// Ported from reference/old-screens/s/admin/data.js. Dates as in the old prototype: staff "today" is Fri 16 Oct 2026 (STAFF_TODAY).
 
 export type Health = "In progress" | "With client" | "Due this week" | "Overdue" | "Stuck" | "Not started";
 export type StaffPortal = "lead" | "manager" | "admin";
@@ -39,20 +39,20 @@ const EXTRA: Client[] = [
 const row = (c: Client, r: Omit<StaffClient, keyof Client>): StaffClient => ({ ...c, ...r });
 
 export const STAFF_CLIENTS: StaffClient[] = [
-  row(base("northwind"), { step: "Registered office address", code: "Step 7", phases: [5, 1, 0, 0], pendingWith: "Client", days: 5, next: d(2026, 10, 9), health: "With client" }),
-  row(base("zenith"), { step: "GST registration", code: "Reg-1", phases: [5, 9, 11, 3], pendingWith: "MCA", days: 2, next: d(2026, 10, 10), health: "In progress" }),
-  row(base("arcadia"), { step: "Trademark registration", code: "Reg-15", phases: [5, 9, 11, 19], pendingWith: "Client", days: 3, next: d(2026, 10, 15), health: "With client" }),
-  row(base("bluefin"), { step: "KYC review and DSC", code: "Step 10", phases: [5, 4, 0, 0], pendingWith: "SBC", days: 2, next: d(2026, 10, 9), health: "In progress" }),
-  row(base("corvid"), { step: "FC-GPR filing", code: "Step 22", phases: [5, 9, 7, 0], pendingWith: "SBC", days: 3, next: d(2026, 10, 6), health: "Due this week" }),
-  row(base("delta"), { step: "Bank account opening", code: "Step 17", phases: [5, 9, 2, 0], pendingWith: "SBC", days: 4, next: d(2026, 10, 5), health: "Overdue" }),
-  row(base("ember"), { step: "Draft Board resolution", code: "Step 2", phases: [1, 0, 0, 0], pendingWith: "SBC", days: 1, next: d(2026, 10, 11), health: "In progress" }),
-  row(base("fjord"), { step: "Auditor appointment (ADT-1)", code: "Step 21", phases: [5, 9, 6, 0], pendingWith: "Client", days: 2, next: d(2026, 10, 12), health: "With client" }),
-  row(EXTRA[0], { step: "Share certificates (SH-1)", code: "Step 19", phases: [5, 9, 5, 0], pendingWith: "SBC", days: 2, next: d(2026, 10, 8), health: "In progress" }),
-  row(EXTRA[1], { step: "MCA remarks on SPICe+", code: "Step 13", phases: [5, 8, 0, 0], pendingWith: "MCA", days: 6, next: d(2026, 10, 9), health: "Stuck" }),
-  row(EXTRA[2], { step: "PF registration", code: "Reg-6", phases: [5, 9, 11, 6], pendingWith: "SBC", days: 1, next: d(2026, 10, 7), health: "Due this week" }),
-  row(EXTRA[3], { step: "Name resubmission after RUN rejection", code: "Step 4", phases: [3, 0, 0, 0], pendingWith: "MCA", days: 8, next: d(2026, 10, 11), health: "Stuck" }),
-  row(EXTRA[4], { step: "Auditor appointment (ADT-1)", code: "Step 21", phases: [5, 9, 8, 0], pendingWith: "Client", days: 4, next: d(2026, 10, 13), health: "With client" }),
-  row(EXTRA[5], { step: "Subscriber details", code: "Step 9", phases: [5, 3, 0, 0], pendingWith: "Client", days: 1, next: d(2026, 10, 12), health: "In progress" }),
+  row(base("northwind"), { step: "Registered office address", code: "Step 7", phases: [5, 1, 0, 0], pendingWith: "Client", days: 5, next: d(2026, 10, 20), health: "With client" }),
+  row(base("kestrel"), { step: "GST registration", code: "Reg-1", phases: [5, 9, 11, 3], pendingWith: "MCA", days: 2, next: d(2026, 10, 20), health: "In progress" }),
+  row(base("halcyon"), { step: "Trademark registration", code: "Reg-15", phases: [5, 9, 11, 19], pendingWith: "Client", days: 3, next: d(2026, 10, 25), health: "With client" }),
+  row(base("orchid"), { step: "KYC review and DSC", code: "Step 10", phases: [5, 4, 0, 0], pendingWith: "SBC", days: 2, next: d(2026, 10, 19), health: "In progress" }),
+  row(base("tidewater"), { step: "FC-GPR filing", code: "Step 22", phases: [5, 9, 7, 0], pendingWith: "SBC", days: 3, next: d(2026, 10, 16), health: "Due this week" }),
+  row(base("brightwave"), { step: "Bank account opening", code: "Step 17", phases: [5, 9, 2, 0], pendingWith: "SBC", days: 4, next: d(2026, 10, 15), health: "Overdue" }),
+  row(base("larkspur"), { step: "Draft Board resolution", code: "Step 2", phases: [1, 0, 0, 0], pendingWith: "SBC", days: 1, next: d(2026, 10, 21), health: "In progress" }),
+  row(base("juniper"), { step: "Client details", code: "Step 1", phases: [0, 0, 0, 0], pendingWith: "Client", days: 2, next: d(2026, 10, 22), health: "Not started" }),
+  row(EXTRA[0], { step: "Share certificates (SH-1)", code: "Step 19", phases: [5, 9, 4, 0], pendingWith: "SBC", days: 2, next: d(2026, 10, 18), health: "In progress" }),
+  row(EXTRA[1], { step: "MCA remarks on SPICe+", code: "Step 13", phases: [5, 7, 0, 0], pendingWith: "MCA", days: 6, next: d(2026, 10, 19), health: "Stuck" }),
+  row(EXTRA[2], { step: "PF registration", code: "Reg-6", phases: [5, 9, 11, 6], pendingWith: "SBC", days: 1, next: d(2026, 10, 17), health: "Due this week" }),
+  row(EXTRA[3], { step: "Name resubmission after RUN rejection", code: "Step 4", phases: [3, 0, 0, 0], pendingWith: "MCA", days: 8, next: d(2026, 10, 21), health: "Stuck" }),
+  row(EXTRA[4], { step: "Auditor appointment (ADT-1)", code: "Step 21", phases: [5, 9, 6, 0], pendingWith: "Client", days: 4, next: d(2026, 10, 23), health: "With client" }),
+  row(EXTRA[5], { step: "Subscriber details", code: "Step 9", phases: [5, 3, 0, 0], pendingWith: "Client", days: 1, next: d(2026, 10, 22), health: "In progress" }),
 ];
 
 /** Krishna (admin) sees all 14. Pranay (manager) and his project leads see Pranay's 8. */
@@ -82,16 +82,16 @@ export const healthTone = {
 export const REG_NAMES = ["GST", "LUT", "PF", "ESI", "PT", "Shops", "MSME", "IEC", "Trademark"] as const;
 export const REG_CODES: Record<string, string> = {
   northwind: "nnnnnnnnn",
-  bluefin: "nnnnnnnnn",
-  ember: "nnnnnnnnn",
+  orchid: "nnnnnnnnn",
+  larkspur: "nnnnnnnnn",
   monsoon: "nnnnnnnnn",
   banyan: "nnnnnnnnn",
   quartz: "nnnnnnnnn",
-  zenith: "pxwwwwwxx",
-  arcadia: "ddddddddp",
-  corvid: "dddddddxw",
-  delta: "dxpwdpdxx",
-  fjord: "dxdddddxw",
+  kestrel: "pxwwwwwxx",
+  halcyon: "ddddddddp",
+  tidewater: "dddddddxw",
+  brightwave: "dxpwdpdxx",
+  juniper: "nnnnnnnnn",
   saffron: "dxddwdxxx",
   indigo: "ddppddxdx",
   coral: "dxdddddxw",
@@ -121,25 +121,25 @@ const OB_BASE: Array<[string, string, string, Date]> = [
   ["TDS challan", "Income tax", "Sep 2026", d(2026, 10, 7)],
   ["PF ECR", "Payroll", "Sep 2026", d(2026, 10, 15)],
   ["ESI challan", "Payroll", "Sep 2026", d(2026, 10, 15)],
-  ["Professional tax", "Payroll", "Sep 2026", d(2026, 9, 30)],
-  ["DIR-3 KYC", "MCA", "FY 2026-27", d(2026, 9, 30)],
+  ["Professional tax", "Payroll", "Sep 2026", d(2026, 10, 10)],
+  ["DIR-3 KYC", "MCA", "FY 2026-27", d(2026, 10, 30)],
 ];
 
-/** Filings still open from an earlier period, per client id. */
+/** Filings past due and not filed, per client id (old Main.dc.html FR "o" cells and data.js EXC). */
 const OB_LATE: Record<string, Array<[string, string, string, Date]>> = {
-  delta: [["PF ECR", "Payroll", "Aug 2026", d(2026, 9, 15)], ["ESI challan", "Payroll", "Aug 2026", d(2026, 9, 15)]],
-  arcadia: [["GSTR-1 QRMP", "GST", "Q2 2026-27", d(2026, 10, 3)]],
-  fjord: [["PF ECR", "Payroll", "Aug 2026", d(2026, 9, 15)]],
-  indigo: [["Professional tax", "Payroll", "Aug 2026", d(2026, 8, 31)]],
+  halcyon: [["PF ECR", "Payroll", "Sep 2026", d(2026, 10, 15)]],
+  tidewater: [["FC-GPR", "FEMA", "Allotment", d(2026, 10, 15)]],
+  coral: [["TDS challan", "Income tax", "Sep 2026", d(2026, 10, 7)]],
 };
 
-const OPEN_FROM = d(2026, 10, 6);
-const WEEK_END = d(2026, 10, 13);
+const OPEN_FROM = STAFF_TODAY;
+const WEEK_END = d(2026, 10, 23);
 
 export function obligationsOf(c: StaffClient): ObligationRow[] {
   if (c.stage === "incorporating") return [];
   const late = (OB_LATE[c.id] ?? []).map(([name, area, period, due], i): ObligationRow => ({ id: `${c.id}-late${i}`, name, area, period, due, status: "Overdue" }));
-  const rest = OB_BASE.map(([name, area, period, due], i): ObligationRow => ({
+  const lateNames = new Set((OB_LATE[c.id] ?? []).map(([name]) => name));
+  const rest = OB_BASE.filter(([name]) => !lateNames.has(name)).map(([name, area, period, due], i): ObligationRow => ({
     id: `${c.id}-ob${i}`,
     name,
     area,
@@ -166,13 +166,13 @@ export interface ClientContact {
 
 export const CONTACTS: Record<string, ClientContact> = {
   northwind: { name: "Rohan Kumar", email: "rohan@northwind.in", phone: "+91 98111 22334" },
-  zenith: { name: "Lars Becker", email: "lars@zenith.example", phone: "+49 151 2345 6789" },
-  arcadia: { name: "Jonas Weber", email: "jonas@arcadia.example", phone: "+49 160 9876 5432" },
-  bluefin: { name: "Amara Okafor", email: "amara@bluefin.example", phone: "+44 7700 900123" },
-  corvid: { name: "Mei Tanaka", email: "mei@corvid.example", phone: "+81 90 1234 5678" },
-  delta: { name: "Daniel Ortiz", email: "daniel@delta.example", phone: "+1 415 555 0142" },
-  ember: { name: "Sofia Moreau", email: "sofia@ember.example", phone: "+44 7700 900456" },
-  fjord: { name: "Elena Rossi", email: "elena@fjord.example", phone: "+39 333 123 4567" },
+  kestrel: { name: "Lars Becker", email: "lars@kestrel.example", phone: "+49 151 2345 6789" },
+  halcyon: { name: "Jonas Weber", email: "jonas@halcyon.example", phone: "+49 160 9876 5432" },
+  orchid: { name: "Amara Okafor", email: "amara@orchid.example", phone: "+44 7700 900123" },
+  tidewater: { name: "Mei Tanaka", email: "mei@tidewater.example", phone: "+81 90 1234 5678" },
+  brightwave: { name: "Daniel Ortiz", email: "daniel@brightwave.example", phone: "+1 415 555 0142" },
+  larkspur: { name: "Sofia Moreau", email: "sofia@larkspur.example", phone: "+44 7700 900456" },
+  juniper: { name: "Elena Rossi", email: "elena@juniper.example", phone: "+39 333 123 4567" },
   saffron: { name: "Kavya Reddy", email: "kavya@saffron.in", phone: "+91 98480 12121" },
   monsoon: { name: "Ishaan Verma", email: "ishaan@monsoon.in", phone: "+91 98480 23232" },
   indigo: { name: "Ravi Shankar", email: "ravi@indigo.in", phone: "+91 98480 34343" },

@@ -1,8 +1,37 @@
+import {
+  BadgeCheck,
+  Building2,
+  CalendarCheck,
+  ChartColumn,
+  Clock,
+  Database,
+  FileText,
+  FolderOpen,
+  History,
+  KeyRound,
+  LayoutDashboard,
+  Library,
+  ListChecks,
+  Lock,
+  Mail,
+  Megaphone,
+  Plug,
+  Settings,
+  ShieldCheck,
+  Text,
+  TrendingUp,
+  TriangleAlert,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+
 export type Portal = "client" | "lead" | "manager" | "admin" | "super" | "dev";
 
 export interface NavItem {
   label: string;
   href?: string;
+  /** Sidebar glyph (old shell.js and Side.dc.html). Kids have none. */
+  icon?: LucideIcon;
   count?: string | number;
   hot?: boolean;
   kids?: NavItem[];
@@ -32,19 +61,21 @@ export const PORTALS: Record<Portal, PortalMeta> = {
 export function clientNav(incorporated: boolean): NavItem[] {
   const compliances: NavItem = {
     label: "Compliances",
+    icon: CalendarCheck,
     kids: [
       { label: "Obligations", href: "/client/obligations" },
       { label: "Calendar", href: "/client/calendar" },
       { label: "Filings", href: "/client/filings" },
     ],
   };
-  const incorporation: NavItem = { label: "Incorporation", href: "/client/incorporation", count: "6/25" };
+  const incorporation: NavItem = { label: "Incorporation", href: "/client/incorporation", icon: Building2, count: "6/25" };
   return [
-    { label: "Home", href: "/client/home" },
+    { label: "Home", href: "/client/home", icon: LayoutDashboard },
     ...(incorporated ? [compliances, incorporation] : [incorporation, compliances]),
-    { label: "Registrations", href: "/client/registrations" },
+    { label: "Registrations", href: "/client/registrations", icon: BadgeCheck },
     {
       label: "Updates",
+      icon: Megaphone,
       count: 3,
       hot: true,
       kids: [
@@ -52,88 +83,143 @@ export function clientNav(incorporated: boolean): NavItem[] {
         { label: "Notifications", href: "/client/notifications", count: 3, hot: true },
       ],
     },
-    { label: "Documents", href: "/client/documents", count: 6 },
-    { label: "Library", href: "/client/library" },
-    { label: "Credentials", href: "/client/credentials" },
-    { label: "Audit", href: "/client/audit" },
+    { label: "Documents", href: "/client/documents", icon: FolderOpen, count: 6 },
+    { label: "Library", href: "/client/library", icon: Library },
+    { label: "Credentials", href: "/client/credentials", icon: KeyRound },
+    { label: "Audit", href: "/client/audit", icon: History },
   ];
 }
 
-function staffNav(base: string, extra: NavItem[] = [], tail: NavItem[] = []): NavItem[] {
+interface StaffOpts {
+  work?: number;
+  clients: number;
+  /** Rows after Work and before Clients (manager: Project leads). */
+  before?: NavItem[];
+  /** Rows after Clients (admin: Managers). */
+  after?: NavItem[];
+  compliances?: number;
+  tail?: NavItem[];
+}
+
+// Old Side.dc.html (lead, mgr, admin): every count is a neutral pill; none is red.
+function staffNav(base: string, o: StaffOpts): NavItem[] {
   return [
-    { label: "Today", href: `${base}/today` },
-    { label: "Work", href: `${base}/work`, count: 9, hot: true },
-    ...extra,
-    { label: "Clients", href: `${base}/clients`, count: 8 },
+    { label: "Today", href: `${base}/today`, icon: LayoutDashboard },
+    { label: "Work", href: `${base}/work`, icon: ListChecks, count: o.work },
+    ...(o.before ?? []),
+    { label: "Clients", href: `${base}/clients`, icon: Building2, count: o.clients },
+    ...(o.after ?? []),
     {
       label: "Compliances",
+      icon: CalendarCheck,
+      count: o.compliances,
       kids: [
         { label: "Obligations", href: `${base}/compliances/obligations` },
         { label: "Calendar", href: `${base}/compliances/calendar` },
         { label: "Filings", href: `${base}/compliances/filings` },
       ],
     },
-    { label: "Registrations", href: `${base}/registrations` },
+    { label: "Registrations", href: `${base}/registrations`, icon: BadgeCheck },
     {
       label: "Updates",
+      icon: Megaphone,
       count: 2,
-      hot: true,
       kids: [
         { label: "Announcements", href: `${base}/updates/announcements` },
-        { label: "Notifications", href: `${base}/updates/notifications`, count: 2, hot: true },
+        { label: "Notifications", href: `${base}/updates/notifications` },
       ],
     },
-    { label: "Email", href: `${base}/email` },
+    { label: "Email", href: `${base}/email`, icon: Mail },
     {
       label: "Docs",
+      icon: FolderOpen,
       kids: [
         { label: "Vault", href: `${base}/docs/vault` },
         { label: "Knowledge bank", href: `${base}/docs/knowledge` },
       ],
     },
-    { label: "Analytics", href: `${base}/analytics` },
-    { label: "Audit", href: `${base}/audit` },
-    ...tail,
+    { label: "Analytics", href: `${base}/analytics`, icon: ChartColumn },
+    { label: "Audit", href: `${base}/audit`, icon: History },
+    ...(o.tail ?? []),
   ];
 }
 
 export const NAV: Record<Exclude<Portal, "client">, NavItem[]> = {
-  lead: staffNav("/lead"),
-  manager: staffNav("/manager", [{ label: "Project leads", href: "/manager/leads", count: 3 }]),
-  admin: staffNav("/admin", [{ label: "Managers", href: "/admin/managers", count: 3 }], [{ label: "Firm settings", href: "/admin/settings" }]),
+  lead: staffNav("/lead", { work: 9, clients: 8, compliances: 4 }),
+  manager: staffNav("/manager", { work: 9, clients: 8, compliances: 4, before: [{ label: "Project leads", href: "/manager/leads", icon: Users, count: 3 }] }),
+  admin: staffNav("/admin", {
+    clients: 14,
+    after: [{ label: "Managers", href: "/admin/managers", icon: Users, count: 3 }],
+    tail: [{ label: "Firm settings", href: "/admin/settings", icon: Settings }],
+  }),
   super: [
-    { label: "Overview", href: "/super/overview" },
-    { label: "Risks", href: "/super/risks", count: 4, hot: true },
-    { label: "Clients", href: "/super/clients", count: 17 },
+    { label: "Overview", href: "/super/overview", icon: LayoutDashboard },
+    { label: "Risks", href: "/super/risks", icon: TriangleAlert, count: 10 },
+    { label: "Clients", href: "/super/clients", icon: Building2, count: 17 },
     {
       label: "Practice areas",
+      icon: ChartColumn,
       kids: [
         { label: "Incorporation", href: "/super/practice/incorporation" },
         { label: "Registrations", href: "/super/practice/registrations" },
         { label: "Compliances", href: "/super/practice/compliances" },
+        { label: "Filings", href: "/super/practice/filings" },
       ],
     },
-    { label: "Team", href: "/super/team" },
-    { label: "Growth", href: "/super/growth" },
-    { label: "Reports", href: "/super/reports" },
-    { label: "Firm settings", href: "/super/settings" },
+    { label: "Team", href: "/super/team", icon: Users },
+    { label: "Growth", href: "/super/growth", icon: TrendingUp },
+    { label: "Reports", href: "/super/reports", icon: FileText },
+    { label: "Firm settings", href: "/super/settings", icon: Settings },
   ],
   dev: [
-    { label: "Overview", href: "/dev/overview" },
-    { label: "Connections", href: "/dev/connections", count: 2, hot: true },
-    { label: "Jobs", href: "/dev/jobs", count: 1, hot: true },
-    { label: "Logs", href: "/dev/logs" },
-    { label: "Messages", href: "/dev/messages" },
-    { label: "Deploys", href: "/dev/deploys" },
-    { label: "Access", href: "/dev/access" },
-    { label: "Data and costs", href: "/dev/data" },
-    { label: "Audit", href: "/dev/audit" },
+    { label: "Overview", href: "/dev/overview", icon: LayoutDashboard },
+    { label: "Connections", href: "/dev/connections", icon: Plug, count: 3 },
+    { label: "Jobs", href: "/dev/jobs", icon: Clock, count: 1 },
+    { label: "Logs", href: "/dev/logs", icon: Text },
+    { label: "Messages", href: "/dev/messages", icon: Mail },
+    { label: "Deploys", href: "/dev/deploys", icon: ShieldCheck },
+    { label: "Access", href: "/dev/access", icon: Lock },
+    { label: "Data and costs", href: "/dev/data", icon: Database },
+    { label: "Audit", href: "/dev/audit", icon: History },
   ],
 };
+
+/** Client sidebar team block (old shell.js TEAM), above the account row. */
+export interface TeamContact {
+  name: string;
+  role: string;
+  /** Initials as the old shell.js shows them. */
+  ini: string;
+  support?: boolean;
+}
+export const CLIENT_TEAM: TeamContact[] = [
+  { name: "Pranay", role: "Manager", ini: "PN" },
+  { name: "Bharath", role: "Project lead", ini: "BH" },
+  { name: "Customer support", role: "SBC help desk", ini: "CS", support: true },
+];
+
+/** Screens for the prototype bar picker: every nav row of a portal, groups as "Group · Item". */
+export function screensFor(portal: Portal, incorporated = false): Array<{ label: string; href: string }> {
+  const out: Array<{ label: string; href: string }> = [];
+  for (const it of navFor(portal, incorporated)) {
+    if (it.kids) for (const k of it.kids) out.push({ label: `${it.label} · ${k.label}`, href: k.href! });
+    else if (it.href) out.push({ label: it.label, href: it.href });
+  }
+  out.push({ label: "Profile", href: PORTALS[portal].profile });
+  return out;
+}
 
 export function navFor(portal: Portal, incorporated = false): NavItem[] {
   return portal === "client" ? clientNav(incorporated) : NAV[portal];
 }
+
+const EXTRA_CRUMBS: Array<[string, string[]]> = [
+  ["documents", ["Clients", "Documents"]],
+  ["board-resolution", ["Clients", "Board resolution"]],
+  ["practice/filings", ["Practice areas", "Filings"]],
+  ["settings", ["Settings"]],
+  ["team", ["Team"]],
+];
 
 /** Title for the top bar crumb: the deepest nav label that matches the path. */
 export function crumbFor(portal: Portal, path: string, incorporated = false): string[] {
@@ -144,5 +230,8 @@ export function crumbFor(portal: Portal, path: string, incorporated = false): st
     } else if (it.href && path.startsWith(it.href)) return [it.label];
   }
   if (path.endsWith("/profile")) return ["Profile"];
+  // Pages that have no sidebar row. The old top bar named them after the client record they open from.
+  const rest = path.split("/").slice(2).join("/");
+  for (const [route, crumb] of EXTRA_CRUMBS) if (rest === route || rest.startsWith(route + "/")) return crumb;
   return [];
 }

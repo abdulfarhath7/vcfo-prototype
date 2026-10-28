@@ -19,12 +19,12 @@ import { clientById } from "@/data/super";
 // The staff BoardResolutionScreen takes portal "lead" | "manager" | "admin" only, so the super portal has this version:
 // document preview with a small format bar, the Word document actions, and the five-stage flow with "Finalise for client".
 
-const CLIENT = "ember";
+const CLIENT = "larkspur";
 
 const DRAFT = [
   "CERTIFIED TRUE COPY OF THE RESOLUTION PASSED BY THE BOARD OF DIRECTORS OF EMBER STUDIOS HOLDINGS LIMITED",
   "At the meeting of the Board of Directors held on 29 September 2026 at London, the following resolution was passed:",
-  "“RESOLVED THAT the Company do incorporate a wholly owned subsidiary in India under the name Ember Studios Private Limited or such other name as may be approved by the Registrar of Companies.”",
+  "“RESOLVED THAT the Company do incorporate a wholly owned subsidiary in India under the name Larkspur Analytics Private Limited or such other name as may be approved by the Registrar of Companies.”",
   "“RESOLVED FURTHER THAT Ms Sofia Moreau, Director, be and is hereby authorised to sign the subscriber sheet, Memorandum and Articles of Association and all other documents for the incorporation.”",
   "“RESOLVED FURTHER THAT the Company subscribe to 9,999 equity shares of ₹10 each of the proposed company.”",
   "For and on behalf of the Board",
@@ -95,7 +95,7 @@ export function BoardResolutionScreen() {
           <ListRow>
             <FileBadge type="DOCX" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-mono text-12.5 font-semibold">board-resolution-ember-v{stage + 2}.docx</span>
+              <span className="block truncate font-mono text-12.5 font-semibold">board-resolution-larkspur-v{stage + 2}.docx</span>
               <span className="block truncate text-12.5 text-muted">52 KB · {fmt(TODAY)}</span>
             </span>
           </ListRow>
@@ -117,7 +117,7 @@ export function BoardResolutionScreen() {
             <Button size="sm" variant="outline" onClick={() => toast.show("Draft generated again from step 1")} disabled={stage >= 2}>
               <RefreshCw size={14} strokeWidth={1.5} /> Generate again from step 1
             </Button>
-            <Button size="sm" variant="outline" onClick={() => toast.show("Downloaded board-resolution-ember.docx")}>
+            <Button size="sm" variant="outline" onClick={() => toast.show("Downloaded board-resolution-larkspur.docx")}>
               <Download size={14} strokeWidth={1.5} /> Download Word document
             </Button>
           </div>

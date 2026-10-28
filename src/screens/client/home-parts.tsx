@@ -32,6 +32,7 @@ import { Bar } from "@/components/ui/Bar";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
+import { Checkbox } from "@/components/ui/Input";
 import { DateTile } from "@/components/cards/AttentionList";
 import { DataGrid } from "@/components/cards/DataGrid";
 import { StackedBar } from "@/components/cards/StackedBar";
@@ -149,24 +150,31 @@ export function NeedsCard({ rows, className }: { rows: Need[]; className?: strin
         <Empty />
       ) : (
         shown.map((r) => {
+          // Old v7c_needs rows: checkbox, title, due chip, one outline action.
           const late = r.tint === "bad";
           const action = NEED_ACTION[r.kind];
           return (
-            <ListRow key={r.id} className={cn(late && "bg-bad-soft")}>
-              <DateTile date={r.due} tint={r.tint} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold">{r.title}</span>
-                <span className="block truncate text-12.5 text-muted">{r.sub}</span>
-              </span>
-              <Chip tone={late ? "bad" : r.tint === "warn" ? "warn" : "prog"} className="hidden sm:inline-flex">
-                {r.when}
+            <ListRow key={r.id}>
+              <Checkbox
+                checked={false}
+                label={`Mark done · ${r.title}`}
+                onChange={() => {
+                  setDone((d) => [...d, r.id]);
+                  toast.show(`Done · ${r.title}`, () => setDone((d) => d.filter((x) => x !== r.id)));
+                }}
+              />
+              <Link href={r.href} className="min-w-0 flex-1 truncate font-semibold hover:underline">
+                {r.title}
+              </Link>
+              <Chip tone={late ? "bad" : "warn"} fixed className="hidden sm:inline-flex">
+                {late ? "Overdue" : fmt(r.due)}
               </Chip>
               {r.kind === "upload" || r.kind === "correct" ? (
-                <Button size="sm" variant={late ? "primary" : "outline"} onClick={() => setUp(r)}>
+                <Button size="sm" variant="outline" className="w-[84px]" onClick={() => setUp(r)}>
                   {action}
                 </Button>
               ) : (
-                <Button asChild size="sm" variant={late ? "primary" : "outline"}>
+                <Button asChild size="sm" variant="outline" className="w-[84px]">
                   <Link href={r.href}>{action}</Link>
                 </Button>
               )}

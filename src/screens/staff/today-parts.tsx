@@ -1,9 +1,9 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { AlertTriangle, Building2, CalendarDays, CheckCheck, Clock, IdCard, ListChecks, Rocket, ShieldCheck, User, X } from "lucide-react";
+import { AlertTriangle, Building2, CalendarDays, CheckCheck, Clock, ListChecks, Rocket, ShieldCheck, User, X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { TODAY, fmt, relative } from "@/lib/dates";
+import { STAFF_TODAY as TODAY, fmt, relative } from "@/lib/dates";
 import { clientById, clientsFor, PHASE_TOTALS, type StaffClient } from "@/data/staff-clients";
 import { INBOX, queueFor, tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
 import { MANAGERS, managerRows, UNASSIGNED } from "@/data/staff-team";
@@ -15,6 +15,12 @@ import {
   FILING_COLS,
   HEAT_COLS,
   PHASE_LABELS,
+  WAIT_MCA,
+  STUCK_STEPS,
+  ADMIN_FILINGS,
+  MGR_DAYS_TO_COI,
+  PIPE_STAGES,
+  pipeOf,
   WEEK_TODAY,
   filingCounts,
   filingRow,
@@ -30,15 +36,16 @@ import { Button } from "@/components/ui/Button";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { Bar, barFill, type BarTone } from "@/components/ui/Bar";
+import { initials } from "@/components/ui/Avatar";
 import { Input, Checkbox } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { SelectOnNavy } from "@/components/ui/Select";
-import { NumberStrip, type StatItem } from "@/components/cards/GreetingCard";
+import type { StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, ListRow, HeadLink, Empty } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { WeekStrip, type WeekStripDay } from "@/components/cards/WeekStrip";
-import { ClientDot, ClientName, TaskChip, base, clientHref, taskHref, type StaffPortal } from "./parts";
+import { ClientDot, ClientName, TaskChip, base, clientHref, plainName, taskHref, type StaffPortal } from "./parts";
 
 // Today cards for the staff portals. Ported from reference/old-screens/s/lead/Main.dc.html (lead and manager),
 // TodayPhone.dc.html, reference/old-patch/admin/Main.dc.html and reference/old-patch/shared/Practice.dc.html.
@@ -69,6 +76,68 @@ export function ScopeSelect({ portal, value, onChange }: { portal: StaffPortal; 
   );
 }
 
+/** Old greeting scope tabs on the navy band: All, Incorporating, Compliance with counts (Main.dc.html scopes). */
+export function ScopeTabs({ portal, value, onChange }: { portal: StaffPortal; value: Scope; onChange: (s: Scope) => void }) {
+  const cl = clientsFor(portal);
+  const inc = cl.filter((c) => c.stage === "incorporating").length;
+  const items: Array<[Scope, string, number]> = [
+    ["all", "All", cl.length],
+    ["incorporating", "Incorporating", inc],
+    ["compliance", "Compliance", cl.length - inc],
+  ];
+  return (
+    <div role="tablist" aria-label="Client scope" className="inline-flex gap-0.5 rounded-md border border-navy-line bg-white/[.08] p-[3px]">
+      {items.map(([k, label, n]) => (
+        <button
+          key={k}
+          type="button"
+          role="tab"
+          aria-selected={value === k}
+          onClick={() => onChange(k)}
+          className={cn("inline-flex h-7 items-center gap-1.5 rounded-sm px-2.5 text-12 font-semibold", value === k ? "bg-white text-navy" : "text-navy-ink hover:text-white")}
+        >
+          {label}
+          <span className={cn("font-mono text-11", value === k ? "text-muted" : "text-navy-faint")}>{n}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Client code tile: initials in the client colour (Main.dc.html av). */
+const codeTone: Record<StaffClient["tone"], string> = {
+  accent: "bg-accent-soft text-accent",
+  violet: "bg-violet-soft text-violet",
+  teal: "bg-teal-soft text-teal",
+  warn: "bg-warn-soft text-warn",
+  ok: "bg-ok-soft text-ok",
+  idle: "bg-idle-soft text-idle",
+};
+export function ClientCode({ c, href }: { c: StaffClient; href?: string }) {
+  const name = plainName(c);
+  const code = name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+  const inner = (
+    <>
+      <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-sm text-[10px] font-extrabold", codeTone[c.tone])} aria-hidden>
+        {code}
+      </span>
+      <b className="min-w-0 truncate font-semibold">{name}</b>
+    </>
+  );
+  return href ? (
+    <Link href={href} className="inline-flex min-w-0 max-w-full items-center gap-2.5 hover:underline">
+      {inner}
+    </Link>
+  ) : (
+    <span className="inline-flex min-w-0 max-w-full items-center gap-2.5">{inner}</span>
+  );
+}
+
 /** Greeting numbers. Lead and manager: Action, Overdue, Waiting, This week, Done today (Main.dc.html). Admin: the firm (admin Main). */
 export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
   const b = base(portal);
@@ -85,103 +154,160 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     ];
   }
   const queue = queueFor(portal).filter((t) => inScope(scope, t.client));
-  const team = tasksFor(portal).filter((t) => t.status !== "Done" && inScope(scope, t.client));
-  const late = team.filter((t) => t.status === "Overdue").length + filingCounts(clientsFor(portal).filter((c) => inScope(scope, c.id))).overdue;
+  const late = queue.filter((t) => t.status === "Overdue").length + filingCounts(clientsFor(portal).filter((c) => inScope(scope, c.id))).overdue;
   const week = weekItems(portal).filter((w) => w.kind !== "done" && inScope(scope, w.client)).length;
   return [
     { label: "Action", value: queue.length, Icon: ListChecks, tone: "blue", href: `${b}/work` },
     { label: "Overdue", value: late, Icon: AlertTriangle, tone: "red", bad: late > 0, href: `${b}/work` },
-    { label: "Waiting", value: team.filter((t) => t.status === "With client").length, Icon: User, tone: "amber", href: `${b}/work` },
+    { label: "Waiting", value: waitingOnClient(portal).filter((t) => inScope(scope, t.client)).length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length, Icon: User, tone: "amber", href: `${b}/work` },
     { label: "This week", value: week, Icon: CalendarDays, tone: "teal", href: `${b}/work` },
     { label: "Done today", value: DONE_TODAY[portal], Icon: CheckCheck, tone: "green" },
   ];
 }
 
-/** Practice strip (Practice.dc.html slim): incorporating, registrations pending, filings overdue. */
+/** Practice strip (Practice.dc.html slim): one text row with incorporating, registrations pending, filings overdue. */
 export function PracticeStrip({ portal }: { portal: StaffPortal }) {
   const p = practiceNumbers(portal);
   const b = base(portal);
+  const items = [
+    { n: p.inc, label: "Incorporating", href: `${b}/clients` },
+    { n: p.regOpen, label: "Registrations pending", href: `${b}/registrations` },
+    { n: p.filings.overdue, label: "Filings overdue", href: `${b}/compliances/filings` },
+  ];
   return (
-    <section className="overflow-hidden rounded-lg border border-line" aria-label="Practice areas">
-      <NumberStrip
-        className="xl:grid-cols-3"
-        items={[
-          { label: "Incorporating", value: p.inc, Icon: Rocket, tone: "violet", href: `${b}/clients` },
-          { label: "Registrations pending", value: p.regOpen, Icon: IdCard, tone: "violet", href: `${b}/registrations` },
-          { label: "Filings overdue", value: p.filings.overdue, Icon: ShieldCheck, tone: "red", bad: p.filings.overdue > 0, href: `${b}/compliances/filings` },
-        ]}
-      />
-    </section>
+    <nav className="flex flex-wrap overflow-hidden rounded-lg border border-line bg-surface" aria-label="Practice areas">
+      {items.map((x) => (
+        <Link key={x.label} href={x.href} className="flex items-baseline gap-2.5 border-r border-line-soft px-4 py-2.5 last:border-r-0 hover:bg-raised md:px-5">
+          <b className="font-mono text-[18px] font-semibold leading-none">{x.n}</b>
+          <span className="text-13 text-ink-2">{x.label}</span>
+        </Link>
+      ))}
+    </nav>
   );
 }
 
-/** Practice areas (Practice.dc.html full, admin): incorporation stages, registrations, compliances. Counts only (R-37). */
+/** Practice areas (Practice.dc.html full, admin): incorporation stages, registrations, October filings. Counts only (R-37). */
 export function PracticeAreas({ portal }: { portal: StaffPortal }) {
   const p = practiceNumbers(portal);
   const b = base(portal);
-  const max = Math.max(1, ...p.stages.map((s) => s.n));
-  const regMax = Math.max(1, ...p.pendingByReg.map((r) => r.n));
+  const inc = clientsFor(portal).filter((c) => c.stage === "incorporating");
+  const stages = PIPE_STAGES.map((label) => ({ label, n: inc.filter((c) => pipeOf(c) === label).length }));
+  const max = Math.max(1, ...stages.map((x) => x.n));
+  const avg = Math.round(Object.values(MGR_DAYS_TO_COI).reduce((a, n) => a + n, 0) / Object.values(MGR_DAYS_TO_COI).length);
+  const f = ADMIN_FILINGS;
+  const fSegs = [
+    { label: "Overdue", value: f.overdue, tone: "bad" as const },
+    { label: "Filed late", value: f.late, tone: "warn" as const },
+    { label: "Due this week", value: f.due, tone: "accent" as const },
+    { label: "Upcoming", value: f.upcoming, tone: "idle" as const },
+    { label: "Filed on time", value: f.onTime, tone: "ok" as const },
+  ];
+  const fTotal = fSegs.reduce((a, x) => a + x.value, 0);
+  const foot = (left: React.ReactNode, href: string, label: string) => (
+    <div className="-mx-4 -mb-4 mt-auto flex items-center gap-2 border-t border-line-soft px-4 py-3 text-12.5 text-muted md:-mx-5 md:px-5">
+      <span className="min-w-0 flex-1 truncate">{left}</span>
+      <Link href={href} className="font-semibold text-accent hover:underline">
+        {label}
+      </Link>
+    </div>
+  );
+  // Old Practice.dc.html: three cards of one height, footers on one line, so the Clients grid sits right under them.
+  const card = "flex flex-col";
+  const body = "flex flex-1 flex-col gap-4";
   return (
-    <Row cols={3}>
-      <SectionCard title="Incorporation" meta={String(p.inc)} icon={{ Icon: Rocket, tone: "violet" }} right={<HeadLink href={`${b}/clients`}>Clients ›</HeadLink>}>
+    <Row cols={3} className="md:items-stretch">
+      <SectionCard title="Incorporation" meta={String(p.inc)} icon={{ Icon: Rocket, tone: "violet" }} className={card} bodyClassName={body}>
         <ul className="grid gap-2.5">
-          {p.stages.map((s) => (
-            <li key={s.label} className="grid grid-cols-[minmax(0,130px)_minmax(0,1fr)_24px] items-center gap-3 text-12.5">
-              <span className="truncate text-ink-2">{s.label}</span>
-              <Bar pct={(s.n / max) * 100} tone="violet" />
-              <b className="text-right font-semibold">{s.n}</b>
+          {stages.map((x) => (
+            <li key={x.label} className="grid grid-cols-[minmax(0,120px)_minmax(0,1fr)_24px] items-center gap-3 text-12.5">
+              <span className="truncate font-semibold">{x.label}</span>
+              <Bar pct={(x.n / max) * 100} tone="accent" />
+              <b className="text-right font-semibold">{x.n}</b>
             </li>
           ))}
         </ul>
-        <p className="mt-3 border-t border-line-soft pt-3 text-12.5 text-muted">
-          Average <b className="font-semibold text-ink">{p.avgCoi} days</b> to COI · target 30
-        </p>
+        {foot(
+          <>
+            Average <b className="font-semibold text-ink">{avg} days</b> to COI · target 30
+          </>,
+          `${b}/clients`,
+          "Open clients",
+        )}
       </SectionCard>
-      <SectionCard title="Registrations" meta={String(p.regOpen)} right={<HeadLink href={`${b}/registrations`}>Registrations ›</HeadLink>}>
-        <div className="grid grid-cols-3 gap-2">
+      <SectionCard title="Registrations" className={card} bodyClassName={body}>
+        <div className="flex flex-wrap gap-6">
           {[
-            { n: p.regDone, label: "Granted" },
-            { n: p.regOpen - p.regWait, label: "In progress" },
-            { n: p.regWait, label: "With client" },
+            { n: p.regDone, label: "Done", cls: "text-ok" },
+            { n: p.regOpen - p.regWait, label: "In progress", cls: "text-accent" },
+            { n: p.regWait, label: "Pending", cls: "text-warn" },
           ].map((x) => (
-            <div key={x.label} className="rounded-md bg-raised px-3 py-2">
-              <b className="block text-22 font-semibold leading-tight">{x.n}</b>
+            <div key={x.label}>
+              <b className={cn("block text-24 font-semibold leading-tight", x.cls)}>{x.n}</b>
               <span className="text-12 text-muted">{x.label}</span>
             </div>
           ))}
         </div>
-        <ul className="mt-3 grid gap-2">
-          {p.pendingByReg.slice(0, 3).map((r) => (
-            <li key={r.name} className="grid grid-cols-[72px_minmax(0,1fr)_24px] items-center gap-3 text-12.5">
-              <span className="text-ink-2">{r.name}</span>
-              <Bar pct={(r.n / regMax) * 100} tone="warn" />
-              <b className="text-right font-semibold">{r.n}</b>
+        <ul className="-mt-1 grid gap-2">
+          {p.regSplit.slice(0, 3).map((r) => (
+            <li key={r.name} className="grid grid-cols-[84px_minmax(0,1fr)_24px] items-center gap-3 text-12.5" title={`${r.name}: ${r.d} done, ${r.p} in progress, ${r.w} pending`}>
+              <span className="font-semibold">{r.name}</span>
+              <span className="flex h-2 overflow-hidden rounded-full bg-line-soft" aria-hidden>
+                <i className={barFill.ok} style={{ width: `${(r.d / r.total) * 100}%` }} />
+                <i className={barFill.accent} style={{ width: `${(r.p / r.total) * 100}%` }} />
+                <i className={barFill.warn} style={{ width: `${(r.w / r.total) * 100}%` }} />
+              </span>
+              <b className="text-right font-semibold">{r.p + r.w}</b>
             </li>
           ))}
         </ul>
+        {foot(
+          <>
+            Most pending: <b className="font-semibold text-ink">{p.regSplit[0]?.mostPending ?? ""}</b>
+          </>,
+          `${b}/registrations`,
+          "Open clients",
+        )}
       </SectionCard>
-      <SectionCard title="Compliances · October" right={<HeadLink href={`${b}/compliances/filings`}>Filings ›</HeadLink>}>
-        <StackedBar
-          total={p.filings.filed + p.filings.due + p.filings.overdue + p.filings.upcoming}
-          title="Filings"
-          segments={[
-            { label: "Filed", value: p.filings.filed, tone: "ok" },
-            { label: "Due soon", value: p.filings.due, tone: "warn" },
-            { label: "Overdue", value: p.filings.overdue, tone: "bad" },
-            { label: "Upcoming", value: p.filings.upcoming, tone: "idle" },
-          ]}
-        />
+      <SectionCard title="Compliances · October" className={card} bodyClassName={body}>
+        <div>
+          <p className="flex items-baseline gap-1.5">
+            <b className="text-24 font-semibold leading-tight">{fTotal}</b>
+            <span className="text-12.5 text-muted">filings</span>
+          </p>
+          <span className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-full" aria-hidden>
+            {fSegs.map((x) => (
+              <i key={x.label} className={barFill[x.tone]} style={{ width: `${(x.value / fTotal) * 100}%` }} />
+            ))}
+          </span>
+          <ul className="mt-2.5 grid gap-1">
+            {fSegs.map((x) => (
+              <li key={x.label} className="flex items-center gap-2 text-12.5">
+                <i className={cn("h-2.5 w-2.5 flex-none rounded-[3px]", barFill[x.tone])} aria-hidden />
+                <span className="flex-1 font-semibold">{x.label}</span>
+                <b className="font-semibold">{x.value}</b>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {foot(
+          <>
+            Worst statute: <b className="font-semibold text-ink">{f.worst}</b>
+          </>,
+          `${b}/compliances/calendar`,
+          "Open calendar",
+        )}
       </SectionCard>
     </Row>
   );
 }
 
+/** Old heatmap counts: soft tinted boxes (Main.dc.html, old-lead-home.png). */
 const heatCell: Record<(typeof HEAT_COLS)[number]["tone"], string> = {
-  bad: "bg-bad-mid text-white",
-  warn: "bg-warn-mid text-white",
-  accent: "bg-accent text-white",
-  idle: "bg-idle-soft text-idle",
-  faint: "bg-raised text-ink-2 border border-line",
+  bad: "bg-bad-soft text-bad",
+  warn: "bg-warn-soft text-warn",
+  accent: "bg-accent-soft text-accent",
+  idle: "bg-raised text-muted",
+  faint: "bg-raised text-faint",
 };
 
 interface HeatRow {
@@ -197,13 +323,18 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
   const rows: HeatRow[] = [...new Set(all.map((t) => t.client))]
     .map((id) => ({ client: clientById(id)!, tasks: all.filter((t) => t.client === id) }))
     .filter((r) => r.client)
-    .sort((a, b) => b.tasks.filter((t) => t.status === "Overdue").length - a.tasks.filter((t) => t.status === "Overdue").length);
+    .sort((a, b) => (portal === "admin" ? b.tasks.filter((t) => t.status === "Overdue").length - a.tasks.filter((t) => t.status === "Overdue").length : 0));
   const picked = pick ? all.filter((t) => `${t.client}|${t.status}` === pick) : [];
   const pickedCol = pick ? HEAT_COLS.find((h) => h.status === pick.split("|")[1]) : undefined;
-  const stuck = clientsFor(portal).filter((c) => c.health === "Stuck" && inScope(scope, c.id));
+  const stuck =
+    portal === "admin"
+      ? clientsFor(portal)
+          .filter((c) => c.health === "Stuck" && inScope(scope, c.id))
+          .map((c) => ({ client: c.id, text: c.short }))
+      : STUCK_STEPS.filter((x) => inScope(scope, x.client));
 
   const mapCols: Column<HeatRow>[] = [
-    { key: "client", label: "Client", render: (r) => <ClientName id={r.client.id} href={clientHref(portal, r.client.id)} /> },
+    { key: "client", label: "Client", render: (r) => <ClientCode c={r.client} href={clientHref(portal, r.client.id)} /> },
     ...HEAT_COLS.map(
       (h): Column<HeatRow> => ({
         key: h.key,
@@ -213,7 +344,7 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
         render: (r) => {
           const n = r.tasks.filter((t) => t.status === h.status).length;
           const key = `${r.client.id}|${h.status}`;
-          if (!n) return <span className="mx-auto block h-[28px] w-[56px] rounded-sm bg-raised" aria-hidden />;
+          if (!n) return <span className="mx-auto block w-[56px] text-center text-faint" aria-hidden>–</span>;
           return (
             <button
               type="button"
@@ -232,7 +363,17 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
         },
       }),
     ),
-    { key: "total", label: "Total", width: 70, align: "right", render: (r) => <b className="font-semibold">{r.tasks.length}</b> },
+    {
+      key: "total",
+      label: "Total",
+      width: 96,
+      align: "center",
+      render: (r) => (
+        <span className="whitespace-nowrap text-12 text-muted">
+          <b className="text-13.5 font-bold text-ink">{r.tasks.length}</b> {r.tasks.length > 1 ? "tasks" : "task"}
+        </span>
+      ),
+    },
   ];
 
   const listCols: Column<StaffTask>[] = [
@@ -247,8 +388,9 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
   const head = (
     <>
       {stuck.length > 0 && (
-        <Link href={clientHref(portal, stuck[0].id)} className="hidden items-center gap-1.5 rounded-sm bg-bad-soft px-2 py-0.5 text-12 font-semibold text-bad hover:underline md:inline-flex">
-          {stuck.length} stuck · {stuck[0].short}
+        <Link href={clientHref(portal, stuck[0].client)} className="hidden items-center gap-1.5 rounded-sm bg-bad-soft px-2 py-0.5 text-12 font-semibold text-bad hover:underline md:inline-flex">
+          <i className="h-1.5 w-1.5 rounded-full bg-bad" aria-hidden />
+          {stuck.length} stuck · {stuck[0].text}
         </Link>
       )}
       <Tabs
@@ -369,31 +511,27 @@ export function ThisWeek({ portal, scope }: { portal: StaffPortal; scope: Scope 
   );
 }
 
-const phaseCellClass = {
-  done: "bg-ok-mid text-white",
-  current: "bg-accent text-white",
-  stuck: "bg-bad-mid text-white",
-  next: "border border-dashed border-line text-faint",
-} as const;
+const phaseBarTone = { done: "ok", current: "accent", stuck: "bad", next: "idle" } as const;
 
 /** Phase progress: one row per incorporating client, a cell per phase, days to COI (Main.dc.html, admin Main). */
 export function PhaseProgress({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
   const rows = clientsFor(portal)
     .filter((c) => c.stage === "incorporating" && inScope(scope, c.id))
-    .sort((a, b) => (DAYS_TO_COI[a.id] ?? 99) - (DAYS_TO_COI[b.id] ?? 99));
+    .sort((a, b) => (portal === "admin" ? (DAYS_TO_COI[a.id] ?? 99) - (DAYS_TO_COI[b.id] ?? 99) : 0));
   const cols: Column<StaffClient>[] = [
-    { key: "name", label: "Client", render: (c) => <ClientName id={c.id} /> },
+    { key: "name", label: "Client", render: (c) => <ClientName id={c.id} plain className="font-semibold" /> },
     ...PHASE_LABELS.map(
       (label, i): Column<StaffClient> => ({
         key: `p${i}`,
         label,
-        width: 120,
-        align: "center",
+        width: 140,
         render: (c) => {
           const cell = phaseCells(c)[i];
+          // K-33: a 6 px bar per phase with the count under it.
           return (
-            <span title={`${label} · ${cell.done} of ${cell.total}${cell.kind === "stuck" ? " · stuck" : ""}`} className={cn("mx-auto grid h-[26px] w-[84px] place-items-center rounded-sm text-12 font-semibold", phaseCellClass[cell.kind])}>
-              {cell.kind === "done" ? "✓" : `${cell.done}/${PHASE_TOTALS[i]}`}
+            <span title={`${label} · ${cell.done} of ${cell.total}${cell.kind === "stuck" ? " · stuck" : ""}`} className="grid gap-1 text-left">
+              <Bar pct={(cell.done / cell.total) * 100} tone={phaseBarTone[cell.kind]} />
+              <span className={cn("font-mono text-12", cell.kind === "done" ? "text-ok" : cell.kind === "stuck" ? "font-semibold text-bad" : "text-ink-2")}>{cell.kind === "done" ? "✓" : `${cell.done}/${PHASE_TOTALS[i]}`}</span>
             </span>
           );
         },
@@ -423,7 +561,7 @@ export function PhaseProgress({ portal, scope }: { portal: StaffPortal; scope: S
         <span className="hidden flex-wrap items-center gap-3 md:flex">
           {(["done", "current", "stuck", "next"] as const).map((k) => (
             <span key={k} className="flex items-center gap-1.5">
-              <i className={cn("h-2.5 w-2.5 rounded-[3px]", phaseCellClass[k])} aria-hidden />
+              <i className={cn("h-2.5 w-2.5 rounded-[3px]", barFill[phaseBarTone[k]])} aria-hidden />
               {{ done: "Done", current: "Current", stuck: "Stuck", next: "Next" }[k]}
             </span>
           ))}
@@ -444,19 +582,22 @@ const filingLabel: Record<FilingCell["kind"], string> = { filed: "Filed", due: "
 
 /** Clients × filings · October (Main.dc.html filing grid). Only clients with a filing due or overdue show. */
 export function ClientsFilings({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
-  const [onlyOpen, setOnlyOpen] = React.useState("open");
+  // Old row order (lead Main.dc.html grid): Brightwave, Tidewater, Kestrel, Halcyon.
+  const ORDER = ["brightwave", "tidewater", "kestrel", "halcyon"];
+  const rank = (id: string) => (ORDER.includes(id) ? ORDER.indexOf(id) : ORDER.length);
   const rows = clientsFor(portal)
     .filter((c) => c.stage === "compliance" && inScope(scope, c.id))
-    .map((c) => ({ c, cells: filingRow(c) }))
-    .filter((r) => onlyOpen === "all" || r.cells.some((x) => x.kind === "due" || x.kind === "overdue"));
+    .sort((a, b) => rank(a.id) - rank(b.id))
+    .map((c) => ({ c, cells: filingRow(c) }));
   const cols: Column<(typeof rows)[number]>[] = [
-    { key: "client", label: "Client", render: (r) => <ClientName id={r.c.id} short href={clientHref(portal, r.c.id)} /> },
+    { key: "client", label: "Client", render: (r) => <ClientName id={r.c.id} plain href={clientHref(portal, r.c.id)} className="font-semibold" /> },
     ...FILING_COLS.map(
       (f, i): Column<(typeof rows)[number]> => ({
         key: f,
         label: f.replace(" challan", "").replace("Professional tax", "PT").replace(" KYC", ""),
-        width: 64,
+        width: 58,
         align: "center",
+        className: "!px-1",
         render: (r) => {
           const x = r.cells[i];
           return (
@@ -475,16 +616,6 @@ export function ClientsFilings({ portal, scope }: { portal: StaffPortal; scope: 
       columns={cols}
       rows={rows}
       rowKey={(r) => r.c.id}
-      filters={
-        <Tabs
-          items={[
-            { key: "open", label: "Due or late" },
-            { key: "all", label: "All" },
-          ]}
-          value={onlyOpen}
-          onChange={setOnlyOpen}
-        />
-      }
       footer={
         <span className="hidden flex-wrap items-center gap-3 md:flex">
           {(["filed", "due", "overdue", "upcoming", "na"] as const).map((k) => (
@@ -524,17 +655,13 @@ export function ComplianceHealth({ portal, scope }: { portal: StaffPortal; scope
 /** Inbox: Triage and My to-dos in one card (Main.dc.html cards 12 and 13). */
 export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scope: Scope; notify: Notify }) {
   const [tab, setTab] = React.useState("triage");
-  const [gone, setGone] = React.useState<Set<string>>(new Set());
+  const [gone] = React.useState<Set<string>>(new Set());
   const [todos, setTodos] = React.useState<Todo[]>(TODOS[portal]);
   const [show, setShow] = React.useState("open");
   const [text, setText] = React.useState("");
   const tri = INBOX[portal].filter((r) => !gone.has(r.id) && inScope(scope, r.client));
   const mine = todos.filter((t) => inScope(scope, t.client));
   const shown = mine.filter((t) => show === "all" || (show === "done" ? t.done : !t.done));
-  const hide = (id: string, msg: string) => {
-    setGone(new Set([...gone, id]));
-    notify(msg, () => setGone((g) => new Set([...g].filter((x) => x !== id))));
-  };
   const add = (t: Todo) => setTodos((list) => [t, ...list]);
   const fromQueue = () => {
     const q = queueFor(portal).find((t) => !todos.some((x) => x.text === t.title));
@@ -561,7 +688,7 @@ export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scop
       {tab === "triage" && (
         <>
           {tri.length === 0 && <Empty />}
-          {tri.map((r) => {
+          {tri.slice(0, 3).map((r) => {
             const c = clientById(r.client);
             return (
               <div key={r.id} className="border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5">
@@ -574,24 +701,6 @@ export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scop
                 </div>
                 <div className="mt-0.5 pl-[18px] text-12.5 text-muted">
                   {c?.short} · {r.from}
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1.5 pl-[18px]">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      add({ id: `tri-${r.id}`, text: r.text, client: r.client, due: TODAY });
-                      hide(r.id, "Added to My to-dos");
-                    }}
-                  >
-                    Make task
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => hide(r.id, "Marked done")}>
-                    Done
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => hide(r.id, "Snoozed to tomorrow")}>
-                    Snooze
-                  </Button>
                 </div>
               </div>
             );
@@ -665,6 +774,59 @@ export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scop
   );
 }
 
+/** Waiting for your approval (reference/old-screens/s/mgr/Approvals.dc.html): code tile, task, client · date · lead, a navy button on each row (owner exception to R-12, 28 Oct 2026). */
+export function ApprovalsWaiting({ portal, notify }: { portal: StaffPortal; notify: Notify }) {
+  const [gone, setGone] = React.useState<Set<string>>(new Set());
+  const rows = APPROVALS.manager.filter((a) => !gone.has(a.id)).sort((a, b) => a.sent.getTime() - b.sent.getTime());
+  return (
+    <SectionCard title="Waiting for your approval" meta={String(rows.length)} flush>
+      {rows.length === 0 && <Empty />}
+      {rows.map((a) => {
+        const c = clientById(a.client);
+        const review = a.title.startsWith("Review");
+        return (
+          <ListRow key={a.id}>
+            {c && <ClientCodeTile c={c} />}
+            <span className="min-w-0 flex-1">
+              <Link href={clientHref(portal, a.client)} className="block truncate font-semibold hover:underline">
+                {a.title}
+              </Link>
+              <span className="block truncate text-12.5 text-muted">
+                {c?.short} · {fmt(a.sent)} · {a.by.split(" ")[0]}
+              </span>
+            </span>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => {
+                setGone(new Set([...gone, a.id]));
+                notify(`${review ? "Opened for review" : "Approved"}: ${a.title.replace(/^(Approve|Review) /, "")} · ${c?.short ?? ""}`);
+              }}
+            >
+              {review ? "Review" : "Approve"}
+            </Button>
+          </ListRow>
+        );
+      })}
+    </SectionCard>
+  );
+}
+
+/** The two-letter client code tile on its own. */
+function ClientCodeTile({ c }: { c: StaffClient }) {
+  const code = plainName(c)
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+  return (
+    <span className={cn("grid h-[26px] w-[26px] flex-none place-items-center rounded-sm text-[10px] font-extrabold", codeTone[c.tone])} aria-hidden>
+      {code}
+    </span>
+  );
+}
+
 /** Waiting on client: what the client owes, with a reminder (Main.dc.html rail; K-17 "Remind"). */
 export function WaitingOnClient({ portal, scope, notify }: { portal: StaffPortal; scope: Scope; notify: Notify }) {
   const [sent, setSent] = React.useState<Set<string>>(new Set());
@@ -720,7 +882,10 @@ const STATUS_ORDER: Array<{ s: TaskStatus; label: string; tone: BarTone }> = [
 export function TaskStatusCard({ portal, scope, title = "Task status", tasks }: { portal: StaffPortal; scope: Scope; title?: string; tasks?: StaffTask[] }) {
   const all = (tasks ?? tasksFor(portal)).filter((t) => inScope(scope, t.client));
   const open = all.filter((t) => t.status !== "Done");
-  const owners = [...new Set(open.map((t) => t.owner))].map((o) => ({ o, n: open.filter((t) => t.owner === o).length })).sort((a, b) => b.n - a.n);
+  // Old order: leads by name (mgr Main.dc.html mtInterns). The red part of each bar is the late tasks.
+  const owners = [...new Set(open.map((t) => t.owner))]
+    .map((o) => ({ o, n: open.filter((t) => t.owner === o).length, late: open.filter((t) => t.owner === o && t.status === "Overdue").length }))
+    .sort((a, b) => a.o.localeCompare(b.o));
   const max = Math.max(1, ...owners.map((x) => x.n));
   return (
     <SectionCard title={title}>
@@ -730,10 +895,14 @@ export function TaskStatusCard({ portal, scope, title = "Task status", tasks }: 
           <h3 className="mb-2 text-12 font-semibold text-muted">Open tasks by project lead</h3>
           <ul className="grid gap-2">
             {owners.map((x) => (
-              <li key={x.o} className="grid grid-cols-[minmax(0,110px)_minmax(0,1fr)_24px] items-center gap-3 text-12.5">
-                <span className="truncate text-ink-2">{x.o}</span>
-                <Bar pct={(x.n / max) * 100} tone="navy" />
-                <b className="text-right font-mono text-12">{x.n}</b>
+              <li key={x.o} className="grid grid-cols-[24px_56px_minmax(0,1fr)_24px] items-center gap-2 text-12.5">
+                <span className="grid h-6 w-6 place-items-center rounded-md bg-raised text-[10px] font-bold text-ink">{initials(x.o)}</span>
+                <span className="truncate text-ink-2" title={x.o}>{x.o.split(" ")[0]}</span>
+                <span className="flex h-1.5 overflow-hidden rounded-full bg-raised" title={`${x.o} · ${x.n} open${x.late ? ` · ${x.late} late` : ""}`}>
+                  <span className={cn("h-full", barFill.bad)} style={{ width: `${(x.late / max) * 100}%` }} />
+                  <span className={cn("h-full", barFill.accent)} style={{ width: `${((x.n - x.late) / max) * 100}%` }} />
+                </span>
+                <span className="text-right font-mono text-11.5 text-muted">{x.n}</span>
               </li>
             ))}
           </ul>
@@ -827,7 +996,7 @@ export function DecisionsCard({ portal, notify }: { portal: StaffPortal; notify:
                 {a.title.replace("Escalation: ", "")}
               </Link>
               <span className="block truncate text-12.5 text-muted">
-                {c?.short} · {a.by} · {relative(a.sent) === "Overdue" ? fmt(a.sent) : relative(a.sent)}
+                {c?.short} · {a.by} · {relative(a.sent, TODAY) === "Overdue" ? fmt(a.sent) : relative(a.sent, TODAY)}
               </span>
             </span>
             <Button

@@ -72,7 +72,7 @@ const config: Config = {
         "13": "52px",
         "head": "52px",
         "row": "46px",
-        "side": "236px",
+        "side": "248px",
         "top": "60px",
       },
       maxWidth: { page: "1440px" },

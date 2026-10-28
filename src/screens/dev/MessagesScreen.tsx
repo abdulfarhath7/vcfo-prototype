@@ -153,9 +153,12 @@ export function MessagesScreen() {
               Test
             </Button>
           )}
-          <Button size="sm" onClick={() => setEditing({ id: r.id, from: r.from })} aria-expanded={editing?.id === r.id}>
-            Edit
-          </Button>
+          {/* Edit only where the channel has a second sender to pick. */}
+          {SENDERS[r.channel].length > 1 && (
+            <Button size="sm" onClick={() => setEditing({ id: r.id, from: r.from })} aria-expanded={editing?.id === r.id}>
+              Edit
+            </Button>
+          )}
         </span>
       ),
     },

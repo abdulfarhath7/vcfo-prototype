@@ -1,63 +1,44 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Calendar, Check, Minus, MoreHorizontal, AlertCircle } from "lucide-react";
+import { AlertCircle, Calendar, Check, CircleCheck, CircleDashed, Clock, MoreHorizontal, User } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { daysFrom, fmt, relative, urgency } from "@/lib/dates";
-import { REGULATOR_LABEL, REG_STATUS_TONE, type RegStatus, type Regulator } from "@/data/registrations";
-import { clientById } from "@/data/staff-clients";
-import {
-  REG_GRID_COLS,
-  myClients,
-  notNeededFor,
-  notStartedFor,
-  regGridFor,
-  registrationsFor,
-  renewalsFor,
-  staffRegHref,
-  type RegGridRow,
-  type StaffRegistration,
-} from "@/data/staff-compliance";
+import { staffRegHref } from "@/data/staff-compliance";
+import { itemExists } from "@/data/staff-item";
+import { REG_CATS, REG_CLIENTS, REG_RENEWALS, REG_STATE, REG_TYPES, regRows, regState, type RegRow, type RowState } from "@/data/staff-regs-table";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
-import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
-import { type Tile, type TileGroup } from "@/components/cards/TileGrid";
-import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
-import { StackedBar } from "@/components/cards/StackedBar";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { ClientDot, ClientName, type StaffPortal } from "./parts";
-import { ClientSelect, identityTag } from "./filters";
-import { FoldingGroups, KeyHint, useListKeys } from "./comp-parts";
+import { type StaffPortal } from "./parts";
+import { KeyHint, useListKeys } from "./comp-parts";
+import { FilterStrip, FlowCard, GroupedGrid, RailCard, type GridGroup, type StripItem } from "./register-parts";
 
-const STATUS_ORDER: RegStatus[] = ["Waiting on client", "In progress", "Granted"];
-const REG_ORDER: Regulator[] = ["GST", "MCA", "IT", "Labour", "IP", "FEMA", "Other"];
-type Fil = "" | RegStatus | "renew";
+// Staff Registrations, as in reference/old-screens/s/lead/Register.dc.html (kind "reg", who "staff"):
+// number strip, a table grouped by area with List and Grid views, and a five-card rail.
+// C-0022 changed only the client page.
 
-const FILTERS: Array<{ value: Fil; label: string }> = [
-  { value: "", label: "All states" },
-  { value: "Granted", label: "Granted" },
-  { value: "In progress", label: "In progress" },
-  { value: "Waiting on client", label: "Waiting on client" },
-  { value: "Not started", label: "Not started" },
-  { value: "renew", label: "Renewals in 60 days" },
-];
+type Fil = "" | "done" | "run" | "wait" | "none" | "ren";
 
-/** Grid cell: granted green tick, in progress blue dots, waiting amber mark, not started grey, not needed a dash. */
-const CELL: Record<RegStatus, { cls: string; Icon?: typeof Check }> = {
-  Granted: { cls: "bg-ok-soft text-ok", Icon: Check },
-  "In progress": { cls: "bg-accent-soft text-accent", Icon: MoreHorizontal },
-  "Waiting on client": { cls: "bg-warn-soft text-warn", Icon: AlertCircle },
-  "Not started": { cls: "bg-raised text-faint" },
-  "Not needed": { cls: "border border-line-soft text-faint", Icon: Minus },
+const RENEW_IDS = new Set(REG_RENEWALS.map((r) => r.id));
+const CAT_DOT: Record<string, string> = { tax: "bg-accent", labour: "bg-ok-mid", business: "bg-warn-mid", ip: "bg-violet", fema: "bg-teal", na: "bg-faint" };
+
+/** Grid cell: granted green tick, in progress blue dots, waiting amber mark, not started grey, not needed hatched. */
+const CELL: Record<Exclude<RowState, "bad">, { cls: string; Icon?: typeof Check }> = {
+  done: { cls: "bg-ok-soft text-ok", Icon: Check },
+  run: { cls: "bg-accent-soft text-accent", Icon: MoreHorizontal },
+  wait: { cls: "bg-warn-soft text-warn", Icon: AlertCircle },
+  none: { cls: "bg-raised text-faint" },
+  na: { cls: "border border-line-soft text-faint" },
 };
+const HATCH: React.CSSProperties = { backgroundImage: "repeating-linear-gradient(45deg, transparent 0 4px, var(--line-soft) 4px 5px)" };
 
-function Cell({ status, href, tip }: { status: RegStatus; href?: string; tip: string }) {
-  const c = CELL[status];
+function Cell({ state, href, tip }: { state: Exclude<RowState, "bad">; href?: string; tip: string }) {
+  const c = CELL[state];
   const inner = (
-    <span className={cn("mx-auto grid h-6 w-9 place-items-center rounded-sm", c.cls)} title={tip} aria-label={tip}>
+    <span className={cn("mx-auto grid h-6 w-9 place-items-center rounded-sm", c.cls)} style={state === "na" ? HATCH : undefined} title={tip} aria-label={tip}>
       {c.Icon && <c.Icon size={14} strokeWidth={1.8} />}
     </span>
   );
@@ -73,12 +54,14 @@ function Cell({ status, href, tip }: { status: RegStatus; href?: string; tip: st
 function Legend() {
   return (
     <span className="hidden flex-wrap items-center gap-3 md:flex">
-      {(Object.keys(CELL) as RegStatus[]).map((s) => {
+      {(Object.keys(CELL) as Array<keyof typeof CELL>).map((s) => {
         const c = CELL[s];
         return (
           <span key={s} className="inline-flex items-center gap-1.5">
-            <span className={cn("grid h-4 w-5 place-items-center rounded-sm", c.cls)}>{c.Icon && <c.Icon size={10} strokeWidth={2} />}</span>
-            {s}
+            <span className={cn("grid h-4 w-5 place-items-center rounded-sm", c.cls)} style={s === "na" ? HATCH : undefined}>
+              {c.Icon && <c.Icon size={10} strokeWidth={2} />}
+            </span>
+            {REG_STATE[s].label}
           </span>
         );
       })}
@@ -87,95 +70,85 @@ function Legend() {
 }
 
 export function RegistrationsScreen({ portal }: { portal: StaffPortal }) {
-  const [view, setView] = React.useState("status");
+  const [view, setView] = React.useState("list");
   const [client, setClient] = React.useState("");
   const [fil, setFil] = React.useState<Fil>("");
-  const [sent, setSent] = React.useState<Record<string, true>>({});
   const listRef = React.useRef<HTMLElement>(null);
   const filterRef = React.useRef<HTMLSpanElement>(null);
   useListKeys(listRef, filterRef);
 
-  const regs = registrationsFor(portal, client);
-  const renewals = renewalsFor(portal, client);
-  const notNeeded = notNeededFor(portal, client);
-  const notStarted = notStartedFor(portal, client);
-  const renewSoon = new Set(renewals.filter((r) => daysFrom(r.date) <= 60).map((r) => r.key));
-  const match = (r: StaffRegistration) => !fil || (fil === "renew" ? renewSoon.has(r.id) : r.status === fil);
-  const shown = regs.filter(match);
-  // Clients before incorporation have no registrations yet: the filter still lists every client for the grid.
-  const clients = myClients(portal);
+  const items = regRows(client);
+  const live = items.filter((x) => x.state !== "na");
+  const na = items.filter((x) => x.state === "na");
+  const match = (x: RegRow, f: Fil) => (f === "ren" ? RENEW_IDS.has(x.reg.id) && x.state === "done" : x.state === f);
+  const shown = live.filter((x) => !fil || match(x, fil));
+  const hrefOf = (x: RegRow) => (itemExists("reg", x.key) ? staffRegHref(portal, x.key) : undefined);
+  const count = (f: Fil) => items.filter((x) => match(x, f)).length;
 
-  const tile = (r: StaffRegistration): Tile => {
-    const c = clientById(r.client)!;
-    return {
-      id: r.id,
-      name: r.name,
-      tag: { label: c.short, tone: identityTag[c.tone] },
-      chip: { label: r.status, tone: REG_STATUS_TONE[r.status] },
-      date: r.nextLabel,
-      late: r.status === "Waiting on client" && !!r.next && daysFrom(r.next) < 0,
-      href: staffRegHref(portal, r.id),
-    };
-  };
-  const plain = (x: { id: string; client: string; name: string; reason: string }, status: RegStatus): Tile => {
-    const c = clientById(x.client)!;
-    return { id: x.id, name: x.name, tag: { label: c.short, tone: identityTag[c.tone] }, chip: { label: status, tone: REG_STATUS_TONE[status] }, date: status === "Not needed" ? `${x.reason} · changed by ${c.manager}` : x.reason };
-  };
-
-  const startedTiles = fil === "Not started" || fil === "" ? notStarted.map((x) => plain(x, "Not started")) : [];
-  const groups: TileGroup[] =
-    view === "status"
-      ? [...STATUS_ORDER.map((s) => ({ label: s, tiles: shown.filter((r) => r.status === s).map(tile) })), { label: "Not started", tiles: startedTiles }]
-      : REG_ORDER.map((g) => ({ label: REGULATOR_LABEL[g], tiles: shown.filter((r) => r.regulator === g).map(tile) }));
-  // Old staff list: "Not needed" closes the list when no state filter is on.
-  if (!fil) groups.push({ label: "Not needed", tiles: notNeeded.map((x) => plain(x, "Not needed")) });
-
-  const due: AttentionRow[] = regs
-    .filter((r) => r.next && (r.status === "In progress" || r.status === "Waiting on client") && daysFrom(r.next) <= 15)
-    .sort((a, b) => a.next!.getTime() - b.next!.getTime())
-    .slice(0, 10)
-    .map((r) => ({ id: r.id, date: r.next!, title: r.name, sub: `${clientById(r.client)?.short} · ${r.nextLabel}`, chip: { label: relative(r.next!), tone: urgency(r.next!) }, href: staffRegHref(portal, r.id) }));
-
-  const waiting = regs.filter((r) => r.status === "Waiting on client");
-  const granted = regs.filter((r) => r.status === "Granted").sort((a, b) => (b.granted?.getTime() ?? 0) - (a.granted?.getTime() ?? 0));
-  const atAuthority = regs.filter((r) => r.status === "In progress" && r.steps.find((s) => s.state === "current")?.owner !== "sbc").length;
-
-  const listCols: Column<StaffRegistration>[] = [
-    { key: "name", label: "Registration", render: (r) => <span className="font-semibold">{r.name}</span> },
-    { key: "client", label: "Client", width: 150, render: (r) => <ClientName id={r.client} short /> },
-    { key: "authority", label: "Authority", width: 130 },
-    { key: "num", label: "Number", width: 190, mono: true, render: (r) => r.idValue ?? <span className="font-sans text-muted">{r.form}</span> },
-    { key: "status", label: "Status", width: 132, render: (r) => <Chip tone={REG_STATUS_TONE[r.status]} fixed>{r.status}</Chip> },
-    { key: "date", label: "Date", width: 150, render: (r) => <span className={r.status === "Waiting on client" ? "font-semibold text-warn" : undefined}>{r.nextLabel}</span> },
+  const strip: StripItem[] = [
+    { key: "done", label: "Granted", value: count("done"), Icon: CircleCheck, tone: "green", valueClass: "text-ok" },
+    { key: "run", label: "In progress", value: count("run"), Icon: Clock, tone: "blue", valueClass: "text-accent" },
+    { key: "wait", label: "Waiting on client", value: count("wait"), Icon: User, tone: "amber", valueClass: "text-warn" },
+    { key: "none", label: "Not started", value: count("none"), Icon: CircleDashed, tone: "violet" },
+    { key: "ren", label: "Renewals in 60 days", value: count("ren"), Icon: Calendar, tone: "teal" },
   ];
 
-  const gridCols: Column<RegGridRow>[] = [
-    { key: "client", label: "Client", width: 160, render: (row) => <ClientName id={row.client} short className="font-semibold" /> },
-    ...REG_GRID_COLS.map(
-      (col, i): Column<RegGridRow> => ({
-        key: col.id,
-        label: col.label,
+  const groups: GridGroup<RegRow>[] = REG_CATS.map((c) => ({ id: c.id, label: c.label, dot: CAT_DOT[c.id], rows: shown.filter((x) => x.reg.cat === c.id) }));
+  // Old staff list: "Not needed" closes the list when no state filter is on.
+  if (!fil && na.length) groups.push({ id: "na", label: "Not needed", dot: CAT_DOT.na, rows: na });
+
+  const listCols: Column<RegRow>[] = [
+    {
+      key: "name",
+      label: "Registration",
+      render: (x) => (
+        <span className="block min-w-0">
+          <b className="block truncate text-13 font-semibold">{x.reg.name}</b>
+          <span className="block truncate text-12 text-muted">{x.state === "na" ? `${x.clientName} · No contract labour yet` : x.clientName}</span>
+        </span>
+      ),
+    },
+    { key: "auth", label: "Authority", width: 150, render: (x) => <span className="text-ink-2">{x.reg.auth}</span> },
+    { key: "num", label: "Number", width: 150, render: (x) => (x.num ? <span className={x.reg.id === "gst" ? "font-mono text-12.5" : "text-ink-2"}>{x.num}</span> : <span className="text-muted">{x.reg.form}</span>) },
+    { key: "status", label: "Status", width: 132, render: (x) => <Chip tone={REG_STATE[x.state as keyof typeof REG_STATE].tone} fixed>{REG_STATE[x.state as keyof typeof REG_STATE].label}</Chip> },
+    {
+      key: "date",
+      label: "Date",
+      width: 140,
+      render: (x) => <span className={x.state === "wait" ? "font-semibold text-warn" : "text-muted"}>{x.state === "na" ? "Changed by Pranay" : x.date}</span>,
+    },
+  ];
+
+  const gridRows = REG_CLIENTS.filter((c) => !client || c.id === client);
+  const gridCols: Column<(typeof REG_CLIENTS)[number]>[] = [
+    { key: "client", label: "Client", width: 180, render: (c) => <b className="font-semibold">{c.name}</b> },
+    ...REG_TYPES.map(
+      (r): Column<(typeof REG_CLIENTS)[number]> => ({
+        key: r.id,
+        label: r.short,
         align: "center",
-        render: (row) => {
-          const cell = row.cells[i];
-          return <Cell status={cell.status} href={cell.key ? staffRegHref(portal, cell.key) : undefined} tip={`${clientById(row.client)?.short} · ${col.label} · ${cell.status}`} />;
+        render: (c) => {
+          const st = regState(c.id, r.id) as keyof typeof CELL;
+          const key = `${c.id}-${r.id}`;
+          return <Cell state={st} href={itemExists("reg", key) ? staffRegHref(portal, key) : undefined} tip={`${c.name} · ${r.name} · ${REG_STATE[st].label}`} />;
         },
       }),
     ),
   ];
 
-  const tabs = [
-    { key: "status", label: "By status" },
-    { key: "regulator", label: "By regulator" },
-    { key: "list", label: "List" },
-    { key: "grid", label: "Grid" },
-  ];
   const head = (
     <>
       <span ref={filterRef} className="inline-flex">
-        <ClientSelect clients={clients} value={client} onChange={setClient} />
+        <Select aria-label="Client" value={client} onChange={(e) => setClient(e.target.value)} options={[{ value: "", label: "All my clients" }, ...REG_CLIENTS.map((c) => ({ value: c.id, label: c.name }))]} />
       </span>
-      {view !== "grid" && <Select aria-label="State" value={fil} onChange={(e) => setFil(e.target.value as Fil)} options={FILTERS} />}
+      <Tabs
+        items={[
+          { key: "list", label: "List" },
+          { key: "grid", label: "Grid" },
+        ]}
+        value={view}
+        onChange={setView}
+      />
       {(fil || client) && (
         <Button
           size="sm"
@@ -188,142 +161,60 @@ export function RegistrationsScreen({ portal }: { portal: StaffPortal }) {
           Clear
         </Button>
       )}
-      <Tabs items={tabs} value={view} onChange={setView} className="hidden sm:inline-flex" />
     </>
   );
 
+  const wait = live.filter((x) => x.state === "wait");
+  const done = live.filter((x) => x.state === "done");
+  const next = live.filter((x) => x.state === "none").slice(0, 4);
+
   return (
-    <Cols>
-      <Col>
-        <section ref={listRef} className="min-w-0">
-          {view === "list" || view === "grid" ? (
-            <div className="grid gap-3">
-              <div className="sm:hidden">
-                <Tabs items={tabs} value={view} onChange={setView} />
-              </div>
-              {view === "list" ? (
-                <DataGrid title="Registrations" meta={`${shown.length}`} columns={listCols} rows={shown} rowKey={(r) => r.id} rowHref={(r) => staffRegHref(portal, r.id)} filters={head} pageSize={12} footer={<KeyHint />} />
-              ) : (
-                <DataGrid title="Registrations" meta={`${clients.length} clients`} columns={gridCols} rows={regGridFor(portal, client)} rowKey={(r) => r.client} filters={head} pageSize={14} footer={<Legend />} />
-              )}
-            </div>
-          ) : (
-            <SectionCard title="Registrations" meta={<span className="hidden sm:inline">{shown.length}</span>} flush right={<div className="flex flex-wrap items-center justify-end gap-2">{head}</div>}>
-              <div className="border-b border-line-soft px-4 py-2.5 sm:hidden">
-                <Tabs items={tabs} value={view} onChange={setView} />
-              </div>
-              <FoldingGroups groups={groups} folded={["Not started", "Not needed"]} />
-              <div className="border-t border-line-soft px-4 py-2 md:px-5">
-                <KeyHint />
-              </div>
-            </SectionCard>
-          )}
-        </section>
-      </Col>
-      <Col>
-        <SectionCard title="Due in the next 15 days" icon={{ Icon: Calendar, tone: "teal" }} flush>
-          <AttentionList rows={due} />
-        </SectionCard>
-        <SectionCard title="Waiting on client" meta={waiting.length || undefined} flush>
-          {waiting.length === 0 ? (
-            <Empty />
-          ) : (
-            waiting.map((r) => {
-              const c = clientById(r.client)!;
-              return (
-                <ListRow key={r.id}>
-                  <ClientDot tone={c.tone} />
-                  <span className="min-w-0 flex-1">
-                    <Link href={staffRegHref(portal, r.id)} className="block truncate font-semibold hover:underline">
-                      {c.short} · {r.name}
-                    </Link>
-                    <span className="block truncate text-12.5 text-muted">{r.docs.filter((x) => x.status === "Asked").map((x) => x.name).join(", ") || r.authority}</span>
+    <div className="grid gap-4">
+      <FilterStrip items={strip} value={fil} onChange={(k) => setFil(k as Fil)} />
+      <Cols>
+        <Col>
+          <section ref={listRef} className="min-w-0">
+            {view === "grid" ? (
+              <DataGrid title="Registrations" meta={`${gridRows.length} clients`} columns={gridCols} rows={gridRows} rowKey={(c) => c.id} filters={head} pageSize={10} footer={<Legend />} />
+            ) : (
+              <GroupedGrid
+                title="Registrations"
+                count={shown.length}
+                right={head}
+                columns={listCols}
+                groups={groups}
+                rowKey={(x) => x.key}
+                rowHref={hrefOf}
+                footer={
+                  <span className="ml-auto flex items-center gap-3">
+                    {!client && <span>{REG_CLIENTS.length} clients</span>}
+                    <KeyHint />
                   </span>
-                  {sent[r.id] ? (
-                    <Chip tone="ok">Sent</Chip>
-                  ) : (
-                    <Button size="sm" onClick={() => setSent({ ...sent, [r.id]: true })}>
-                      Send reminder
-                    </Button>
-                  )}
-                </ListRow>
-              );
-            })
-          )}
-        </SectionCard>
-        <SectionCard title="Progress flow">
-          <StackedBar
-            segments={[
-              { label: "Documents", value: waiting.length, tone: "warn" },
-              { label: "Application", value: regs.filter((r) => r.status === "In progress").length - atAuthority, tone: "accent" },
-              { label: "Authority review", value: atAuthority, tone: "violet" },
-              { label: "Granted", value: granted.length, tone: "ok" },
+                }
+              />
+            )}
+          </section>
+        </Col>
+        <Col>
+          <FlowCard
+            title="Progress"
+            steps={[
+              { label: "Documents", value: wait.length },
+              { label: "Application", value: live.filter((x) => x.state === "run").length },
+              { label: "Authority review", value: 3 },
+              { label: "Granted", value: done.length },
             ]}
           />
-        </SectionCard>
-        <SectionCard title="Renewals and expiry" meta={renewals.length || undefined} flush>
-          {renewals.length === 0 ? (
-            <Empty />
-          ) : (
-            renewals.slice(0, 6).map((r) => {
-              const c = clientById(r.client)!;
-              return (
-                <ListRow key={r.id} href={staffRegHref(portal, r.key)}>
-                  <ClientDot tone={c.tone} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">{r.title}</span>
-                    <span className="block truncate text-12.5 text-muted">
-                      {c.short} · {r.authority}
-                    </span>
-                  </span>
-                  <span className={cn("flex-none text-12.5", daysFrom(r.date) <= 90 ? "font-semibold text-warn" : "text-muted")}>{fmt(r.date)}</span>
-                </ListRow>
-              );
-            })
-          )}
-        </SectionCard>
-        <SectionCard title="Recently granted" meta={granted.length || undefined} flush>
-          {granted.length === 0 ? (
-            <Empty />
-          ) : (
-            granted.slice(0, 4).map((r) => {
-              const c = clientById(r.client)!;
-              return (
-                <ListRow key={r.id} href={staffRegHref(portal, r.id)}>
-                  <ClientDot tone={c.tone} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">{r.name}</span>
-                    <span className="block truncate text-12.5 text-muted">
-                      {c.short} · <span className={r.idValue ? "font-mono" : undefined}>{r.idValue ?? "Certificate on file"}</span>
-                    </span>
-                  </span>
-                  {r.granted && <span className="flex-none text-12.5 text-muted">{fmt(r.granted)}</span>}
-                </ListRow>
-              );
-            })
-          )}
-        </SectionCard>
-        <SectionCard title="Next to start" meta={notStarted.length || undefined} flush>
-          {notStarted.length === 0 ? (
-            <Empty />
-          ) : (
-            notStarted.slice(0, 4).map((x) => {
-              const c = clientById(x.client)!;
-              return (
-                <ListRow key={x.id}>
-                  <ClientDot tone={c.tone} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">{x.name}</span>
-                    <span className="block truncate text-12.5 text-muted">
-                      {c.short} · {x.reason}
-                    </span>
-                  </span>
-                </ListRow>
-              );
-            })
-          )}
-        </SectionCard>
-      </Col>
-    </Cols>
+          <RailCard
+            title="Renewals and expiry"
+            count={REG_RENEWALS.length}
+            items={REG_RENEWALS.map((r) => ({ key: r.id, title: r.title, sub: r.auth, right: r.date, rightClass: r.soon ? "font-semibold text-warn" : undefined }))}
+          />
+          <RailCard title="Waiting on client" count={wait.length} items={wait.slice(0, 5).map((x) => ({ key: x.key, title: x.reg.name, sub: x.clientName, right: "4 days", rightClass: "font-semibold text-warn", href: hrefOf(x) }))} />
+          <RailCard title="Recently granted" count={Math.min(4, done.length)} items={done.slice(0, 4).map((x) => ({ key: x.key, title: x.reg.name, sub: `${x.clientName} · ${x.num}`, href: hrefOf(x) }))} />
+          <RailCard title="Next to start" count={next.length} items={next.map((x) => ({ key: x.key, title: x.reg.name, sub: x.clientName }))} />
+        </Col>
+      </Cols>
+    </div>
   );
 }

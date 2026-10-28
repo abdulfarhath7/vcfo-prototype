@@ -30,8 +30,8 @@ export interface Phase {
   steps?: PhaseStep[];
 }
 
-/** K-21: flat phase rows with a 6 px bar and a 108 px count chip. Rows expand to a step table. */
-export function PhaseRows({ phases, openId, className }: { phases: Phase[]; openId?: string; className?: string }) {
+/** K-21: flat phase rows with a 6 px bar and a 108 px count chip. Rows expand to a step table. `onAbout` adds "What's this?" to each step row. */
+export function PhaseRows({ phases, openId, className, onAbout }: { phases: Phase[]; openId?: string; className?: string; onAbout?: (n: number) => void }) {
   const [open, setOpen] = React.useState<string | null>(openId ?? null);
   return (
     <div className={className}>
@@ -88,6 +88,11 @@ export function PhaseRows({ phases, openId, className }: { phases: Phase[]; open
                             </Link>
                           ) : (
                             s.title
+                          )}
+                          {onAbout && (
+                            <button type="button" onClick={() => onAbout(s.n)} className="ml-2.5 whitespace-nowrap text-11.5 font-semibold text-accent hover:underline">
+                              What&apos;s this?
+                            </button>
                           )}
                         </td>
                         <td>

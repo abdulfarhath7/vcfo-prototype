@@ -1,5 +1,5 @@
-import { DocumentsExplorer } from "@/screens/shared/DocumentsExplorer";
+import { DocumentPackScreen } from "@/screens/staff/DocumentPackScreen";
 
 export default function Page() {
-  return <DocumentsExplorer portal="manager" />;
+  return <DocumentPackScreen portal="manager" />;
 }

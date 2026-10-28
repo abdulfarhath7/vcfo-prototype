@@ -2,7 +2,7 @@
 import * as React from "react";
 import { Bar as RBar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { BACKUPS, BUCKETS, COSTS, COST_BUDGET, COST_MONTHS, COST_TOTAL, DATA_FACTS, DB_TABLES, EXPORTS, VOLUME, rupees, stamp, type Backup, type Bucket, type DataExport, type DbTable, type ServiceCost } from "@/data/dev";
-import { TODAY } from "@/lib/dates";
+import { STAFF_TODAY } from "@/lib/dates";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { Bar } from "@/components/ui/Bar";
 import { Button } from "@/components/ui/Button";
@@ -102,7 +102,7 @@ const tableColumns: Column<DbTable>[] = [
   { key: "vac", label: "Last vacuum", mono: true, render: (t) => <span className="whitespace-nowrap">{stamp(t.vacuumed)}</span> },
 ];
 
-const DAYS_LEFT = new Date(TODAY.getFullYear(), TODAY.getMonth() + 1, 0).getDate() - TODAY.getDate();
+const DAYS_LEFT = new Date(STAFF_TODAY.getFullYear(), STAFF_TODAY.getMonth() + 1, 0).getDate() - STAFF_TODAY.getDate();
 
 export function DataScreen() {
   const last = COSTS.reduce((a, c) => a + c.lastMonth, 0);
@@ -202,7 +202,7 @@ export function DataScreen() {
       </Cols>
       <DataGrid
         title="Costs by service"
-        meta={`1 to 6 Oct · ${rupees(COST_TOTAL)} of a ${rupees(COST_BUDGET)} budget · ${Math.round((COST_TOTAL / COST_BUDGET) * 100)}% used with ${DAYS_LEFT} days to go · ${rupees(last)} same days last month`}
+        meta={`1 to 16 Oct · ${rupees(COST_TOTAL)} of a ${rupees(COST_BUDGET)} budget · ${Math.round((COST_TOTAL / COST_BUDGET) * 100)}% used with ${DAYS_LEFT} days to go · ${rupees(last)} same days last month`}
         columns={costColumns}
         rows={COSTS}
         rowKey={(c) => c.service}

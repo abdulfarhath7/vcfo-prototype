@@ -35,8 +35,8 @@ const DUES: Record<string, [number, number]> = {
   northwind: [45000, 18],
   coral: [38000, 64],
   quartz: [30000, 12],
-  arcadia: [26000, 8],
-  bluefin: [20000, 22],
+  halcyon: [26000, 8],
+  orchid: [20000, 22],
 };
 
 export const rupees = (n: number) => {

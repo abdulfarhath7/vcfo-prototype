@@ -140,7 +140,7 @@ export function JobsScreen() {
             ]}
           />
         </div>
-        <SwitchRow k="jobs-pause" initial={false} label="Pause all jobs" hint="For a maintenance window. Reminders wait until resumed." />
+        <SwitchRow k="jobs-pause" initial={false} label="Pause all jobs" hint="For a maintenance window. Reminders wait until resumed." confirmOn={{ question: "Pause all jobs? No reminder goes out until you resume.", confirm: "Pause" }} />
       </SectionCard>
     </div>
   );

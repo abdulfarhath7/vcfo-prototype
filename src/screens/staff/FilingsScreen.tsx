@@ -1,240 +1,230 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { TODAY, fmt } from "@/lib/dates";
-import { AREAS, AREA_TONE, FILING_STATUSES, FILING_STATUS_BAR, FILING_STATUS_TONE, isLate, type Area, type FilingStatus } from "@/data/compliance";
-import { complianceClients, filingsFor, staffObHref, type StaffFiling } from "@/data/staff-compliance";
-import { Cols, Col } from "@/components/shell/Page";
+import { Calendar, ChevronLeft, ChevronRight, Download, FileCheck } from "lucide-react";
+import { cn } from "@/lib/cn";
+import { AREA_TONE, type Area } from "@/data/compliance";
+import { OLD_FILINGS, OLD_FILING_AREAS, type OldFiling, type OldFilingStatus } from "@/data/staff-filings-table";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag } from "@/components/ui/Chip";
-import { Select } from "@/components/ui/Select";
+import { Chip, Tag, type ChipTone } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
-import { SectionCard } from "@/components/cards/SectionCard";
-import { StackedBar } from "@/components/cards/StackedBar";
+import { useUndoToast } from "@/components/ui/UndoToast";
+import { barFill, type BarTone } from "@/components/ui/Bar";
 import { Donut } from "@/components/cards/Donut";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { ClientName, type StaffPortal } from "./parts";
-import { ClientSelect } from "./filters";
+import { type StaffPortal } from "./parts";
 import { PortalLink, ProofDialog, type Proof } from "./comp-parts";
 
+// Staff Filings, as in reference/old-screens/s/lead/Filings.dc.html (lead, manager and admin are the same):
+// a donut and area bars at the head, area tabs and status tabs, then the filings with date tiles.
+// C-0016 changed only the client page. R-07 makes the table an e-Filing grid; R-08 puts year, period and export in its head.
+
 const MONTHS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
-const FILL: Record<FilingStatus, string> = {
-  Filed: "var(--ok-mid)",
-  "In progress": "var(--accent)",
-  "Due soon": "var(--warn-mid)",
-  Overdue: "var(--bad-mid)",
-  Upcoming: "var(--faint)",
-};
-const BAR_AREAS: Area[] = ["GST", "Income tax", "MCA", "Payroll", "FEMA"];
-/** Two-month windows of FY 2026-27, as in the old "Sep to Oct 2026" head. Month index from April. */
-const WINDOWS = Array.from({ length: 11 }, (_, i) => ({ from: i, label: `${MONTHS[i]} to ${MONTHS[i + 1]} ${i >= 9 ? 2027 : 2026}` }));
 const fyIndex = (date: Date) => (date.getMonth() + 9) % 12;
-/** Rows that wait for the filing: "Mark filed" shows on them. */
-const PENDING: FilingStatus[] = ["In progress", "Due soon", "Overdue"];
+const yearOf = (i: number) => (i >= 9 ? 2027 : 2026);
 
-function MonthChart({ rows }: { rows: StaffFiling[] }) {
-  const data = MONTHS.map((m, i) => {
-    const month = (i + 3) % 12;
-    const row: Record<string, string | number> = { m };
-    for (const s of FILING_STATUSES) row[s] = rows.filter((f) => f.due.getMonth() === month && f.status === s).length;
-    return row;
-  });
+type Period = "monthly" | "quarterly" | "annual";
+/** Monthly shows two months, as the old "Sep to Oct 2026" head. Quarterly shows three. Annual shows the year. */
+const SPAN: Record<Period, number> = { monthly: 2, quarterly: 3, annual: 12 };
+const STEP: Record<Period, number> = { monthly: 1, quarterly: 3, annual: 12 };
+
+const STATUSES: OldFilingStatus[] = ["Filed", "Due soon", "Overdue", "Upcoming"];
+const S_TONE: Record<OldFilingStatus, ChipTone> = { Filed: "ok", "Due soon": "warn", Overdue: "bad", Upcoming: "idle" };
+const S_BAR: Record<OldFilingStatus, BarTone> = { Filed: "ok", "Due soon": "warn", Overdue: "bad", Upcoming: "idle" };
+const TILE: Record<OldFilingStatus, string> = {
+  Filed: "border-transparent bg-ok-soft text-ok",
+  "Due soon": "border-transparent bg-warn-soft text-warn",
+  Overdue: "border-transparent bg-bad-soft text-bad",
+  Upcoming: "border-line bg-surface text-ink",
+};
+const AREA_LABEL: Record<Area, string> = { GST: "GST", "Income tax": "Income tax", MCA: "MCA", Payroll: "Payroll", FEMA: "FEMA", Labour: "Labour" };
+
+function DueTile({ f }: { f: OldFiling }) {
   return (
-    <SectionCard title="Filings by month" meta="FY 2026-27">
-      <div className="h-[232px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -24 }} barCategoryGap="28%">
-            <CartesianGrid vertical={false} stroke="var(--line-soft)" />
-            <XAxis dataKey="m" tickLine={false} axisLine={{ stroke: "var(--line)" }} tick={{ fill: "var(--muted)", fontSize: 11.5 }} interval={0} />
-            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "var(--faint)", fontSize: 11.5 }} />
-            <Tooltip
-              cursor={{ fill: "var(--raised)" }}
-              contentStyle={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 8, fontSize: 12.5, color: "var(--ink)" }}
-              labelStyle={{ color: "var(--ink)", fontWeight: 600 }}
-            />
-            {FILING_STATUSES.map((s) => (
-              <Bar key={s} dataKey={s} stackId="a" fill={FILL[s]} isAnimationActive={false} maxBarSize={28} />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </SectionCard>
+    <span className={cn("grid w-11 place-items-center rounded border py-1 leading-none", TILE[f.status])} aria-label={`Due ${f.due.getDate()} ${MONTHS[fyIndex(f.due)]}`}>
+      <b className="text-16 font-semibold">{f.due.getDate()}</b>
+      <span className={cn("text-[10.5px] font-semibold", f.status === "Upcoming" ? "text-muted" : "opacity-80")}>{MONTHS[fyIndex(f.due)]}</span>
+    </span>
   );
 }
 
-function StatusCard({ rows, label }: { rows: StaffFiling[]; label: string }) {
-  return (
-    <SectionCard title="Filing status" meta={label}>
-      <Donut total={rows.length} segments={FILING_STATUSES.map((s) => ({ label: s, value: rows.filter((f) => f.status === s).length, tone: FILING_STATUS_BAR[s] }))} />
-    </SectionCard>
-  );
-}
-
-function AreaCard({ rows, label }: { rows: StaffFiling[]; label: string }) {
-  return (
-    <SectionCard title="Progress by area" meta={label}>
-      <div className="grid grid-cols-1 gap-y-4">
-        {BAR_AREAS.map((a) => {
-          const list = rows.filter((f) => f.area === a);
-          const filed = list.filter((f) => f.status === "Filed").length;
-          if (list.length === 0) return null;
-          return (
-            <StackedBar
-              key={a}
-              title={`${a} · ${filed} of ${list.length} filed`}
-              height={6}
-              segments={FILING_STATUSES.map((s) => ({ label: s, value: list.filter((f) => f.status === s).length, tone: FILING_STATUS_BAR[s] })).filter((s) => s.value > 0)}
-            />
-          );
-        })}
-      </div>
-    </SectionCard>
-  );
-}
-
-function inPeriod(f: StaffFiling, p: string) {
-  if (p === "all") return true;
-  if (p === "Annual") return f.frequency === "Annual" || f.frequency === "Event";
-  if (p === "Quarterly") return f.frequency === "Quarterly" || f.frequency === "Half-yearly";
-  return f.frequency === p;
+function exportCsv(rows: OldFiling[]) {
+  const head = ["Due", "Area", "Filing", "Period", "Frequency", "Filed on", "Status"];
+  const lines = rows.map((f) => [`${f.due.getDate()} ${MONTHS[fyIndex(f.due)]}`, f.area, f.form, f.period, f.frequency, f.filedOn, f.status].map((v) => `"${v.replaceAll('"', '""')}"`).join(","));
+  const url = URL.createObjectURL(new Blob([[head.join(","), ...lines].join("\n")], { type: "text/csv" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "filings.csv";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function FilingsScreen({ portal }: { portal: StaffPortal }) {
-  const [client, setClient] = React.useState("");
-  const [period, setPeriod] = React.useState("all");
-  const [fy, setFy] = React.useState("2026-27");
-  const [marked, setMarked] = React.useState<Record<string, true>>({});
-  const [area, setArea] = React.useState<"" | Area>("");
-  const [status, setStatus] = React.useState<"" | FilingStatus>("");
-  // Window: two months at a time (Sep to Oct holds today), or the full year.
-  const [win, setWin] = React.useState(5);
-  const [full, setFull] = React.useState(false);
+  const [period, setPeriod] = React.useState<Period>("monthly");
+  const [from, setFrom] = React.useState(5); // Sep
+  const [area, setArea] = React.useState<"all" | Area>("all");
+  const [status, setStatus] = React.useState<"all" | OldFilingStatus>("all");
   const [proof, setProof] = React.useState<Proof | null>(null);
+  const toast = useUndoToast();
 
-  // "Mark filed" turns a row to Filed in place.
-  const all = filingsFor(portal, client).map((f): StaffFiling => (marked[f.id] ? { ...f, status: "Filed", filed: TODAY } : f));
-  const fyRows = all.filter((f) => f.fy === fy && inPeriod(f, period));
-  const w = WINDOWS[win];
-  const inWin = (f: StaffFiling) => full || fy !== "2026-27" || (fyIndex(f.due) >= w.from && fyIndex(f.due) <= w.from + 1);
-  const winRows = fyRows.filter(inWin);
-  const rows = winRows.filter((f) => (!area || f.area === area) && (!status || f.status === status));
-  const winLabel = full || fy !== "2026-27" ? `FY ${fy}` : w.label;
+  const span = SPAN[period];
+  const start = period === "annual" ? 0 : Math.min(from, 12 - span);
+  const end = start + span - 1;
+  const label = period === "annual" ? "FY 2026-27" : `${MONTHS[start]} to ${MONTHS[end]} ${yearOf(end)}`;
+  const short = period === "annual" ? "FY 2026-27" : `${MONTHS[start]}-${MONTHS[end]}`;
+  const inWindow = OLD_FILINGS.filter((f) => fyIndex(f.due) >= start && fyIndex(f.due) <= end);
+  const byArea = inWindow.filter((f) => area === "all" || f.area === area);
+  const rows = byArea.filter((f) => status === "all" || f.status === status);
 
-  const columns: Column<StaffFiling>[] = [
-    { key: "client", label: "Client", width: 150, render: (f) => <ClientName id={f.client} short /> },
+  const move = (dir: 1 | -1) => setFrom(Math.max(0, Math.min(12 - span, start + dir * STEP[period])));
+  const pickPeriod = (p: Period) => {
+    setPeriod(p);
+    if (p === "quarterly") setFrom(Math.floor(start / 3) * 3);
+  };
+
+  const cols: Column<OldFiling>[] = [
+    { key: "due", label: "Due", width: 72, render: (f) => <DueTile f={f} /> },
     {
-      key: "form",
-      label: "Form",
+      key: "area",
+      label: "Area",
+      width: 76,
       render: (f) => (
-        <span className="flex items-center gap-1 whitespace-nowrap font-semibold">
-          {f.form}
-          <PortalLink area={f.area} />
+        <Tag tone={AREA_TONE[f.area]} className="font-mono">
+          <span title={AREA_LABEL[f.area]}>{f.code}</span>
+        </Tag>
+      ),
+    },
+    {
+      key: "filing",
+      label: "Filing",
+      render: (f) => (
+        <span className="block min-w-0">
+          <span className="flex items-center gap-1">
+            <b className="truncate text-13 font-semibold">{f.form}</b>
+            <PortalLink area={f.area} />
+          </span>
+          <span className="block text-12 text-muted">{f.period}</span>
         </span>
       ),
     },
-    { key: "area", label: "Area", width: 100, render: (f) => <Tag tone={AREA_TONE[f.area]}>{f.area}</Tag> },
-    { key: "period", label: "Period", width: 140, className: "whitespace-nowrap" },
-    { key: "frequency", label: "Frequency", width: 100 },
-    { key: "due", label: "Due", width: 76, className: "whitespace-nowrap", render: (f) => fmt(f.due) },
-    { key: "filed", label: "Filed", width: 76, className: "whitespace-nowrap", render: (f) => (f.filed ? fmt(f.filed) : "-") },
-    { key: "status", label: "Status", width: 132, render: (f) => <Chip tone={FILING_STATUS_TONE[f.status]} fixed>{f.status}</Chip> },
-    { key: "arn", label: "ARN", mono: true, width: 190, className: "whitespace-nowrap", render: (f) => f.arn ?? "-" },
+    { key: "freq", label: "Frequency", width: 120, render: (f) => <span className="text-ink-2">{f.frequency}</span> },
+    {
+      key: "filed",
+      label: "Filed on",
+      width: 130,
+      render: (f) => <span className={f.status === "Overdue" ? "font-semibold text-bad" : f.status === "Filed" ? "font-semibold" : "text-muted"}>{f.filedOn}</span>,
+    },
+    { key: "status", label: "Status", width: 132, render: (f) => <Chip tone={S_TONE[f.status]} fixed>{f.status}</Chip> },
     {
       key: "proof",
       label: "Proof",
-      width: 110,
+      width: 136,
+      align: "right",
       render: (f) =>
-        f.status === "Filed" ? (
-          <span className="flex items-center gap-0.5">
-            <button type="button" onClick={() => setProof({ title: f.form, period: f.period, filed: f.filed, arn: f.arn, client: f.client, area: f.area })} className="rounded-sm hover:opacity-80">
-              <Chip tone="prog" dot={false}>
-                Proof
-              </Chip>
+        f.proof === "file" ? (
+          <span className="inline-flex items-center gap-1.5">
+            <button type="button" onClick={() => setProof({ title: f.form, period: f.period, client: "", area: f.area })} className="inline-flex h-[22px] items-center gap-1 rounded-sm bg-accent-soft px-2 text-12 font-semibold text-accent hover:underline">
+              <FileCheck size={12} strokeWidth={1.5} /> Proof
             </button>
-            <Button size="iconSm" variant="ghost" className="h-6 w-6" aria-label={`Download proof for ${f.form}`}>
+            <Button size="iconSm" variant="outline" aria-label={`Download proof of ${f.form}`} title="Download" onClick={() => toast.show(`Downloaded ${f.form} proof · ${f.period}`)}>
               <Download size={14} strokeWidth={1.5} />
             </Button>
           </span>
+        ) : f.proof === "pending" ? (
+          <Tag tone="warn">Proof pending</Tag>
         ) : (
-          "-"
+          <span className="text-faint">-</span>
         ),
-    },
-    { key: "owner", label: "Owner", width: 100 },
-    {
-      key: "act",
-      label: "",
-      width: 108,
-      render: (f) =>
-        PENDING.includes(f.status) ? (
-          <Button size="sm" variant="outline" onClick={() => setMarked({ ...marked, [f.id]: true })}>
-            Mark filed
-          </Button>
-        ) : null,
     },
   ];
 
-  const areaOpts = [{ value: "", label: `All areas · ${winRows.length}` }, ...AREAS.filter((a) => winRows.some((f) => f.area === a)).map((a) => ({ value: a, label: `${a} · ${winRows.filter((f) => f.area === a).length}` }))];
+  const filters = (
+    <>
+      <span className="inline-flex items-center">
+        <Button size="iconSm" variant="ghost" onClick={() => move(-1)} disabled={period === "annual" || start === 0} aria-label="Previous period">
+          <ChevronLeft size={16} strokeWidth={1.5} />
+        </Button>
+        <Button size="iconSm" variant="ghost" onClick={() => move(1)} disabled={period === "annual" || end === 11} aria-label="Next period">
+          <ChevronRight size={16} strokeWidth={1.5} />
+        </Button>
+      </span>
+      <Tabs
+        items={[
+          { key: "monthly", label: "Monthly" },
+          { key: "quarterly", label: "Quarterly" },
+          { key: "annual", label: "Annual" },
+        ]}
+        value={period}
+        onChange={(k) => pickPeriod(k as Period)}
+      />
+      <Button size="sm" onClick={() => pickPeriod("annual")} disabled={period === "annual"}>
+        Full year
+      </Button>
+      <Button size="sm" onClick={() => exportCsv(rows)}>
+        <Download size={16} strokeWidth={1.5} /> Export
+      </Button>
+      <Button size="sm" asChild>
+        <Link href={`/${portal}/compliances/calendar`}>
+          <Calendar size={16} strokeWidth={1.5} /> Calendar
+        </Link>
+      </Button>
+    </>
+  );
 
   return (
-    <div className="grid grid-cols-1 gap-5">
-      <Cols>
-        <Col>
-          <MonthChart rows={all} />
-        </Col>
-        <Col>
-          <StatusCard rows={winRows} label={winLabel} />
-          <AreaCard rows={winRows} label={winLabel} />
-        </Col>
-      </Cols>
-      <DataGrid
-        title="Filings"
-        meta={`${winLabel} · ${rows.length} filings`}
-        columns={columns}
-        rows={rows}
-        rowKey={(f) => f.id}
-        rowHref={(f) => (f.obligationId ? staffObHref(portal, `${f.client}-${f.obligationId}`) : undefined)}
-        rowLate={isLate}
-        pageSize={10}
-        filters={
-          <>
-            {fy === "2026-27" && (
-              <span className="inline-flex items-center gap-1">
-                <Button size="iconSm" variant="ghost" disabled={full || win === 0} onClick={() => setWin(win - 1)} aria-label="Previous months">
-                  <ChevronLeft size={16} strokeWidth={1.5} />
-                </Button>
-                <Button size="sm" variant={full ? "primary" : "outline"} onClick={() => setFull(!full)} aria-pressed={full}>
-                  Full year
-                </Button>
-                <Button size="iconSm" variant="ghost" disabled={full || win === WINDOWS.length - 1} onClick={() => setWin(win + 1)} aria-label="Next months">
-                  <ChevronRight size={16} strokeWidth={1.5} />
-                </Button>
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
+      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <section className="flex items-center rounded-lg border border-line bg-surface px-5 py-4" aria-label="Filings by status">
+          <Donut
+            size={84}
+            className="w-full [&>div:last-child]:flex-1"
+            total={
+              <span className="grid place-items-center leading-none">
+                {inWindow.length}
+                <small className="mt-0.5 text-11 font-medium text-muted">filings</small>
               </span>
-            )}
-            <ClientSelect clients={complianceClients(portal)} value={client} onChange={setClient} />
-            <Select aria-label="Area" value={area} onChange={(e) => setArea(e.target.value as "" | Area)} options={areaOpts} />
-            <Select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value as "" | FilingStatus)} options={[{ value: "", label: "All statuses" }, ...FILING_STATUSES.map((st) => ({ value: st, label: st }))]} />
-            <Tabs items={["all", "Monthly", "Quarterly", "Annual"].map((p) => ({ key: p, label: p === "all" ? "All" : p }))} value={period} onChange={setPeriod} />
-            <Select
-              aria-label="Financial year"
-              value={fy}
-              onChange={(e) => setFy(e.target.value)}
-              options={[
-                { value: "2026-27", label: "FY 2026-27" },
-                { value: "2025-26", label: "FY 2025-26" },
-              ]}
-            />
-            <Button size="sm">
-              <Download size={16} strokeWidth={1.5} /> Export
-            </Button>
-            <Button size="sm" asChild>
-              <Link href={`/${portal}/compliances/calendar`}>Calendar</Link>
-            </Button>
-          </>
-        }
-      />
+            }
+            segments={STATUSES.map((s) => ({ label: s, value: inWindow.filter((f) => f.status === s).length, tone: S_BAR[s] }))}
+          />
+        </section>
+        <section className="rounded-lg border border-line bg-surface px-5 py-4" aria-label="By area">
+          <p className="mb-2 text-12.5 font-semibold">By area · {short}</p>
+          <div className="grid gap-1.5">
+            {OLD_FILING_AREAS.map((a) => {
+              const list = inWindow.filter((f) => f.area === a);
+              const filed = list.filter((f) => f.status === "Filed").length;
+              return (
+                <button key={a} type="button" onClick={() => setArea(area === a ? "all" : a)} aria-pressed={area === a} className={cn("grid grid-cols-[84px_minmax(0,1fr)_36px] items-center gap-3 rounded-sm text-left hover:bg-raised", area === a && "bg-raised")}>
+                  <span className="text-12.5 font-semibold">{AREA_LABEL[a]}</span>
+                  <span className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-line-soft" title={`${AREA_LABEL[a]} · ${list.length} filings`}>
+                    {STATUSES.map((s) => {
+                      const n = list.filter((f) => f.status === s).length;
+                      return n ? <i key={s} className={cn("block h-full", barFill[S_BAR[s]])} style={{ flex: n }} title={`${AREA_LABEL[a]} · ${n} ${s.toLowerCase()}`} /> : null;
+                    })}
+                  </span>
+                  <span className="text-right font-mono text-12 text-muted">
+                    {filed}/{list.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2.5">
+        <Tabs
+          items={[{ key: "all", label: "All", count: inWindow.length }, ...OLD_FILING_AREAS.map((a) => ({ key: a, label: AREA_LABEL[a], count: inWindow.filter((f) => f.area === a).length }))]}
+          value={area}
+          onChange={(k) => setArea(k as "all" | Area)}
+        />
+        <Tabs className="sm:ml-auto" items={[{ key: "all", label: "All" }, ...["Overdue", "Due soon", "Upcoming", "Filed"].map((s) => ({ key: s, label: s }))]} value={status} onChange={(k) => setStatus(k as "all" | OldFilingStatus)} />
+      </div>
+
+      <DataGrid title={label} meta={`FY 2026-27 · ${rows.length} filings`} icon={{ Icon: Calendar, tone: "teal" }} filters={filters} columns={cols} rows={rows} rowKey={(f) => f.id} pageSize={20} empty="No filings" />
+
       <ProofDialog proof={proof} onOpenChange={(v) => !v && setProof(null)} />
+      {toast.node}
     </div>
   );
 }

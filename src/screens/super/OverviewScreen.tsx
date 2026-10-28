@@ -1,6 +1,6 @@
 "use client";
-import { AlertTriangle, Award, Building2, Gauge, IdCard, ShieldCheck, ShieldAlert, UserCog, Users } from "lucide-react";
-import { TODAY } from "@/lib/dates";
+import { AlertTriangle, Award, Building2, IdCard, ShieldCheck, UserCog, Users } from "lucide-react";
+import { STAFF_TODAY } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Cols, Col, Row } from "@/components/shell/Page";
 import { Avatar } from "@/components/ui/Avatar";
@@ -12,7 +12,7 @@ import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
 import { ActivityList } from "@/components/cards/ActivityList";
 import { StackedBar } from "@/components/cards/StackedBar";
-import { AREA_HEALTH_TONE, AREA_ROWS, CAP, FILINGS, FIRM_CLIENTS, HEALTH_TONE, MANAGERS, REGS, SEVERITY_TONE, type AreaRow } from "@/data/super";
+import { AREA_HEALTH_TONE, AREA_ROWS, CAP, FILINGS, FIRM_CLIENTS, HEALTH_TONE, REGS, type AreaRow } from "@/data/super";
 import {
   ADMINS,
   ADMIN_FEED,
@@ -32,6 +32,7 @@ import {
   type ManagerRow,
 } from "@/data/super-firm";
 import { clientHref } from "./parts";
+import { waitWord } from "@/data/status-words";
 
 // Ported from reference/old-patch/super/Main.dc.html: greeting with change against September, the three practice cards,
 // "Admins · this month", "Managers", "Top risks", clients needing attention, plus the admin activity feed from Team.
@@ -76,11 +77,9 @@ const managerCols: Column<ManagerRow>[] = [
 export function OverviewScreen() {
   const incorporating = FIRM_CLIENTS.filter((c) => c.stage === "incorporating");
   const overdueFilings = FILINGS.filter((f) => f.status === "Overdue").length;
-  const filed = FILINGS.filter((f) => f.status === "Filed").length;
-  const onTimePct = Math.round((filed / Math.max(1, filed + overdueFilings)) * 100);
-  const openRisks = TOP_RISKS.filter((r) => r.status === "Open");
-  const used = MANAGERS.reduce((a, m) => a + FIRM_CLIENTS.filter((c) => c.manager === m.name).length, 0);
-  const utilisation = Math.round((used / (MANAGERS.length * CAP)) * 100);
+  // Old Main: filed on time over every filing due before 16 Oct (on time, late or still open).
+  const past = FILINGS.filter((f) => f.due < STAFF_TODAY);
+  const onTimePct = Math.round((past.filter((f) => f.status === "Filed").length / Math.max(1, past.length)) * 100);
 
   let regDone = 0;
   let regProg = 0;
@@ -95,17 +94,14 @@ export function OverviewScreen() {
   });
   const regTop = [...byType].sort((a, b) => b.open - a.open).slice(0, 4);
   const regWorst = [...byType].sort((a, b) => b.w - a.w)[0].t;
-  const worstStatute = [...statuteRows()].sort((a, b) => b.overdue - a.overdue)[0];
+  const worstStatute = statuteRows().reduce((w, r) => (r.overdue + r.late >= w.overdue + w.late ? r : w));
 
   // Change against September (old DELTA) in the strip's small text.
   const stats: StatItem[] = [
-    { label: "Clients", value: FIRM_CLIENTS.length, of: "+2 vs Sep", Icon: Building2, tone: "blue", href: "/super/clients" },
-    { label: "Incorporating", value: incorporating.length, Icon: Award, tone: "violet", href: "/super/practice/incorporation" },
-    { label: "Registrations open", value: regProg + regWait, of: "−3 vs Sep", Icon: IdCard, tone: "violet", href: "/super/practice/registrations" },
+    { label: "Clients", value: FIRM_CLIENTS.length, of: "+2", Icon: Building2, tone: "blue", href: "/super/clients" },
+    { label: "Registrations open", value: regProg + regWait, of: "−3", Icon: IdCard, tone: "violet", href: "/super/practice/registrations" },
     { label: "Filed on time", value: `${onTimePct}%`, of: "+4 pts", Icon: ShieldCheck, tone: "green", href: "/super/practice/compliances" },
-    { label: "Filings overdue", value: overdueFilings, of: "+1 vs Sep", Icon: AlertTriangle, tone: "red", bad: overdueFilings > 0, href: "/super/practice/compliances" },
-    { label: "Risks open", value: openRisks.length, Icon: ShieldAlert, tone: "amber", href: "/super/risks" },
-    { label: "Team utilisation", value: `${utilisation}%`, Icon: Gauge, tone: "teal", href: "/super/team" },
+    { label: "Filings overdue", value: overdueFilings, of: "+1", Icon: AlertTriangle, tone: "red", bad: overdueFilings > 0, href: "/super/practice/filings" },
   ];
 
   const attention: AttentionRow[] = FIRM_CLIENTS.filter((c) => c.health === "Stuck" || c.health === "Overdue" || c.health === "Due soon" || c.health === "With client")
@@ -118,7 +114,7 @@ export function OverviewScreen() {
         date: c.next,
         title: c.name,
         sub: `${codeOf(c)} ${c.step} · ${c.manager}, ${holderOf(c)}`,
-        chip: { label: c.health, tone: HEALTH_TONE[c.health] },
+        chip: { label: waitWord(c.health), tone: HEALTH_TONE[c.health] },
         urgent,
         action: urgent ? { label: "Open", href: clientHref(c.id) } : undefined,
         href: urgent ? undefined : clientHref(c.id),
@@ -130,7 +126,7 @@ export function OverviewScreen() {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <GreetingCard date={TODAY} name="SBC · firm overview" stats={stats} />
+      <GreetingCard date={STAFF_TODAY} time="12:31 PM" eyebrow="Good afternoon" name="Mithilesh" stats={stats} />
 
       <Row cols={3}>
         <SectionCard title="Incorporation" meta={String(incorporating.length)} icon={{ Icon: Award, tone: "violet" }} right={<HeadLink href="/super/practice/incorporation">Open ›</HeadLink>}>
@@ -190,16 +186,15 @@ export function OverviewScreen() {
           <StackedBar
             total={FILINGS.length}
             segments={[
-              { label: "Filed", value: count("Filed"), tone: "ok" },
-              { label: "In progress", value: count("In progress"), tone: "accent" },
-              { label: "With client", value: count("With client"), tone: "violet" },
-              { label: "Due in 7 days", value: count("Due soon"), tone: "warn" },
               { label: "Overdue", value: count("Overdue"), tone: "bad" },
+              { label: "Filed late", value: count("Filed late"), tone: "warn" },
+              { label: "Due this week", value: count("Due soon"), tone: "accent" },
               { label: "Upcoming", value: count("Upcoming"), tone: "idle" },
+              { label: "Filed on time", value: count("Filed"), tone: "ok" },
             ]}
           />
           <p className="mt-3 border-t border-line-soft pt-3 text-12.5 text-muted">
-            Worst statute: <b className="font-semibold text-ink">{worstStatute?.overdue ? worstStatute.statute : "None"}</b>
+            Worst statute: <b className="font-semibold text-ink">{worstStatute.overdue + worstStatute.late ? worstStatute.statute : "None"}</b>
           </p>
         </SectionCard>
       </Row>
@@ -226,10 +221,7 @@ export function OverviewScreen() {
                     {r.owner} · {ageOf(r)}
                   </span>
                 </span>
-                <span className="flex flex-none flex-col items-end gap-1">
-                  <Tag tone={RISK_KIND_TONE[kindOf(r)]}>{RISK_KIND_LABEL[kindOf(r)]}</Tag>
-                  <Chip tone={SEVERITY_TONE[r.severity]}>{r.severity}</Chip>
-                </span>
+                <Tag tone={RISK_KIND_TONE[kindOf(r)]}>{RISK_KIND_LABEL[kindOf(r)]}</Tag>
               </ListRow>
             ))}
           </SectionCard>

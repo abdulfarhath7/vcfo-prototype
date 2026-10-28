@@ -39,7 +39,7 @@ export const REG_FIELDS: Record<string, { client: Pair[]; sbc: Pair[] }> = {
 /** SBC-filled fields for each obligation (regcat.js OB.sbc, keyed to src/data/compliance.ts ids). */
 const OB_SBC: Record<string, Pair[]> = {
   "tds-pay": [["Challan 281 (CIN)", "-"]],
-  gstr1: [["ARN", "-"], ["B2B invoices", "14"]],
+  gstr1: [["Period", "Sep 2026"], ["ARN", "-"], ["B2B invoices", "14"]],
   gstr3b: [["Challan (PMT-06)", "-"]],
   "pf-esi": [["TRRN", "-"], ["ESI challan", "-"]],
   dir3kyc: [["SRN", "-"]],

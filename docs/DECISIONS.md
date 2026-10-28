@@ -15,3 +15,8 @@ One row for each owner decision. Add rows at the end.
 | D-09 | 27 Oct 2026 | Order of work | Developer first among the two "fix everything" portals, then super admin tables and chips, then layout and spacing. |
 | D-10 | 27 Oct 2026 | Manager This week strip | Keep it removed. The owner approved this in the Lead Today cuts (26 Oct 2026). |
 | D-11 | 27 Oct 2026 | Main button | Use the sidebar navy #15263B. |
+| D-12 | 28 Oct 2026 | Client Team | Keep one card for the SBC team (C-0028). Do not use the three old contact cards. |
+| D-13 | 28 Oct 2026 | Manager approvals | Each row of "Waiting for your approval" has a navy button. This is an exception to R-12. |
+| D-14 | 28 Oct 2026 | Admin Work status | Show Status as a donut, as in the old screen. This is an exception to R-25. |
+| D-15 | 28 Oct 2026 | Client record documents | The Northwind Documents tab shows 18, as in the old screen. No file list is behind the number. |
+| D-16 | 28 Oct 2026 | Other open questions | Keep the current state for the board resolution dates and signer, client-only fields, the 12 quick answers, the dark main button, the developer strip and copy, the missing staff preview switch and the credentials counts. |

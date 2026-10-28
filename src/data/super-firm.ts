@@ -1,10 +1,10 @@
-import { TODAY, d, daysFrom } from "@/lib/dates";
+import { STAFF_TODAY, d, daysFrom } from "@/lib/dates";
 import type { ChipTone } from "@/components/ui/Chip";
 import type { ActivityRow } from "@/components/cards/ActivityList";
-import { CAP, FILINGS, FIRM_CLIENTS, MANAGERS, RISKS, STAFF, type FirmClient, type Risk } from "@/data/super";
+import { CAP, FILINGS, FIRM_CLIENTS, MANAGERS, RISKS, STAFF, type FirmClient, type Risk, type RiskKind } from "@/data/super";
 
 // More super admin data, ported from reference/old-screens/s/super/data.js and reference/old-patch/super/*.
-// Dates move back 10 days (old today 16 Oct, new TODAY 6 Oct).
+// Dates are the old ones: the super admin portal is frozen on Fri 16 Oct 2026 (STAFF_TODAY).
 // Money (FEES, DUES, LATE_FEES) is used only by the "Fees and late fees" report and the client record (R-37).
 
 /* ---------- Admins ---------- */
@@ -32,14 +32,14 @@ export const clientsOfAdmin = (a: Admin) => FIRM_CLIENTS.filter((c) => a.manager
 
 /** What admins did this week (old FEED). */
 export const ADMIN_FEED: ActivityRow[] = [
-  { id: "f1", date: TODAY, time: "11:20", text: "Approved the board resolution for Ember Studios", who: "Krishna" },
-  { id: "f2", date: TODAY, time: "10:05", text: "Escalated the PF ECR delay at Corvid Logistics to Pranay", who: "Krishna" },
-  { id: "f3", date: TODAY, time: "09:40", text: "Assigned Elm Textiles INC-20A review to Vikram Shah", who: "Ritu Agarwal" },
-  { id: "f4", date: d(2026, 10, 5), time: "17:10", text: "Reassigned Bluefin Analytics onboarding within Pranay's team", who: "Krishna" },
-  { id: "f5", date: d(2026, 10, 5), time: "12:30", text: "Approved ESI registration filing for Pinecrest Hotels", who: "Ritu Agarwal" },
-  { id: "f6", date: d(2026, 10, 4), time: "15:00", text: "Assigned Quartz Mobility to Arjun Mehta", who: "Krishna" },
-  { id: "f7", date: d(2026, 10, 3), time: "11:45", text: "Resolved the MCA query escalation at Bluefin Analytics", who: "Krishna" },
-  { id: "f8", date: d(2026, 10, 2), time: "16:20", text: "Won Aurora Paints: monthly compliance from November", who: "Ritu Agarwal" },
+  { id: "f1", date: STAFF_TODAY, time: "11:20", text: "Approved the board resolution for Larkspur Analytics", who: "Krishna" },
+  { id: "f2", date: STAFF_TODAY, time: "10:05", text: "Escalated the bank account delay at Brightwave Robotics to Pranay", who: "Krishna" },
+  { id: "f3", date: STAFF_TODAY, time: "09:40", text: "Assigned Ember Textiles INC-20A review to Vikram Shah", who: "Ritu Agarwal" },
+  { id: "f4", date: d(2026, 10, 15), time: "17:10", text: "Reassigned Juniper Bio onboarding within Pranay's team", who: "Krishna" },
+  { id: "f5", date: d(2026, 10, 15), time: "12:30", text: "Approved ESI registration filing for Pinecrest Hotels", who: "Ritu Agarwal" },
+  { id: "f6", date: d(2026, 10, 14), time: "15:00", text: "Assigned Quartz Mobility to Arjun Mehta", who: "Krishna" },
+  { id: "f7", date: d(2026, 10, 13), time: "11:45", text: "Resolved the MCA query escalation at Orchid Lane Foods", who: "Krishna" },
+  { id: "f8", date: d(2026, 10, 12), time: "16:20", text: "Won Aurora Paints: monthly compliance from November", who: "Ritu Agarwal" },
 ];
 
 /* ---------- Managers ---------- */
@@ -82,31 +82,11 @@ export const MANAGER_ROWS: ManagerRow[] = MANAGERS.map((m) => {
 export const PHASE_TOTALS = [5, 9, 11, 23] as const;
 export const PHASE_NAMES = ["Name", "Incorporation", "Post-incorporation", "Registrations"];
 
-export const PHASES_DONE: Record<string, [number, number, number, number]> = {
-  northwind: [5, 1, 0, 0],
-  bluefin: [5, 4, 0, 0],
-  ember: [1, 0, 0, 0],
-  zenith: [5, 9, 11, 19],
-  arcadia: [5, 9, 11, 14],
-  corvid: [5, 9, 11, 6],
-  delta: [5, 9, 11, 20],
-  fjord: [5, 9, 11, 21],
-  saffron: [5, 9, 5, 0],
-  monsoon: [5, 8, 0, 0],
-  indigo: [5, 9, 11, 6],
-  banyan: [3, 0, 0, 0],
-  coral: [5, 9, 8, 0],
-  quartz: [5, 3, 0, 0],
-  pinecrest: [5, 9, 11, 4],
-  saltmarsh: [5, 6, 0, 0],
-  elm: [5, 9, 6, 0],
-};
-
-export const phasesOf = (c: FirmClient) => PHASES_DONE[c.id] ?? [0, 0, 0, 0];
+export const phasesOf = (c: FirmClient) => c.phases;
 export const progressOf = (c: FirmClient) => Math.round((phasesOf(c).reduce((a, b) => a + b, 0) / 48) * 100);
 
-/** Step code as the old grid showed it: "Step 7", or the registration or form. */
-export const codeOf = (c: FirmClient) => (c.stepNo ? `Step ${c.stepNo}` : c.pipe === "reg" ? "Registration" : "Filing");
+/** Step code: "Step 7" for one of the 25 incorporation steps, else the old code ("Reg-1"). */
+export const codeOf = (c: FirmClient) => (c.stepNo ? `Step ${c.stepNo}` : c.code);
 
 /** Who holds the work and for how long: "Client · 5d". */
 export const holderOf = (c: FirmClient) => `${c.owner === "client" ? "Client" : c.owner === "mca" ? "MCA" : "SBC"} · ${c.daysInStep}d`;
@@ -118,17 +98,18 @@ export const HEALTH_ORDER: Record<FirmClient["health"], number> = { Stuck: 0, Ov
 export function notesOf(c: FirmClient) {
   if (c.id === "northwind")
     return [
-      { id: "n1", who: "Pranay", date: d(2026, 10, 5), text: "Rohan prefers WhatsApp for document reminders." },
-      { id: "n2", who: "Bharath", date: d(2026, 10, 2), text: "Utility bill must show the same address as the rent agreement." },
-      { id: "n3", who: "Krishna", date: d(2026, 9, 14), text: "Parent company signs in London. Courier time is 5 working days." },
+      { id: "n1", who: "Pranay", date: d(2026, 10, 15), text: "Rohan prefers WhatsApp for document reminders." },
+      { id: "n2", who: "Bharath", date: d(2026, 10, 12), text: "Utility bill must show the same address as the rent agreement." },
+      { id: "n3", who: "Krishna", date: d(2026, 9, 24), text: "Parent company signs in London. Courier time is 5 working days." },
     ];
-  return [{ id: "n1", who: c.lead, date: d(2026, 10, 1), text: `Next date ${c.next.getDate()} Oct: ${c.step}.` }];
+  return [{ id: "n1", who: c.lead, date: d(2026, 10, 12), text: `Next date ${c.next.getDate()} Oct: ${c.step}.` }];
 }
 
 /* ---------- Risks ---------- */
 
-export type RiskKind = "filing" | "notice" | "kyc" | "owner" | "unassigned";
+export type { RiskKind };
 
+/** Kind chips (old RK). */
 export const RISK_KIND_LABEL: Record<RiskKind, string> = {
   filing: "Overdue filing",
   notice: "MCA notice",
@@ -139,35 +120,11 @@ export const RISK_KIND_LABEL: Record<RiskKind, string> = {
 
 export const RISK_KIND_TONE: Record<RiskKind, ChipTone> = { filing: "bad", notice: "violet", kyc: "warn", owner: "prog", unassigned: "prog" };
 
-const KIND: Record<string, RiskKind> = {
-  rk1: "filing",
-  rk2: "filing",
-  rk3: "filing",
-  rk4: "notice",
-  rk5: "notice",
-  rk6: "filing",
-  rk7: "kyc",
-  rk8: "owner",
-  rk9: "unassigned",
-  rk10: "kyc",
-  rk11: "notice",
-  rk12: "notice",
-};
+export const kindOf = (r: Risk): RiskKind => r.kind;
+export const ageOf = (r: Risk) => (r.age === 0 ? "Today" : r.age === 1 ? "1 day" : `${r.age} days`);
 
-export const kindOf = (r: Risk): RiskKind => KIND[r.id] ?? "filing";
-export const ageOf = (r: Risk) => {
-  const n = Math.max(0, -daysFrom(r.since));
-  return n === 0 ? "Today" : n === 1 ? "1 day" : `${n} days`;
-};
-
-/** Top risks for the overview and the partner report: open first, high severity first, oldest first. */
-export const TOP_RISKS = [...RISKS]
-  .filter((r) => r.status !== "Closed")
-  .sort((a, b) => (a.status === b.status ? 0 : a.status === "Open" ? -1 : 1) || sevRank(b) - sevRank(a) || a.since.getTime() - b.since.getTime());
-
-function sevRank(r: Risk) {
-  return r.severity === "High" ? 3 : r.severity === "Medium" ? 2 : 1;
-}
+/** Top risks for the overview and the partner report (old sort: severity, then rupee impact). */
+export const TOP_RISKS = [...RISKS].sort((a, b) => b.sev - a.sev || b.impact - a.impact);
 
 /* ---------- Incorporation ---------- */
 
@@ -194,13 +151,14 @@ export const STAGE_DAYS: StageDays[] = [
 
 /** Expected certificate dates for clients in incorporation. */
 export const EXPECTED_COI: Record<string, Date> = {
-  monsoon: d(2026, 10, 20),
-  bluefin: d(2026, 10, 25),
-  saltmarsh: d(2026, 10, 27),
-  northwind: d(2026, 10, 28),
-  quartz: d(2026, 11, 2),
-  ember: d(2026, 11, 16),
-  banyan: d(2026, 11, 22),
+  monsoon: d(2026, 10, 30),
+  orchid: d(2026, 11, 4),
+  saltmarsh: d(2026, 11, 6),
+  northwind: d(2026, 11, 9),
+  quartz: d(2026, 11, 12),
+  larkspur: d(2026, 11, 26),
+  banyan: d(2026, 12, 2),
+  juniper: d(2026, 12, 9),
 };
 
 export const AVG_DAYS_TO_COI = Math.round(MANAGERS.reduce((a, m) => a + m.daysToCoi, 0) / MANAGERS.length);
@@ -209,26 +167,28 @@ export const AVG_DAYS_TO_COI = Math.round(MANAGERS.reduce((a, m) => a + m.daysTo
 
 export type RegCode = "d" | "p" | "w" | "n" | "x";
 
+/** Old matrix cells: solid green, blue and amber; a framed cell after COI; a hatched cell when not needed. */
 export const REG_CELL: Record<RegCode, { label: string; mark: string; cls: string }> = {
-  d: { label: "Done", mark: "✓", cls: "bg-ok-soft text-ok" },
-  p: { label: "In progress", mark: "•", cls: "bg-accent-soft text-accent" },
-  w: { label: "Pending on documents", mark: "!", cls: "bg-warn-soft text-warn" },
-  n: { label: "After COI", mark: "", cls: "bg-raised text-faint" },
-  x: { label: "Not needed", mark: "–", cls: "text-faint" },
+  d: { label: "Done", mark: "✓", cls: "bg-ok text-white dark:bg-ok-mid" },
+  p: { label: "In progress", mark: "", cls: "bg-accent text-white" },
+  w: { label: "Pending", mark: "!", cls: "bg-warn text-white dark:bg-warn-mid dark:text-navy" },
+  n: { label: "After COI", mark: "", cls: "bg-raised ring-1 ring-inset ring-line" },
+  x: { label: "Not needed", mark: "", cls: "bg-[repeating-linear-gradient(135deg,var(--line)_0_1px,transparent_1px_6px)] ring-1 ring-inset ring-line-soft" },
 };
 
 /* ---------- Compliances ---------- */
 
-export const STATUTE_ORDER = ["GST", "TDS", "Income tax", "ROC", "PF and ESI", "PT"];
+export const STATUTE_ORDER = ["GST", "TDS", "Income tax", "ROC", "FEMA", "PF and ESI", "PT"];
 
 export function statuteRows() {
   return STATUTE_ORDER.map((t) => {
     const l = FILINGS.filter((f) => f.group === t);
     const filed = l.filter((f) => f.status === "Filed").length;
+    const late = l.filter((f) => f.status === "Filed late").length;
     const overdue = l.filter((f) => f.status === "Overdue").length;
-    const left = l.length - filed - overdue;
-    const pct = filed + overdue ? Math.round((filed / (filed + overdue)) * 100) : 100;
-    return { statute: t, total: l.length, filed, overdue, left, pct };
+    const left = l.length - filed - late - overdue;
+    const pct = filed + late + overdue ? Math.round((filed / (filed + late + overdue)) * 100) : 100;
+    return { statute: t, total: l.length, filed, late, overdue, left, pct };
   }).filter((r) => r.total > 0);
 }
 
@@ -258,10 +218,20 @@ export interface Person {
 
 const mail = (n: string) => `${n.split(" ")[0].toLowerCase()}@sbcllp.in`;
 
-export const PEOPLE: Person[] = [
+const PEOPLE_FLAT: Person[] = [
   { id: "mithilesh", name: "Mithilesh", role: "Super admin", reportsTo: "", email: mail("Mithilesh") },
   ...STAFF.map((s) => ({ id: s.id, name: s.name, role: s.role, reportsTo: s.reportsTo, email: mail(s.name) })),
 ];
+
+/** Old Settings order: each person, then the people who report to them (Krishna, Pranay, Bharath ...). */
+function treeOrder(list: Person[], boss = ""): Person[] {
+  return list.filter((p) => p.reportsTo === boss).flatMap((p) => [p, ...treeOrder(list, p.name)]);
+}
+
+export const PEOPLE: Person[] = (() => {
+  const ordered = treeOrder(PEOPLE_FLAT);
+  return [...ordered, ...PEOPLE_FLAT.filter((p) => !ordered.includes(p))];
+})();
 
 export const ROLE_TONE: Record<Person["role"], ChipTone> = { "Super admin": "violet", Admin: "prog", Manager: "teal", "Project lead": "idle" };
 
@@ -290,21 +260,21 @@ export const DUES: Array<{ clientId: string; amount: number; days: number }> = [
   { clientId: "coral", amount: 38000, days: 64 },
   { clientId: "quartz", amount: 30000, days: 12 },
   { clientId: "saltmarsh", amount: 42000, days: 33 },
-  { clientId: "zenith", amount: 26000, days: 8 },
-  { clientId: "elm", amount: 24000, days: 51 },
-  { clientId: "bluefin", amount: 20000, days: 22 },
+  { clientId: "halcyon", amount: 26000, days: 8 },
+  { clientId: "ember", amount: 24000, days: 51 },
+  { clientId: "orchid", amount: 20000, days: 22 },
 ];
 
 export const ageBucket = (days: number) => (days <= 30 ? "Up to 30 days" : days <= 60 ? "31 to 60 days" : "Over 60 days");
 
-/** Late fee per day for each overdue filing, by statute. */
-const PER_DAY: Record<string, number> = { "PF and ESI": 150, TDS: 200, PT: 200, "Income tax": 100 };
+/** Late fee so far and per day for each overdue filing (old EXC). */
+const LATE: Record<string, [number, number]> = { brightwave: [1500, 150], coral: [1800, 200], ember: [1800, 200], kestrel: [1200, 200] };
 
 export const LATE_FEES = FILINGS.filter((f) => f.status === "Overdue")
   .map((f) => {
-    const late = -daysFrom(f.due);
-    const perDay = PER_DAY[f.group] ?? 100;
-    return { id: f.id, clientId: f.clientId, form: f.item, statute: f.group, due: f.due, late, perDay, soFar: late * perDay };
+    const late = -daysFrom(f.due, STAFF_TODAY);
+    const [soFar, perDay] = LATE[f.clientId] ?? [late * 100, 100];
+    return { id: f.id, clientId: f.clientId, form: f.item, statute: f.group, due: f.due, late, perDay, soFar };
   })
   .sort((a, b) => b.soFar - a.soFar);
 
@@ -332,7 +302,7 @@ export const PARTNER_NUMBERS = (month: "Oct" | "Sep") =>
         { k: "Client movement", v: "2 won · 0 lost" },
         { k: "Certificates (COI) issued", v: "3" },
         { k: "Average days to COI · target 30", v: `${AVG_DAYS_TO_COI} days` },
-        { k: "Filings on time", v: `${filedOnTimePct()}% (${FILINGS.filter((f) => f.status === "Overdue").length} late)` },
+        { k: `Filings on time (${FILINGS.filter((f) => f.status === "Filed late").length} late)`, v: `${filedOnTimePct()}%` },
         { k: "Registrations completed", v: "6" },
       ]
     : [
@@ -340,18 +310,19 @@ export const PARTNER_NUMBERS = (month: "Oct" | "Sep") =>
         { k: "Client movement", v: "3 won · 1 lost" },
         { k: "Certificates (COI) issued", v: "2" },
         { k: "Average days to COI · target 30", v: "36 days" },
-        { k: "Filings on time", v: "88% (6 late)" },
+        { k: "Filings on time (6 late)", v: "88%" },
         { k: "Registrations completed", v: "9" },
       ];
 
+/** Old Reports: filed on time over every filing due before 16 Oct. */
 function filedOnTimePct() {
-  const past = FILINGS.filter((f) => f.status === "Filed" || f.status === "Overdue");
-  return Math.round((FILINGS.filter((f) => f.status === "Filed").length / Math.max(1, past.length)) * 100);
+  const past = FILINGS.filter((f) => f.due < STAFF_TODAY);
+  return Math.round((past.filter((f) => f.status === "Filed").length / Math.max(1, past.length)) * 100);
 }
 
 export const PARTNER_CLIENTS_LINE = {
-  Oct: "Lotus Dental (incorporation) and Aurora Paints (monthly compliance) signed this month. No client left. Monsoon Labs and Banyan Wellness are stuck at MCA.",
-  Sep: "Quartz Mobility, Saltmarsh Ventures and Elm Textiles signed. Harbor Foods left after the FY close. Corvid PF returns ran late.",
+  Oct: "Lotus Dental (incorporation) and Aurora Paints (monthly compliance) signed this month. No client left. Monsoon Labs and Banyan Wellness are stuck at MCA and need partner attention.",
+  Sep: "Quartz Mobility, Saltmarsh Ventures and Ember Textiles signed. Harbor Foods left after the FY close. Brightwave PF returns ran late.",
 };
 
 /** Manager targets used by assignment: name, clients, open, late (old assign.js mgrStats). */

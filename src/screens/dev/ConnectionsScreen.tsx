@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { TODAY, fmt, fmtYear, daysFrom } from "@/lib/dates";
+import { STAFF_TODAY, fmt, fmtYear, daysFrom } from "@/lib/dates";
 import { CONNECTIONS, CONN_TONE, stamp, type ConnEvent, type ConnStatus, type Connection } from "@/data/dev";
 import { detailFor } from "@/data/dev-connections";
 import { Button } from "@/components/ui/Button";
@@ -23,8 +23,8 @@ const isOff = (c: Live) => c.status === "Not connected";
 
 function expiry(c: Live) {
   if (!c.authExpires) return <span className="text-faint">None</span>;
-  const n = daysFrom(c.authExpires);
-  return <span className={n <= 15 ? "font-semibold text-warn" : undefined}>{c.authExpires.getFullYear() === TODAY.getFullYear() ? fmt(c.authExpires) : fmtYear(c.authExpires)}</span>;
+  const n = daysFrom(c.authExpires, STAFF_TODAY);
+  return <span className={n <= 15 ? "font-semibold text-warn" : undefined}>{c.authExpires.getFullYear() === STAFF_TODAY.getFullYear() ? fmt(c.authExpires) : fmtYear(c.authExpires)}</span>;
 }
 
 /** Head of the detail: summary facts, scopes, account edit, key rotation. */
@@ -135,7 +135,7 @@ export function ConnectionsScreen() {
     logAudit("Send test", `${c.name} to ${to}`);
   };
   const reconnect = (c: Live) => {
-    const expires = c.hasKey ? new Date(TODAY.getTime() + 90 * 86400000) : c.authExpires;
+    const expires = c.hasKey ? new Date(STAFF_TODAY.getTime() + 90 * 86400000) : c.authExpires;
     update(c.id, () => ({ status: "Connected" as ConnStatus, authExpires: c.status === "Needs re-auth" ? expires : c.authExpires, lastSync: nowToday(), off: false }), { at: nowToday(), text: "Reconnected", chip: "OK", tone: "ok" });
     logAudit("Reconnect", c.name, "Done", c.off ? "Off" : c.status, "Connected");
   };
@@ -169,22 +169,23 @@ export function ConnectionsScreen() {
       key: "service",
       label: "Service",
       render: (c) => (
-        <span className="block min-w-[180px]">
+        <span className="block w-[210px] min-w-0">
           <PickCell on={picked === c.id} onPick={() => pick(c.id)}>
             {c.name}
           </PickCell>
-          <span className="block truncate text-12 text-muted">{c.provider}</span>
+          <span className="block truncate text-12 text-muted">
+            {c.kind} · {c.provider}
+          </span>
         </span>
       ),
     },
-    { key: "kind", label: "Kind", render: (c) => <span className="whitespace-nowrap">{c.kind}</span> },
     { key: "status", label: "Status", width: 124, render: (c) => <Chip fixed tone={c.off ? "idle" : CONN_TONE[c.status]}>{c.off ? "Off" : c.status}</Chip> },
-    { key: "account", label: "Account", render: (c) => <span className="block min-w-[160px] text-12.5">{c.account}</span> },
+    { key: "account", label: "Account", render: (c) => <span className="block min-w-[150px] text-12.5">{c.account}</span> },
     { key: "sync", label: "Last check", mono: true, render: (c) => <span className="whitespace-nowrap">{isOff(c) ? "-" : stamp(c.lastSync)}</span> },
     { key: "exp", label: "Auth expires", render: (c) => <span className="whitespace-nowrap">{expiry(c)}</span> },
     {
       key: "act",
-      label: "",
+      label: "Action",
       width: 1,
       render: (c) =>
         isOff(c) ? (
@@ -202,19 +203,24 @@ export function ConnectionsScreen() {
             <Button size="sm" onClick={() => test(c)}>
               Test
             </Button>
-            <Button size="sm" onClick={() => reconnect(c)}>
-              Reconnect
-            </Button>
-            <Button
-              size="sm"
-              disabled={!c.hasKey || c.off}
-              onClick={() => {
-                setPicked(c.id);
-                setRotating(true);
-              }}
-            >
-              Rotate key
-            </Button>
+            {/* Reconnect only where the link is broken; the row stays inside the card at 1440 px. */}
+            {(c.status !== "Connected" || c.off) && (
+              <Button size="sm" onClick={() => reconnect(c)}>
+                Reconnect
+              </Button>
+            )}
+            {c.hasKey && (
+              <Button
+                size="sm"
+                disabled={c.off}
+                onClick={() => {
+                  setPicked(c.id);
+                  setRotating(true);
+                }}
+              >
+                Rotate key
+              </Button>
+            )}
           </span>
         ),
     },

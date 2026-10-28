@@ -1,4 +1,4 @@
-import { TODAY, d } from "@/lib/dates";
+import { STAFF_TODAY as TODAY, d } from "@/lib/dates";
 import { STEPS, type Step, type StepStatus } from "@/data/incorporation";
 import { PHASE_TOTALS, type StaffClient } from "@/data/staff-clients";
 import type { ThreadStep } from "@/components/cards/Thread";
@@ -39,10 +39,7 @@ export interface StepState {
 /** Status and dates of step n for client c. */
 export function stepState(c: StaffClient, n: number): StepState {
   const s = STEPS[n - 1];
-  if (c.id === "northwind") {
-    const from = s.done ? add(s.done, -2) : s.due ? add(s.due, -7) : undefined;
-    return { status: s.status, from, to: s.due ?? s.done, done: s.done };
-  }
+  if (c.id === "northwind") return NORTHWIND_STAFF[n - 1] ?? { status: s.status };
   const k = n - 1;
   const cur = currentIndex(c);
   if (k < cur) {
@@ -56,6 +53,32 @@ export function stepState(c: StaffClient, n: number): StepState {
   const from = add(c.next, (k - cur - 1) * 3 + 1);
   return { status: "Upcoming", from, to: add(from, 3) };
 }
+
+/**
+ * Northwind on staff screens (STAFF_TODAY 16 Oct), from the old lead Overview and Step pages:
+ * steps 1 to 5 done by 28 Sep, step 6 done 9 Oct, step 7 with the client 13 to 20 Oct, step 8 due 20 Oct,
+ * MCA review 31 Oct to 8 Nov, COI 9 Nov, Phase 3 from 10 Nov.
+ */
+const NW_WIN: [number, number, number, number, StepStatus][] = [
+  [9, 13, 9, 15, "Completed"],
+  [9, 16, 9, 17, "Completed"],
+  [9, 18, 9, 19, "Completed"],
+  [9, 21, 9, 22, "Completed"],
+  [9, 23, 9, 28, "Completed"],
+  [10, 6, 10, 9, "Completed"],
+  [10, 13, 10, 20, "Waiting"],
+  [10, 13, 10, 20, "In progress"],
+  [10, 21, 10, 22, "Upcoming"],
+  [10, 22, 10, 24, "Upcoming"],
+  [10, 24, 10, 27, "Upcoming"],
+  [10, 27, 10, 30, "Upcoming"],
+  [10, 31, 11, 8, "Upcoming"],
+  [11, 9, 11, 9, "Upcoming"],
+];
+const NORTHWIND_STAFF: StepState[] = [
+  ...NW_WIN.map(([m1, d1, m2, d2, status]): StepState => ({ status, from: d(2026, m1, d1), to: d(2026, m2, d2), done: status === "Completed" ? d(2026, m2, d2) : undefined })),
+  ...Array.from({ length: 11 }, (_, i): StepState => ({ status: "Upcoming", from: d(2026, 11, 10 + i * 2), to: d(2026, 11, 11 + i * 2) })),
+];
 
 const ownerOf = (s: Step): ThreadStep["owner"] => s.owner;
 
@@ -103,19 +126,21 @@ export function stepHistory(c: StaffClient, n: number): ThreadStep[] {
   return rows;
 }
 
+// Old Step.dc.html: Activity 7.
 const NORTHWIND_7_HISTORY: ThreadStep[] = [
-  { id: "th1", title: "Documents asked from the client", state: "done", date: d(2026, 9, 29), by: "Bharath" },
-  { id: "th2", title: "Address details and rent agreement accepted", state: "done", date: d(2026, 9, 30), by: "Bharath" },
-  { id: "th3", title: "NOC uploaded without signature", state: "done", date: d(2026, 10, 4), by: "Rohan Kumar", owner: "client" },
-  { id: "th4", title: "Utility bill and signed NOC", state: "current", date: TODAY, owner: "client", note: "Asked 5 days ago" },
-  { id: "th5", title: "SBC review", state: "upcoming", owner: "sbc" },
-  { id: "th6", title: "Step complete", state: "upcoming" },
+  { id: "th1", title: "Documents asked from the client", state: "done", date: d(2026, 10, 9), by: "Bharath" },
+  { id: "th2", title: "Address details accepted", state: "done", date: d(2026, 10, 10), by: "Bharath" },
+  { id: "th3", title: "Rent agreement accepted", state: "done", date: d(2026, 10, 10), by: "Bharath" },
+  { id: "th4", title: "NOC uploaded without signature", state: "done", date: d(2026, 10, 14), by: "Rohan Kumar", owner: "client" },
+  { id: "th5", title: "Reminder sent", state: "done", date: d(2026, 10, 15), by: "VCFO" },
+  { id: "th6", title: "Utility bill and signed NOC", state: "current", date: TODAY, owner: "client", note: "Asked 5 days ago" },
+  { id: "th7", title: "SBC review", state: "upcoming", owner: "sbc" },
 ];
 
 // ---- Form fields per step ----
 
 export type FieldState = "Accepted" | "Review" | "Asked" | "Not asked";
-export const fieldTone = { Accepted: "ok", Review: "prog", Asked: "warn", "Not asked": "idle" } as const satisfies Record<FieldState, string>;
+export const fieldTone = { Accepted: "ok", Review: "warn", Asked: "prog", "Not asked": "idle" } as const satisfies Record<FieldState, string>;
 
 export interface FieldDef {
   id: string;
@@ -171,10 +196,10 @@ export function stepForm(c: StaffClient, n: number): FormField[] {
   const st = stepState(c, n);
   if (c.id === "northwind" && n === 7)
     return [
-      { ...defs[0], value: defs[0].sample, state: "Accepted", date: d(2026, 9, 30) },
-      { ...defs[1], value: "rent-agreement-2026.pdf · 2.1 MB", state: "Accepted", date: d(2026, 9, 30) },
-      { ...defs[2], value: "", state: "Asked", date: d(2026, 10, 1), note: "Asked 5 days ago" },
-      { ...defs[3], value: "noc-unsigned.pdf", state: "Review", date: d(2026, 10, 4), note: "Signature missing" },
+      { ...defs[0], value: defs[0].sample, state: "Accepted", date: d(2026, 10, 10) },
+      { ...defs[1], value: "rent-agreement-2026.pdf · 2.1 MB", state: "Accepted", date: d(2026, 10, 10) },
+      { ...defs[2], value: "", state: "Asked", date: d(2026, 10, 11), note: "Asked 5 days ago" },
+      { ...defs[3], value: "noc-unsigned.pdf", state: "Review", date: d(2026, 10, 14), note: "signature missing" },
     ];
   return defs.map((x, i): FormField => {
     const v = fill(x.sample, c);
@@ -208,7 +233,7 @@ export const STEP_ABOUT: Record<number, StepAbout> = {
   4: A("SBC files the RUN form with two name choices.", ["Names must not match an existing company.", "Avoid words that need approval."], "Companies Act 2013, section 4", ["Trademark search result"], ["Client brand guide"], "Run the MCA name search before filing."),
   5: A("MCA approves or rejects the name. The approval is valid for 20 days.", ["Resubmit once if MCA rejects the name."], "Companies (Incorporation) Rules 2014, rule 9", [], ["MCA decision time"], "Diary the 20-day expiry."),
   6: A("The client fixes the authorised and paid-up capital and the shareholding.", ["Nominee holds one share."], "Companies Act 2013, section 4(5)", ["Share premium, if any"], [], "Confirm FDI pricing with the valuer."),
-  7: A("MCA needs proof of where the company will sit. For a rented office that is a utility bill under 2 months old, the rent agreement and a signed NOC from the owner.", ["Bill must show the same address as the agreement.", "NOC must be signed and dated."], "Companies Act 2013, section 12", ["Owner's PAN on the NOC"], ["Original bill (client keeps it)"], "Ask for a fresh bill if it is older than 15 Aug."),
+  7: A("MCA needs proof of where the company will sit. For a rented office that is a utility bill under 2 months old, the rent agreement and a signed NOC from the owner.", ["Bill must show the same address as the agreement.", "NOC must be signed and dated."], "Companies Act 2013, section 12", ["Owner's PAN on the NOC"], ["Original bill (client keeps it)"], "Ask for a fresh bill if older than 15 Sep."),
   8: A("The client sends passport and address proof for each proposed director.", ["Colour scans, all four corners visible.", "Address proof under 2 months old."], "Companies Act 2013, section 152", ["DIN, if a director has one"], ["Notarised passport copy"], "Reject scans that are not legible."),
   9: A("The client confirms who subscribes to the MOA and how many shares each takes.", ["Total must match the paid-up capital."], "Companies Act 2013, section 7(1)", ["Subscriber occupation"], [], "Match the nominee to the Board resolution."),
   10: A("SBC reviews the KYC and applies for a DSC for each director.", ["Video KYC for foreign directors.", "DSC token goes to the office."], "Information Technology Act 2000", ["Director mobile for OTP"], ["Physical token delivery"], "Book the video KYC slot early."),
@@ -228,6 +253,16 @@ export const STEP_ABOUT: Record<number, StepAbout> = {
   24: A("SBC files INC-22 to confirm the registered office.", ["Attach a photo of the office."], "Companies Act 2013, section 12", [], ["Office photo"], "Photo must show the name board."),
   25: A("The client puts up the name board at the office.", ["Name, CIN and address in English and the local language."], "Companies Act 2013, section 12(3)", [], ["Physical board"], "Ask for a photo in daylight."),
 };
+
+/** Documents summary on the step page: ready, need inputs, waiting. Northwind keeps the old 3 / 4 / 1. */
+export function stepDocs(c: StaffClient, n: number): { ready: number; need: number; waiting: number } {
+  const s = STEPS[n - 1];
+  if (c.id === "northwind" && s.phase < 3) return { ready: 3, need: 4, waiting: 1 };
+  const states = STEPS.filter((x) => x.phase === s.phase).map((x) => stepState(c, x.n).status);
+  const ready = states.filter((x) => x === "Completed").length;
+  const waiting = states.filter((x) => x === "Waiting" || x === "Sent back").length;
+  return { ready, need: states.length - ready - waiting, waiting };
+}
 
 /** Text that "Copy for Assist" puts on the clipboard. */
 export function assistText(c: StaffClient, n: number) {

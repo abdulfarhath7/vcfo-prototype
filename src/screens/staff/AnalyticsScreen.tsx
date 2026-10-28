@@ -3,10 +3,9 @@ import * as React from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AlertTriangle, Building2, CircleCheck, User } from "lucide-react";
 import type { BarTone } from "@/components/ui/Bar";
-import type { Health } from "@/data/staff-clients";
+import { clientsFor, type Health } from "@/data/staff-clients";
 import { leadRows } from "@/data/staff-team";
 import { ANALYTICS, DELAY_BENCHMARK, RATE_TARGET, type StepTime } from "@/data/staff-analytics";
-import { myClients } from "@/data/staff-compliance";
 import { Cols, Col, Row } from "@/components/shell/Page";
 import { Tabs } from "@/components/ui/Tabs";
 import { Tag } from "@/components/ui/Chip";
@@ -16,6 +15,7 @@ import { StackedBar } from "@/components/cards/StackedBar";
 import { ProgressList } from "@/components/cards/ProgressList";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import type { StaffPortal } from "./parts";
+import { waitWord } from "@/data/status-words";
 
 const HEALTH: Array<[Health, BarTone]> = [
   ["In progress", "accent"],
@@ -65,7 +65,7 @@ function CompletionRate({ portal, span }: { portal: StaffPortal; span: number })
     <SectionCard title="Compliance completion rate" meta={`${last.rate}% in ${last.m} · target ${RATE_TARGET}%`}>
       <div className="h-[232px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 16, right: 4, bottom: 0, left: -24 }} barCategoryGap="28%">
+          <BarChart data={data} margin={{ top: 16, right: 4, bottom: 0, left: -10 }} barCategoryGap="28%">
             <CartesianGrid vertical={false} stroke="var(--line-soft)" />
             <XAxis dataKey="m" {...AXIS_X} />
             <YAxis {...AXIS_Y} domain={[70, 100]} unit="%" />
@@ -175,7 +175,8 @@ const stepCols: Column<StepTime>[] = [
 ];
 
 export function AnalyticsScreen({ portal }: { portal: StaffPortal }) {
-  const clients = myClients(portal);
+  // Same scope as the Clients list and the "Projects 8" number.
+  const clients = clientsFor(portal);
   const leads = portal === "lead" ? [] : leadRows(portal === "manager" ? "Pranay" : undefined);
   const [span, setSpan] = React.useState("6");
   const n = Number(span);
@@ -196,7 +197,7 @@ export function AnalyticsScreen({ portal }: { portal: StaffPortal }) {
         </Col>
         <Col>
           <SectionCard title="Client health" meta={`${clients.length} clients`}>
-            <StackedBar segments={HEALTH.map(([h, tone]) => ({ label: h, value: clients.filter((c) => c.health === h).length, tone })).filter((s) => s.value > 0)} />
+            <StackedBar segments={HEALTH.map(([h, tone]) => ({ label: waitWord(h), value: clients.filter((c) => c.health === h).length, tone })).filter((s) => s.value > 0)} />
           </SectionCard>
           {leads.length > 0 && (
             <SectionCard title="Workload" meta="Hours planned this week" flush>

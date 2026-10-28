@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { iconFor, type Tone } from "@/components/icons";
@@ -45,6 +46,7 @@ export interface DataGridProps<T> {
 
 /** R-07: e-Filing grid. Navy head, white text, a line on every cell, zebra rows, page numbers under the table. */
 export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon, pageSize = 10, rowHref, rowClass, rowLate, empty = "No rows", className, footer, inset, onRowClick, selectedKey }: DataGridProps<T>) {
+  const router = useRouter();
   const [page, setPage] = React.useState(1);
   const pages = Math.max(1, Math.ceil(rows.length / pageSize));
   const cur = Math.min(page, pages);
@@ -89,7 +91,17 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
               return (
                 <tr
                   key={key}
-                  onClick={onRowClick ? () => onRowClick(r) : undefined}
+                  onClick={
+                    onRowClick
+                      ? () => onRowClick(r)
+                      : href
+                        ? (e) => {
+                            // The whole row opens the record. Links, buttons and inputs inside keep their own click.
+                            if ((e.target as HTMLElement).closest("a, button, input, select, label, [role=menu]")) return;
+                            router.push(href);
+                          }
+                        : undefined
+                  }
                   aria-selected={onRowClick ? picked : undefined}
                   className={cn(rowLate?.(r) && "late", (href || onRowClick) && "cursor-pointer", picked && "[&>td]:!bg-accent-soft", rowClass?.(r))}
                 >

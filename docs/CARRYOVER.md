@@ -29,7 +29,7 @@ Rows are in ASD-STE100. Do not port a superseded change.
 | K-14 | Shell | Use one top bar style, one search ("Ctrl K"), one theme icon, one bell style, one active rail. | 11, 12, 13, 15, 16, 150 | `src/components/shell/TopBar.tsx`, `src/components/client-portal/TopBar.tsx` | Ported (3f9957d, aec7daf) |
 | K-15 | Sidebar order | Sort sidebars by priority. Client order follows incorporation state. | 151 | `src/components/client-portal/Sidebar.tsx`, `src/components/shell/RoleSidebar.tsx`, `intern-sidebar.ts` | Ported (14fdcd6) |
 | K-16 | Settings into Profile | Open Profile from the account row. Remove Settings from the lead and manager sidebar. | 134 | `src/views/settings/AccountSettings.tsx`, `src/components/shell/RoleSidebar.tsx` | Ported (4c749d5) |
-| K-17 | Word "Nudge" | Replace "Nudge" with "Remind" or "Send reminder" on every screen. | 125 | All staff views, `src/lib/notify/*` copy | Port |
+| K-17 | Word "Nudge" | Replace "Nudge" with "Remind" or "Send reminder" on every screen. | 125 | All staff views, `src/lib/notify/*` copy | Ported (4d44270) |
 | K-18 | Money | Remove all money from client and super admin dashboards. | 118, 126 | `src/components/client-portal/pages/home/*`, `src/views/super/*` | Ported (no change: no money on these dashboards, checked 27 Oct) |
 | K-19 | Client home order | Put the timeline and Steps first. Use two independent columns. | 72, 123 | `src/components/client-portal/pages/home/HomePage.tsx` | Ported (3adfe50) |
 | K-20 | Next action strip | Show one next action under the greeting. | 118 | `src/components/client-portal/pages/home/HomePage.tsx` | Superseded by C-0012 (remove it) |
@@ -43,21 +43,21 @@ Rows are in ASD-STE100. Do not port a superseded change.
 | K-28 | Registrations | Add a Registrations page and detail for client and staff. | 130, 131 | new: `src/components/client-portal/pages/registrations/*`, `app/app/*/registrations/*` | Superseded by C-0022 (layout) |
 | K-29 | Obligations | Add an Obligations page and detail. | 132 | new: `src/components/client-portal/pages/compliances/Obligations*.tsx` | Superseded by C-0018 to C-0021 |
 | K-30 | Compliance calendar | Use a hairline grid, tinted day badges and today in soft blue. | 162 | `src/components/client-portal/pages/compliances/CalendarPage.tsx`, `src/views/compliances/ComplianceCalendarView.tsx` | Ported (97251ea) |
-| K-31 | Lead Today cuts | Show five blocks: greeting, practice strip, Action queue with Inbox, Phase progress, overdue filings. | 108, 111, 112, 127 | `src/views/intern/Today.tsx`, `src/components/intern/*` | Port |
-| K-32 | Action queue cells | Leave empty cells blank. Show counts as soft chips. | 173 | `src/components/intern/LeadActionQueue.tsx` | Port |
-| K-33 | Phase progress | Show a 6 px bar per phase with the count under it. | 24, 173 | `src/components/intern/LeadPhaseProgress.tsx` | Port |
+| K-31 | Lead Today cuts | Show five blocks: greeting, practice strip, Action queue with Inbox, Phase progress, overdue filings. | 108, 111, 112, 127 | `src/views/intern/Today.tsx`, `src/components/intern/*` | Ported (73d3f5a) |
+| K-32 | Action queue cells | Leave empty cells blank. Show counts as soft chips. | 173 | `src/components/intern/LeadActionQueue.tsx` | Ported (c0954a6) |
+| K-33 | Phase progress | Show a 6 px bar per phase with the count under it. | 24, 173 | `src/components/intern/LeadPhaseProgress.tsx` | Ported (71f22f8) |
 | K-34 | Task rows | Use a checkbox and one status icon. | 128 | `src/components/intern/InternWorkRow.tsx`, `src/components/staff/TeamTodosPanel.tsx` | Superseded by C-0031 (one status mark) |
-| K-35 | People names | Use Bharath (lead), Pranay (manager), Krishna (admin), Mithilesh (super admin), Farhath (developer). | 57, 79, 80 | `scripts/seed-demo.ts`, `scripts/seed-demo-extras.ts` | Port |
-| K-36 | Manager sidebar | Remove "Your managers". Name the item "Project leads". Fold groups. | 61, 62, 69, 76, 80 | `src/components/shell/RoleSidebar.tsx`, `intern-sidebar.ts` | Port |
-| K-37 | Admin Today | Show clients with stage, step, progress, manager, next date and health. Show the managers table. | 81, 82, 109, 121 | `src/views/admin/FirmDashboard.tsx`, `FirmProjectsPanel.tsx` | Port (grid per C-0034) |
-| K-38 | Wide tables | Make wide staff tables fit their cards. | 65, 174 | `src/views/admin/FirmProjectsPanel.tsx`, `src/views/super/SuperProjects.tsx` | Port |
+| K-35 | People names | Use Bharath (lead), Pranay (manager), Krishna (admin), Mithilesh (super admin), Farhath (developer). | 57, 79, 80 | `scripts/seed-demo.ts`, `scripts/seed-demo-extras.ts` | Ported (f818216) |
+| K-36 | Manager sidebar | Remove "Your managers". Name the item "Project leads". Fold groups. | 61, 62, 69, 76, 80 | `src/components/shell/RoleSidebar.tsx`, `intern-sidebar.ts` | Ported (2bf0f5c) |
+| K-37 | Admin Today | Show clients with stage, step, progress, manager, next date and health. Show the managers table. | 81, 82, 109, 121 | `src/views/admin/FirmDashboard.tsx`, `FirmProjectsPanel.tsx` | Ported (ea467f6) |
+| K-38 | Wide tables | Make wide staff tables fit their cards. | 65, 174 | `src/views/admin/FirmProjectsPanel.tsx`, `src/views/super/SuperProjects.tsx` | Ported (ea467f6; SuperProjects already fitted) |
 | K-39 | Staff Vault | Use the client Documents explorer with a client dropdown first. | 135 | `src/views/vault/DocumentVaultPage.tsx`, `src/views/admin/Vault.tsx` | Port (smooth per C-0025) |
 | K-40 | Email signatures | Show "Signature from Outlook · server-side signature on". | 138 | `src/views/staff/ComposeMail.tsx` | Port |
 | K-41 | Dark mode | Use slate surfaces and dark twins of each colour. | 167 | `app/globals.css`, `src/components/client-portal/css-src/00-tokens.css` | Ported (a8c2cb7) |
 | K-42 | Phone home | Show the navy band, then the white number strip. Remove the ring. | 168 | `src/components/client-portal/pages/home/MobileHome.tsx`, `MobileParts.tsx` | Ported (8534382) |
 | K-43 | Team page buttons | Make WhatsApp buttons soft green. | 48, 176 | `src/components/client-portal/pages/team/TeamPage.tsx` | Superseded by C-0027 (Team moves into Profile) |
 | K-44 | Developer console | Use the lcc Settings shape with full connection detail. | 98-106, 119, 153-155 | new: `app/app/dev/*` | Superseded by C-0037 to C-0039 |
-| K-45 | Super admin portal | Add Overview, Clients, Practice areas, Team, Risks, Growth, Reports, Firm settings. | 87-97, 110, 117 | `src/views/super/*`, new routes under `app/app/super/*` | Port (style per C-0035, C-0036) |
+| K-45 | Super admin portal | Add Overview, Clients, Practice areas, Team, Risks, Growth, Reports, Firm settings. | 87-97, 110, 117 | `src/views/super/*`, new routes under `app/app/super/*` | Partly ported (35b7b2a; Clients grid only, 6 new pages need a spec) |
 | K-46 | Library shelf | Show the SBC SOPs as a book shelf. | 137 | `src/components/client-portal/pages/documents/library/LibraryPage.tsx` | Ported (0750e91; motion only, SOP data not ported) |
 | K-47 | Ask VCFO prompt home | Open Ask VCFO on a prompt home with four quick-start chips. | 136 | `src/components/ask/AskPanel.tsx` | Ported (ef362ff) |
 | K-48 | Landing page | Spotlight and beams on the hero; peaks on sign-in. | 140 | `src/components/marketing/*` | Prototype only |

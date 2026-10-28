@@ -3,55 +3,18 @@ import * as React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { TODAY, fmt } from "@/lib/dates";
-import { clientById, progressPct, healthTone, incDone, PHASE_TOTALS, CONTACTS, type StaffClient } from "@/data/staff-clients";
-import type { Approval } from "@/data/staff-tasks";
-import type { ManagerRow } from "@/data/staff-team";
-import { Button } from "@/components/ui/Button";
+import { STAFF_TODAY as TODAY, fmt } from "@/lib/dates";
+import { progressPct, healthTone, incDone, PHASE_TOTALS, CONTACTS, HEALTH_ORDER, type StaffClient } from "@/data/staff-clients";
+import { MANAGERS, type ManagerRow } from "@/data/staff-team";
 import { Chip } from "@/components/ui/Chip";
 import { Bar } from "@/components/ui/Bar";
+import { Select } from "@/components/ui/Select";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { ClientDot, clientHref, type StaffPortal } from "./parts";
+import { clientHref, type StaffPortal } from "./parts";
 import { identityTag } from "./filters";
 import { managerOf, leadOf, useAssignments } from "./record-parts";
-
-export function ApprovalsCard({ items, portal }: { items: Approval[]; portal: StaffPortal }) {
-  const [done, setDone] = React.useState<Record<string, "Approved" | "Returned">>({});
-  return (
-    <SectionCard title="Approvals" meta={`${items.filter((a) => !done[a.id]).length} waiting`} flush>
-      {items.map((a) => {
-        const c = clientById(a.client);
-        const state = done[a.id];
-        return (
-          <ListRow key={a.id}>
-            {c && <ClientDot tone={c.tone} />}
-            <span className="min-w-0 flex-1">
-              <Link href={clientHref(portal, a.client)} className="block truncate font-semibold hover:underline">
-                {a.title}
-              </Link>
-              <span className="block truncate text-12.5 text-muted">
-                {c?.short} · {a.by} · {fmt(a.sent)}
-              </span>
-            </span>
-            {state ? (
-              <Chip tone={state === "Approved" ? "ok" : "bad"}>{state}</Chip>
-            ) : (
-              <span className="flex flex-none gap-1.5">
-                <Button size="sm" variant="ghost" onClick={() => setDone({ ...done, [a.id]: "Returned" })}>
-                  Return
-                </Button>
-                <Button size="sm" variant="soft" onClick={() => setDone({ ...done, [a.id]: "Approved" })}>
-                  Approve
-                </Button>
-              </span>
-            )}
-          </ListRow>
-        );
-      })}
-    </SectionCard>
-  );
-}
+import { waitWord } from "@/data/status-words";
 
 const PHASE_NAMES = ["Name", "Incorporation", "Post-incorporation", "Registrations"];
 
@@ -97,7 +60,13 @@ export function HolderDot({ c }: { c: StaffClient }) {
 export function ClientTile({ c, size = 30 }: { c: StaffClient; size?: 30 | 36 | 44 }) {
   const tone = identityTag[c.tone];
   const cls = { prog: "bg-accent-soft text-accent", violet: "bg-violet-soft text-violet", teal: "bg-teal-soft text-teal", warn: "bg-warn-soft text-warn", ok: "bg-ok-soft text-ok", idle: "bg-idle-soft text-idle", bad: "bg-bad-soft text-bad" }[tone];
-  const ini = c.short.slice(0, 2).toUpperCase();
+  const ini = c.name
+    .replace(/( India)? Pvt Ltd$/, "")
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
   return (
     <span className={cn("inline-grid flex-none place-items-center rounded-md font-bold", size === 30 ? "text-11" : "text-12.5", cls)} style={{ width: size, height: size }} aria-hidden>
       {ini}
@@ -125,54 +94,131 @@ function Legend() {
   );
 }
 
-export function ClientsGrid({ portal, title = "Clients", rows, filters, pageSize = 8, meta }: { portal: StaffPortal; title?: string; rows: StaffClient[]; filters?: React.ReactNode; pageSize?: number; meta?: React.ReactNode }) {
+/** One phase of the old lead Clients bars (Clients.dc.html P1, P2, P3): done in green, the current step navy or red when stuck. */
+function PhaseCell({ c, i, portal }: { c: StaffClient; i: 0 | 1 | 2; portal: StaffPortal }) {
+  const t = PHASE_TOTALS[i];
+  const done = c.phases[i];
+  const cur = c.phases.findIndex((n, k) => n < PHASE_TOTALS[k]) === i;
+  const stuck = cur && STUCK_CLIENTS.has(c.id);
+  const tip = `${PHASE_NAMES[i]} · ${done} of ${t} done${stuck ? " · stuck" : ""}`;
+  return (
+    <Link href={`${clientHref(portal, c.id)}?phase=${i + 1}`} title={tip} aria-label={tip} className="block hover:opacity-80">
+      <span className={cn("relative block h-2.5 overflow-hidden rounded-[3px] bg-line-soft", cur && "ring-1 ring-warn-mid")}>
+        <i className="absolute inset-y-0 left-0 bg-ok-mid" style={{ width: `${(done / t) * 100}%` }} />
+        {cur && <i className={cn("absolute inset-y-0", stuck ? "bg-bad-mid" : "bg-btn")} style={{ left: `${(done / t) * 100}%`, width: `${Math.max(6, 100 / t)}%` }} />}
+      </span>
+    </Link>
+  );
+}
+
+/** Old lead Clients status: Stuck, Not started or In progress (Clients.dc.html r.status). */
+const STUCK_CLIENTS = new Set(["brightwave", "tidewater", "monsoon", "banyan"]);
+export const clientStatus = (c: StaffClient) => (STUCK_CLIENTS.has(c.id) ? "Stuck" : c.phases.every((n) => n === 0) ? "Not started" : "In progress");
+const statusTone = { Stuck: "bad", "Not started": "idle", "In progress": "prog" } as const;
+
+/** Admin Today "Clients · where each one is" (old admin Main.dc.html, K-37): every client, worst health first, manager and stage filters in the head, no paging. */
+export function FirmClientsGrid({ title, rows }: { title: string; rows: StaffClient[] }) {
   const s = useAssignments();
-  const cols: Column<StaffClient>[] = [
-    {
-      key: "name",
-      label: "Client",
-      width: 240,
-      render: (c) => (
-        <span className="flex min-w-0 items-center gap-2.5">
-          <ClientTile c={c} />
-          <span className="min-w-0">
-            <b className="block truncate font-semibold">{c.name}</b>
-            <span className="block truncate text-12 text-muted">{CONTACTS[c.id]?.name}</span>
+  const [manager, setManager] = React.useState("");
+  const [stage, setStage] = React.useState("");
+  const shown = rows.filter((c) => (!manager || managerOf(c, s) === manager) && (!stage || c.stage === stage)).sort((a, b) => HEALTH_ORDER[a.health] - HEALTH_ORDER[b.health] || a.name.localeCompare(b.name));
+  const filters = (
+    <>
+      <Select value={manager} onChange={(e) => setManager(e.target.value)} options={[{ value: "", label: "All managers" }, ...MANAGERS.map((m) => ({ value: m.name, label: m.name }))]} aria-label="Manager" />
+      <Select
+        value={stage}
+        onChange={(e) => setStage(e.target.value)}
+        options={[
+          { value: "", label: "All stages" },
+          { value: "incorporating", label: "Incorporating" },
+          { value: "compliance", label: "Compliance" },
+        ]}
+        aria-label="Stage"
+      />
+    </>
+  );
+  return <ClientsGrid portal="admin" title={title} rows={shown} filters={filters} pageSize={Math.max(1, rows.length)} meta={String(shown.length)} />;
+}
+
+export function ClientsGrid({ portal, title = "Clients", rows, filters, pageSize = 8, meta, showLead }: { portal: StaffPortal; title?: string; rows: StaffClient[]; filters?: React.ReactNode; pageSize?: number; meta?: React.ReactNode; showLead?: boolean }) {
+  const s = useAssignments();
+  const nameCol: Column<StaffClient> = {
+    key: "name",
+    label: "Client",
+    width: portal === "admin" ? (showLead ? 190 : 210) : 240,
+    render: (c) => (
+      <span className="flex min-w-0 items-center gap-2.5">
+        <ClientTile c={c} />
+        <span className="min-w-0">
+          <b className={cn("block font-semibold", portal !== "admin" && "truncate")}>{c.name.replace(/( India)? Pvt Ltd$/, "")}</b>
+          {/* Old admin Today and Clients show no contact line. */}
+          {portal !== "admin" && <span className="block truncate text-12 text-muted">{CONTACTS[c.id]?.name}</span>}
+        </span>
+      </span>
+    ),
+  };
+  const nowCol: Column<StaffClient> = {
+    key: "step",
+    label: portal === "admin" ? "Now at" : "Now",
+    render: (c) => (
+      <span className="flex min-w-0 items-center gap-2">
+        {portal !== "admin" && <HolderDot c={c} />}
+        <span className="min-w-0">
+          <span className="block truncate">
+            {portal !== "admin" && <span className="font-mono text-12 text-muted">{c.code} · </span>}
+            {portal === "admin" ? <b className="font-semibold">{c.step}</b> : c.step}
           </span>
+          {portal === "admin" && (
+            <span className="block truncate text-12 text-muted">
+              <span className="font-mono">{c.code}</span>
+              {!showLead && <> · {leadOf(c, s)}</>}
+            </span>
+          )}
         </span>
-      ),
-    },
-    { key: "stage", label: "Stage", width: 130, render: (c) => <Chip tone={c.stage === "incorporating" ? "violet" : "teal"} fixed>{c.stage === "incorporating" ? "Incorporating" : "Compliance"}</Chip> },
-    {
-      key: "progress",
-      label: "Progress",
-      width: 220,
-      render: (c) => (
-        <span className="flex items-center gap-2">
-          <PhaseBar c={c} portal={portal} />
-          <span className="w-9 flex-none text-right text-12.5 text-muted">{progressPct(c)}%</span>
-        </span>
-      ),
-    },
-    {
-      key: "step",
-      label: "Now at",
-      render: (c) => (
-        <span className="flex min-w-0 items-center gap-2">
-          <HolderDot c={c} />
-          <span className="min-w-0 truncate">
-            <span className="font-mono text-12 text-muted">{c.code}</span> · {c.step}
+      </span>
+    ),
+  };
+  const stageCol: Column<StaffClient> = { key: "stage", label: "Stage", width: 130, render: (c) => <Chip tone={c.stage === "incorporating" ? "violet" : "teal"} fixed>{c.stage === "incorporating" ? "Incorporating" : "Compliance"}</Chip> };
+  // Admin (reference/old-patch/admin/Clients.dc.html, K-37, K-38): client, now at, progress, manager, lead, stage, next, health. Fits the card at 1440.
+  if (portal === "admin") {
+    const adminCols: Column<StaffClient>[] = [
+      nameCol,
+      nowCol,
+      {
+        key: "progress",
+        label: "Progress",
+        width: showLead ? 160 : 170,
+        render: (c) => (
+          <span className="flex items-center gap-2">
+            <PhaseBar c={c} portal={portal} className="min-w-[80px]" />
+            <span className="w-8 flex-none text-right text-12 text-muted">{progressPct(c)}%</span>
           </span>
-        </span>
-      ),
-    },
-    { key: "steps", label: "Steps", width: 70, align: "right", render: (c) => <span className="font-mono text-12.5 text-muted">{incDone(c)}/25</span> },
-    { key: "with", label: "With", width: 100, render: (c) => `${c.pendingWith} · ${c.days}d` },
-    ...(portal === "admin" ? [{ key: "manager", label: "Manager", width: 120, render: (c: StaffClient) => managerOf(c, s) } as Column<StaffClient>] : []),
-    ...(portal !== "lead" ? [{ key: "lead", label: "Project lead", width: 120, render: (c: StaffClient) => leadOf(c, s) } as Column<StaffClient>] : []),
-    { key: "next", label: "Next date", width: 90, render: (c) => <span className={c.next < TODAY ? "font-semibold text-bad" : undefined}>{fmt(c.next)}</span> },
-    { key: "health", label: "Health", width: 130, render: (c) => <Chip tone={healthTone[c.health]} fixed>{c.health}</Chip> },
+        ),
+      },
+      { key: "manager", label: "Manager", width: 92, render: (c) => managerOf(c, s) },
+      ...(showLead ? [{ key: "lead", label: "Project lead", width: 100, render: (c: StaffClient) => leadOf(c, s) } as Column<StaffClient>] : []),
+      { ...stageCol, width: 132 },
+      { key: "next", label: "Next", width: 52, render: (c) => <span className={cn(!showLead && "whitespace-nowrap", c.next < TODAY && "font-semibold text-bad")}>{fmt(c.next)}</span> },
+      { key: "health", label: "Health", width: 132, render: (c) => <Chip tone={healthTone[c.health]} fixed>{c.health}</Chip> },
+    ];
+    return <ClientsGridFrame portal={portal} title={title} meta={meta} rows={rows} filters={filters} pageSize={pageSize} cols={adminCols} />;
+  }
+  // Lead and manager (reference/old-screens/s/lead/Clients.dc.html): P1, P2, P3 bars, now, steps, status.
+  const leadCols: Column<StaffClient>[] = [
+    nameCol,
+    { ...stageCol, width: 124 },
+    { key: "p1", label: "P1", width: 70, render: (c) => <PhaseCell c={c} i={0} portal={portal} /> },
+    { key: "p2", label: "P2 inc.", width: 120, render: (c) => <PhaseCell c={c} i={1} portal={portal} /> },
+    { key: "p3", label: "P3 post-inc.", width: 150, render: (c) => <PhaseCell c={c} i={2} portal={portal} /> },
+    nowCol,
+    { key: "steps", label: "Steps", width: 64, align: "right", render: (c) => <span className="font-mono text-12.5 text-muted">{incDone(c)}/25</span> },
+    { key: "status", label: "Status", width: 124, render: (c) => <Chip tone={statusTone[clientStatus(c)]} fixed>{clientStatus(c)}</Chip> },
   ];
+  return <ClientsGridFrame portal={portal} title={title} meta={meta} rows={rows} filters={filters} pageSize={pageSize} cols={leadCols} />;
+}
+
+function ClientsGridFrame({ portal, title, rows, filters, pageSize, meta, cols }: { portal: StaffPortal; title: string; rows: StaffClient[]; filters?: React.ReactNode; pageSize: number; meta?: React.ReactNode; cols: Column<StaffClient>[] }) {
+  const s = useAssignments();
   return (
     <>
       <div className="hidden md:block">
@@ -192,7 +238,7 @@ export function ClientsGrid({ portal, title = "Clients", rows, filters, pageSize
                   <span className="flex min-w-0 items-center gap-2">
                     <b className="min-w-0 truncate font-semibold">{c.short}</b>
                     <Chip tone={healthTone[c.health]} className="ml-auto flex-none">
-                      {c.health}
+                      {waitWord(c.health)}
                     </Chip>
                   </span>
                   <span className="flex min-w-0 items-center gap-2 text-12.5 text-muted">

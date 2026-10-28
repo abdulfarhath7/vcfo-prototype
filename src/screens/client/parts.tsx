@@ -2,13 +2,11 @@
 import * as React from "react";
 import { Download, Upload } from "lucide-react";
 import { fmt } from "@/lib/dates";
-import { PHASES, stepsOf, doneCount, stepTone, stepHref, phaseHref } from "@/data/incorporation";
 import { DOC_STATUS_TONE, type ItemDoc } from "@/data/registrations";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { FileBadge } from "@/components/ui/FileBadge";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
-import { PhaseRows, type Phase } from "@/components/cards/PhaseRows";
 import { KeyValue, type KV } from "@/components/cards/KeyValue";
 import { cn } from "@/lib/cn";
 import { TimelineCardFull } from "./inc-timeline";
@@ -16,28 +14,6 @@ import { TimelineCardFull } from "./inc-timeline";
 /** Timeline card with the editor, the change request and the row drill. Built in inc-timeline.tsx. */
 export function IncTimelineCard({ after, portal, className }: { after?: boolean; portal?: string; className?: string } = {}) {
   return <TimelineCardFull after={after} portal={portal} className={className} />;
-}
-
-/** All three phases, each expands to its step table. */
-export function incPhases(): Phase[] {
-  return PHASES.map((p) => ({
-    id: p.id,
-    name: p.name,
-    done: doneCount(p.n),
-    total: stepsOf(p.n).length,
-    status: p.status,
-    tone: p.status === "Done" ? "ok" : p.status === "In progress" ? "prog" : "idle",
-    href: phaseHref("client", p.n),
-    steps: stepsOf(p.n).map((s) => ({ n: s.n, title: s.title, owner: s.owner, ownerLabel: s.owner === "client" ? "Northwind" : undefined, status: s.status, tone: stepTone[s.status], time: s.time, href: stepHref("client", s.n) })),
-  }));
-}
-
-export function PhasesCard() {
-  return (
-    <SectionCard title="Phases" flush>
-      <PhaseRows phases={incPhases()} openId="phase-2" />
-    </SectionCard>
-  );
 }
 
 /** Head card of a record page: eyebrow, name, chips, then key facts. */

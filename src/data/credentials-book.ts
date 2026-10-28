@@ -83,15 +83,15 @@ const LOGINS: Array<[string, string, string, string, string, string] | null> = [
 ];
 
 const REGS: string[][] = [
-  ["GST registration", "29AAKCN4821M1Z5", "1 Nov 2026", "northwind.gst", "demo-pass-g1", "GST-REG-06.pdf"],
+  ["GST registration", "29AAKCN4821M1Z5", "2 Oct 2026", "northwind.gst", "demo-pass-g1", "GST-REG-06.pdf"],
   ["PF registration", "KNBNG2954118000", "2 Nov 2026", "northwind.epfo", "demo-pass-p1", "PF-allotment.pdf"],
   ["ESI registration", "53001234560001001", "3 Nov 2026", "northwind.esic", "demo-pass-e1", "Proof pending"],
   ["PT registration", "PTEC-DEMO-0001", "5 Nov 2026", "northwind.pt", "demo-pass-t1", "PT-certificate.pdf"],
   ["LEI registration", "0000DEMO000000000001", "7 Nov 2026", "northwind.lei", "demo-pass-l1", "LEI-certificate.pdf"],
-  ["MSME registration", "UDYAM-KR-03-0123456", "30 Oct 2026", "", "", "Udyam-certificate.pdf"],
+  ["MSME registration", "UDYAM-KR-03-0123456", "8 Nov 2026", "", "", "Udyam-certificate.pdf"],
   ["ICEGATE registration", "ICEGATE-DEMO-0001", "10 Nov 2026", "northwind.icegate", "demo-pass-c1", "Proof pending"],
   ["IEC registration", "AAKCN4821M", "10 Nov 2026", "northwind.dgft", "demo-pass-d1", "IEC-certificate.pdf"],
-  ["LUT filing", "AD291126001234X", "3 Nov 2026", "", "", "LUT-acknowledgement.pdf"],
+  ["LUT filing", "AD291126001234X", "12 Nov 2026", "", "", "LUT-acknowledgement.pdf"],
   ["Non-STPI compliance", "STPI-DEMO-0001", "14 Nov 2026", "northwind.stpi", "demo-pass-s1", "Proof pending"],
   ["Shops and establishment", "SE-DEMO-0001", "15 Nov 2026", "northwind.labour", "demo-pass-h1", "SE-certificate.pdf"],
   ["CLRA registration", "CLRA-DEMO-0001", "18 Nov 2026", "northwind.clra", "demo-pass-r1", "Proof pending"],
@@ -101,6 +101,7 @@ const REGS: string[][] = [
   ["Trademark renewal", "TM-0000001-R", "", "", "", "Proof pending"],
   ["Patent registration", "PAT-DEMO-0001", "", "northwind.ipindia", "demo-pass-m1", "Proof pending"],
   ["ICDR registration", "ICDR-DEMO-0001", "25 Nov 2026", "", "", "ICDR-acknowledgement.pdf"],
+  ["FCGPR filing", "FCGPR-DEMO-0001", "28 Nov 2026", "northwind.firms", "demo-pass-f1", "FCGPR-acknowledgement.pdf"],
   ["FDI reporting", "FDI-DEMO-0001", "30 Nov 2026", "northwind.firms", "demo-pass-f1", "Proof pending"],
 ];
 
@@ -114,6 +115,9 @@ const KYC: string[][] = [
   ["Last name", "Kumar", "Iyer", "Kapoor", "Clarke"],
   ["Date of birth", "12 Apr 1984", "3 Sep 1987", "21 Jan 1990", "8 Jul 1979"],
   ["Father name", "Suresh Kumar", "Venkat Iyer", "Rajiv Kapoor", "Peter John Clarke"],
+  ["Father · first name", "Suresh", "Venkat", "Rajiv", "Peter"],
+  ["Father · middle name", "", "", "", "John"],
+  ["Father · last name", "Kumar", "Iyer", "Kapoor", "Clarke"],
   ["Address", "Flat 4B, Demo Residency, 12 Sample Road, Indiranagar, Bengaluru 560038", "No. 7, Demo Lane, Jayanagar 4th Block, Bengaluru 560011", "B-202, Sample Apartments, Sector 21, Gurugram 122001", "Flat 2, 10 Sample Street, London SE1 0AA, United Kingdom"],
   ["Mobile number", "+91 98000 00001", "+91 98000 00002", "+91 98000 00003", "+91 98000 00004"],
   ["Mail ID", "rohan.kumar@northwind-demo.in", "meera.iyer@northwind-demo.in", "neha.kapoor@northwind-demo.in", "david.clarke@northwind-demo.in"],
@@ -169,7 +173,7 @@ export function sheetsFor(after: boolean): Sheet[] {
     addrAuto[`2|${c}`] = "office";
   }
   const kycAuto: Record<string, string> = {};
-  [0, 1, 2, 3, 4, 5, 7, 8, 9, 13].forEach((r) => {
+  [0, 1, 2, 3, 4, 5, 10, 11, 12, 16].forEach((r) => {
     for (let c = 1; c <= 4; c++) kycAuto[`${r}|${c}`] = "inc";
   });
   return [
@@ -208,7 +212,7 @@ export function sheetsFor(after: boolean): Sheet[] {
       lab: 0,
       add: "director",
       auto: kycAuto,
-      secretRows: [5, 10, 11, 12, 13, 20],
+      secretRows: [5, 13, 14, 15, 16, 17, 23],
       cols: [{ name: "Particulars" }, ...DIRECTORS.map((n) => ({ name: n }))],
       rows: KYC.map((r) => [...r]),
     },
@@ -218,7 +222,8 @@ export function sheetsFor(after: boolean): Sheet[] {
       lab: 0,
       add: "row",
       cols: [{ name: "Item" }, { name: "ID", secret: true, mono: true }, { name: "Password", secret: true, mono: true }, { name: "Linked email" }, { name: "Notes" }],
-      rows: OTHER.map((r) => [...r]),
+      // Before COI the sheet is empty, as in the old screen.
+      rows: after ? OTHER.map((r) => [...r]) : [],
     },
   ];
 }

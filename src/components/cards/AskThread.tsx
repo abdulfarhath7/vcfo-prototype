@@ -89,11 +89,20 @@ const CLIENT: Pack = {
 };
 
 const STAFF_Q: Record<Exclude<Portal, "client">, string[]> = {
-  lead: ["What is due this week?", "Which clients are stuck?", "Draft a reminder to Northwind", "Summarise Zenith's filings"],
+  lead: ["What is due this week?", "Which clients are stuck?", "Draft a reminder to Northwind", "Summarise Kestrel's filings"],
   manager: ["Which leads are overloaded?", "What needs my approval?", "Overdue filings by client", "Draft the weekly client note"],
   admin: ["Firm-wide overdue items", "Which managers are behind?", "Clients without a lead", "Summary for the partners"],
   super: ["Risks this month", "Clients added this quarter", "Team utilisation", "Practice areas behind plan"],
   dev: ["Failed jobs today", "Which connection needs attention?", "Last deploy summary", "Cost trend this month"],
+};
+
+/** The answer to the first quick question on each staff portal. Numbers come from that portal's sample data; each source is a real route. */
+const FIRST: Record<Exclude<Portal, "client">, Pack["answers"][string]> = {
+  lead: { text: "Northwind has 1 overdue item: the passport copy for Director 1, sent back on 2 Oct. Three more items fall due by 10 Oct.", sources: [{ label: "Work", href: "/lead/work" }], reviewed: true },
+  manager: { text: "Bharath and Sneha Kulkarni have 13 open tasks each. Meera Nair has 8. Sneha has the most late work.", sources: [{ label: "Project leads", href: "/manager/leads" }], reviewed: true },
+  admin: { text: "Managers have 3 overdue items: MCA remarks for Monsoon Labs, new name options for Banyan Wellness and the bank account delay for Brightwave Robotics.", sources: [{ label: "Work", href: "/admin/work" }], reviewed: true },
+  super: { text: "There are 10 open risks. Four have severity 3: two unpaid TDS challans and unanswered MCA remarks for Monsoon Labs, among others.", sources: [{ label: "Risks", href: "/super/risks" }], reviewed: true },
+  dev: { text: "One job failed today: WhatsApp reminders at 12:00. Meta has not approved the deadline_1d template, so 14 reminders were skipped.", sources: [{ label: "Jobs", href: "/dev/jobs" }], reviewed: true },
 };
 
 function packFor(portal: Portal): Pack {
@@ -102,9 +111,7 @@ function packFor(portal: Portal): Pack {
   return {
     hello: "",
     groups: [{ key: "q", label: "Quick questions", questions: qs }],
-    answers: {
-      [qs[0]]: { text: "Northwind has 1 overdue item: the passport copy for Director 1, sent back on 2 Oct. Three more items fall due by 10 Oct.", sources: [{ label: "Work queue", href: `/${portal}/home` }], reviewed: true },
-    },
+    answers: { [qs[0]]: FIRST[portal] },
     lead: { name: "Pranay", role: "Manager" },
     placeholder: "Ask about a client, a step or a filing",
   };

@@ -1,19 +1,20 @@
-import { TODAY } from "@/lib/dates";
+import { STAFF_TODAY, d } from "@/lib/dates";
 import { PHASE_TOTALS, REG_CODES, REG_NAMES, clientsFor, obligationsOf, type StaffClient, type StaffPortal } from "@/data/staff-clients";
 import { queueFor, tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
 import { WEEK, sameDay } from "@/data/staff-work";
 
-// Today page data for the staff portals. Ported from reference/old-screens/s/lead/Main.dc.html,
+// Today page data for the staff portals. Staff "today" is Fri 16 Oct 2026 (STAFF_TODAY), as in the old prototype. Ported from reference/old-screens/s/lead/Main.dc.html,
 // s/mgr/Main.dc.html, reference/old-patch/admin/Main.dc.html and reference/old-patch/shared/Practice.dc.html.
 
 /** Days left in the COI window per incorporating client (Main.dc.html PH, admin Main EXPD). */
-export const DAYS_TO_COI: Record<string, number> = { northwind: 24, bluefin: 19, ember: 41, monsoon: 6, banyan: 47, quartz: 27 };
+export const DAYS_TO_COI: Record<string, number> = { northwind: 24, orchid: 19, larkspur: 41, juniper: 58, monsoon: 6, banyan: 47, quartz: 27 };
 
 /** Clients stuck in a phase (red cell in Phase progress). */
 export const isStuck = (c: StaffClient) => c.health === "Stuck" || c.health === "Overdue";
 
 export type PhaseCell = "done" | "current" | "stuck" | "next";
-export const PHASE_LABELS = ["Name approval", "Incorporation", "Post-incorporation"] as const;
+// Old column heads (lead Main.dc.html phase grid).
+export const PHASE_LABELS = ["Part A", "Part B", "Post-inc."] as const;
 
 export function phaseCells(c: StaffClient): Array<{ kind: PhaseCell; done: number; total: number }> {
   const cur = c.phases.findIndex((n, i) => n < PHASE_TOTALS[i]);
@@ -28,28 +29,39 @@ export function phaseCells(c: StaffClient): Array<{ kind: PhaseCell; done: numbe
 /** Action queue heatmap columns (Main.dc.html HS). */
 export const HEAT_COLS: Array<{ key: string; label: string; status: TaskStatus; tone: "bad" | "warn" | "accent" | "idle" | "faint" }> = [
   { key: "over", label: "Overdue", status: "Overdue", tone: "bad" },
-  { key: "due", label: "Due soon", status: "Due this week", tone: "warn" },
-  { key: "mine", label: "In progress", status: "In progress", tone: "accent" },
+  { key: "due", label: "Due today", status: "Due this week", tone: "warn" },
+  { key: "mine", label: "My step", status: "In progress", tone: "accent" },
   { key: "wait", label: "Waiting", status: "With client", tone: "idle" },
-  { key: "up", label: "Not started", status: "Not started", tone: "faint" },
+  { key: "up", label: "Upcoming", status: "Not started", tone: "faint" },
 ];
 
 /** Clients × filings grid (Main.dc.html FR). Columns are the October filings. */
-export const FILING_COLS = ["GSTR-1", "GSTR-3B", "TDS challan", "PF ECR", "ESI challan", "Professional tax", "DIR-3 KYC"] as const;
+export const FILING_COLS = ["GSTR-1", "GSTR-3B", "TDS", "PF ECR", "ESI", "PT", "FC-GPR", "DIR-3", "ADT-1"] as const;
+/** Due day in October per column (Main.dc.html due). */
+const FILING_DUE = [11, 20, 7, 15, 15, 25, 22, 30, 30];
 export type FilingCell = { kind: "filed" | "due" | "overdue" | "upcoming" | "na"; due?: Date; period?: string };
 
+/** Old grid codes per client: f filed, d due soon, o overdue, u upcoming, x not applicable (Main.dc.html FR). */
+const FR: Record<string, string> = { brightwave: "ffdfuuxux", tidewater: "ffffuuoxu", kestrel: "xxdxxxxux", halcyon: "dfdouuxfx" };
+const FR_KIND = { f: "filed", d: "due", o: "overdue", u: "upcoming", x: "na" } as const;
+/** Obligation names behind each column, for clients without old codes (admin view). */
+const OB_NAME: Record<(typeof FILING_COLS)[number], string> = { "GSTR-1": "GSTR-1", "GSTR-3B": "GSTR-3B", TDS: "TDS challan", "PF ECR": "PF ECR", ESI: "ESI challan", PT: "Professional tax", "FC-GPR": "FC-GPR", "DIR-3": "DIR-3 KYC", "ADT-1": "ADT-1" };
+
 /** A filing does not apply when the client has no matching registration (REG_CODES: x not needed, n before COI). */
-const REG_FOR: Record<string, (typeof REG_NAMES)[number]> = { "GSTR-1": "GST", "GSTR-3B": "GST", "PF ECR": "PF", "ESI challan": "ESI", "Professional tax": "PT" };
+const REG_FOR: Partial<Record<(typeof FILING_COLS)[number], (typeof REG_NAMES)[number]>> = { "GSTR-1": "GST", "GSTR-3B": "GST", "PF ECR": "PF", ESI: "ESI", PT: "PT" };
 
 export function filingRow(c: StaffClient): FilingCell[] {
+  const code = FR[c.id];
+  if (code) return FILING_COLS.map((_, i) => ({ kind: FR_KIND[code[i] as keyof typeof FR_KIND], due: d(2026, 10, FILING_DUE[i]), period: "Sep 2026" }));
   const obs = obligationsOf(c);
   const codes = REG_CODES[c.id] ?? "";
-  return FILING_COLS.map((name) => {
-    const reg = REG_FOR[name];
+  return FILING_COLS.map((col) => {
+    const reg = REG_FOR[col];
     if (reg) {
-      const code = codes[REG_NAMES.indexOf(reg)];
-      if (code === "x" || code === "n") return { kind: "na" };
+      const rc = codes[REG_NAMES.indexOf(reg)];
+      if (rc === "x" || rc === "n") return { kind: "na" };
     }
+    const name = OB_NAME[col];
     const mine = obs.filter((o) => o.name === name || o.name.startsWith(name));
     const late = mine.find((o) => o.status === "Overdue");
     if (late) return { kind: "overdue", due: late.due, period: late.period };
@@ -78,9 +90,29 @@ export interface WeekItem {
   href?: string;
 }
 
+/** Lead and manager week strip, Mon 12 to Sun 18 Oct (Main.dc.html W, the mixed view). */
+const W: Array<[number, WeekKind, string, string]> = [
+  [0, "done", "Name approval", "larkspur"],
+  [0, "done", "MSME", "halcyon"],
+  [1, "step", "Subscriber", "orchid"],
+  [1, "done", "INC-20A", "kestrel"],
+  [2, "reminder", "Reminder · NOC", "northwind"],
+  [3, "filing", "PF ECR", "halcyon"],
+  [4, "filing", "TDS challan", "kestrel"],
+  [4, "step", "Bank A/c", "brightwave"],
+  [4, "filing", "GSTR-1", "halcyon"],
+  [4, "step", "FC-GPR", "tidewater"],
+  [4, "step", "GST Reg", "kestrel"],
+  [4, "step", "Draft BR", "larkspur"],
+  [4, "reminder", "Logo file", "halcyon"],
+  [4, "reminder", "KYC docs", "juniper"],
+  [4, "reminder", "Utility bill", "northwind"],
+];
+
 /** Items on each day of the week strip: step deadlines, client reminders, filings and done items. */
 export function weekItems(portal: StaffPortal): WeekItem[] {
-  const tasks = portal === "lead" ? tasksFor("lead") : [...queueFor(portal), ...tasksFor(portal).filter((t) => t.status === "With client" || t.status === "Done")];
+  if (portal !== "admin") return W.map(([i, kind, text, client], k) => ({ id: `w${k}`, text, client, kind, day: WEEK[i] }));
+  const tasks = [...queueFor(portal), ...tasksFor(portal).filter((t) => t.status === "With client" || t.status === "Done")];
   const seen = new Set<string>();
   const fromTasks: WeekItem[] = tasks
     .filter((t) => WEEK.some((w) => sameDay(w, t.due)))
@@ -102,12 +134,30 @@ export function weekItems(portal: StaffPortal): WeekItem[] {
   return [...fromTasks, ...filings];
 }
 
-/** Days a task has waited on the client (from the old "asked" dates). */
-export const WAIT_DAYS: Record<string, number> = { t02: 5, t03: 2, t11: 3, t21: 2, t29: 1, t30: 4, m04: 5, m10: 4 };
+/** Waiting on client (Main.dc.html WT, the mixed view). Lead and manager. */
+const WT: Array<StaffTask & { days: number }> = [
+  { id: "wt1", title: "Utility bill + NOC", client: "northwind", code: "Step 7", step: 7, owner: "Bharath", due: d(2026, 10, 20), status: "With client", area: "MCA", days: 5 },
+  { id: "wt2", title: "FIRMS login", client: "tidewater", code: "Step 22", step: 22, owner: "Meera Nair", due: d(2026, 10, 16), status: "With client", area: "FEMA", days: 3 },
+  { id: "wt3", title: "Logo file (SVG)", client: "halcyon", code: "Reg-15", owner: "Sneha Kulkarni", due: d(2026, 10, 25), status: "With client", area: "MCA", days: 3 },
+  { id: "wt4", title: "KYC docs", client: "juniper", code: "Step 1", step: 1, owner: "Bharath", due: d(2026, 10, 22), status: "With client", area: "MCA", days: 1 },
+];
+/** Stuck steps for the action queue badge (Main.dc.html STK, the mixed view). */
+export const STUCK_STEPS: Array<{ text: string; client: string }> = [{ text: "MCA query on SPICe+", client: "orchid" }];
+
+/** Items with MCA or a portal (Main.dc.html BALL "MCA / portal"): part of the Waiting number. */
+export const WAIT_MCA: Array<{ text: string; client: string }> = [
+  { text: "SPICe+ SRN", client: "orchid" },
+  { text: "INC-22 SRN", client: "tidewater" },
+];
+
+/** Days a task has waited on the client (admin view, from the old "asked" dates). */
+export const WAIT_DAYS: Record<string, number> = { p01: 5, p03: 2, p12: 3, p26: 1, p27: 4 };
 
 export function waitingOnClient(portal: StaffPortal): Array<StaffTask & { days: number }> {
-  const pool = portal === "lead" ? tasksFor("lead") : tasksFor(portal);
-  return pool.filter((t) => t.status === "With client").map((t) => ({ ...t, days: WAIT_DAYS[t.id] ?? 2 }));
+  if (portal !== "admin") return WT;
+  return tasksFor(portal)
+    .filter((t) => t.status === "With client")
+    .map((t) => ({ ...t, days: WAIT_DAYS[t.id] ?? 2 }));
 }
 
 /** Practice strip numbers (Practice.dc.html slim). */
@@ -124,6 +174,17 @@ export function practiceNumbers(portal: StaffPortal) {
   }));
   const pendingByReg = REG_NAMES.map((name, i) => ({ name, n: cl.filter((c) => /[pw]/.test((REG_CODES[c.id] ?? "")[i] ?? "")).length })).filter((r) => r.n > 0).sort((a, b) => b.n - a.n);
   const coi = inc.map((c) => DAYS_TO_COI[c.id]).filter((n): n is number => n !== undefined);
+  // Per registration: done, in progress, pending (waiting on documents). Sorted by open count.
+  const regSplit = REG_NAMES.map((name, i) => {
+    const col = cl.map((c) => (REG_CODES[c.id] ?? "")[i] ?? "");
+    const r = { name, d: col.filter((x) => x === "d").length, p: col.filter((x) => x === "p").length, w: col.filter((x) => x === "w").length, total: 0, mostPending: "" };
+    r.total = Math.max(1, r.d + r.p + r.w);
+    return r;
+  })
+    .filter((r) => r.p + r.w > 0)
+    .sort((a, b) => b.p + b.w - (a.p + a.w));
+  const most = [...regSplit].sort((a, b) => b.w - a.w)[0];
+  if (regSplit[0] && most) regSplit[0].mostPending = most.name;
   return {
     inc: inc.length,
     regOpen,
@@ -132,12 +193,27 @@ export function practiceNumbers(portal: StaffPortal) {
     filings: f,
     stages,
     pendingByReg,
+    regSplit,
     avgCoi: coi.length ? Math.round(coi.reduce((a, b) => a + b, 0) / coi.length) : 0,
   };
 }
 
 /** Done today count for the greeting (Main.dc.html KPIs). */
-export const DONE_TODAY: Record<StaffPortal, number> = { lead: 2, manager: 4, admin: 6 };
+export const DONE_TODAY: Record<StaffPortal, number> = { lead: 2, manager: 2, admin: 6 };
 
 /** Week strip default: today. */
-export const WEEK_TODAY = WEEK.findIndex((w) => sameDay(w, TODAY));
+export const WEEK_TODAY = WEEK.findIndex((w) => sameDay(w, STAFF_TODAY));
+
+/** Admin practice cards (reference/old-patch/shared/Practice.dc.html with s/admin/data.js). */
+export type PipeStage = "Name approval" | "SPICe+ forms" | "MCA review" | "Certificate";
+export const PIPE_STAGES: PipeStage[] = ["Name approval", "SPICe+ forms", "MCA review", "Certificate"];
+export function pipeOf(c: StaffClient): PipeStage {
+  if (c.phases[0] < 5) return "Name approval";
+  if (c.pendingWith === "MCA" && c.phases[1] >= 7) return "MCA review";
+  if (c.phases[1] < 9) return "SPICe+ forms";
+  return "Certificate";
+}
+/** Average days to COI this year per manager (data.js DAYS). The card shows their mean. */
+export const MGR_DAYS_TO_COI: Record<string, number> = { Pranay: 31, "Priya Raman": 36, "Arjun Mehta": 41 };
+/** October filings for Krishna's seven compliance clients (data.js FIL). */
+export const ADMIN_FILINGS = { overdue: 3, late: 3, due: 8, upcoming: 15, onTime: 29, worst: "PF and ESI" };

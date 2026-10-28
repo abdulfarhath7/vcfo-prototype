@@ -177,7 +177,7 @@ export function SettingsScreen() {
           columns={peopleCols}
           rows={people}
           rowKey={(p) => p.id}
-          pageSize={8}
+          pageSize={20}
           filters={
             <Button size="sm" variant="primary" onClick={() => setAdding(true)}>
               <UserPlus size={14} strokeWidth={1.5} /> Add person

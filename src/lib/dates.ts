@@ -1,5 +1,7 @@
 // Sample data is frozen on one day (R-29: plain dates, "14 Oct").
 export const TODAY = new Date(2026, 9, 6); // Tuesday 6 Oct 2026
+/** Staff portals (lead, manager, admin, super admin) are frozen on Fri 16 Oct 2026, as in the old prototype. */
+export const STAFF_TODAY = new Date(2026, 9, 16);
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

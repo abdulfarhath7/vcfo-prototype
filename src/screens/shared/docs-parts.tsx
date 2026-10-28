@@ -121,10 +121,10 @@ export function ProgressTrack({ files, className }: { files: DocItem[]; classNam
   );
 }
 
-/** Sample page. Static grey lines, no motion. */
-export function PaperPage({ f, zoom = 100, page = 1 }: { f: DocItem; zoom?: number; page?: number }) {
+/** Sample page. Static grey lines, no motion. The viewer adds a large SAMPLE mark (v7x_doc_viewer). */
+export function PaperPage({ f, zoom = 100, page = 1, mark = false }: { f: DocItem; zoom?: number; page?: number; mark?: boolean }) {
   return (
-    <span className="mx-auto grid aspect-[1/1.3] w-full content-start gap-2 rounded-md border border-line bg-surface p-5 text-left md:p-7" style={{ maxWidth: Math.round(460 * (zoom / 100)) }}>
+    <span className="relative mx-auto grid aspect-[1/1.3] w-full content-start gap-2 overflow-hidden rounded-md border border-line bg-surface p-5 text-left md:p-7" style={{ maxWidth: Math.round(460 * (zoom / 100)) }}>
       <span className="text-11 font-semibold text-faint">Sample · placeholder page{page > 1 ? ` · page ${page}` : ""}</span>
       <span className="text-16 font-semibold leading-snug">{f.label}</span>
       <span className="text-12 text-muted">
@@ -133,6 +133,13 @@ export function PaperPage({ f, zoom = 100, page = 1 }: { f: DocItem; zoom?: numb
       {[92, 80, 86, 64, 88, 72, 50].map((w, i) => (
         <span key={i} className="mt-1 block h-2 rounded-sm bg-raised" style={{ width: `${w}%` }} />
       ))}
+      {mark && (
+        <span className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden>
+          <span className="-rotate-[24deg] select-none font-bold tracking-[.18em] text-line" style={{ fontSize: Math.round(64 * (zoom / 100)) }}>
+            SAMPLE
+          </span>
+        </span>
+      )}
     </span>
   );
 }

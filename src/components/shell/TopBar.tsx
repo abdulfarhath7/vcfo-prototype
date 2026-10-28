@@ -4,10 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Megaphone, Menu, Moon, Search, Sun } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { crumbFor, type Portal } from "@/data/nav";
+import { PORTALS, crumbFor, type Portal } from "@/data/nav";
 import { useTheme } from "./ThemeProvider";
 import { Palette } from "./Palette";
-import { StaffBellMenu } from "./StaffBellMenu";
+import { StaffAnnouncementsBell, StaffBellMenu } from "./StaffBellMenu";
+import { BeforeAfter } from "./BeforeAfter";
 
 function IconBtn({ label, onClick, href, children, dot, count }: { label: string; onClick?: () => void; href?: string; children: React.ReactNode; dot?: boolean; count?: number }) {
   const cls = "relative grid h-9 w-9 place-items-center rounded-md border border-line bg-surface text-ink-2 hover:bg-raised";
@@ -55,10 +56,19 @@ export function TopBar({ portal, incorporated, onMenu, updatesBase }: { portal: 
       <button type="button" onClick={onMenu} className="grid h-9 w-9 place-items-center rounded-md text-ink-2 hover:bg-raised md:hidden" aria-label="Open menu">
         <Menu size={20} strokeWidth={1.5} />
       </button>
+      {/* shell.js mobileLogo: phones show the VCFO mark next to the menu button */}
+      <Link href={PORTALS[portal].home} aria-label="VCFO Suite · home" className="flex-none sm:hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/vcfo-mark.webp" alt="VCFO Suite" className="block h-[26px] w-auto" />
+      </Link>
       <div className="flex min-w-0 items-center gap-2 text-13.5 text-muted">
-        <span className="hidden items-center border-r border-line pr-3 text-ink sm:flex">
-          <span className="font-mono text-12.5 font-semibold tracking-wide">SBC</span>
-        </span>
+        <Link href={PORTALS[portal].home} aria-label="SBC home" className="hidden flex-none items-center border-r border-line pr-3 sm:flex">
+          {/* Old top bar: the SBC logo image, 26 px high. Dark mode uses a copy with light letters. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/sbc-logo.webp" alt="SBC" className="block h-[26px] w-auto dark:hidden" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/sbc-logo-dark.webp" alt="SBC" className="hidden h-[26px] w-auto dark:block" />
+        </Link>
         <ol className="flex min-w-0 items-center gap-2">
           {crumb.map((c, i) => (
             <li key={c} className={cn("truncate", i === crumb.length - 1 && "font-semibold text-ink")}>
@@ -78,8 +88,13 @@ export function TopBar({ portal, incorporated, onMenu, updatesBase }: { portal: 
         <span className="hidden md:inline">Search clients, steps, filings</span>
         <kbd className="ml-auto hidden rounded-sm border border-line px-1.5 font-mono text-11 font-medium text-muted md:inline">Ctrl K</kbd>
       </button>
+      {/* shell.js: Before | After sits in the desktop top bar, before Announcements. Phones get it in the drawer. */}
+      {portal === "client" && <BeforeAfter className="hidden sm:grid" />}
       {portal === "lead" || portal === "manager" || portal === "admin" ? (
         <StaffBellMenu portal={portal} />
+      ) : portal === "super" || portal === "dev" ? (
+        /* Old super admin and developer top bars: one Announcements menu, no Notifications page. */
+        <StaffAnnouncementsBell portal={portal} />
       ) : (
         <>
           <IconBtn label="Announcements" href={`${updatesBase}/announcements`}>

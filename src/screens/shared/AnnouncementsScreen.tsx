@@ -1,20 +1,17 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ExternalLink, FileText, Mail, MessageCircle } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, ExternalLink, FileText, Landmark, Mail, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt } from "@/lib/dates";
-import { ANNS, ANN_TONE, OFFICIAL_PORTALS, isImportant, portalHref, type Ann } from "@/data/updates-team";
+import { ANNS, ANN_PRANAY, ANN_TONE, OFFICIAL_PORTALS, isImportant, portalHref, type Ann } from "@/data/updates-team";
 import { WHATSAPP } from "@/data/people";
 import { Tabs } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
-import { Tag } from "@/components/ui/Chip";
+import { Chip, Tag } from "@/components/ui/Chip";
 import { Avatar } from "@/components/ui/Avatar";
-import { Field, Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
-import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow } from "@/components/cards/SectionCard";
-import { DateTile } from "@/components/cards/AttentionList";
 import { Cols, Col } from "@/components/shell/Page";
 import type { Portal } from "@/data/nav";
 
@@ -109,12 +106,10 @@ function PortalsCard() {
   const [tab, setTab] = React.useState<"setup" | "recurring">("setup");
   const groups = OFFICIAL_PORTALS[tab];
   const count = (k: "setup" | "recurring") => OFFICIAL_PORTALS[k].reduce((n, g) => n + g.rows.length, 0);
+  const act = "grid h-[34px] w-[34px] flex-none place-items-center rounded-md border border-line text-ink-2 hover:bg-raised hover:text-ink";
   return (
-    <SectionCard
-      title="Official portals"
-      icon={{ Icon: ExternalLink, tone: "teal" }}
-      flush
-      right={
+    <SectionCard title="Official portals" icon={{ Icon: Landmark, tone: "blue" }} bodyClassName="grid gap-1 px-4 pb-3 pt-3 md:px-5">
+      <div>
         <Tabs
           items={[
             { key: "setup", label: "Setup", count: count("setup") },
@@ -123,21 +118,20 @@ function PortalsCard() {
           value={tab}
           onChange={(k) => setTab(k as "setup" | "recurring")}
         />
-      }
-    >
+      </div>
       {groups.map((g) => (
         <div key={g.group}>
-          <p className="border-t border-line-soft bg-raised px-4 py-1.5 text-11.5 font-semibold text-faint first:border-t-0 md:px-5">{g.group}</p>
+          <p className="border-b border-line-soft pb-1.5 pt-2 text-11.5 font-semibold text-muted">{g.group}</p>
           {g.rows.map((r) => (
-            <ListRow key={r.name} className="py-1.5">
-              <span className="min-w-0 flex-1 truncate">{r.name}</span>
-              <a href={`https://${r.host}`} target="_blank" rel="noreferrer" className="grid h-[30px] w-[30px] place-items-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label={`Open portal for ${r.name}`} title="Portal">
-                <ExternalLink size={15} strokeWidth={1.5} />
+            <div key={r.name} className="flex min-h-[45px] items-center gap-2 border-b border-line-soft py-1.5 text-13.5 last:border-b-0">
+              <span className="min-w-0 flex-1 truncate font-semibold">{r.name}</span>
+              <a href={`https://${r.host}`} target="_blank" rel="noreferrer" className={act} aria-label={`Open portal for ${r.name}`} title="Portal">
+                <ArrowUpRight size={15} strokeWidth={1.5} />
               </a>
-              <a href={`https://${r.host}`} target="_blank" rel="noreferrer" className="grid h-[30px] w-[30px] place-items-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label={`Read circular for ${r.name}`} title="Circular">
+              <a href={`https://${r.host}`} target="_blank" rel="noreferrer" className={act} aria-label={`Read circular for ${r.name}`} title="Circular">
                 <FileText size={15} strokeWidth={1.5} />
               </a>
-            </ListRow>
+            </div>
           ))}
         </div>
       ))}
@@ -145,15 +139,36 @@ function PortalsCard() {
   );
 }
 
+/** Old date tile: day without a leading zero over the month, on a soft tint. */
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function AnnDate({ date, warn, upper }: { date: Date; warn: boolean; upper: boolean }) {
+  return (
+    <span className={cn("grid h-[52px] w-[50px] flex-none content-center justify-items-center rounded-md", warn ? "bg-warn-soft text-warn" : "bg-accent-soft text-ink")} aria-hidden>
+      <span className="text-[18px] font-bold leading-none">{date.getDate()}</span>
+      <span className={cn("mt-1 text-11 font-bold leading-none", upper && "uppercase tracking-wide")}>{MON[date.getMonth()]}</span>
+    </span>
+  );
+}
+
+/** Deadline, MCA and Compliance show a soft chip with a dot. Other kinds show a plain outlined tag. */
+function KindChip({ kind }: { kind: Ann["kind"] }) {
+  if (kind === "Deadline" || kind === "MCA" || kind === "Compliance")
+    return (
+      <Chip tone={ANN_TONE[kind]} className="w-[120px] justify-center">
+        {kind}
+      </Chip>
+    );
+  return <span className="inline-flex h-[22px] items-center rounded-sm border border-line bg-surface px-1.5 text-11.5 font-semibold text-ink-2">{kind}</span>;
+}
+
 export function AnnouncementsScreen({ portal }: { portal: Portal }) {
   const staff = portal !== "client";
-  const [list, setList] = React.useState<Ann[]>(ANNS);
+  // s/lead/Announcements: on staff portals the bank-account note comes from Pranay.
+  const [list] = React.useState<Ann[]>(() => (staff ? ANNS.map((a) => (a.id === "a6" ? { ...a, by: ANN_PRANAY } : a)) : ANNS));
   const [tab, setTab] = React.useState("all");
   const [read, setRead] = React.useState<Set<string>>(new Set());
   const [open, setOpen] = React.useState<number | null>(null);
-  const [title, setTitle] = React.useState("");
-  const [body, setBody] = React.useState("");
-  const toast = useUndoToast();
 
   const shown = list.filter(FILTERS[tab]);
   const isUnread = (a: Ann) => !!a.unread && !read.has(a.id);
@@ -163,22 +178,11 @@ export function AnnouncementsScreen({ portal }: { portal: Portal }) {
     if (a) setRead((s) => new Set(s).add(a.id));
   };
 
-  const post = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-    const me = portal === "lead" ? { name: "Bharath", role: "Project lead", ini: "BH" } : portal === "manager" ? { name: "Pranay", role: "Manager", ini: "PN" } : { name: "Krishna", role: "Admin", ini: "KR" };
-    const a: Ann = { id: `p${Date.now()}`, date: new Date(2026, 9, 6), time: "now", kind: "Compliance", title: title.trim(), body: body.trim(), by: me };
-    setList((l) => [a, ...l]);
-    setTitle("");
-    setBody("");
-    toast.show("Posted to all clients", () => setList((l) => l.filter((x) => x.id !== a.id)));
-  };
-
   return (
     <Cols>
       <Col>
         <SectionCard
-          title="Announcements"
+          title="Latest"
           flush
           right={
             <Tabs
@@ -203,17 +207,17 @@ export function AnnouncementsScreen({ portal }: { portal: Portal }) {
             shown.map((a, i) => {
               const u = isUnread(a);
               return (
-                <ListRow key={a.id} onClick={() => openAt(i)} className="items-center">
-                  <DateTile date={a.date} tint={a.kind === "Deadline" ? "warn" : "idle"} />
+                <ListRow key={a.id} onClick={() => openAt(i)} className={cn("min-h-[79px] items-center", u && "bg-accent-soft hover:bg-accent-soft")}>
+                  <AnnDate date={a.date} warn={a.kind === "Deadline"} upper={!staff} />
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
-                      <Tag tone={ANN_TONE[a.kind]}>{a.kind}</Tag>
+                      <KindChip kind={a.kind} />
                       <span className="text-12 text-muted">{byLine(a)}</span>
-                      {a.host && <Tag className="font-mono sm:hidden">{a.host}</Tag>}
+                      {a.host && <Tag className="border border-line sm:hidden">{a.host}</Tag>}
                     </span>
-                    <span className={cn("mt-1 block truncate text-13.5", u ? "font-bold" : "font-semibold")}>{a.title}</span>
+                    <span className={cn("mt-1.5 block truncate text-14", u ? "font-bold" : "font-semibold")}>{a.title}</span>
                   </span>
-                  {a.host && <Tag className="hidden font-mono sm:inline-flex">{a.host}</Tag>}
+                  {a.host && <Tag className="hidden border border-line sm:inline-flex">{a.host}</Tag>}
                   <span className={cn("h-2 w-2 flex-none rounded-full", u ? "bg-accent" : "bg-transparent")} role={u ? "img" : undefined} aria-label={u ? "Unread" : undefined} />
                 </ListRow>
               );
@@ -223,24 +227,8 @@ export function AnnouncementsScreen({ portal }: { portal: Portal }) {
       </Col>
       <Col>
         <PortalsCard />
-        {staff && (
-          <SectionCard title="Post an announcement">
-            <form className="grid gap-3" onSubmit={post}>
-              <Field label="Title">
-                <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-              </Field>
-              <Field label="Body">
-                <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} className="rounded-md border border-line bg-surface px-3 py-2 text-13.5 text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent-line" />
-              </Field>
-              <Button type="submit" variant="primary" className="justify-self-end" disabled={!title.trim()}>
-                Post to all clients
-              </Button>
-            </form>
-          </SectionCard>
-        )}
       </Col>
       {open !== null && <AnnDetail list={shown} index={open} onIndex={openAt} onClose={() => setOpen(null)} portal={portal} />}
-      {toast.node}
     </Cols>
   );
 }

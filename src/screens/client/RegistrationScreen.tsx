@@ -1,40 +1,67 @@
 "use client";
 import * as React from "react";
-import { ClipboardCheck, List, User } from "lucide-react";
-import { fmt, relative, urgency } from "@/lib/dates";
-import { REGULATOR_LABEL, REGULATOR_TONE, REG_STATUS_TONE, registration } from "@/data/registrations";
-import { OB_STATUS_TONE, obligation, obHref } from "@/data/compliance";
+import { fmt } from "@/lib/dates";
+import { REG_STATUS_TONE, registration } from "@/data/registrations";
+import { obligation, obHref } from "@/data/compliance";
 import { regFields } from "@/data/compliance-detail";
-import { SBC, CLIENT_PEOPLE } from "@/data/people";
+import { AFTER_COI, REG_NEXT_BEFORE, regBefore } from "@/data/client-before-coi";
+import { CLIENT_PEOPLE } from "@/data/people";
 import { Cols, Col } from "@/components/shell/Page";
-import { Chip, OwnerChip, Tag } from "@/components/ui/Chip";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
-import { Thread } from "@/components/cards/Thread";
-import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
-import { EditableFacts, type FactRow } from "@/components/cards/EditableFacts";
-import { RecordHead, ItemDocsCard, HoldsCard } from "./parts";
-import { AboutCard, PeopleStack, RecordAction, UploadCatcher } from "./comp-parts";
+import type { FactRow } from "@/components/cards/EditableFacts";
+import {
+  PeopleStack,
+  RecordAction,
+  UploadCatcher,
+  useBeforeCoi,
+} from "./comp-parts";
+import {
+  FromClientCard,
+  ItemBand,
+  SbcFieldsCard,
+  SideThread,
+  StepRing,
+  TextCard,
+  type RingTone,
+} from "./item-parts";
 
-const toRows = (pairs: Array<[string, string]>, mono = false): FactRow[] => pairs.map(([k, v]) => ({ k, v, mono }));
+const toRows = (pairs: Array<[string, string]>, mono = false): FactRow[] =>
+  pairs.map(([k, v]) => ({ k, v, mono }));
 
+const TONE_TEXT: Record<string, string> = {
+  ok: "text-ok",
+  warn: "text-warn",
+  bad: "text-bad",
+  prog: "text-accent",
+  idle: "text-muted",
+};
+
+/** Client registration page, as the old Item.dc.html: deadline band, two-sided thread, from the client, filled by SBC. */
 export function RegistrationScreen({ id }: { id: string }) {
-  const r = registration(id)!;
+  const before = useBeforeCoi();
+  const found = registration(id)!;
+  // Before the certificate nothing is started: the client fills the details.
+  const r = before ? regBefore(found) : found;
   const toast = useUndoToast();
   const done = r.steps.filter((s) => s.state === "done").length;
-  const person = SBC.find((p) => p.name === r.by);
   const fields = regFields(r);
-  const [client, setClient] = React.useState<FactRow[]>(() => toRows(fields.client));
   const locked = r.status === "Granted" || r.status === "Not needed";
-  const asked = r.docs.filter((x) => x.status === "Asked" || x.status === "Sent back").map((x) => x.name);
+  const asked = r.docs
+    .filter((x) => x.status === "Asked" || x.status === "Sent back")
+    .map((x) => x.name);
   const detailsRef = React.useRef<HTMLDivElement>(null);
   const starts = r.obligations.map((oid) => obligation(oid)).filter((o) => !!o);
-  const uploaded = (n: number) => toast.show(`${n} ${n === 1 ? "file" : "files"} uploaded · SBC reviews them next`);
-
-  const coming: AttentionRow[] = [
-    ...(r.next ? [{ id: "next", date: r.next, title: r.nextLabel ?? r.name, sub: r.authority, chip: { label: relative(r.next), tone: urgency(r.next) } }] : []),
-    ...starts.map((o) => ({ id: o.id, date: o.due, title: `${o.name} · ${o.period}`, sub: o.frequency, chip: { label: o.status, tone: o.status === "Filed" ? ("ok" as const) : urgency(o.due) }, href: obHref("client", o.id) })),
-  ].sort((a, b) => a.date.getTime() - b.date.getTime());
+  const uploaded = (n: number) =>
+    toast.show(
+      `${n} ${n === 1 ? "file" : "files"} uploaded · SBC reviews them next`,
+    );
+  const ring: RingTone =
+    r.status === "Granted"
+      ? "ok"
+      : r.status === "Waiting on client"
+        ? "warn"
+        : "accent";
 
   const action =
     r.status === "Waiting on client" ? (
@@ -42,101 +69,128 @@ export function RegistrationScreen({ id }: { id: string }) {
         <RecordAction label="Upload documents" onDone={() => {}} />
       </UploadCatcher>
     ) : r.status === "Granted" ? (
-      <RecordAction label="Download certificate" onDone={() => toast.show(`${r.name} certificate downloaded`)} />
+      <RecordAction
+        label="Download certificate"
+        onDone={() => toast.show(`${r.name} certificate downloaded`)}
+      />
     ) : r.status === "Not needed" ? null : (
-      <RecordAction label="Check my details" onDone={() => detailsRef.current?.scrollIntoView({ block: "start" })} />
+      <RecordAction
+        label="Check my details"
+        onDone={() => detailsRef.current?.scrollIntoView({ block: "start" })}
+      />
     );
+
+  const expected = before
+    ? AFTER_COI
+    : r.status === "Granted" && r.granted
+      ? fmt(r.granted)
+      : (r.nextLabel ?? "-");
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <RecordHead
-        eyebrow={`${r.authority} · ${r.form} · ${r.team}`}
+      <ItemBand
+        ring={<StepRing done={done} total={r.steps.length} tone={ring} />}
         title={r.name}
-        chips={
+        sub={
           <>
-            <Tag tone={REGULATOR_TONE[r.regulator]}>{REGULATOR_LABEL[r.regulator]}</Tag>
-            <Chip tone={REG_STATUS_TONE[r.status]}>{r.status}</Chip>
-            {r.nextLabel && <span className="text-12.5 text-muted">{r.nextLabel}</span>}
-            {r.status !== "Not needed" && (
-              <span className="text-12.5 text-muted">
-                {done} of {r.steps.length} steps
-              </span>
-            )}
-          </>
-        }
-        action={
-          <>
-            <PeopleStack people={[{ name: CLIENT_PEOPLE[0].name, role: "Northwind" }, { name: r.by, role: person?.role ?? "SBC" }, { name: "Pranay", role: "Manager" }]} />
-            {action}
+            <span className="underline decoration-dotted underline-offset-2">
+              {r.form}
+            </span>{" "}
+            · {r.authority} · {r.team}
           </>
         }
         facts={[
-          { k: r.idLabel ?? "Number", v: r.idValue ?? "-", mono: true },
-          { k: r.status === "Granted" ? "Granted" : "Started", v: r.granted ? fmt(r.granted) : r.started ? fmt(r.started) : "-" },
-          { k: "Renewal", v: r.renewal },
+          { k: r.status === "Granted" ? "Granted" : "Expected", v: expected },
+          {
+            k: "Number",
+            v: r.idValue ? (
+              <span className="font-mono text-13">{r.idValue}</span>
+            ) : (
+              "-"
+            ),
+          },
+          {
+            k: "Status",
+            v: (
+              <span className={TONE_TEXT[REG_STATUS_TONE[r.status]]}>
+                {r.status}
+              </span>
+            ),
+          },
         ]}
+        people={
+          <PeopleStack
+            people={[
+              { name: CLIENT_PEOPLE[0].name, role: "Northwind" },
+              { name: r.by, role: "Project lead" },
+              { name: "Pranay", role: "Manager" },
+            ]}
+          />
+        }
+        action={action}
       />
       <Cols>
         <Col>
           {r.status !== "Not needed" && (
-            <SectionCard title="Steps" meta={`${done} of ${r.steps.length} done`} icon={{ Icon: List, tone: "blue" }}>
-              <Thread steps={r.steps} />
+            <SectionCard
+              title="Steps"
+              meta={`${done} of ${r.steps.length} done`}
+            >
+              <SideThread
+                steps={r.steps}
+                authority={r.authority}
+                authLabel={r.authority}
+                nextSub={before ? REG_NEXT_BEFORE : undefined}
+              />
             </SectionCard>
           )}
-          <UploadCatcher requested={asked} onDone={uploaded}>
-            <ItemDocsCard title="From Northwind" docs={r.docs} canUpload={r.status === "Waiting on client"} />
-          </UploadCatcher>
           <div ref={detailsRef} className="scroll-mt-20">
-            <EditableFacts
-              title="Your details"
-              icon={{ Icon: User, tone: "violet" }}
-              meta={locked ? "Locked" : undefined}
-              rows={client}
+            <FromClientCard
+              key={before ? "before" : "after"}
+              docs={r.docs}
+              rows={toRows(fields.client)}
               editable={!locked}
-              saveLabel="Submit details"
-              onSave={(next) => {
-                const prev = client;
-                setClient(next);
-                toast.show("Details sent to SBC", () => setClient(prev));
-              }}
+              by={r.by}
+              onUpload={uploaded}
+              onSubmit={() => toast.show("Details sent to SBC")}
             />
           </div>
-          <EditableFacts title="Filled by SBC" icon={{ Icon: ClipboardCheck, tone: "teal" }} rows={toRows(fields.sbc, true)} />
+          <SbcFieldsCard rows={toRows(fields.sbc, true)} />
         </Col>
         <Col>
-          <HoldsCard
-            rows={[
-              { k: "Owner", v: <OwnerChip owner={r.owner} label={r.owner === "client" ? "Northwind" : undefined} /> },
-              { k: "SBC person", v: person ? `${person.name} · ${person.role}` : r.by },
-              { k: "Team", v: r.team },
-              { k: "Typical time", v: r.typical },
-            ]}
-          />
-          <AboutCard about={r.about} whyTitle={r.status === "Not needed" ? "Not needed" : "Applies because"} why={r.why} />
-          <SectionCard title="What it starts" icon={{ Icon: List, tone: "blue" }} flush>
-            {starts.length === 0 ? (
-              <Empty />
-            ) : (
-              starts.map((o) => (
-                <ListRow key={o.id} href={obHref("client", o.id)}>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">{o.name}</span>
-                    <span className="block truncate text-12.5 text-muted">
-                      {o.frequency} · {o.dueRule}
+          <TextCard title="About" sop>
+            {r.about}
+          </TextCard>
+          <TextCard
+            title={r.status === "Not needed" ? "Not needed" : "Applies because"}
+          >
+            {r.status === "Not needed"
+              ? `Not needed for Northwind: ${r.why}.`
+              : `Applies to Northwind Technologies because: ${r.why}. Rule: ${r.rule}.`}
+          </TextCard>
+          {starts.length > 0 && (
+            <SectionCard title="What it starts" flush>
+              {starts.length === 0 ? (
+                <Empty />
+              ) : (
+                starts.map((o) => (
+                  <ListRow key={o.id} href={obHref("client", o.id)}>
+                    <span className="min-w-0 flex-1 truncate font-semibold">
+                      {o.name}
                     </span>
-                  </span>
-                  <Chip tone={OB_STATUS_TONE[o.status]} className="hidden sm:inline-flex">
-                    {o.status}
-                  </Chip>
-                </ListRow>
-              ))
-            )}
-          </SectionCard>
-          {coming.length > 0 && (
-            <SectionCard title="Coming up" flush>
-              <AttentionList rows={coming} />
+                    <span className="flex-none text-12.5 text-muted">
+                      {o.frequency}
+                    </span>
+                  </ListRow>
+                ))
+              )}
             </SectionCard>
           )}
+          <TextCard title="Renewal">
+            {r.renewal === "None"
+              ? "None"
+              : `${r.renewal}. Reminders at 60, 30 and 7 days.`}
+          </TextCard>
         </Col>
       </Cols>
       {toast.node}

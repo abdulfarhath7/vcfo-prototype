@@ -1,5 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
+import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { tile, urgency, type Urgency } from "@/lib/dates";
 import { Chip, type ChipTone } from "@/components/ui/Chip";
@@ -18,6 +19,8 @@ export interface AttentionRow {
   href?: string;
   /** Force the date tile tint. Default comes from the date. */
   tint?: Urgency;
+  /** Show a red alert tile in place of the date tile, with a red left edge (old client alerts). */
+  alert?: boolean;
 }
 
 const tileTone: Record<Urgency, string> = {
@@ -47,13 +50,23 @@ export function AttentionList({ rows, className }: { rows: AttentionRow[]; class
       {rows.map((r) => {
         const body = (
           <>
-            <DateTile date={r.date} tint={r.tint} />
+            {r.alert ? (
+              <span className="grid h-11 w-11 flex-none place-items-center rounded border border-bad bg-surface text-bad" aria-hidden>
+                <AlertCircle size={16} strokeWidth={1.5} />
+              </span>
+            ) : (
+              <DateTile date={r.date} tint={r.tint} />
+            )}
             <span className="min-w-0 flex-1">
               <span className="block truncate text-13.5 font-semibold">{r.title}</span>
-              {r.sub && <span className="block truncate text-12.5 text-muted">{r.sub}</span>}
+              {r.alert ? (
+                <Chip tone={r.chip.tone} className="mt-1">{r.chip.label}</Chip>
+              ) : (
+                r.sub && <span className="block truncate text-12.5 text-muted">{r.sub}</span>
+              )}
             </span>
             <span className="flex flex-none items-center gap-2">
-              <Chip tone={r.chip.tone}>{r.chip.label}</Chip>
+              {!r.alert && <Chip tone={r.chip.tone}>{r.chip.label}</Chip>}
               {r.action && (
                 <Button asChild variant="primary" size="sm">
                   <Link href={r.action.href}>{r.action.label}</Link>
@@ -62,7 +75,8 @@ export function AttentionList({ rows, className }: { rows: AttentionRow[]; class
             </span>
           </>
         );
-        const cls = cn("flex items-center gap-3 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5", r.urgent && "bg-bad-soft", r.href && "hover:bg-raised");
+        const cls = cn("flex items-center gap-3 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5", r.urgent && "bg-bad-soft",
+          r.alert && "border-l-2 border-l-bad", r.href && "hover:bg-raised");
         return (
           <li key={r.id}>
             {r.href ? (

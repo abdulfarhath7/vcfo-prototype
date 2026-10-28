@@ -43,6 +43,7 @@ export function FilingWindows({
   onChange,
   onLocked,
   focus,
+  today = TODAY,
 }: {
   start: Date;
   end: Date;
@@ -51,6 +52,8 @@ export function FilingWindows({
   onLocked?: (item: WindowItem) => void;
   /** Scroll to this date on first paint. */
   focus?: Date;
+  /** The day marked by the today line. */
+  today?: Date;
 }) {
   const days = dayN(end, start);
   const vp = React.useRef<HTMLDivElement>(null);
@@ -233,7 +236,7 @@ export function FilingWindows({
                 </div>
               ),
             )}
-            <span className="pointer-events-none absolute bottom-0 top-0 w-0.5 bg-brand" style={{ left: dayN(TODAY, start) * p }} aria-hidden />
+            <span className="pointer-events-none absolute bottom-0 top-0 w-0.5 bg-brand" style={{ left: dayN(today, start) * p }} aria-hidden />
           </div>
         </div>
       </div>

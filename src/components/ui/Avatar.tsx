@@ -9,7 +9,12 @@ const palette = [
   "bg-idle-soft text-idle",
 ];
 
+/** Old two-letter codes for one-word names (s/super/data.js). */
+const ONE_WORD: Record<string, string> = { Pranay: "PN", Bharath: "BH", Krishna: "KR", Mithilesh: "MI" };
+
 export function initials(name: string) {
+  const one = ONE_WORD[name.trim()];
+  if (one) return one;
   return name
     .split(/\s+/)
     .filter(Boolean)

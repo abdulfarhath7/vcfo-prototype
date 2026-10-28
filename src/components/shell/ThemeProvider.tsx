@@ -17,6 +17,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
+  // Follow a theme change made in another frame (the Mobile 390 preview).
+  React.useEffect(() => {
+    const on = (e: StorageEvent) => {
+      if (e.key !== "vcfo-theme" || (e.newValue !== "light" && e.newValue !== "dark")) return;
+      setTheme(e.newValue);
+      document.documentElement.dataset.theme = e.newValue;
+    };
+    window.addEventListener("storage", on);
+    return () => window.removeEventListener("storage", on);
+  }, []);
+
+  // No saved theme means "System": follow a live change of the OS theme.
+  React.useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const on = () => {
+      try {
+        if (localStorage.getItem("vcfo-theme")) return;
+      } catch {}
+      const t: Theme = mq.matches ? "dark" : "light";
+      setTheme(t);
+      document.documentElement.dataset.theme = t;
+    };
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
   const toggle = React.useCallback(() => {
     setTheme((t) => {
       const n: Theme = t === "dark" ? "light" : "dark";

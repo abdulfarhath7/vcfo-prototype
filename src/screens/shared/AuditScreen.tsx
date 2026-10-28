@@ -19,6 +19,18 @@ const resultTone: Record<AuditRow["result"], ChipTone> = { Done: "ok", "Sent bac
 const CATS: AuditCat[] = ["Documents", "Milestones", "Team", "Email", "Credentials", "Sign-in"];
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 
+/** Export: the rows in view as a CSV file, as the staff Filings export does. */
+function exportCsv(rows: AuditRow[]) {
+  const head = ["Date", "Time", "Event", "Target", "Area", "Who", "Role", "Result"];
+  const lines = rows.map((e) => [fmt(e.date), e.time, e.action, e.target, e.cat, e.who, e.role, e.result].map((v) => `"${String(v).replaceAll('"', '""')}"`).join(","));
+  const url = URL.createObjectURL(new Blob([[head.join(","), ...lines].join("\n")], { type: "text/csv" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "audit-log.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 /** Facts with a Before and After pair show the change as one row. */
 function Facts({ e }: { e: AuditRow }) {
   const before = e.facts.find((f) => f.k === "Before");
@@ -157,7 +169,7 @@ export function AuditScreen({ portal }: { portal: Portal }) {
                 { value: "client", label: "Northwind" },
               ]}
             />
-            <Button size="sm">
+            <Button size="sm" onClick={() => exportCsv(rows)}>
               <Download size={15} strokeWidth={1.5} /> Export
             </Button>
           </>

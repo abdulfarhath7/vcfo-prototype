@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Mail } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { TODAY } from "@/lib/dates";
+import { STAFF_TODAY as TODAY } from "@/lib/dates";
 import { barFill } from "@/components/ui/Bar";
 import { Avatar, initials } from "@/components/ui/Avatar";
 import { clientsFor, STAFF_CLIENTS, type StaffPortal } from "@/data/staff-clients";
 import { TASKS } from "@/data/staff-tasks";
 import { calendarFor } from "@/data/staff-compliance";
-import { LEADS, MANAGERS } from "@/data/staff-team";
+import { LEADS, MANAGERS, leadOpen } from "@/data/staff-team";
 
 // Staff sidebar extras. Ported from reference/old-screens/s/lead/Side.dc.html, s/mgr/Side.dc.html and s/admin/Side.dc.html.
 // Blocks: folded client list under Clients, folded project leads (manager) or managers (admin), the month calendar with due days,
@@ -71,7 +71,10 @@ export const showsCompliancesNew = (portal: StaffPortal) => portal !== "admin";
 function foldClients(portal: StaffPortal, path: string) {
   const all = clientsFor(portal);
   const open = all.find((c) => path.startsWith(`/${portal}/clients/${c.id}`));
-  const list = all.slice(0, 4);
+  // Old Side.dc.html order: Northwind, Orchid Lane, Brightwave, Kestrel.
+  const first = ["northwind", "orchid", "brightwave", "kestrel"];
+  const picked = first.map((id) => all.find((c) => c.id === id)).filter((c): c is (typeof all)[number] => !!c);
+  const list = picked.length === 4 ? picked : all.slice(0, 4);
   return { all, list: open && !list.includes(open) ? [...list, open] : list, open };
 }
 
@@ -93,7 +96,7 @@ export function ClientsFold({ portal, open = true }: { portal: StaffPortal; open
             className={cn(CHILD, on ? PICKED : "text-navy-ink")}
           >
             <i className={cn("h-2 w-2 flex-none rounded-[2px]", barFill[c.tone])} aria-hidden />
-            <span className="min-w-0 flex-1 truncate">{c.short}</span>
+            <span className="min-w-0 flex-1 truncate">{c.name.replace(/( India)? Pvt Ltd$/, "")}</span>
             <span className={PILL}>{c.stage === "incorporating" ? "Inc" : "Cmp"}</span>
           </Link>
         );
@@ -117,15 +120,23 @@ function Ini({ name }: { name: string }) {
 /** Manager portal: folded project-lead list under Project leads. */
 export function LeadsFold({ open = true }: { open?: boolean }) {
   const path = usePathname();
+  const [hash, setHash] = React.useState("");
+  React.useEffect(() => {
+    const read = () => setHash(window.location.hash.slice(1));
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+  }, [path]);
   if (!open) return null;
   const leads = LEADS.filter((l) => l.manager === "Pranay");
+  const onPage = path === "/manager/leads";
   return (
     <div className="grid gap-px pb-1.5 pl-[18px] pt-0.5">
       {leads.map((l) => {
-        const n = TASKS.filter((t) => t.owner === l.name && t.status !== "Done").length;
+        const n = leadOpen(l.name) ?? TASKS.filter((t) => t.owner === l.name && t.status !== "Done").length;
         const slug = l.name.split(" ")[0].toLowerCase();
         return (
-          <Link key={l.name} href={`/manager/leads#${slug}`} title={`${l.name} · ${n} open tasks`} className={cn(CHILD, path === "/manager/leads" ? "text-white" : "text-navy-ink")}>
+          <Link key={l.name} href={`/manager/leads#${slug}`} title={`${l.name} · ${n} open tasks`} onClick={() => setHash(slug)} aria-current={onPage && (hash || "bharath") === slug ? "page" : undefined} className={cn(CHILD, onPage ? "text-white" : "text-navy-ink", onPage && (hash || "bharath") === slug && PICKED)}>
             <Ini name={l.name} />
             <span className="min-w-0 flex-1 truncate">{l.name}</span>
             <span className={PILL}>{n} open</span>
@@ -226,7 +237,7 @@ export function MiniCalendar({ portal }: { portal: StaffPortal }) {
 
 const REPORTS_TO: Record<StaffPortal, { name: string; role: string } | null> = {
   lead: { name: "Pranay", role: "Manager" },
-  manager: { name: "Krishna", role: "Admin" },
+  manager: null,
   admin: null,
 };
 

@@ -18,7 +18,16 @@ export interface ChangeConfirmProps {
 /** R-40: ask before a risky change. Shows the value now and after, then a navy confirm and Cancel. Never window.confirm. */
 export function ChangeConfirm({ question, confirm, before, after, onConfirm, onCancel, className }: ChangeConfirmProps) {
   return (
-    <div role="alertdialog" aria-label={question} className={cn("grid gap-2 border-t border-line-soft bg-raised px-4 py-2.5 md:px-5", className)}>
+    <div
+      role="alertdialog"
+      aria-label={question}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          onCancel();
+        }
+      }}
+      className={cn("grid gap-2 border-t border-line-soft bg-raised px-4 py-2.5 md:px-5", className)}>
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="min-w-0 flex-1 text-13 font-semibold">{question}</span>
         <span className="flex flex-none items-center gap-2">

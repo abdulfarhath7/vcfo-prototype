@@ -1,5 +1,5 @@
 // Every setting of every connection. Ported from reference/old-patch/dev/detail.js.
-// Dates moved 10 days back so "today" is 6 Oct 2026. Secrets are always masked. Demo values only.
+// Dates sit on STAFF_TODAY (16 Oct 2026), as in the old devdata.js. Secrets are always masked. Demo values only.
 import type { ChipTone } from "@/components/ui/Chip";
 import type { AuditAction, Channel } from "@/data/dev";
 
@@ -73,7 +73,7 @@ export const CONNECTION_DETAIL: Record<string, Section[]> = {
         { label: "Access", hint: "App Runner signs requests with its IAM role. No key is stored.", value: "IAM role vcfo-apprunner-wa", x: { mono: true, chip: ["Working", "ok"] } },
         { label: "Event destination", hint: "Delivery, read and failure events come back here", value: "SNS topic vcfo-wa-events → /api/webhooks/whatsapp", x: { mono: true } },
         { label: "Event signature", hint: "Every event is checked before it is stored", value: "Checked on every event", x: { chip: ["On", "ok"] } },
-        { label: "Last event", value: "6 Oct 12:05 · message delivered to Northwind" },
+        { label: "Last event", value: "16 Oct 12:05 · message delivered to Northwind" },
       ],
     },
     {
@@ -82,13 +82,13 @@ export const CONNECTION_DETAIL: Record<string, Section[]> = {
       meta: "11 approved · 3 waiting",
       head: ["Template", "Category", "Language", "Status", "Last sent", "Sent, 7 days"],
       rows: [
-        [{ t: "doc_nudge_hi_en", mono: true }, "Utility", "en, hi", { t: "Approved", tone: "ok" }, "6 Oct 12:00", "61"],
-        [{ t: "step_due_wa", mono: true }, "Utility", "en", { t: "Approved", tone: "ok" }, "6 Oct 09:00", "38"],
-        [{ t: "filed_ack_wa", mono: true }, "Utility", "en", { t: "Approved", tone: "ok" }, "5 Oct", "22"],
-        [{ t: "welcome_client", mono: true }, "Utility", "en", { t: "Approved", tone: "ok" }, "2 Oct", "3"],
-        [{ t: "deadline_1d", mono: true }, "Utility", "en", { t: "Waiting since 4 Oct", tone: "warn" }, "-", "0"],
-        [{ t: "invoice_link", mono: true }, "Utility", "en", { t: "Waiting since 4 Oct", tone: "warn" }, "-", "0"],
-        [{ t: "registration_granted", mono: true }, "Utility", "en", { t: "Waiting since 5 Oct", tone: "warn" }, "-", "0"],
+        [{ t: "doc_nudge_hi_en", mono: true }, "Utility", "en, hi", { t: "Approved", tone: "ok" }, "16 Oct 12:00", "61"],
+        [{ t: "step_due_wa", mono: true }, "Utility", "en", { t: "Approved", tone: "ok" }, "16 Oct 09:00", "38"],
+        [{ t: "filed_ack_wa", mono: true }, "Utility", "en", { t: "Approved", tone: "ok" }, "15 Oct", "22"],
+        [{ t: "welcome_client", mono: true }, "Utility", "en", { t: "Approved", tone: "ok" }, "12 Oct", "3"],
+        [{ t: "deadline_1d", mono: true }, "Utility", "en", { t: "Waiting since 14 Oct", tone: "warn" }, "-", "0"],
+        [{ t: "invoice_link", mono: true }, "Utility", "en", { t: "Waiting since 14 Oct", tone: "warn" }, "-", "0"],
+        [{ t: "registration_granted", mono: true }, "Utility", "en", { t: "Waiting since 15 Oct", tone: "warn" }, "-", "0"],
       ],
     },
     {
@@ -219,7 +219,7 @@ export const CONNECTION_DETAIL: Record<string, Section[]> = {
       rows: [
         { label: "Shared mailbox", hint: "Client replies land here and on the client page", value: "updates@sbcllp.in", x: { mono: true } },
         { label: "Staff calendars", hint: "Filing dates and meetings sync both ways", value: "18 calendars" },
-        { label: "Calendar sync", hint: "Every 15 minutes", value: "Last sync 6 Oct 12:30", x: { sw: { key: "m365-cal", on: true } } },
+        { label: "Calendar sync", hint: "Every 15 minutes", value: "Last sync 16 Oct 12:30", x: { sw: { key: "m365-cal", on: true } } },
         { label: "Signatures", hint: "Microsoft Graph has no signature API; the server-side tool adds them", value: "Server-side signature tool", x: { chip: ["On", "ok"] } },
       ],
     },
@@ -231,7 +231,7 @@ export const CONNECTION_DETAIL: Record<string, Section[]> = {
       kind: "rows",
       title: "Connection",
       rows: [
-        { label: "Status", value: "The webhook token expires on 15 Oct", x: { chip: ["Needs attention", "warn"] } },
+        { label: "Status", value: "The webhook token expires on 25 Oct", x: { chip: ["Needs attention", "warn"] } },
         { label: "Bot", hint: "Sends digests and escalation cards", value: "VCFO bot · installed for 18 staff" },
       ],
     },
@@ -243,8 +243,8 @@ export const CONNECTION_DETAIL: Record<string, Section[]> = {
         [
           "Compliance alerts",
           "Staff daily digest at 09:00, errors from Sentry",
-          { t: "Expires 15 Oct", tone: "warn" },
-          { btn: { label: "Renew", ask: "Paste a new incoming webhook URL for Compliance alerts?", before: "Expires 15 Oct", after: "New URL, 90 days", action: "Rotate key", done: "Renewed" } },
+          { t: "Expires 25 Oct", tone: "warn" },
+          { btn: { label: "Renew", ask: "Paste a new incoming webhook URL for Compliance alerts?", before: "Expires 25 Oct", after: "New URL, 90 days", action: "Rotate key", done: "Renewed" } },
         ],
         ["Incorporations", "Steps stuck for 3 days, escalations", { t: "Bot", tone: "ok" }, ""],
         ["Partners", "Monthly partner report", { t: "Bot", tone: "ok" }, ""],
@@ -271,12 +271,12 @@ export const CONNECTION_DETAIL: Record<string, Section[]> = {
       title: "Browsers per person",
       head: ["Person", "Browser", "Version", "Last seen"],
       rows: [
-        ["Bharath", "Chrome on Windows", { t: "1.4.2", mono: true }, "6 Oct 12:24"],
-        ["Sneha Kulkarni", "Chrome on Windows", { t: "1.4.2", mono: true }, "6 Oct 11:58"],
-        ["Meera Nair", "Edge on Windows", { t: "1.4.2", mono: true }, "6 Oct 11:10"],
+        ["Bharath", "Chrome on Windows", { t: "1.4.2", mono: true }, "16 Oct 12:24"],
+        ["Sneha Kulkarni", "Chrome on Windows", { t: "1.4.2", mono: true }, "16 Oct 11:58"],
+        ["Meera Nair", "Edge on Windows", { t: "1.4.2", mono: true }, "16 Oct 11:10"],
         ["Pranay", "Chrome on Mac", { t: "1.4.1", mono: true }, { t: "Update due", tone: "warn" }],
-        ["Priya Raman", "Chrome on Windows", { t: "1.4.2", mono: true }, "5 Oct"],
-        ["Farhath", "Chrome on Linux", { t: "1.4.2", mono: true }, "6 Oct 12:30"],
+        ["Priya Raman", "Chrome on Windows", { t: "1.4.2", mono: true }, "15 Oct"],
+        ["Farhath", "Chrome on Linux", { t: "1.4.2", mono: true }, "16 Oct 12:30"],
       ],
     },
     { kind: "events" },
@@ -348,8 +348,8 @@ export const CONNECTION_DETAIL: Record<string, Section[]> = {
       title: "API keys",
       head: ["Key", "Access", "Created", "Last used", ""],
       rows: [
-        ["Partner dashboard", "Read", "2 Sep 2026", "6 Oct 09:00", { btn: { label: "Revoke", ask: "Revoke the Partner dashboard key?", before: "Active", after: "Revoked", action: "Revoke key", done: "Revoked" } }],
-        ["Tally connector", "Write invoices", "20 Aug 2026", "3 Oct 23:00", { btn: { label: "Revoke", ask: "Revoke the Tally connector key?", before: "Active", after: "Revoked", action: "Revoke key", done: "Revoked" } }],
+        ["Partner dashboard", "Read", "2 Sep 2026", "16 Oct 09:00", { btn: { label: "Revoke", ask: "Revoke the Partner dashboard key?", before: "Active", after: "Revoked", action: "Revoke key", done: "Revoked" } }],
+        ["Tally connector", "Write invoices", "20 Aug 2026", "13 Oct 23:00", { btn: { label: "Revoke", ask: "Revoke the Tally connector key?", before: "Active", after: "Revoked", action: "Revoke key", done: "Revoked" } }],
       ],
     },
     {

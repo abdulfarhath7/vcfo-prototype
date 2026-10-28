@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Check, ChevronRight, Copy, Download, ExternalLink, MessageSquare, Paperclip, Upload } from "lucide-react";
+import { ChevronRight, Copy, Download, ExternalLink, MessageSquare, Paperclip, RefreshCw, Upload } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TODAY, fmt, fmtYear, urgency } from "@/lib/dates";
 import { PHASES, STEPS, COI_EXPECTED, stepsOf, doneCount, stepTone, stepHref, phaseHref, type Step } from "@/data/incorporation";
@@ -18,6 +18,8 @@ import { SidePanel, PanelSection } from "@/components/ui/SidePanel";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { StatusCircle } from "@/components/cards/GanttTimeline";
+import { IconTile } from "@/components/ui/IconTile";
+import { iconFor } from "@/components/icons";
 
 export type Notify = (text: string, onUndo?: () => void) => void;
 
@@ -131,8 +133,14 @@ export function statusGroups(list: Step[]): StatSeg[] {
 
 export function StatCard({ title, segs, onOpen, unit }: { title: string; segs: StatSeg[]; onOpen: () => void; unit: string }) {
   const total = segs.reduce((a, s) => a + s.items.length, 0);
+  const tile = iconFor(title);
   return (
-    <SectionCard title={title} flush>
+    <SectionCard title={title} bare flush>
+      {/* Own head: the tile and the title stay on one line in a quarter-width card (old donut cards). */}
+      <div className="flex min-h-head items-center gap-2.5 border-b border-line-soft px-4 md:px-5">
+        <IconTile Icon={tile.Icon} tone={tile.tone} />
+        <h2 className="min-w-0 truncate text-13.5 font-semibold">{title}</h2>
+      </div>
       <button type="button" onClick={onOpen} className="block w-full px-4 py-4 text-left hover:bg-raised md:px-5" aria-label={`${title} · ${total} ${unit}`}>
         <StackedBar total={total} segments={segs.map((s) => ({ label: s.label, value: s.items.length, tone: s.tone }))} />
       </button>
@@ -177,7 +185,7 @@ export function StatusBrief({ open, onOpenChange, incorporated, notify }: { open
           <Button
             onClick={() => {
               try {
-                void navigator.clipboard?.writeText(text);
+                navigator.clipboard?.writeText(text).catch(() => {});
               } catch {}
               notify("Status brief copied");
             }}
@@ -321,6 +329,39 @@ function journeySub(s: Step) {
   return `With SBC · due ${s.due ? fmt(s.due) : "-"}`;
 }
 
+/** Mini stepper of the dark current-step card: dots on a line, labels under them (old railHero). */
+function MiniStepper({ subs }: { subs: Array<{ label: string; state: "done" | "now" | "todo" }> }) {
+  return (
+    <ol className="mt-3 grid" style={{ gridTemplateColumns: `repeat(${subs.length}, minmax(0, 1fr))` }} aria-label="Sub-steps">
+      {subs.map((x, i) => (
+        <li key={x.label} className="relative grid justify-items-center gap-1.5 text-center">
+          {i > 0 && <span className={cn("absolute right-1/2 top-[5px] h-0.5 w-full", x.state === "todo" ? "bg-white/[.16]" : "bg-ok-mid")} aria-hidden />}
+          <span
+            className={cn(
+              "relative h-3 w-3 rounded-full",
+              x.state === "done" ? "bg-ok-mid" : x.state === "now" ? "bg-warn-mid shadow-[0_0_0_3px_var(--navy-on)]" : "bg-navy-faint",
+            )}
+            aria-hidden
+          />
+          <span className={cn("block w-full truncate px-0.5 text-11.5", x.state === "now" ? "font-semibold text-white" : "text-navy-ink")}>{x.label}</span>
+          <span className="sr-only">{x.state === "done" ? "done" : x.state === "now" ? "now" : "to do"}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Small progress dots under a step that has sub-steps (old dots()). */
+function SubDots({ subs }: { subs: Array<{ state: "done" | "now" | "todo" }> }) {
+  return (
+    <span className="mt-1 flex gap-1" aria-hidden>
+      {subs.slice(0, 6).map((x, i) => (
+        <i key={i} className={cn("h-1.5 w-1.5 rounded-full", x.state === "done" ? "bg-ok-mid" : x.state === "now" ? "bg-accent" : "shadow-[inset_0_0_0_1px_var(--line)]")} />
+      ))}
+    </span>
+  );
+}
+
 export function JourneyCard({ phase, focus }: { phase: 1 | 2 | 3; focus: number }) {
   const list = stepsOf(phase);
   const p = PHASES[phase - 1];
@@ -331,26 +372,32 @@ export function JourneyCard({ phase, focus }: { phase: 1 | 2 | 3; focus: number 
           const subs = SUB_STEPS[s.n];
           const isFocus = s.n === focus;
           const dt = stepDate(s);
+          if (isFocus)
+            return (
+              <li key={s.n} className="border-t border-line-soft px-3 py-2.5 first:border-t-0 md:px-4">
+                <Link href={stepHref("client", s.n)} aria-current="step" className="block rounded-md border border-navy bg-navy px-3.5 py-3 text-white hover:bg-navy-2">
+                  <span className="flex items-start gap-2.5">
+                    <StatusCircle status={circle(s)} className="mt-0.5 bg-white/[.12] text-white" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-mono text-11.5 font-semibold text-brand">
+                        {s.status === "Completed" ? "Done" : "Now"} · step {s.n}
+                      </span>
+                      <b className="block text-14 font-semibold leading-snug">{s.title}</b>
+                      <span className={cn("block text-12", dt.late ? "font-semibold text-bad-mid" : "text-navy-ink")}>{journeySub(s)}</span>
+                    </span>
+                  </span>
+                  {subs && <MiniStepper subs={subs} />}
+                </Link>
+              </li>
+            );
           return (
             <li key={s.n} className="border-t border-line-soft first:border-t-0">
-              <Link href={stepHref("client", s.n)} aria-current={isFocus ? "step" : undefined} className={cn("flex items-start gap-3 px-4 py-2.5 hover:bg-raised md:px-5", isFocus && "bg-accent-soft hover:bg-accent-soft")}>
+              <Link href={stepHref("client", s.n)} className="flex items-start gap-3 px-4 py-2.5 hover:bg-raised md:px-5">
                 <StatusCircle status={circle(s)} className="mt-0.5" />
                 <span className="min-w-0 flex-1">
-                  {isFocus && <span className="block text-11.5 font-semibold text-accent">Step {s.n}</span>}
-                  <span className="block truncate text-13 font-semibold">
-                    {isFocus ? s.title : `${s.n} · ${s.title}`}
-                  </span>
+                  <span className="block truncate text-13 font-semibold">{`${s.n} · ${s.title}`}</span>
                   <span className={cn("block truncate text-12", dt.late ? "font-semibold text-bad" : "text-muted")}>{journeySub(s)}</span>
-                  {isFocus && subs && s.status !== "Completed" && (
-                    <span className="mt-2 flex flex-wrap gap-1.5">
-                      {subs.map((x) => (
-                        <span key={x.label} className={cn("inline-flex h-[22px] items-center gap-1.5 rounded-sm px-2 text-11.5 font-semibold", x.state === "done" ? "bg-ok-soft text-ok" : x.state === "now" ? "bg-surface text-accent" : "bg-surface text-faint")}>
-                          {x.state === "done" ? <Check size={11} strokeWidth={2.4} /> : <i className={cn("h-1.5 w-1.5 rounded-full", x.state === "now" ? "bg-accent" : "bg-line")} aria-hidden />}
-                          {x.label}
-                        </span>
-                      ))}
-                    </span>
-                  )}
+                  {subs && s.status !== "Completed" && s.status !== "Upcoming" && <SubDots subs={subs} />}
                 </span>
                 <OwnerChip owner={s.owner} label={ownerLabel(s)} className="mt-0.5 hidden sm:inline-flex" />
               </Link>
@@ -515,9 +562,14 @@ export function Pager({ prev, next }: { prev?: { href: string; label: string }; 
 
 /* ---------- Drop zone ---------- */
 
-export function DropZone({ label, hint, chip, onFile, accept = ".pdf,.jpg,.jpeg,.png,.docx" }: { label: string; hint?: string; chip?: React.ReactNode; onFile: (name: string) => void; accept?: string }) {
+/**
+ * Drop zone for one requested file. "warn" is the amber zone of a file Northwind owes (old .drop on step 7).
+ * "accent" is the blue zone that replaces a file (old board.html "Replace signed copy").
+ */
+export function DropZone({ label, hint, chip, onFile, accept = ".pdf,.jpg,.jpeg,.png,.docx", tone = "warn" }: { label: string; hint?: string; chip?: React.ReactNode; onFile: (name: string) => void; accept?: string; tone?: "warn" | "accent" }) {
   const [over, setOver] = React.useState(false);
   const ref = React.useRef<HTMLInputElement>(null);
+  const warn = tone === "warn";
   return (
     <div
       onDragOver={(e) => {
@@ -531,23 +583,32 @@ export function DropZone({ label, hint, chip, onFile, accept = ".pdf,.jpg,.jpeg,
         const f = e.dataTransfer.files?.[0];
         if (f) onFile(f.name);
       }}
-      className={cn("flex items-center gap-3 rounded-md border border-dashed px-3 py-3", over ? "border-accent bg-accent-soft" : "border-line bg-raised")}
+      className={cn(
+        "flex items-center gap-3 rounded-md border border-dashed px-4 py-3.5",
+        warn ? "border-warn-mid bg-warn-soft" : "border-accent-line bg-accent-soft",
+        over && (warn ? "border-solid border-warn" : "border-solid border-accent"),
+      )}
     >
-      <Button size="iconSm" variant="outline" aria-label={`Upload ${label}`} onClick={() => ref.current?.click()}>
-        <Upload size={15} strokeWidth={1.5} />
-      </Button>
+      <button
+        type="button"
+        aria-label={`Upload ${label}`}
+        onClick={() => ref.current?.click()}
+        className={cn("grid h-10 w-10 flex-none place-items-center rounded-full text-surface", warn ? "bg-warn hover:bg-warn-mid" : "bg-navy text-white hover:bg-navy-2")}
+      >
+        {warn ? <Upload size={16} strokeWidth={1.8} /> : <RefreshCw size={16} strokeWidth={1.8} />}
+      </button>
       <span className="min-w-0 flex-1">
-        <b className="block truncate text-13 font-semibold">{label}</b>
-        <span className="block truncate text-12 text-muted">
-          {hint ? `${hint} · ` : ""}Drop a file or{" "}
-          <button type="button" className="font-semibold text-accent hover:underline" onClick={() => ref.current?.click()}>
+        <b className="block truncate text-13.5 font-semibold">{label}</b>
+        <span className={cn("block text-12.5", warn ? "text-warn" : "text-accent")}>
+          Drop a file here or{" "}
+          <button type="button" className="font-semibold underline underline-offset-2" onClick={() => ref.current?.click()}>
             browse
           </button>
         </span>
       </span>
+      {hint && <span className="hidden flex-none text-12 text-muted sm:inline">{hint}</span>}
       {chip}
       <input ref={ref} type="file" accept={accept} className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0].name)} />
     </div>
   );
 }
-

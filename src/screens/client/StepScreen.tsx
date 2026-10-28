@@ -1,22 +1,16 @@
 "use client";
 import * as React from "react";
-import { List } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TODAY, fmt } from "@/lib/dates";
 import { PHASES, STEPS, stepTone, stepsOf, stepHref } from "@/data/incorporation";
-import { stepNeeds, stepStages } from "@/data/incorporation-detail";
+import { stepNeeds } from "@/data/incorporation-detail";
 import { Cols, Col } from "@/components/shell/Page";
 import { Chip, OwnerChip } from "@/components/ui/Chip";
 import { useUndoToast } from "@/components/ui/UndoToast";
-import { SectionCard } from "@/components/cards/SectionCard";
-import { Thread } from "@/components/cards/Thread";
-import { StageTrack } from "@/components/cards/StageTrack";
 import { stepAnswers, stepDetail } from "./step-detail";
 import { RecordHead } from "./parts";
-import { HolderBlock, JourneyCard, MessageModal, Pager, PortalButton, StepTeamCard } from "./inc-parts";
-import { Button } from "@/components/ui/Button";
-import { MessageSquare } from "lucide-react";
-import { AnswersCard, StepDocsCard, StepNeedsCard } from "./step-parts";
+import { MessageModal, Pager, PortalButton } from "./inc-parts";
+import { AnswersCard, ApprovalBar, PhaseStepsRail, StepDocsCard, stepKind } from "./step-parts";
 
 export function StepScreen({ n }: { n: number }) {
   const sd = stepDetail(n)!;
@@ -29,7 +23,9 @@ export function StepScreen({ n }: { n: number }) {
   const [uploaded, setUploaded] = React.useState<Record<string, string>>({});
   const [msg, setMsg] = React.useState<null | "change" | "message">(null);
   const needs = stepNeeds(s);
-  const track = stepStages(s);
+  // Approval progress: the share of the step's checklist that is done (old actBar).
+  const checked: Record<string, boolean> = Object.fromEntries((needs ?? []).map((i) => [i.id, i.done]));
+  const waiting = stepKind(s) === "you";
   const prev = STEPS[n - 2];
   const next = STEPS[n];
   // Step 7: Approve needs the NOC first (old setNeed / data-approve).
@@ -54,40 +50,24 @@ export function StepScreen({ n }: { n: number }) {
           </>
         }
       />
-      <StageTrack stages={track.stages} now={track.now} />
       <Cols>
         <Col>
           <AnswersCard step={s} about={sd.about} rows={stepAnswers(n)} notify={toast.show} onChange={() => setMsg("change")} onMessage={() => setMsg("message")} />
-          <StepDocsCard docs={sd.docs} canUpload={clientOwned} uploaded={uploaded} onUpload={(id, f) => setUploaded((u) => { const x = { ...u }; if (f) x[id] = f; else delete x[id]; return x; })} notify={toast.show} />
-          <SectionCard title="Thread" icon={{ Icon: List, tone: "blue" }}>
-            <Thread steps={sd.thread} />
-          </SectionCard>
+          <StepDocsCard docs={sd.docs} due={s.due} by={s.by ?? "Bharath"} canUpload={clientOwned} uploaded={uploaded} onUpload={(id, f) => setUploaded((u) => { const x = { ...u }; if (f) x[id] = f; else delete x[id]; return x; })} notify={toast.show} />
         </Col>
         <Col>
-          <SectionCard title="Who holds it now">
-            <HolderBlock
-              owner={s.owner}
-              title={
-                <>
-                  <OwnerChip owner={s.owner} label={s.owner === "client" ? "Northwind" : undefined} />
-                  <span className="truncate">{s.owner === "client" ? "Rohan Kumar" : s.owner === "mca" ? "Registrar of Companies" : (s.by ?? "Bharath")}</span>
-                </>
-              }
-              sub={s.status === "Completed" ? `Done ${s.done ? fmt(s.done) : ""}` : s.status === "Upcoming" ? `Opens after step ${n - 1}` : `${s.status}${s.due ? ` · due ${fmt(s.due)}` : ""} · reviewer Bharath`}
-              action={
-                s.owner !== "mca" ? (
-                  <Button size="iconSm" variant="ghost" aria-label={`Message ${s.by ?? "Bharath"}`} onClick={() => setMsg("message")}>
-                    <MessageSquare size={16} strokeWidth={1.5} />
-                  </Button>
-                ) : undefined
-              }
-            />
-          </SectionCard>
-          <JourneyCard phase={s.phase} focus={n} />
-          {needs && <StepNeedsCard key={n} step={s} items={needs} blocked={blocked} notify={toast.show} onChange={() => setMsg("change")} />}
-          <StepTeamCard step={s} notify={toast.show} />
+          <PhaseStepsRail step={s} />
         </Col>
       </Cols>
+      {waiting && needs && (
+        <ApprovalBar
+          key={n}
+          pct={Math.round((needs.filter((i) => checked[i.id]).length / needs.length) * 100)}
+          blocked={blocked}
+          notify={toast.show}
+          onChange={() => setMsg("change")}
+        />
+      )}
       <Pager
         prev={prev ? { href: stepHref("client", prev.n), label: `${prev.n} · ${prev.title}` } : { href: "/client/incorporation", label: "All phases" }}
         next={next ? { href: stepHref("client", next.n), label: `${next.n} · ${next.title}` } : { href: "/client/incorporation", label: "All phases" }}

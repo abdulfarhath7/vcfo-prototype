@@ -32,6 +32,11 @@ import {
   useBeforeCoi,
   type TileSection,
 } from "./comp-parts";
+import {
+  AFTER_COI,
+  OBLIGATIONS_BEFORE,
+  beforeObLink,
+} from "@/data/client-before-coi";
 
 const STATUSES: ObStatus[] = [
   "Filed",
@@ -41,17 +46,22 @@ const STATUSES: ObStatus[] = [
   "Upcoming",
 ];
 
-const tile = (o: Obligation): Tile => ({
+const tile = (o: Obligation, before = false): Tile => ({
   id: o.id,
   name: o.name,
   tag: { label: o.area, tone: AREA_TONE[o.area] },
   chip: { label: o.status, tone: OB_STATUS_TONE[o.status] },
-  date:
-    o.status === "Filed" && o.filed
+  date: before
+    ? AFTER_COI
+    : o.status === "Filed" && o.filed
       ? `Filed ${fmt(o.filed)}`
       : `Due ${fmt(o.due)}`,
   late: o.status === "Overdue",
-  href: obHref("client", o.id),
+  href: before
+    ? beforeObLink(o.id)
+      ? obHref("client", beforeObLink(o.id)!)
+      : undefined
+    : obHref("client", o.id),
 });
 
 export function ObligationsScreen() {
@@ -59,18 +69,21 @@ export function ObligationsScreen() {
   const before = useBeforeCoi();
   const [view, setView] = React.useState("freq");
   const [q, setQ] = React.useState("");
+  // Before the certificate every obligation is "Upcoming" (old Item.dc.html).
+  const obs = before ? OBLIGATIONS_BEFORE : OBLIGATIONS;
+  const toTile = (o: Obligation) => tile(o, before);
 
   const sections: TileSection[] =
     view === "freq"
       ? FREQUENCIES.map((f) => ({
           id: f,
           label: f,
-          tiles: OBLIGATIONS.filter((o) => o.frequency === f).map(tile),
+          tiles: obs.filter((o) => o.frequency === f).map(toTile),
         }))
       : AREAS.map((a) => ({
           id: a,
           label: a,
-          tiles: OBLIGATIONS.filter((o) => o.area === a).map(tile),
+          tiles: obs.filter((o) => o.area === a).map(toTile),
         }));
   const openFirst = () => {
     const hit = sections
@@ -93,7 +106,7 @@ export function ObligationsScreen() {
     };
   });
 
-  const waiting = OBLIGATIONS.filter(
+  const waiting = obs.filter(
     (o) => o.owner === "client" && o.status !== "Filed",
   );
 
@@ -102,7 +115,7 @@ export function ObligationsScreen() {
       <Col>
         <SectionCard
           title="Obligations"
-          meta={<span className="hidden sm:inline">{OBLIGATIONS.length}</span>}
+          meta={<span className="hidden sm:inline">{obs.length}</span>}
           flush
           right={
             <>
@@ -168,7 +181,7 @@ export function ObligationsScreen() {
           <StackedBar
             segments={STATUSES.map((s) => ({
               label: s,
-              value: OBLIGATIONS.filter((o) => o.status === s).length,
+              value: obs.filter((o) => o.status === s).length,
               tone: OB_STATUS_BAR[s],
             }))}
           />

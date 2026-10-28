@@ -6,7 +6,7 @@ import type { ProgressItem } from "@/components/cards/ProgressList";
 
 /** Important alerts: 15 days and 30 days. */
 export const ALERTS_15: AttentionRow[] = [
-  { id: "a1", date: d(2026, 10, 2), title: "Passport copy sent back", sub: "Proposed directors · Director 1", chip: { label: "Overdue", tone: "bad" }, urgent: true, action: { label: "Fix", href: "/client/incorporation/step/8" } },
+  { id: "a1", date: d(2026, 10, 2), title: "Passport copy sent back", sub: "Proposed directors · Director 1", chip: { label: "Overdue", tone: "bad" }, urgent: true, alert: true, action: { label: "Fix", href: "/client/incorporation/step/8" } },
   { id: "a2", date: d(2026, 10, 9), title: "2 office documents", sub: "Registered office address", chip: { label: "In 3 days", tone: "warn" }, href: "/client/incorporation/step/7" },
   { id: "a3", date: d(2026, 10, 10), title: "MOA and AOA drafts", sub: "SPICe+ confirmation", chip: { label: "In 4 days", tone: "warn" }, href: "/client/incorporation/step/11" },
   { id: "a4", date: d(2026, 10, 14), title: "Approved name expires", sub: "Name approval · 20 days left", chip: { label: "In 8 days", tone: "idle" }, href: "/client/incorporation/step/5" },

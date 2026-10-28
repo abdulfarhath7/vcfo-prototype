@@ -25,6 +25,28 @@ export function ManagersScreen() {
   const s = useAssignments();
   const rows = managerRows();
   const [pick, setPick] = React.useState(rows[0].name);
+  // The sidebar picks a manager (/admin/managers#priya), as Leads does for project leads.
+  React.useEffect(() => {
+    const pickSlug = (slug: string) => {
+      const hit = managerRows().find((r) => r.name.split(" ")[0].toLowerCase() === slug.toLowerCase());
+      if (hit) setPick(hit.name);
+    };
+    const read = () => pickSlug(window.location.hash.slice(1));
+    // Next.js Link changes the hash with pushState, which fires no hashchange. Read the slug from the clicked link.
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement | null)?.closest?.("a[href*='#']") as HTMLAnchorElement | null;
+      if (!a) return;
+      const url = new URL(a.href);
+      if (url.pathname === window.location.pathname) pickSlug(url.hash.slice(1));
+    };
+    read();
+    window.addEventListener("hashchange", read);
+    document.addEventListener("click", onClick);
+    return () => {
+      window.removeEventListener("hashchange", read);
+      document.removeEventListener("click", onClick);
+    };
+  }, []);
   const [dialog, setDialog] = React.useState<{ mode: "client" | "task"; client?: string } | null>(null);
   const [resolved, setResolved] = React.useState<Set<string>>(new Set());
   const toast = useUndoToast();

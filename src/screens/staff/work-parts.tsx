@@ -1,13 +1,17 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { GripVertical, Lock, Pause, Play, Repeat } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Pause, Play, Repeat, UserPlus } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { TODAY, d, fmt, fmtYear } from "@/lib/dates";
+import { STAFF_TODAY as TODAY, d, fmt, fmtYear } from "@/lib/dates";
 import { clientById } from "@/data/staff-clients";
 import type { StaffTask } from "@/data/staff-tasks";
-import { BOARD_COLS, DAY_SHORT, ESTIMATE, RECURRING, SPAN, SPAN_DAYS, WEEK, boardColOf, extraFor, isToday, sameDay, type Todo } from "@/data/staff-work";
+import { BOARD_COLS, CAL_ALLDAY, type TimelineRow, DAY_SHORT, ESTIMATE, MGR_DELEGATED, NEXT_WEEK, PLAN_BLOCKS, RECURRING, SPAN, SPAN_DAYS, WEEK, boardColOf, extraFor, isToday, sameDay, type CalBlock, type Todo } from "@/data/staff-work";
+import { HourWeek, spanOf, useBlockMoves, type Slot } from "./HourWeek";
 import { Button } from "@/components/ui/Button";
+import { PopoverCard } from "@/components/ui/PopoverCard";
+import { initials } from "@/components/ui/Avatar";
+import { LEADS } from "@/data/staff-team";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { barFill, type BarTone } from "@/components/ui/Bar";
@@ -26,6 +30,9 @@ import { ClientDot, TaskChip, taskHref, type StaffPortal } from "./parts";
 // and WorkPhone.dc.html. Same files under s/mgr and s/admin.
 
 export type Notify = (text: string, onUndo?: () => void) => void;
+/** The old clock: Fri 16 Oct 2026 · 12:31 PM. */
+const NOW_HOUR = 12.5;
+const DAY_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const hoursOf = (t: StaffTask) => ESTIMATE[t.area];
 const isFiling = (t: StaffTask) => !t.code;
 const dayLabel = (x: Date) => (isToday(x) ? `Today ${x.getDate()}` : `${DAY_SHORT[x.getDay()]} ${x.getDate()}`);
@@ -154,6 +161,104 @@ export function WorkTimeline({ tasks, onOpen, onLocked }: { tasks: StaffTask[]; 
   );
 }
 
+/** Old planner timeline (Work.dc.html T): fixed rows with bars by kind, filing diamonds and the today line. */
+export function PlanTimeline({ rows, tasks, onOpen, onLocked }: { rows: TimelineRow[]; tasks: StaffTask[]; onOpen: (t: StaffTask) => void; onLocked: (t: StaffTask) => void }) {
+  const todayCol = SPAN.findIndex(isToday);
+  const grid = { gridTemplateColumns: "minmax(150px,190px) repeat(14, minmax(30px, 1fr))" };
+  const legend: Array<[string, string]> = [
+    ["In progress", "bg-accent"],
+    ["Overdue", "bg-bad-mid"],
+    ["Waiting on client", "bg-line"],
+    ["Manager date", "bg-btn"],
+    ["My to-do", "border border-dashed border-accent bg-accent-soft"],
+  ];
+  return (
+    <SectionCard
+      title="Timeline"
+      meta={`${SPAN[0].getDate()} to ${fmt(SPAN[13])}`}
+      flush
+      right={
+        <span className="hidden flex-wrap items-center gap-3 text-12 text-muted xl:flex">
+          {legend.map(([l, c]) => (
+            <span key={l} className="flex items-center gap-1.5">
+              <i className={cn("h-2 w-3 rounded-[2px]", c)} aria-hidden />
+              {l}
+            </span>
+          ))}
+          <span className="flex items-center gap-1.5">
+            <i className="h-2 w-2 rotate-45 rounded-[1px] bg-bad-mid" aria-hidden />
+            Filing due
+          </span>
+        </span>
+      }
+    >
+      <div className="overflow-x-auto">
+        <div className="min-w-[640px]">
+          <div className="grid border-b border-line-soft py-2 text-11.5 font-semibold text-muted" style={grid}>
+            <span className="px-4 md:px-5">Task</span>
+            {SPAN.map((x, i) => (
+              <span key={i} className={cn("text-center", i === todayCol && "font-bold text-brand", (x.getDay() === 0 || x.getDay() === 6) && i !== todayCol && "text-faint")}>
+                {DAY_SHORT[x.getDay()][0]} {x.getDate()}
+              </span>
+            ))}
+          </div>
+          {rows.map((r) => {
+            const c = clientById(r.client);
+            const t = r.task ? tasks.find((x) => x.id === r.task) : undefined;
+            const click = () => (t ? (r.kind === "locked" ? onLocked(t) : onOpen(t)) : undefined);
+            const bar = cn(
+              "relative z-[1] flex h-5 min-w-0 items-center gap-1 self-center overflow-hidden whitespace-nowrap rounded-[6px] px-1.5 text-11 font-semibold",
+              r.kind === "locked" && (r.late ? "bg-bad-soft text-bad" : "bg-accent-soft text-accent"),
+              r.kind === "mine" && "border border-dashed border-accent bg-accent-soft text-accent",
+              r.kind === "wait" && "bg-line text-ink-2",
+              r.kind === "repeat" && "border border-navy bg-surface text-ink",
+              t && "cursor-pointer",
+            );
+            return (
+              <div key={r.id} className="relative grid border-b border-line-soft py-1.5 last:border-b-0" style={grid}>
+                {/* A row without a task (a to-do or a recurring item) has no drawer: show it as plain text. */}
+                {(() => {
+                  const El = t ? "button" : "span";
+                  return (
+                    <El {...(t ? { type: "button" as const, onClick: () => onOpen(t) } : {})} className="flex min-w-0 items-center gap-2 px-4 text-left md:px-5" style={{ gridColumn: 1, gridRow: 1 }}>
+                      {c && <ClientDot tone={c.tone} />}
+                      <span className="min-w-0">
+                        <b className={cn("block truncate text-12.5 font-semibold", t && "hover:underline")}>{r.title}</b>
+                        <span className="block truncate text-11.5 text-muted">
+                          {c?.short} · {r.sub}
+                        </span>
+                      </span>
+                    </El>
+                  );
+                })()}
+                <span aria-hidden className="pointer-events-none -my-1.5 flex justify-center" style={{ gridColumn: `${todayCol + 2} / span 1`, gridRow: 1 }}>
+                  <i className="block h-full w-0.5 bg-brand" />
+                </span>
+                {r.kind !== "filing" &&
+                  (() => {
+                    const El = t ? "button" : "span";
+                    return (
+                      <El {...(t ? { type: "button" as const, onClick: click } : {})} className={bar} style={{ gridColumn: `${r.from + 2} / ${r.to + 2}`, gridRow: 1 }} title={`${r.title} · ${fmt(SPAN[r.from])} to ${fmt(SPAN[r.to - 1])}${r.kind === "locked" ? " · dates set by manager" : ""}`}>
+                        {r.kind === "locked" && <Lock size={11} strokeWidth={1.5} className="flex-none" />}
+                        {r.kind === "repeat" && <Repeat size={11} strokeWidth={1.5} className="flex-none" />}
+                        <span className="truncate">{r.kind === "wait" ? "Waiting on client" : r.kind === "mine" ? "Mine" : r.kind === "repeat" ? "repeats" : ""}</span>
+                      </El>
+                    );
+                  })()}
+                {r.due && (
+                  <span className="z-[2] grid place-items-center self-center" style={{ gridColumn: `${r.due.day + 2} / span 1`, gridRow: 1 }} title={r.due.tip}>
+                    <i className={cn("h-3 w-3 rotate-45 rounded-[2px]", r.kind === "filing" ? "bg-bad-mid" : "bg-btn")} aria-hidden />
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 /** Locked date pop-over content: ask the manager to move it. */
 export function RequestChangeDialog({ task, onClose, onSend }: { task: StaffTask | null; onClose: () => void; onSend: (t: StaffTask, date: string, reason: string) => void }) {
   const [date, setDate] = React.useState("");
@@ -219,6 +324,48 @@ function Row({ children, className }: { children: React.ReactNode; className?: s
   return <div className={cn("flex items-center gap-2.5 border-t border-line-soft px-4 py-2.5 text-13 md:px-5", className)}>{children}</div>;
 }
 
+/** Manager only: who the row is handed to, or a dashed button to hand it to a project lead (s/mgr/Work.dc.html). */
+function DelegateButton({ id, label, value, onPick }: { id: string; label: string; value?: string; onPick: (id: string, lead: string) => void }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <PopoverCard
+      open={open}
+      onOpenChange={setOpen}
+      align="end"
+      width={200}
+      trigger={
+        value ? (
+          <button type="button" title={`With ${value}`} aria-label={`${label}: with ${value}`} className="grid h-6 w-6 flex-none place-items-center rounded-md bg-btn text-[10px] font-bold text-white">
+            {initials(value)}
+          </button>
+        ) : (
+          <button type="button" title="Hand to a project lead" aria-label={`Hand ${label} to a project lead`} className="grid h-6 w-6 flex-none place-items-center rounded-md border border-dashed border-line text-muted hover:bg-raised">
+            <UserPlus size={13} strokeWidth={1.5} />
+          </button>
+        )
+      }
+    >
+      <div className="grid py-1" role="menu">
+        {LEADS.filter((l) => l.manager === "Pranay").map((l) => (
+          <button
+            key={l.name}
+            type="button"
+            role="menuitem"
+            className={cn("flex h-9 items-center gap-2 px-3 text-left text-13 hover:bg-raised", l.name === value && "font-semibold")}
+            onClick={() => {
+              setOpen(false);
+              onPick(id, l.name);
+            }}
+          >
+            <span className="grid h-6 w-6 place-items-center rounded-md bg-raised text-[10px] font-bold">{initials(l.name)}</span>
+            {l.name}
+          </button>
+        ))}
+      </div>
+    </PopoverCard>
+  );
+}
+
 /** To-do list: assigned by manager (locked dates), my to-dos, waiting on client, recurring (Work.dc.html, WorkPhone.dc.html). */
 export function TodoCard({
   portal,
@@ -244,8 +391,24 @@ export function TodoCard({
   const mine = todos.filter((t) => !client || t.client === client);
   const rec = RECURRING[portal].filter((r) => !client || r.client === client);
   const n = assigned.length + mine.filter((t) => !t.done).length + waiting.length + rec.length;
+  const [delegated, setDelegated] = React.useState<Record<string, string>>(portal === "manager" ? MGR_DELEGATED : {});
+  const withLeads = Object.keys(delegated).length;
+  const pick = (id: string, lead: string) => {
+    setDelegated((m) => ({ ...m, [id]: lead }));
+    notify(`Handed to ${lead}`);
+  };
+  const dg = (id: string, label: string) => (portal === "manager" ? <DelegateButton id={id} label={label} value={delegated[id]} onPick={pick} /> : null);
   return (
-    <SectionCard title="To-do" meta={String(n)} flush>
+    <SectionCard
+      title="To-do"
+      meta={
+        <>
+          {n}
+          {portal === "manager" && withLeads > 0 && <span className="ml-2 rounded-sm bg-accent-soft px-1.5 py-0.5 text-11.5 font-semibold text-accent">{withLeads} with project leads</span>}
+        </>
+      }
+      flush
+    >
       <form
         className="px-4 py-3 md:px-5"
         onSubmit={(e) => {
@@ -271,6 +434,7 @@ export function TodoCard({
             </span>
           </button>
           <Lock size={13} strokeWidth={1.5} className="flex-none text-muted" aria-label="Due date set by manager" />
+          {dg(t.id, t.title)}
           <Chip tone={t.status === "Overdue" ? "bad" : t.due.getTime() === TODAY.getTime() ? "warn" : "idle"}>{t.status === "Overdue" ? "Overdue" : dayLabel(t.due)}</Chip>
         </Row>
       ))}
@@ -285,6 +449,7 @@ export function TodoCard({
               <span className={cn("block truncate font-semibold", t.done && "font-normal text-muted line-through")}>{t.text}</span>
               {(c || t.meta) && <span className="block truncate text-12 text-muted">{[c?.short, t.meta].filter(Boolean).join(" · ")}</span>}
             </span>
+            {dg(t.id, t.text)}
             {t.done ? <Chip tone="ok">Done</Chip> : t.due ? <Chip tone={isToday(t.due) ? "warn" : "idle"}>{dayLabel(t.due)}</Chip> : null}
           </Row>
         );
@@ -325,6 +490,7 @@ export function TodoCard({
               {clientById(r.client)?.short} · {r.rule}
             </span>
           </span>
+          {dg(r.id, r.text)}
           <Chip tone={isToday(r.next) ? "warn" : "idle"}>{isToday(r.next) ? "Today" : fmt(r.next)}</Chip>
         </Row>
       ))}
@@ -332,90 +498,66 @@ export function TodoCard({
   );
 }
 
-/** One draggable task chip on the planner. Keyboard: the "Move to" select. */
-function PlanChip({ t, day, onMove, onOpen }: { t: StaffTask; day: number | null; onMove: (id: string, day: number | null) => void; onOpen: (t: StaffTask) => void }) {
-  const c = clientById(t.client);
-  return (
-    <div
-      draggable
-      onDragStart={(e) => {
-        e.dataTransfer.setData("text/plain", t.id);
-        e.dataTransfer.effectAllowed = "move";
-      }}
-      className={cn("grid gap-1.5 rounded-md border bg-surface px-2 py-2 text-12.5", t.status === "Overdue" ? "border-bad-mid" : "border-line", "cursor-grab active:cursor-grabbing")}
-    >
-      <div className="flex min-w-0 items-start gap-1.5">
-        <GripVertical size={14} strokeWidth={1.5} className="mt-0.5 flex-none text-faint" aria-hidden />
-        {c && <ClientDot tone={c.tone} className="mt-1" />}
-        <button type="button" onClick={() => onOpen(t)} className="min-w-0 flex-1 text-left">
-          <b className="block truncate font-semibold hover:underline">{t.title}</b>
-          <span className="block truncate text-11.5 text-muted">
-            {c?.short} · {hoursOf(t)} h{t.status === "Overdue" ? " · overdue" : ""}
-          </span>
-        </button>
-      </div>
-      <Select
-        aria-label={`Move ${t.title} to`}
-        value={day === null ? "none" : String(day)}
-        onChange={(e) => onMove(t.id, e.target.value === "none" ? null : Number(e.target.value))}
-        options={[{ value: "none", label: "Not planned" }, ...WEEK.map((w, i) => ({ value: String(i), label: `Move to ${dayLabel(w)}` }))]}
-        className="w-full [&>select]:w-full"
-      />
-    </div>
-  );
-}
-
-function DropZone({ onDrop, children, className, label }: { onDrop: (id: string) => void; children: React.ReactNode; className?: string; label: string }) {
-  const [over, setOver] = React.useState(false);
-  return (
-    <div
-      aria-label={label}
-      onDragOver={(e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
-        if (!over) setOver(true);
-      }}
-      onDragLeave={() => setOver(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setOver(false);
-        const id = e.dataTransfer.getData("text/plain");
-        if (id) onDrop(id);
-      }}
-      className={cn("min-w-0 rounded-md transition-colors", over && "bg-accent-soft ring-2 ring-accent", className)}
-    >
-      {children}
-    </div>
-  );
-}
-
-/** Calendar with Day, Week and Month. Week: drag a task onto a day (WorkPlan.dc.html). Load over 6 h shows red. */
+/** Calendar with Day, Week and Month (Work.dc.html). Week and Day: hours 9 AM to 6 PM with timed blocks. */
 export function PlanCalendar({
   tasks,
-  plan,
-  onMove,
+  blocks,
+  nextBlocks,
   onOpen,
-  timers,
-  now,
-  onTimer,
+  notify,
   action,
 }: {
   tasks: StaffTask[];
-  plan: Record<string, number | null>;
-  onMove: (id: string, day: number | null) => void;
+  /** Blocks for this week (Mon 12 to Sun 18 Oct). */
+  blocks: CalBlock[];
+  /** Blocks added for next week by "Plan my week". */
+  nextBlocks: CalBlock[];
   onOpen: (t: StaffTask) => void;
-  timers: Record<string, Timer>;
-  now: number;
-  onTimer: (id: string) => void;
+  /** Toast with Undo after a block is moved. */
+  notify?: (text: string, undo?: () => void) => void;
   action?: React.ReactNode;
 }) {
   const [cal, setCal] = React.useState("week");
+  const [wk, setWk] = React.useState(0);
+  const [moved, move] = useBlockMoves();
   const open = tasks.filter((t) => t.status !== "Done");
-  const dayOf = (t: StaffTask) => plan[t.id] ?? null;
-  const pool = open.filter((t) => dayOf(t) === null).sort((a, b) => Number(b.status === "Overdue") - Number(a.status === "Overdue") || a.due.getTime() - b.due.getTime());
   const todayIdx = WEEK.findIndex(isToday);
+  const di = wk === 0 ? todayIdx : 0;
+  const days = wk === 0 ? WEEK : WEEK.map((x) => d(x.getFullYear(), x.getMonth() + 1, x.getDate() + 7));
+  // A moved block is late when it now sits after its task's due date.
+  const shown = (wk === 0 ? blocks : nextBlocks).map((b) => {
+    const m = moved[`${wk}:${b.id}`];
+    if (!m) return b;
+    const due = b.task ? tasks.find((t) => t.id === b.task)?.due : undefined;
+    return { ...b, ...m, late: due ? days[m.day] > due : b.late };
+  });
+  const moveBlock = (b: CalBlock, to: Slot) => {
+    const at = cal === "day" ? { ...to, day: di } : to;
+    const undo = move(`${wk}:${b.id}`, at);
+    const x = days[at.day];
+    notify?.(`${b.title} · ${DAY_SHORT[x.getDay()]} ${fmt(x)} · ${spanOf({ ...b, ...at })}`, undo);
+  };
+  const openBlock = (b: CalBlock) => {
+    const t = b.task ? tasks.find((x) => x.id === b.task) : undefined;
+    if (t) onOpen(t);
+  };
+  // Own blocks and blocks without a task have no drawer.
+  const canOpen = (b: CalBlock) => !!b.task && tasks.some((x) => x.id === b.task);
   const tabs = (
     <>
+      {cal !== "month" && (
+        <span className="flex items-center gap-1">
+          <Button variant="outline" size="iconSm" aria-label="Previous week" disabled={wk === 0} onClick={() => setWk(0)}>
+            <ChevronLeft size={16} strokeWidth={1.5} />
+          </Button>
+          <Button variant="outline" size="iconSm" aria-label="Next week" disabled={wk === 1} onClick={() => setWk(1)}>
+            <ChevronRight size={16} strokeWidth={1.5} />
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setWk(0)}>
+            Today
+          </Button>
+        </span>
+      )}
       <Tabs
         items={[
           { key: "day", label: "Day" },
@@ -428,30 +570,6 @@ export function PlanCalendar({
       {action}
     </>
   );
-
-  if (cal === "day") {
-    const items = open.filter((t) => dayOf(t) === todayIdx);
-    const load = items.reduce((a, t) => a + hoursOf(t), 0);
-    return (
-      <SectionCard title="Calendar" meta={`Today · ${fmt(TODAY)} · ${load} h planned`} right={tabs} flush>
-        <DropZone label="Today" onDrop={(id) => onMove(id, todayIdx)}>
-          {items.length === 0 && <Empty />}
-          {items.map((t) => (
-            <div key={t.id} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13 first:border-t-0 md:px-5">
-              <ClientDot tone={clientById(t.client)?.tone ?? "idle"} />
-              <button type="button" onClick={() => onOpen(t)} className="min-w-0 flex-1 text-left">
-                <b className="block truncate font-semibold hover:underline">{t.title}</b>
-                <span className="block truncate text-12 text-muted">
-                  {clientById(t.client)?.short} · {hoursOf(t)} h{t.due < TODAY ? " · overdue" : ""}
-                </span>
-              </button>
-              <SessionButton timer={timers[t.id]} now={now} onToggle={() => onTimer(t.id)} label={t.title} />
-            </div>
-          ))}
-        </DropZone>
-      </SectionCard>
-    );
-  }
 
   if (cal === "month") {
     // October 2026 starts on a Thursday. Mon-first grid.
@@ -490,76 +608,53 @@ export function PlanCalendar({
     );
   }
 
+  if (cal === "day") {
+    return (
+      <SectionCard title="Calendar" meta={`${DAY_SHORT[days[di].getDay()]} ${fmt(days[di])}`} right={tabs}>
+        <HourWeek days={[days[di]]} blocks={shown.filter((b) => b.day === di).map((b) => ({ ...b, day: 0 }))} allDay={wk === 0 ? CAL_ALLDAY.filter((a) => a.day === di).map((a) => ({ ...a, day: 0 })) : []} today={TODAY} now={NOW_HOUR} onBlock={openBlock} canOpen={canOpen} onMove={moveBlock} />
+      </SectionCard>
+    );
+  }
+
   return (
-    <SectionCard title="Plan my week" meta={`${fmt(WEEK[0])} to ${fmt(WEEK[6])} · ${pool.length} not planned`} right={tabs}>
-      <div className="grid gap-3 lg:grid-cols-[200px_minmax(0,1fr)]">
-        <DropZone label="Not planned" onDrop={(id) => onMove(id, null)} className="border border-dashed border-line p-2">
-          <h3 className="mb-2 flex items-center gap-2 text-12 font-semibold text-muted">
-            Not planned <span className="font-mono text-faint">{pool.length}</span>
-          </h3>
-          <div className="grid max-h-[420px] gap-2 overflow-y-auto">
-            {pool.length === 0 && <Empty />}
-            {pool.map((t) => (
-              <PlanChip key={t.id} t={t} day={null} onMove={onMove} onOpen={onOpen} />
-            ))}
-          </div>
-        </DropZone>
-        <div className="overflow-x-auto">
-          <div className="grid min-w-[700px] grid-cols-7 gap-2">
-            {WEEK.map((w, i) => {
-              const items = open.filter((t) => dayOf(t) === i);
-              const load = items.reduce((a, t) => a + hoursOf(t), 0);
-              return (
-                <DropZone key={i} label={dayLabel(w)} onDrop={(id) => onMove(id, i)} className={cn("border p-1.5", isToday(w) ? "border-navy bg-raised" : "border-line-soft")}>
-                  <div className="mb-1.5 flex items-baseline justify-between px-0.5">
-                    <b className={cn("text-12 font-semibold", isToday(w) && "text-accent")}>{dayLabel(w)}</b>
-                    <span className={cn("font-mono text-11", load > 6 ? "font-semibold text-bad" : "text-faint")}>{load} h</span>
-                  </div>
-                  <div className="grid min-h-[120px] content-start gap-1.5">
-                    {items.map((t) => (
-                      <PlanChip key={t.id} t={t} day={i} onMove={onMove} onOpen={onOpen} />
-                    ))}
-                  </div>
-                </DropZone>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+    <SectionCard title="Calendar" meta={`${days[0].getDate()} to ${fmt(days[6])}`} right={tabs}>
+      <HourWeek days={days} blocks={shown} allDay={wk === 0 ? CAL_ALLDAY : []} today={TODAY} now={NOW_HOUR} onBlock={openBlock} canOpen={canOpen} onMove={moveBlock} />
     </SectionCard>
   );
 }
 
-/** Plan my week dialog (WorkPlan.dc.html): suggested blocks, options, Reshuffle, add the picked blocks. */
-export function PlanWeekDialog({ open, onOpenChange, tasks, plan, onApply }: { open: boolean; onOpenChange: (v: boolean) => void; tasks: StaffTask[]; plan: Record<string, number | null>; onApply: (moves: Record<string, number>) => void }) {
+/** Plan my week dialog (WorkPlan.dc.html): an hour grid for next week with suggested blocks, options, Reshuffle, add the blocks. */
+export function PlanWeekDialog({ open, onOpenChange, onApply }: { open: boolean; onOpenChange: (v: boolean) => void; onApply: (blocks: CalBlock[]) => void }) {
   const [opts, setOpts] = React.useState({ deep: true, lateFirst: true, byClient: false });
   const [seed, setSeed] = React.useState(0);
   const [skip, setSkip] = React.useState<Set<string>>(new Set());
-  const todayIdx = WEEK.findIndex(isToday);
-  const suggest = React.useMemo(() => {
-    let pool = tasks.filter((t) => t.status !== "Done" && (plan[t.id] ?? null) === null);
-    if (opts.lateFirst) pool = [...pool].sort((a, b) => Number(b.status === "Overdue") - Number(a.status === "Overdue") || a.due.getTime() - b.due.getTime());
-    if (opts.byClient) pool = [...pool].sort((a, b) => a.client.localeCompare(b.client));
-    const cap = opts.deep ? 5 : 7;
-    const load = WEEK.map((_, i) => tasks.filter((t) => plan[t.id] === i).reduce((a, t) => a + hoursOf(t), 0));
-    const out: Array<{ t: StaffTask; day: number }> = [];
-    pool.forEach((t, k) => {
-      const days = [0, 1, 2, 3, 4].filter((i) => i >= todayIdx).map((i) => (i + seed + k) % 5).filter((i) => i >= todayIdx);
-      const day = (days.length ? days : [todayIdx]).reduce((best, i) => (load[i] < load[best] ? i : best), days[0] ?? todayIdx);
-      if (load[day] + hoursOf(t) <= cap + 2) {
-        load[day] += hoursOf(t);
-        out.push({ t, day });
-      }
-    });
-    return { out, load };
-  }, [tasks, plan, opts, seed, todayIdx]);
-  const picked = suggest.out.filter((x) => !skip.has(x.t.id));
+  const [view, setView] = React.useState("week");
+  const [dayIdx, setDayIdx] = React.useState(0);
+  const blocks = React.useMemo(() => {
+    // Reshuffle moves the afternoon blocks one day on. Morning deep-work blocks stay.
+    let out = PLAN_BLOCKS.map((b) => (b.start >= 12 && !b.own ? { ...b, day: (b.day + seed) % 5 } : b));
+    if (!opts.deep) out = out.map((b) => (b.start < 11 && !b.own ? { ...b, start: b.start + 1, end: b.end + 1 } : b));
+    if (opts.byClient) out = [...out].sort((a, b) => a.client.localeCompare(b.client));
+    return out;
+  }, [seed, opts.deep, opts.byClient]);
+  const picked = blocks.filter((b) => !skip.has(b.id) && !b.own);
+  const total = blocks.filter((b) => !skip.has(b.id)).reduce((a, b) => a + (b.end - b.start), 0);
+  const load = (i: number) => blocks.filter((b) => b.day === i && !skip.has(b.id)).reduce((a, b) => a + (b.end - b.start), 0);
+  const heavy = [0, 1, 2, 3, 4].find((i) => load(i) > 6);
+  const toggle = (b: CalBlock) => {
+    const s = new Set(skip);
+    if (s.has(b.id)) s.delete(b.id);
+    else s.add(b.id);
+    setSkip(s);
+  };
+  const dayList = view === "day" ? [NEXT_WEEK[dayIdx]] : NEXT_WEEK;
+  const dayBlocks = view === "day" ? blocks.filter((b) => b.day === dayIdx).map((b) => ({ ...b, day: 0 })) : blocks;
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
       title="Planning my week"
-      sub={<span>{`${fmt(WEEK[0])} to ${fmt(WEEK[4])} · ${suggest.out.length} blocks · ${suggest.out.reduce((a, x) => a + hoursOf(x.t), 0)} h`}</span>}
+      sub={<span>{`${NEXT_WEEK[0].getDate()} to ${fmt(NEXT_WEEK[4])} · ${blocks.length} to-dos · ${total} h`}</span>}
       size="lg"
       flush
       footer={
@@ -567,14 +662,14 @@ export function PlanWeekDialog({ open, onOpenChange, tasks, plan, onApply }: { o
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="outline" onClick={() => setSeed((s) => s + 1)}>
+          <Button variant="outline" onClick={() => setSeed((s) => (s + 1) % 5)}>
             Reshuffle
           </Button>
           <Button
             variant="primary"
             disabled={!picked.length}
             onClick={() => {
-              onApply(Object.fromEntries(picked.map((x) => [x.t.id, x.day])));
+              onApply(blocks.filter((b) => !skip.has(b.id)));
               onOpenChange(false);
             }}
           >
@@ -583,56 +678,58 @@ export function PlanWeekDialog({ open, onOpenChange, tasks, plan, onApply }: { o
         </>
       }
     >
-      <div className="flex flex-wrap gap-x-5 gap-y-2 border-b border-line-soft px-4 py-3 text-13 md:px-5">
-        {(
-          [
-            ["deep", "Keep 9 to 11 AM for deep work"],
-            ["lateFirst", "Overdue and filing work first"],
-            ["byClient", "Group work by client"],
-          ] as const
-        ).map(([k, label]) => (
-          <label key={k} className="flex items-center gap-2">
-            <Checkbox checked={opts[k]} onChange={(v) => setOpts({ ...opts, [k]: v })} label={label} />
-            {label}
-          </label>
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-2 p-4 sm:grid-cols-5 md:px-5">
-        {WEEK.slice(0, 5).map((w, i) => {
-          const items = suggest.out.filter((x) => x.day === i);
-          const load = suggest.load[i];
-          return (
-            <div key={i} className={cn("rounded-md border p-2", isToday(w) ? "border-navy" : "border-line-soft")}>
-              <div className="mb-1.5 flex items-baseline justify-between">
-                <b className="text-12 font-semibold">{dayLabel(w)}</b>
-                <span className={cn("font-mono text-11", load > 6 ? "font-semibold text-bad" : "text-faint")}>{load} h</span>
-              </div>
-              <div className="grid gap-1.5">
-                {i < todayIdx && <span className="text-11.5 text-faint">Past</span>}
-                {items.map((x) => (
-                  <label key={x.t.id} className={cn("flex items-start gap-1.5 rounded-sm bg-raised px-1.5 py-1.5 text-12", skip.has(x.t.id) && "opacity-50")}>
-                    <Checkbox
-                      checked={!skip.has(x.t.id)}
-                      label={x.t.title}
-                      onChange={(v) => {
-                        const s = new Set(skip);
-                        if (v) s.delete(x.t.id);
-                        else s.add(x.t.id);
-                        setSkip(s);
-                      }}
-                    />
-                    <span className="min-w-0">
-                      <b className="block truncate font-semibold">{x.t.title}</b>
-                      <span className="block truncate text-11 text-muted">
-                        {clientById(x.t.client)?.short} · {hoursOf(x.t)} h
-                      </span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+      <div className="grid gap-3 p-4 md:px-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <Tabs
+            items={[
+              { key: "day", label: "Day" },
+              { key: "week", label: "Week" },
+            ]}
+            value={view}
+            onChange={setView}
+          />
+          <span className="text-12 text-muted">{view === "day" ? `${DAY_SHORT[NEXT_WEEK[dayIdx].getDay()]} ${fmt(NEXT_WEEK[dayIdx])} · ${load(dayIdx)} h` : `${NEXT_WEEK[0].getDate()} to ${fmt(NEXT_WEEK[4])} · ${total} h`}</span>
+          {view === "day" && (
+            <span className="ml-auto flex items-center gap-1">
+              <Button variant="outline" size="iconSm" aria-label="Previous day" disabled={dayIdx === 0} onClick={() => setDayIdx(dayIdx - 1)}>
+                <ChevronLeft size={16} strokeWidth={1.5} />
+              </Button>
+              <Button variant="outline" size="iconSm" aria-label="Next day" disabled={dayIdx === 4} onClick={() => setDayIdx(dayIdx + 1)}>
+                <ChevronRight size={16} strokeWidth={1.5} />
+              </Button>
+            </span>
+          )}
+        </div>
+        <HourWeek days={dayList} blocks={dayBlocks} solidBlocks showLoad skipped={skip} onBlock={toggle} />
+        <div className="flex flex-wrap gap-x-5 gap-y-2 text-13">
+          {(
+            [
+              ["deep", "Keep 9-11 AM for deep work"],
+              ["lateFirst", "Overdue and filing-related first"],
+              ["byClient", "Group work by client"],
+            ] as const
+          ).map(([k, label]) => (
+            <label key={k} className="flex items-center gap-2">
+              <Checkbox checked={opts[k]} onChange={(v) => setOpts({ ...opts, [k]: v })} label={label} />
+              {label}
+            </label>
+          ))}
+        </div>
+        {(heavy !== undefined || seed === 0) && (
+          <p className="rounded-md border border-accent-line bg-accent-soft px-3 py-2 text-12.5 text-ink-2">
+            {heavy !== undefined ? (
+              <>
+                <b className="block font-semibold text-ink">{DAY_LONG[NEXT_WEEK[heavy].getDay()]} is over 6 h.</b>
+                Move a block to a lighter day before you add the plan.
+              </>
+            ) : (
+              <>
+                <b className="block font-semibold text-ink">Tuesday was over 6 h.</b>
+                The GST recon moved to Thursday. Its due date is still met.
+              </>
+            )}
+          </p>
+        )}
       </div>
     </Modal>
   );
@@ -966,7 +1063,8 @@ export function WorkDrawer({
 export function NewTodoDialog({ open, onOpenChange, clients, onAdd }: { open: boolean; onOpenChange: (v: boolean) => void; clients: Array<{ id: string; short: string }>; onAdd: (t: Todo) => void }) {
   const [text, setText] = React.useState("");
   const [client, setClient] = React.useState("");
-  const [due, setDue] = React.useState("2026-10-06");
+  // Staff today is Fri 16 Oct (STAFF_TODAY).
+  const [due, setDue] = React.useState("2026-10-16");
   return (
     <Modal
       open={open}

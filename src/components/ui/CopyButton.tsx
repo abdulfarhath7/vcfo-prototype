@@ -17,7 +17,7 @@ export function CopyButton({ value, label, className }: { value: string; label?:
       onClick={(e) => {
         e.stopPropagation();
         try {
-          void navigator.clipboard?.writeText(value);
+          navigator.clipboard?.writeText(value).catch(() => {});
         } catch {}
         setDone(true);
       }}

@@ -51,13 +51,13 @@ export const NORTHWIND: Client = {
 
 export const CLIENTS: Client[] = [
   NORTHWIND,
-  { id: "zenith", name: "Zenith Foods Pvt Ltd", short: "Zenith", stage: "compliance", tone: "teal", lead: "Bharath", manager: "Pranay", cin: "U15400TG2024PTC181920", pan: "AAFCZ1234R", gstin: "36AAFCZ1234R1ZK" },
-  { id: "arcadia", name: "Arcadia Realty LLP", short: "Arcadia", stage: "compliance", tone: "violet", lead: "Bharath", manager: "Pranay", cin: "AAM-4521", pan: "AAJFA7788Q", gstin: "36AAJFA7788Q1Z2" },
-  { id: "bluefin", name: "Bluefin Analytics Pvt Ltd", short: "Bluefin", stage: "incorporating", tone: "accent", lead: "Bharath", manager: "Pranay" },
-  { id: "corvid", name: "Corvid Logistics Pvt Ltd", short: "Corvid", stage: "compliance", tone: "warn", lead: "Bharath", manager: "Pranay", cin: "U63000TG2023PTC170011", pan: "AAGCC4455L", gstin: "36AAGCC4455L1ZP" },
-  { id: "delta", name: "Delta Edutech Pvt Ltd", short: "Delta", stage: "compliance", tone: "ok", lead: "Divya", manager: "Pranay", cin: "U80900TG2022PTC160202", pan: "AAECD9900M", gstin: "36AAECD9900M1Z4" },
-  { id: "ember", name: "Ember Studios Pvt Ltd", short: "Ember", stage: "incorporating", tone: "violet", lead: "Divya", manager: "Pranay" },
-  { id: "fjord", name: "Fjord Marine Exports Pvt Ltd", short: "Fjord", stage: "compliance", tone: "teal", lead: "Divya", manager: "Pranay", cin: "U05000TG2021PTC150303", pan: "AAFCF2211N", gstin: "36AAFCF2211N1Z9" },
+  { id: "kestrel", name: "Kestrel Health Pvt Ltd", short: "Kestrel", stage: "compliance", tone: "accent", lead: "Bharath", manager: "Pranay", cin: "U15400TG2024PTC181920", pan: "AAFCZ1234R", gstin: "36AAFCZ1234R1ZK" },
+  { id: "halcyon", name: "Halcyon Fintech Pvt Ltd", short: "Halcyon", stage: "compliance", tone: "warn", lead: "Sneha Kulkarni", manager: "Pranay", cin: "U65999TG2022PTC165521", pan: "AAJFA7788Q", gstin: "36AAJFA7788Q1Z2" },
+  { id: "orchid", name: "Orchid Lane Foods Pvt Ltd", short: "Orchid Lane", stage: "incorporating", tone: "violet", lead: "Sneha Kulkarni", manager: "Pranay" },
+  { id: "tidewater", name: "Tidewater Logistics Pvt Ltd", short: "Tidewater", stage: "compliance", tone: "teal", lead: "Meera Nair", manager: "Pranay", cin: "U63000TG2023PTC170011", pan: "AAGCC4455L", gstin: "36AAGCC4455L1ZP" },
+  { id: "brightwave", name: "Brightwave Robotics Pvt Ltd", short: "Brightwave", stage: "compliance", tone: "warn", lead: "Sneha Kulkarni", manager: "Pranay", cin: "U80900TG2022PTC160202", pan: "AAECD9900M", gstin: "36AAECD9900M1Z4" },
+  { id: "larkspur", name: "Larkspur Analytics Pvt Ltd", short: "Larkspur", stage: "incorporating", tone: "ok", lead: "Meera Nair", manager: "Pranay" },
+  { id: "juniper", name: "Juniper Bio Pvt Ltd", short: "Juniper", stage: "incorporating", tone: "idle", lead: "Bharath", manager: "Pranay" },
 ];
 
 export const WHATSAPP = (phone: string) => `https://wa.me/${phone.replace(/\D/g, "")}`;

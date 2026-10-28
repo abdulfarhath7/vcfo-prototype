@@ -24,7 +24,7 @@ const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.g
  * Twelve small months (cal-views.js Year view). A day with items is filled with the worst tone.
  * `legend` lists the tones from worst to best; each month shows a count per tone. Click a month to open it.
  */
-export function YearGrid({ months, marks, legend, onPick }: { months: YearMonth[]; marks: YearMark[]; legend: Array<{ tone: BarTone; label: string }>; onPick?: (key: string) => void }) {
+export function YearGrid({ months, marks, legend, onPick, today = TODAY }: { months: YearMonth[]; marks: YearMark[]; legend: Array<{ tone: BarTone; label: string }>; onPick?: (key: string) => void; /** The day framed as today. */ today?: Date }) {
   const rank = (t: BarTone) => {
     const i = legend.findIndex((l) => l.tone === t);
     return i < 0 ? legend.length : i;
@@ -36,7 +36,7 @@ export function YearGrid({ months, marks, legend, onPick }: { months: YearMonth[
         const lead = (new Date(m.year, m.month, 1).getDay() + 6) % 7;
         const days = new Date(m.year, m.month + 1, 0).getDate();
         const cells = Array.from({ length: Math.ceil((lead + days) / 7) * 7 }, (_, i) => i - lead + 1);
-        const now = m.year === TODAY.getFullYear() && m.month === TODAY.getMonth();
+        const now = m.year === today.getFullYear() && m.month === today.getMonth();
         return (
           <button
             key={m.key}
@@ -55,7 +55,7 @@ export function YearGrid({ months, marks, legend, onPick }: { months: YearMonth[
                 const date = new Date(m.year, m.month, n);
                 const list = inMonth.filter((x) => sameDay(x.date, date));
                 const worst = list.length ? list.reduce((w, x) => (rank(x.tone) < rank(w.tone) ? x : w)).tone : undefined;
-                const today = sameDay(date, TODAY);
+                const isToday = sameDay(date, today);
                 return (
                   <span
                     key={i}
@@ -63,8 +63,8 @@ export function YearGrid({ months, marks, legend, onPick }: { months: YearMonth[
                     className={cn(
                       "grid h-5 min-w-0 place-items-center rounded-sm font-mono text-[10.5px] tracking-tight",
                       worst ? cn(barFill[worst], "font-semibold text-white") : "text-faint",
-                      today && !worst && "font-semibold text-ink shadow-[inset_0_0_0_1.5px_var(--navy)]",
-                      today && worst && "shadow-[0_0_0_1.5px_var(--navy)]",
+                      isToday && !worst && "font-semibold text-ink shadow-[inset_0_0_0_1.5px_var(--navy)]",
+                      isToday && worst && "shadow-[0_0_0_1.5px_var(--navy)]",
                     )}
                   >
                     {n}

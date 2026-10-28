@@ -2,7 +2,7 @@ import { d } from "@/lib/dates";
 import type { StaffPortal } from "@/data/staff-clients";
 
 // Staff email: Outlook mail shown in VCFO Suite. Ported from reference/old-screens/s/lead/Email.dc.html (templates, compose)
-// and the inbox items in staff-tasks.ts. Messages are about Northwind, Zenith and Arcadia steps and filings.
+// and the inbox items in staff-tasks.ts. Messages are about Northwind, Kestrel and Halcyon steps and filings.
 
 export type MailFolder = "inbox" | "sent" | "drafts";
 
@@ -29,19 +29,19 @@ export const MAIL: Mail[] = [
     attachments: ["NOC_MG_Road_signed.pdf"],
   },
   {
-    id: "m02", folder: "inbox", from: "Anita Shah", address: "anita@zenithfoods.example", client: "zenith", date: d(2026, 10, 6), time: "08:40", unread: true,
+    id: "m02", folder: "inbox", from: "Anita Shah", address: "anita@kestrelhealth.example", client: "kestrel", date: d(2026, 10, 6), time: "08:40", unread: true,
     subject: "Purchase register for September",
     body: ["Hello,", "The purchase register for September is attached. Two invoices from Metro Cash are still with our accounts team.", "We send them by Wednesday.", "Anita"],
-    attachments: ["Zenith_purchases_Sep26.xlsx"],
+    attachments: ["Kestrel_purchases_Sep26.xlsx"],
   },
   {
-    id: "m03", folder: "inbox", from: "GST portal", address: "noreply@gst.gov.in", client: "zenith", date: d(2026, 10, 5), time: "17:05", unread: true,
+    id: "m03", folder: "inbox", from: "GST portal", address: "noreply@gst.gov.in", client: "kestrel", date: d(2026, 10, 5), time: "17:05", unread: true,
     subject: "Notice in Form GST REG-03 · ARN AA3609261847215",
     body: ["A clarification is required for your application for registration.", "Reason: the rent agreement is not legible. Upload a clear copy within 7 working days.", "This is a system-generated message."],
     attachments: ["REG-03_notice.pdf"],
   },
   {
-    id: "m04", folder: "inbox", from: "Vikram Iyer", address: "vikram@arcadiarealty.example", client: "arcadia", date: d(2026, 10, 5), time: "14:22",
+    id: "m04", folder: "inbox", from: "Vikram Iyer", address: "vikram@halcyonfintech.example", client: "halcyon", date: d(2026, 10, 5), time: "14:22",
     subject: "Trademark logo file",
     body: ["Bharath,", "Our designer sends the logo in SVG tomorrow. Do you also need the colour codes for the application?", "Vikram"],
   },
@@ -51,12 +51,12 @@ export const MAIL: Mail[] = [
     body: ["The Director 1 passport scan is not legible. Ask Rohan for a fresh colour scan today.", "SPICe+ Part B waits on it.", "Pranay"],
   },
   {
-    id: "m06", folder: "inbox", from: "Anita Shah", address: "anita@zenithfoods.example", client: "zenith", date: d(2026, 10, 3), time: "16:30",
+    id: "m06", folder: "inbox", from: "Anita Shah", address: "anita@kestrelhealth.example", client: "kestrel", date: d(2026, 10, 3), time: "16:30",
     subject: "Approval to pay GSTR-3B tax",
     body: ["Approved. Pay the GST for September from the HDFC current account.", "Anita"],
   },
   {
-    id: "m07", folder: "inbox", from: "MCA21", address: "noreply@mca.gov.in", client: "arcadia", date: d(2026, 10, 2), time: "10:02",
+    id: "m07", folder: "inbox", from: "MCA21", address: "noreply@mca.gov.in", client: "halcyon", date: d(2026, 10, 2), time: "10:02",
     subject: "SRN AB4410927 · ADT-1 approved",
     body: ["The form ADT-1 filed under SRN AB4410927 is approved.", "The challan and the approval letter are attached."],
     attachments: ["ADT-1_approval.pdf"],
@@ -67,18 +67,18 @@ export const MAIL: Mail[] = [
     body: ["Hi Rohan,", "To file SPICe+ Part B we still need two papers for the office at MG Road:", "1. A utility bill dated after 15 September.", "2. The owner's NOC, signed and dated.", "Upload them on your Incorporation page.", "Thanks,", "Bharath"],
   },
   {
-    id: "m09", folder: "sent", from: "Anita Shah", address: "anita@zenithfoods.example", client: "zenith", date: d(2026, 10, 4), time: "09:30",
-    subject: "Zenith · GSTR-1 for September filed",
+    id: "m09", folder: "sent", from: "Anita Shah", address: "anita@kestrelhealth.example", client: "kestrel", date: d(2026, 10, 4), time: "09:30",
+    subject: "Kestrel · GSTR-1 for September filed",
     body: ["Hi Anita,", "GSTR-1 for September is filed. The ARN is AA290926010811K.", "GSTR-3B is due on 20 Oct. Send the purchase register by 10 Oct.", "Bharath"],
   },
   {
-    id: "m10", folder: "sent", from: "Vikram Iyer", address: "vikram@arcadiarealty.example", client: "arcadia", date: d(2026, 10, 3), time: "15:45",
-    subject: "Arcadia · trademark application needs your logo",
+    id: "m10", folder: "sent", from: "Vikram Iyer", address: "vikram@halcyonfintech.example", client: "halcyon", date: d(2026, 10, 3), time: "15:45",
+    subject: "Halcyon · trademark application needs your logo",
     body: ["Hi Vikram,", "The TM-A application is ready. We need the logo as an SVG or a high-resolution PNG.", "Upload it on the Registrations page.", "Bharath"],
   },
   {
-    id: "m11", folder: "drafts", from: "Vikram Iyer", address: "vikram@arcadiarealty.example", client: "arcadia", date: d(2026, 10, 6), time: "10:05",
-    subject: "Arcadia · GSTR-3B for August is overdue",
+    id: "m11", folder: "drafts", from: "Vikram Iyer", address: "vikram@halcyonfintech.example", client: "halcyon", date: d(2026, 10, 6), time: "10:05",
+    subject: "Halcyon · GSTR-3B for August is overdue",
     body: ["Hi Vikram,", "GSTR-3B for August was due on 20 Sep. Late fee and interest grow each day.", "Send the purchase register today so we can file it."],
   },
   {
@@ -128,16 +128,16 @@ export interface Recipient {
 export const RECIPIENTS: Recipient[] = [
   { id: "rohan", name: "Rohan Kumar", email: "rohan@northwind.example", kind: "client", client: "northwind", org: "Northwind" },
   { id: "meera-i", name: "Meera Iyer", email: "meera@northwind.example", kind: "client", client: "northwind", org: "Northwind" },
-  { id: "anita", name: "Anita Shah", email: "anita@zenithfoods.example", kind: "client", client: "zenith", org: "Zenith" },
-  { id: "vikram", name: "Vikram Iyer", email: "vikram@arcadiarealty.example", kind: "client", client: "arcadia", org: "Arcadia" },
-  { id: "mei", name: "Mei Tanaka", email: "mei@corvid.example", kind: "client", client: "corvid", org: "Corvid" },
-  { id: "sana", name: "Sana Qureshi", email: "sana@bluefin.example", kind: "client", client: "bluefin", org: "Bluefin" },
-  { id: "kiran", name: "Kiran Rao", email: "kiran@deltaedu.example", kind: "client", client: "delta", org: "Delta" },
-  { id: "isha", name: "Isha Menon", email: "isha@emberstudios.example", kind: "client", client: "ember", org: "Ember" },
-  { id: "omar", name: "Omar Khan", email: "omar@fjordmarine.example", kind: "client", client: "fjord", org: "Fjord" },
+  { id: "anita", name: "Anita Shah", email: "anita@kestrelhealth.example", kind: "client", client: "kestrel", org: "Kestrel" },
+  { id: "vikram", name: "Vikram Iyer", email: "vikram@halcyonfintech.example", kind: "client", client: "halcyon", org: "Halcyon" },
+  { id: "mei", name: "Mei Tanaka", email: "mei@tidewater.example", kind: "client", client: "tidewater", org: "Tidewater" },
+  { id: "sana", name: "Sana Qureshi", email: "sana@orchid.example", kind: "client", client: "orchid", org: "Orchid Lane" },
+  { id: "kiran", name: "Kiran Rao", email: "kiran@deltaedu.example", kind: "client", client: "brightwave", org: "Brightwave" },
+  { id: "isha", name: "Isha Menon", email: "isha@emberstudios.example", kind: "client", client: "larkspur", org: "Larkspur" },
+  { id: "omar", name: "Omar Khan", email: "omar@juniperbio.example", kind: "client", client: "juniper", org: "Juniper" },
   { id: "pranay", name: "Pranay", email: "pranay@sbc.example", kind: "team", org: "Manager" },
   { id: "bharath", name: "Bharath", email: "bharath@sbc.example", kind: "team", org: "Project lead" },
-  { id: "divya", name: "Divya", email: "divya@sbc.example", kind: "team", org: "Project lead" },
+  { id: "sneha", name: "Sneha Kulkarni", email: "sneha@sbc.example", kind: "team", org: "Project lead" },
   { id: "meera-n", name: "Meera Nair", email: "meera.nair@sbc.example", kind: "team", org: "Project lead" },
   { id: "krishna", name: "Krishna", email: "krishna@sbc.example", kind: "team", org: "Admin" },
 ];
@@ -152,5 +152,5 @@ export interface RecipientGroup {
 export const GROUPS: RecipientGroup[] = [
   { id: "all-teams", name: "All teams", members: "Every SBC project lead and manager" },
   { id: "all-clients", name: "All clients", members: "The primary contact of each client" },
-  { id: "my-team", name: "My team", members: "Pranay, Bharath, Divya, Meera Nair" },
+  { id: "my-team", name: "My team", members: "Pranay, Bharath, Sneha Kulkarni, Meera Nair" },
 ];

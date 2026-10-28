@@ -38,7 +38,7 @@ export function DeploysScreen() {
       { ...to, id: `rb${t.getTime()}`, at: t, by: "Farhath", duration: "1 min 20 s", status: "Live", note: `Roll back from ${from}` },
       ...rs.map((d) => (d.env === "Production" && d.status === "Live" ? { ...d, status: "Rolled back" as const } : d)),
     ]);
-    setEnvs((es) => es.map((e) => (e.id === "prod" ? { ...e, version: to.version, commit: to.commit, deployed: t } : e)));
+    setEnvs((es) => es.map((e) => (e.id === "prod" ? { ...e, version: to.version, commit: to.commit, deployed: t, by: "Farhath" } : e)));
     logAudit("Roll back", `Production to ${to.version}`, "Done", from, to.version);
     setAsk(null);
   };

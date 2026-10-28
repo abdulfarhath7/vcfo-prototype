@@ -1,27 +1,27 @@
 "use client";
 import * as React from "react";
-import { MoreHorizontal, Plus } from "lucide-react";
-import { fmt, urgency } from "@/lib/dates";
+import { MoreHorizontal, Plus, Sparkles } from "lucide-react";
+import { STAFF_TODAY, fmt, urgency } from "@/lib/dates";
 import { clientById, clientsFor } from "@/data/staff-clients";
-import { tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
-import { PLANNED, TODOS, type Todo } from "@/data/staff-work";
+import { LEAD_WORK, tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
+import { CAL_BLOCKS, TIMELINE_ROWS, TODOS, type CalBlock, type Todo } from "@/data/staff-work";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
 import { Select } from "@/components/ui/Select";
 import { PopoverCard } from "@/components/ui/PopoverCard";
 import { useUndoToast } from "@/components/ui/UndoToast";
-import { SectionCard } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { ClientName, TaskChip, type StaffPortal } from "./parts";
 import { ClientSelect } from "./filters";
+import { AdminWorkItems } from "./AdminWorkItems";
 import {
   NewTodoDialog,
   PlanCalendar,
   PlanWeekDialog,
   RequestChangeDialog,
   SessionButton,
-  TodayAgenda,
+  PlanTimeline,
   TodoCard,
   WorkBoard,
   WorkDrawer,
@@ -45,7 +45,7 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
   const [owner, setOwner] = React.useState("");
   const [client, setClient] = React.useState("");
   const [show, setShow] = React.useState<Show>("all");
-  const [plan, setPlan] = React.useState<Record<string, number | null>>(PLANNED);
+  const [nextBlocks, setNextBlocks] = React.useState<CalBlock[]>([]);
   const [todos, setTodos] = React.useState<Todo[]>(TODOS[portal]);
   const [timers, setTimers] = React.useState<Record<string, Timer>>({});
   const [now, setNow] = React.useState(0);
@@ -55,6 +55,7 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
   const [newOpen, setNewOpen] = React.useState(false);
   const [moreOpen, setMoreOpen] = React.useState(false);
   const [cursor, setCursor] = React.useState<string | undefined>(undefined);
+  const [adminTab, setAdminTab] = React.useState<"managers" | "leads">("managers");
   const toast = useUndoToast();
 
   const running = Object.values(timers).some((t) => t.start);
@@ -73,7 +74,8 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
       return { ...all, [id]: t.start ? { start: null, ms: t.ms + (at - t.start) } : { start: at, ms: t.ms } };
     });
 
-  const all = tasksFor(portal).map((t) => (doneIds.has(t.id) ? { ...t, status: "Done" as TaskStatus } : t));
+  // Lead and manager Work show Bharath's planner, as in the old s/lead and s/mgr Work.dc.html. Admin's Project leads tab shows the firm.
+  const all = (portal === "admin" ? tasksFor("admin") : LEAD_WORK).map((t) => (doneIds.has(t.id) ? { ...t, status: "Done" as TaskStatus } : t));
   const owners = [...new Set(all.map((t) => t.owner))];
   const myClients = clientsFor(portal).filter((c) => all.some((t) => t.client === c.id));
   const tasks = all
@@ -93,7 +95,11 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
       const i = tasks.findIndex((t) => t.id === cursor);
       if (e.key === "j" || e.key === "J") setCursor(tasks[Math.min(tasks.length - 1, i + 1)]?.id);
       else if (e.key === "k" || e.key === "K") setCursor(tasks[Math.max(0, i - 1)]?.id);
-      else if (e.key === "Enter" && cursor) setOpenId(cursor);
+      else if (e.key === "Enter" && cursor) {
+        // Without this, the Enter keypress lands on the drawer's close button and shuts it at once.
+        e.preventDefault();
+        setOpenId(cursor);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -112,21 +118,30 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
     { key: "client", label: "Client", width: 170, render: (t) => <ClientName id={t.client} short /> },
     { key: "code", label: "Step", width: 90, mono: true, render: (t) => t.code ?? "Filing" },
     { key: "area", label: "Area", width: 100 },
-    ...(portal === "lead" ? [] : [{ key: "owner", label: "Owner", width: 120 } as Column<StaffTask>]),
-    { key: "due", label: "Due", width: 80, render: (t) => <span className={urgency(t.due) === "bad" && t.status !== "Done" ? "font-semibold text-bad" : undefined}>{fmt(t.due)}</span> },
+    ...(portal !== "admin" ? [] : [{ key: "owner", label: "Owner", width: 120 } as Column<StaffTask>]),
+    { key: "due", label: "Due", width: 80, render: (t) => <span className={urgency(t.due, STAFF_TODAY) === "bad" && t.status !== "Done" ? "font-semibold text-bad" : undefined}>{fmt(t.due)}</span> },
     { key: "status", label: "Status", width: 130, render: (t) => <TaskChip status={t.status} /> },
     { key: "session", label: "Session", width: 120, render: (t) => (t.status === "Done" ? "" : <SessionButton timer={timers[t.id]} now={now} onToggle={() => toggleTimer(t.id)} label={t.title} />) },
   ];
 
   const filters = (
     <>
-      {portal !== "lead" && <Select value={owner} onChange={(e) => setOwner(e.target.value)} options={[{ value: "", label: "All owners" }, ...owners.map((o) => ({ value: o, label: o }))]} aria-label="Owner" />}
+      <Tabs
+        items={[
+          { key: "planner", label: "Planner" },
+          { key: "list", label: "List" },
+          { key: "board", label: "Board" },
+        ]}
+        value={view}
+        onChange={(k) => setView(k as View)}
+      />
+      {portal === "admin" && <Select value={owner} onChange={(e) => setOwner(e.target.value)} options={[{ value: "", label: "All owners" }, ...owners.map((o) => ({ value: o, label: o }))]} aria-label="Owner" />}
       <ClientSelect clients={myClients} value={client} onChange={setClient} />
       <Select
         value={show}
         onChange={(e) => setShow(e.target.value as Show)}
         options={[
-          { value: "all", label: "Steps and filings" },
+          { value: "all", label: "Steps + filings" },
           { value: "steps", label: "Steps only" },
           { value: "filings", label: "Filings only" },
         ]}
@@ -145,22 +160,13 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
           Clear
         </Button>
       )}
-      <Tabs
-        items={[
-          { key: "planner", label: "Planner" },
-          { key: "list", label: "List" },
-          { key: "board", label: "Board" },
-        ]}
-        value={view}
-        onChange={(k) => setView(k as View)}
-      />
     </>
   );
 
   const actions = (
     <>
       <Button variant="outline" size="sm" onClick={() => setPlanOpen(true)}>
-        Plan my week
+        <Sparkles size={14} strokeWidth={1.5} /> Plan my week
       </Button>
       <Button variant="primary" size="sm" onClick={() => setNewOpen(true)}>
         <Plus size={14} strokeWidth={1.5} /> New to-do
@@ -200,32 +206,49 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
   );
 
   const openTask = (t: StaffTask) => setOpenId(t.id);
-  const move = (id: string, day: number | null) => setPlan((p) => ({ ...p, [id]: day }));
+
+  // Admin Work (s/admin/Work.dc.html): Managers tab with the manager items; Project leads tab with the planner.
+  const adminTabs =
+    portal === "admin" ? (
+      <Tabs
+        items={[
+          { key: "managers", label: "Managers" },
+          { key: "leads", label: "Project leads" },
+        ]}
+        value={adminTab}
+        onChange={(k) => setAdminTab(k as "managers" | "leads")}
+      />
+    ) : null;
+  if (portal === "admin" && adminTab === "managers") return <AdminWorkItems tabs={adminTabs} />;
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <SectionCard
-        title="Work"
-        meta={`${openCount} open · ${clientCount} clients`}
-        right={<div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
-        bodyClassName="flex flex-wrap items-center gap-2 py-2.5"
-      >
+      {/* Old toolbar (Work.dc.html): count chip, view tabs, filters; actions on the right. No page title (R-09). */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex h-[22px] items-center rounded-sm bg-accent-soft px-2 text-11.5 font-semibold text-accent">
+          {openCount} open · {clientCount} companies
+        </span>
+        {adminTabs}
         {filters}
-      </SectionCard>
+        <div className="ml-auto flex flex-wrap items-center gap-2">{actions}</div>
+      </div>
 
       {view === "planner" && (
         <>
           <Cols>
             <Col>
-              <WorkTimeline tasks={tasks} onOpen={openTask} onLocked={(t) => (requested[t.id] ? openTask(t) : setReqTask(t))} />
-              <PlanCalendar tasks={tasks} plan={plan} onMove={move} onOpen={openTask} timers={timers} now={now} onTimer={toggleTimer} />
+              {portal === "admin" ? (
+                <WorkTimeline tasks={tasks} onOpen={openTask} onLocked={(t) => (requested[t.id] ? openTask(t) : setReqTask(t))} />
+              ) : (
+                <PlanTimeline rows={TIMELINE_ROWS.filter((r) => !client || r.client === client)} tasks={all} onOpen={openTask} onLocked={(t) => (requested[t.id] ? openTask(t) : setReqTask(t))} />
+              )}
+              <PlanCalendar tasks={all} blocks={CAL_BLOCKS} nextBlocks={nextBlocks} onOpen={openTask} notify={toast.show} />
             </Col>
             <Col>
-              <TodayAgenda tasks={tasks} plan={plan} onOpen={openTask} timers={timers} now={now} onTimer={toggleTimer} />
               <TodoCard portal={portal} tasks={tasks} todos={todos} setTodos={setTodos} client={client} onOpen={openTask} notify={toast.show} />
             </Col>
           </Cols>
-          <WorkStatus tasks={tasks} mine={portal === "lead"} />
+          {portal !== "manager" && <WorkStatus tasks={tasks} mine={portal === "lead"} />}
         </>
       )}
 
@@ -277,12 +300,10 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
       <PlanWeekDialog
         open={planOpen}
         onOpenChange={setPlanOpen}
-        tasks={tasks}
-        plan={plan}
-        onApply={(moves) => {
-          const before = plan;
-          setPlan({ ...plan, ...moves });
-          toast.show(`${Object.keys(moves).length} blocks added to the calendar`, () => setPlan(before));
+        onApply={(blocks) => {
+          const before = nextBlocks;
+          setNextBlocks(blocks);
+          toast.show(`${blocks.filter((b) => !b.own).length} blocks added to the calendar · week of 19 Oct`, () => setNextBlocks(before));
         }}
       />
       <NewTodoDialog

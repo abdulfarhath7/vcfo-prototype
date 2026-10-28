@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
+import { InlineConfirm } from "@/components/cards/InlineConfirm";
 import { X } from "lucide-react";
-import { TODAY } from "@/lib/dates";
+import { STAFF_TODAY } from "@/lib/dates";
 import { AUDIT, type AuditAction, type AuditEntry, type AuditResult } from "@/data/dev";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Input";
@@ -25,15 +26,15 @@ function read(): AuditEntry[] {
   return cache;
 }
 
-/** The sample day (TODAY) at the current clock time. */
+/** The sample day (STAFF_TODAY) at the current clock time. */
 export function nowToday() {
   const now = new Date();
-  const t = new Date(TODAY);
+  const t = new Date(STAFF_TODAY);
   t.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
   return t;
 }
 
-/** Write one row to the audit log. The sample day is TODAY; the clock time is now. */
+/** Write one row to the audit log. The sample day is STAFF_TODAY; the clock time is now. */
 export function logAudit(action: AuditAction, target: string, result: AuditResult = "Done", before?: string, after?: string) {
   const t = nowToday();
   seq += 1;
@@ -152,12 +153,27 @@ export function SettingRow({ label, hint, children, className }: { label: string
 }
 
 /** A switch row bound to a shared setting. */
-export function SwitchRow({ k, initial, label, hint }: { k: string; initial: boolean; label: string; hint?: string }) {
+/** `confirmOn` asks before the switch turns on (R-40), for a risky switch such as "Pause all jobs". */
+export function SwitchRow({ k, initial, label, hint, confirmOn }: { k: string; initial: boolean; label: string; hint?: string; confirmOn?: { question: string; confirm: string } }) {
   const [on, set] = useSwitch(k, initial, label);
+  const [asking, setAsking] = React.useState(false);
   return (
-    <SettingRow label={label} hint={hint}>
-      <Switch on={on} onChange={set} label={label} />
-    </SettingRow>
+    <>
+      <SettingRow label={label} hint={hint}>
+        <Switch on={on} onChange={(v) => (v && confirmOn ? setAsking(true) : set(v))} label={label} />
+      </SettingRow>
+      {asking && confirmOn && (
+        <InlineConfirm
+          question={confirmOn.question}
+          confirm={confirmOn.confirm}
+          onConfirm={() => {
+            set(true);
+            setAsking(false);
+          }}
+          onCancel={() => setAsking(false)}
+        />
+      )}
+    </>
   );
 }
 

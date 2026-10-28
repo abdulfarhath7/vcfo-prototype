@@ -1,10 +1,9 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Bell, CalendarClock, ChevronRight, CircleCheck, FileText, Mail, Megaphone, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Bell, CalendarClock, ChevronRight, CircleCheck, FileText, Mail, Megaphone, MessageSquareText, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { TODAY } from "@/lib/dates";
-import { NOTIFS, NOTIF_GROUPS, NOTIF_GROUP_HOME, NOTIF_TYPE, portalHref, type Notif, type NotifGroup, type NotifType } from "@/data/updates-team";
+import { NOTIFS, STAFF_NOTIFS, NOTIF_GROUPS, NOTIF_GROUP_HOME, NOTIF_TYPE, portalHref, type Notif, type NotifGroup, type NotifType } from "@/data/updates-team";
 import type { Tone } from "@/components/icons";
 import { Tabs } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
@@ -12,30 +11,33 @@ import { Chip, Tag } from "@/components/ui/Chip";
 import { IconTile } from "@/components/ui/IconTile";
 import { Modal } from "@/components/ui/Modal";
 import { SidePanel, PanelSection } from "@/components/ui/SidePanel";
-import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { Cols, Col } from "@/components/shell/Page";
 import type { Portal } from "@/data/nav";
 
-/* notif_redesign: tabs, groups by day, type tile, linked second line, unread dot, "Mark all read" with Undo.
+/* notif_redesign: tabs, groups by day, type tile, linked second line, chip, who and time, unread dot, arrow button.
+   No "Mark all read" on the page: no CHANGES row asks for it (the bell menus have it, C-0049).
    notif_drill: the "This month" legend opens a pop-up with tabs and rows. notif_empty: Unread with nothing unread.
    Row detail opens in a side panel with the linked step. Kept out: the bot in the empty state (R-04). */
 
 const TYPE_ICON: Record<NotifType, { Icon: LucideIcon; tone: Tone }> = {
   doc: { Icon: FileText, tone: "blue" },
-  back: { Icon: FileText, tone: "red" },
+  back: { Icon: FileText, tone: "blue" },
   step: { Icon: CircleCheck, tone: "green" },
-  time: { Icon: CircleCheck, tone: "blue" },
+  time: { Icon: CircleCheck, tone: "green" },
   deadline: { Icon: CalendarClock, tone: "amber" },
   mail: { Icon: Mail, tone: "violet" },
   ann: { Icon: Megaphone, tone: "amber" },
-  team: { Icon: Users, tone: "teal" },
+  team: { Icon: Users, tone: "blue" },
+  bot: { Icon: MessageSquareText, tone: "blue" },
 };
 
 const GROUPS: NotifGroup[] = ["Documents", "Steps", "Deadlines", "Messages"];
-const BAR_TONE = { Documents: "warn", Steps: "accent", Deadlines: "bad", Messages: "teal" } as const;
+// Staff portals add a Chatbot tab (s/lead/Notifications). "This month" keeps the four groups.
+const TAB_GROUPS = (staff: boolean): NotifGroup[] => (staff ? [...GROUPS, "Chatbot"] : GROUPS);
+const BAR_TONE = { Documents: "warn", Steps: "accent", Deadlines: "bad", Messages: "teal", Chatbot: "accent" } as const;
 const grp = (n: Notif) => NOTIF_TYPE[n.type].group;
 
 function Parts({ n, portal }: { n: Notif; portal: Portal }) {
@@ -65,7 +67,7 @@ function Parts({ n, portal }: { n: Notif; portal: Portal }) {
 
 function Who({ n, portal }: { n: Notif; portal: Portal }) {
   return n.person ? (
-    <Link href={portalHref(portal, "/client/profile?tab=team")!} className="hover:underline">
+    <Link href={portalHref(portal, "/client/profile?tab=team")!} className={cn("hover:underline", portal !== "client" && "font-semibold text-accent")}>
       {n.who}
     </Link>
   ) : (
@@ -78,8 +80,8 @@ function NotifRow({ n, unread, onRead, onOpen, portal }: { n: Notif; unread: boo
   const t = NOTIF_TYPE[n.type];
   const ic = TYPE_ICON[n.type];
   return (
-    <div className={cn("flex items-start gap-3 border-t border-line-soft px-4 py-3 text-13.5 md:px-5")}>
-      <span title={t.tip} className="mt-0.5">
+    <div className={cn("flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 md:px-5", unread && "bg-accent-soft")}>
+      <span title={t.tip} className="flex-none self-start sm:self-center">
         <IconTile Icon={ic.Icon} tone={ic.tone} size={30} />
       </span>
       <span className="min-w-0 flex-1">
@@ -89,26 +91,28 @@ function NotifRow({ n, unread, onRead, onOpen, portal }: { n: Notif; unread: boo
         <span className="mt-0.5 block text-12.5 text-ink-2">
           <Parts n={n} portal={portal} />
         </span>
-        <span className="mt-0.5 block font-mono text-12 text-muted sm:hidden">
+        <span className="mt-0.5 block text-12 text-muted sm:hidden">
           <Who n={n} portal={portal} /> · {n.when}
         </span>
       </span>
-      <span className="hidden flex-none flex-col items-end gap-1 sm:flex">
-        <Chip tone={t.tone}>{t.chip}</Chip>
-        <span className="font-mono text-12 text-muted">
-          <Who n={n} portal={portal} /> · {n.when}
-        </span>
+      <span className="hidden w-[120px] flex-none sm:block">
+        <Chip tone={t.tone} dot={false}>
+          {t.chip}
+        </Chip>
       </span>
-      <span className="flex flex-none items-center gap-1">
+      <span className="hidden w-[150px] flex-none text-right text-12 text-muted sm:block">
+        <Who n={n} portal={portal} /> · {n.when}
+      </span>
+      <span className="flex flex-none items-center gap-1.5">
         {unread ? (
-          <button type="button" onClick={onRead} className="grid h-[30px] w-[30px] place-items-center rounded-md hover:bg-raised" aria-label="Unread · mark as read" title="Mark as read">
+          <button type="button" onClick={onRead} className="grid h-5 w-5 place-items-center rounded-full hover:bg-surface" aria-label="Unread · mark as read" title="Mark as read">
             <span className="h-2 w-2 rounded-full bg-accent" />
           </button>
         ) : (
-          <span className="w-[30px]" />
+          <span className="w-5" />
         )}
-        <Button size="iconSm" variant="ghost" onClick={onOpen} aria-label={`Open ${n.title}`}>
-          <ChevronRight size={16} strokeWidth={1.5} />
+        <Button size="iconSm" onClick={onOpen} aria-label={`Open ${n.title}`}>
+          <ArrowRight size={15} strokeWidth={1.5} />
         </Button>
       </span>
     </div>
@@ -118,50 +122,34 @@ function NotifRow({ n, unread, onRead, onOpen, portal }: { n: Notif; unread: boo
 export function NotificationsScreen({ portal }: { portal: Portal }) {
   const [tab, setTab] = React.useState("all");
   const [read, setRead] = React.useState<Set<string>>(new Set());
-  const [allRead, setAllRead] = React.useState(false);
   const [drill, setDrill] = React.useState<string | null>(null);
   const [detail, setDetail] = React.useState<Notif | null>(null);
-  const toast = useUndoToast();
 
-  const isU = (n: Notif) => n.unread && !allRead && !read.has(n.id);
-  const unread = NOTIFS.filter(isU).length;
+  const staff = portal !== "client";
+  const LIST = staff ? STAFF_NOTIFS : NOTIFS;
+  const isU = (n: Notif) => n.unread && !read.has(n.id);
+  const unread = LIST.filter(isU).length;
   const markRead = (id: string) => setRead((s) => new Set(s).add(id));
-  const filters: Record<string, (n: Notif) => boolean> = { all: () => true, unread: isU, ...Object.fromEntries(GROUPS.map((g) => [g, (n: Notif) => grp(n) === g])) };
-  const shown = NOTIFS.filter(filters[tab]);
+  const filters: Record<string, (n: Notif) => boolean> = { all: () => true, unread: isU, ...Object.fromEntries(TAB_GROUPS(staff).map((g) => [g, (n: Notif) => grp(n) === g])) };
+  const shown = LIST.filter(filters[tab]);
   const groups = NOTIF_GROUPS.map((label, gi) => ({ label, rows: shown.filter((n) => n.g === gi) })).filter((g) => g.rows.length);
-  const cnt = (g: NotifGroup) => NOTIFS.filter((n) => grp(n) === g).length;
+  const cnt = (g: NotifGroup) => LIST.filter((n) => grp(n) === g).length;
 
-  const markAll = () => {
-    const before = read;
-    setAllRead(true);
-    toast.show("All marked read", () => {
-      setAllRead(false);
-      setRead(before);
-    });
-  };
-
-  const month = TODAY.toLocaleString("en-GB", { month: "short" });
-  const dRows = drill === null ? [] : NOTIFS.filter((n) => drill === "all" || grp(n) === drill);
+  const dRows = drill === null ? [] : LIST.filter((n) => drill === "all" || grp(n) === drill);
   const dHome = drill && drill !== "all" ? NOTIF_GROUP_HOME[drill as NotifGroup] : null;
 
   return (
-    <Cols>
+    <Cols className="lg:grid-cols-[minmax(0,1fr)_272px] xl:grid-cols-[minmax(0,1fr)_272px]">
       <Col>
-        <SectionCard
-          title="Notifications"
-          flush
-          right={
-            <Button size="sm" onClick={markAll} disabled={unread === 0}>
-              Mark all read
-            </Button>
-          }
-        >
-          <div className="overflow-x-auto border-b border-line-soft px-4 py-2 md:px-5">
+        {/* R-09: no card title that repeats the sidebar. The tabs head the card, as in the old screen. */}
+        <SectionCard bare title="Notifications" bodyClassName="p-0">
+          <div className="overflow-x-auto border-b border-line-soft px-4 py-3 md:px-5">
             <Tabs
+              size="md"
               items={[
-                { key: "all", label: "All", count: NOTIFS.length },
+                { key: "all", label: "All", count: LIST.length },
                 { key: "unread", label: "Unread", count: unread },
-                ...GROUPS.map((g) => ({ key: g, label: g, count: cnt(g) })),
+                ...TAB_GROUPS(staff).map((g) => ({ key: g, label: g, count: cnt(g) })),
               ]}
               value={tab}
               onChange={setTab}
@@ -177,7 +165,7 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
           ) : (
             groups.map((g) => (
               <div key={g.label}>
-                <p className="border-t border-line-soft bg-raised px-4 py-1.5 text-11.5 font-semibold text-faint first:border-t-0 md:px-5">{g.label}</p>
+                <p className="border-t border-line-soft px-4 pb-2 pt-3 text-12 font-semibold text-ink first:border-t-0 md:px-5">{g.label}</p>
                 {g.rows.map((n) => (
                   <NotifRow
                     key={n.id}
@@ -197,9 +185,9 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
         </SectionCard>
       </Col>
       <Col>
-        <SectionCard title="This month" meta={`${month} 2026`} flush>
-          <button type="button" onClick={() => setDrill("all")} className="block w-full px-4 pt-4 text-left hover:bg-raised md:px-5" aria-label={`Show all ${NOTIFS.length} notifications`}>
-            <span className="text-24 font-semibold leading-none">{NOTIFS.length}</span>
+        <SectionCard title="This month" flush>
+          <button type="button" onClick={() => setDrill("all")} className="block w-full px-4 pt-4 text-left hover:bg-raised md:px-5" aria-label={`Show all ${LIST.length} notifications`}>
+            <span className="text-24 font-semibold leading-none">{LIST.length}</span>
             <span className="ml-2 text-12.5 text-muted">this month</span>
           </button>
           <div className="px-4 pb-2 pt-3 md:px-5">
@@ -213,15 +201,14 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
             </ListRow>
           ))}
         </SectionCard>
-        {portal === "client" && (
+        {(
           <SectionCard title="Northwind gets these by" flush>
             <div className="grid gap-2 px-4 py-4 md:px-5">
               <span className="flex flex-wrap gap-2">
-                <Chip tone="ok">Email</Chip>
-                <Chip tone="ok">WhatsApp</Chip>
+                <Chip tone="prog" dot={false}>✓ Email</Chip>
+                <Chip tone="ok" dot={false}>✓ WhatsApp</Chip>
               </span>
-              <span className="font-mono text-12.5 text-muted">rohan@northwind.in · +91 98111 22334</span>
-              <Link href="/client/profile?tab=settings" className="text-13 font-semibold text-accent hover:underline">
+              <Link href={portalHref(portal, "/client/profile?tab=settings")!} className="text-13 font-semibold text-accent hover:underline">
                 Change in Settings ›
               </Link>
             </div>
@@ -238,7 +225,7 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
         sub={<span>{dRows.length} notifications</span>}
         right={
           <span className="hidden md:inline-flex">
-            <Tabs items={[{ key: "all", label: "All", count: NOTIFS.length }, ...GROUPS.map((g) => ({ key: g, label: g, count: cnt(g) }))]} value={drill ?? "all"} onChange={setDrill} />
+            <Tabs items={[{ key: "all", label: "All", count: LIST.length }, ...TAB_GROUPS(staff).map((g) => ({ key: g, label: g, count: cnt(g) }))]} value={drill ?? "all"} onChange={setDrill} />
           </span>
         }
         footer={
@@ -254,7 +241,7 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
         }
       >
         <div className="border-b border-line-soft px-4 py-2 md:hidden">
-          <Tabs items={[{ key: "all", label: "All" }, ...GROUPS.map((g) => ({ key: g, label: g, count: cnt(g) }))]} value={drill ?? "all"} onChange={setDrill} />
+          <Tabs items={[{ key: "all", label: "All" }, ...TAB_GROUPS(staff).map((g) => ({ key: g, label: g, count: cnt(g) }))]} value={drill ?? "all"} onChange={setDrill} />
         </div>
         {dRows.map((n) => {
           const ic = TYPE_ICON[n.type];
@@ -328,7 +315,6 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
           </>
         )}
       </SidePanel>
-      {toast.node}
     </Cols>
   );
 }

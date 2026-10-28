@@ -12,6 +12,7 @@ import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
 import type { Tile } from "@/components/cards/TileGrid";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
 import { StackedBar } from "@/components/cards/StackedBar";
+import { REGISTRATIONS_BEFORE } from "@/data/client-before-coi";
 import { HeadSearch, RegisterTiles, useBeforeCoi, type TileSection } from "./comp-parts";
 
 const STATUS_ORDER: RegStatus[] = ["Waiting on client", "In progress", "Granted", "Not started"];
@@ -32,7 +33,8 @@ export function RegistrationsScreen() {
   const before = useBeforeCoi();
   const [view, setView] = React.useState("status");
   const [q, setQ] = React.useState("");
-  const regs = ACTIVE_REGISTRATIONS;
+  // Before the certificate every registration is "Not started" (old Item.dc.html).
+  const regs = before ? REGISTRATIONS_BEFORE : ACTIVE_REGISTRATIONS;
   const notNeeded = REGISTRATIONS.filter((r) => r.status === "Not needed");
 
   const sections: TileSection[] = [

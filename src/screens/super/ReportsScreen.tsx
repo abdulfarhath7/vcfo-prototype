@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { CalendarClock, Download, Play, X } from "lucide-react";
-import { TODAY, d, fmt } from "@/lib/dates";
+import { STAFF_TODAY, d, fmt } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
 import { Checkbox, Field } from "@/components/ui/Input";
@@ -30,11 +30,12 @@ import { ClientName, opts } from "./parts";
 
 // Ported from reference/old-patch/super/Reports.dc.html (the monthly partner report: month switch, Download PDF, numbers,
 // clients, managers, top risks) and reference/old-patch/super/Money.dc.html as the "Fees and late fees" report.
-// Money stays off dashboards (R-37): it lives in this report only. The sidebar does not change; the report opens from this list.
+// Old Reports.dc.html opens on the partner report: month switch, "prepared on" line and Download PDF, then the report page.
+// Money stays off dashboards (R-37): it lives in the "Fees and late fees" report only, which opens from the saved list below.
 
 const FEES_REPORT: SavedReport = { id: "r12", name: "Fees and late fees", area: "Firm", period: "Oct 2026", lastRun: d(2026, 10, 1), schedule: "1st of the month" };
 const RECIPIENTS = ["Mithilesh", "Krishna", "Ritu Agarwal"];
-const VIEWS = new Set(["r1", "r12"]);
+const VIEWS = new Set(["r12"]);
 
 const fileName = (r: SavedReport, period = r.period) => `SBC-${r.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${period.toLowerCase().replace(/\s+/g, "-")}.pdf`;
 
@@ -48,28 +49,42 @@ const mgrCols: Column<ManagerRow>[] = [
   { key: "days", label: "Days to COI", align: "right", width: 104, render: (m) => `${m.daysToCoi} days` },
 ];
 
-function PartnerReport({ month }: { month: "Oct" | "Sep" }) {
+function PartnerReport() {
+  const nums = PARTNER_NUMBERS("Oct");
   return (
-    <div className="grid gap-5">
-      <div className="flex items-baseline gap-3 border-b border-line-soft pb-3">
-        <span className="text-12.5 text-muted">SBC · monthly partner report</span>
-        <h3 className="ml-auto text-16 font-semibold">{month === "Oct" ? "October 2026" : "September 2026"}</h3>
-      </div>
+    <article className="mx-auto grid w-full min-w-0 max-w-[900px] grid-cols-1 gap-6 [&>*]:min-w-0 rounded-lg border border-line bg-surface px-5 py-6 md:px-10 md:py-9">
+      <header className="flex items-start gap-4 border-b border-line pb-4">
+        <div className="min-w-0 flex-1">
+          <span className="text-12.5 text-muted">SBC · monthly partner report</span>
+          <h2 className="text-[24px] font-semibold leading-tight tracking-tight">October 2026</h2>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/sbc-logo.webp" alt="SBC" className="block h-[34px] w-auto dark:hidden" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/sbc-logo-dark.webp" alt="SBC" className="hidden h-[34px] w-auto dark:block" />
+      </header>
       <section>
-        <h4 className="mb-2 text-13 font-semibold">The month in numbers</h4>
-        <KeyValue cols={3} rows={PARTNER_NUMBERS(month)} />
+        <h3 className="mb-2 text-13 font-semibold text-muted">The month in numbers</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {nums.map((n) => (
+            <div key={n.k} className="rounded-md border border-line px-3.5 py-3">
+              <b className={cn("block text-22 font-semibold leading-tight", n.k.startsWith("Average days") && "text-warn")}>{n.v}</b>
+              <span className="text-12.5 text-muted">{n.k}</span>
+            </div>
+          ))}
+        </div>
       </section>
       <section>
-        <h4 className="mb-1 text-13 font-semibold">Clients</h4>
-        <p className="text-13.5 text-ink-2">{PARTNER_CLIENTS_LINE[month]}</p>
+        <h3 className="mb-1 text-13 font-semibold text-muted">Clients</h3>
+        <p className="text-13.5">{PARTNER_CLIENTS_LINE.Oct}</p>
       </section>
       <section>
-        <h4 className="mb-2 text-13 font-semibold">Managers</h4>
+        <h3 className="mb-2 text-13 font-semibold text-muted">Managers</h3>
         <DataGrid columns={mgrCols} rows={MANAGER_ROWS} rowKey={(m) => m.id} className="rounded-md border border-line" inset />
       </section>
       <section>
-        <h4 className="mb-1 text-13 font-semibold">Top risks for {month === "Oct" ? "November" : "October"}</h4>
-        <ol className="list-decimal pl-5 text-13.5 text-ink-2">
+        <h3 className="mb-1 text-13 font-semibold text-muted">Top risks for November</h3>
+        <ol className="grid list-decimal gap-1.5 pl-5 text-13.5">
           {TOP_RISKS.slice(0, 4).map((r) => (
             <li key={r.id}>
               {r.title}
@@ -78,7 +93,8 @@ function PartnerReport({ month }: { month: "Oct" | "Sep" }) {
           ))}
         </ol>
       </section>
-    </div>
+      <footer className="border-t border-line-soft pt-3 text-12 text-muted">Prepared by VCFO Suite from the firm&apos;s records. Figures to 16 Oct are actuals; the rest of the month is planned.</footer>
+    </article>
   );
 }
 
@@ -152,7 +168,6 @@ export function ReportsScreen() {
   const [period, setPeriod] = React.useState("");
   const [area, setArea] = React.useState("");
   const [openId, setOpenId] = React.useState<string | null>(null);
-  const [month, setMonth] = React.useState<"Oct" | "Sep">("Oct");
   const [sched, setSched] = React.useState<SavedReport | null>(null);
   const [freq, setFreq] = React.useState("");
   const [to, setTo] = React.useState<string[]>(["Mithilesh"]);
@@ -163,9 +178,10 @@ export function ReportsScreen() {
   const open = reports.find((r) => r.id === openId);
 
   const run = (r: SavedReport) => {
-    setReports((all) => all.map((x) => (x.id === r.id ? { ...x, lastRun: TODAY } : x)));
-    if (VIEWS.has(r.id)) show(r.id);
-    else toast.show(`${r.name} ran · ${fmt(TODAY)}`);
+    setReports((all) => all.map((x) => (x.id === r.id ? { ...x, lastRun: STAFF_TODAY } : x)));
+    if (r.id === "r1") window.scrollTo({ top: 0, behavior: "smooth" });
+    else if (VIEWS.has(r.id)) show(r.id);
+    else toast.show(`${r.name} ran · ${fmt(STAFF_TODAY)}`);
   };
   const show = (id: string) => {
     setOpenId(id);
@@ -178,8 +194,8 @@ export function ReportsScreen() {
       key: "name",
       label: "Report",
       render: (r) =>
-        VIEWS.has(r.id) ? (
-          <button type="button" onClick={() => show(r.id)} className="text-left font-semibold text-accent hover:underline">
+        VIEWS.has(r.id) || r.id === "r1" ? (
+          <button type="button" onClick={() => (r.id === "r1" ? window.scrollTo({ top: 0, behavior: "smooth" }) : show(r.id))} className="text-left font-semibold text-accent hover:underline">
             {r.name}
           </button>
         ) : (
@@ -188,7 +204,7 @@ export function ReportsScreen() {
     },
     { key: "area", label: "Area", className: "whitespace-nowrap" },
     { key: "period", label: "Period", className: "whitespace-nowrap" },
-    { key: "lastRun", label: "Last run", width: 96, className: "whitespace-nowrap", render: (r) => (r.lastRun.getTime() === TODAY.getTime() ? "Today" : fmt(r.lastRun)) },
+    { key: "lastRun", label: "Last run", width: 96, className: "whitespace-nowrap", render: (r) => (r.lastRun.getTime() === STAFF_TODAY.getTime() ? "Today" : fmt(r.lastRun)) },
     { key: "schedule", label: "Schedule", className: "whitespace-nowrap" },
     {
       key: "act",
@@ -218,7 +234,23 @@ export function ReportsScreen() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-5">
+    <div className="grid grid-cols-1 gap-4">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <Tabs
+          items={[
+            { key: "Sep", label: "September" },
+            { key: "Oct", label: "October" },
+          ]}
+          value="Oct"
+          onChange={(k) => k === "Sep" && toast.show("September is final. The prototype shows October.")}
+        />
+        <span className="text-12.5 text-muted">Partner report · prepared on 16 Oct 2026, final on 1 Nov</span>
+        <Button variant="primary" className="ml-auto" onClick={() => toast.show("Downloaded SBC-partner-report-October-2026.pdf")}>
+          <Download size={14} strokeWidth={1.5} /> Download PDF
+        </Button>
+      </div>
+      <PartnerReport />
+
       <DataGrid
         title="Saved reports"
         columns={columns}
@@ -238,20 +270,10 @@ export function ReportsScreen() {
         <div ref={viewRef} className="scroll-mt-20">
           <SectionCard
             title={open.name}
-            meta={open.id === "r1" ? `Prepared ${fmt(TODAY)} · final on 1 Nov` : open.period}
+            meta={open.period}
             right={
               <>
-                {open.id === "r1" && (
-                  <Tabs
-                    items={[
-                      { key: "Sep", label: "September" },
-                      { key: "Oct", label: "October" },
-                    ]}
-                    value={month}
-                    onChange={(k) => setMonth(k as "Oct" | "Sep")}
-                  />
-                )}
-                <Button size="sm" variant="primary" onClick={() => download(open, open.id === "r1" ? (month === "Oct" ? "October 2026" : "September 2026") : undefined)}>
+                <Button size="sm" variant="primary" onClick={() => download(open)}>
                   <Download size={14} strokeWidth={1.5} /> Download PDF
                 </Button>
                 <Button size="iconSm" variant="ghost" aria-label="Close report" onClick={() => setOpenId(null)}>
@@ -260,7 +282,7 @@ export function ReportsScreen() {
               </>
             }
           >
-            {open.id === "r1" ? <PartnerReport month={month} /> : <FeesReport />}
+            <FeesReport />
           </SectionCard>
         </div>
       )}

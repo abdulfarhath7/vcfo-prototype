@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { AskButton } from "./AskButton";
+import { PrototypeBar } from "./PrototypeBar";
 import type { Portal } from "@/data/nav";
 
 /** R-39: the sidebar stays fixed when the page scrolls. On phones it is a drawer. */
@@ -11,6 +12,12 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
   const [drawer, setDrawer] = React.useState(false);
   const path = usePathname();
   React.useEffect(() => setDrawer(false), [path]);
+  React.useEffect(() => {
+    if (!drawer) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setDrawer(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [drawer]);
 
   const updatesBase = portal === "client" ? "/client" : `/${portal}/updates`;
 
@@ -20,7 +27,7 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
         <Sidebar portal={portal} incorporated={incorporated} />
       </div>
       {drawer && (
-        <div className="fixed inset-0 z-40 flex md:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[80] flex md:hidden" role="dialog" aria-modal="true">
           <div className="h-full">
             <Sidebar portal={portal} incorporated={incorporated} onClose={() => setDrawer(false)} />
           </div>
@@ -32,6 +39,7 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
         <main className="mx-auto w-full max-w-page flex-1 px-4 pb-20 pt-5 md:px-8 md:pt-7">{children}</main>
       </div>
       <AskButton portal={portal} />
+      <PrototypeBar portal={portal} incorporated={incorporated} />
     </div>
   );
 }

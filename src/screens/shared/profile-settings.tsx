@@ -1,10 +1,10 @@
 "use client";
 import * as React from "react";
-import { Check, Lock, X } from "lucide-react";
+import { AlignLeft, Camera, ChartColumn, Check, CircleCheck, Clock, FileText, Lock, Megaphone, Moon, Rss, TriangleAlert, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { Portal } from "@/data/nav";
 import { NOTIF_PREFS, DEFAULT_EMAIL, DEFAULT_WA, DEVICES, PROFILE_EXTRA } from "@/data/updates-team";
-import { useTheme } from "@/components/shell/ThemeProvider";
+import { useThemeMode, type ThemeMode } from "./theme-mode";
 import { Button } from "@/components/ui/Button";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
@@ -12,9 +12,8 @@ import { Field, Input, Switch, Checkbox } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow } from "@/components/cards/SectionCard";
-import { Row } from "@/components/shell/Page";
 
-type Toast = ReturnType<typeof useUndoToast>;
+export type Toast = ReturnType<typeof useUndoToast>;
 
 /* ---------- Password (settings_password) ---------- */
 
@@ -26,7 +25,7 @@ const CHECKS: Array<{ label: string; test: (v: string) => boolean }> = [
 ];
 const STRENGTH = ["Too weak", "Weak", "Fair", "Good", "Strong"];
 
-function PasswordForm({ onCancel, onSave }: { onCancel: () => void; onSave: () => void }) {
+export function PasswordForm({ onCancel, onSave }: { onCancel: () => void; onSave: () => void }) {
   const [cur, setCur] = React.useState("");
   const [next, setNext] = React.useState("");
   const [conf, setConf] = React.useState("");
@@ -286,7 +285,33 @@ function WhatsAppDialog({ open, onOpenChange, onDone, number }: { open: boolean;
 
 /* ---------- Notifications (settings_redesign) ---------- */
 
-function NotificationsCard({ portal, toast }: { portal: Portal; toast: Toast }) {
+// Solid icon circle on each alert row, as in the old Settings page. Dark mode mixes the tone with navy so the white glyph stays legible.
+const PREF_ICON: Record<string, { Icon: LucideIcon; bg: string }> = {
+  docs: { Icon: FileText, bg: "bg-brand" },
+  steps: { Icon: Check, bg: "bg-ok-mid" },
+  dead: { Icon: Clock, bg: "bg-bad-mid" },
+  time: { Icon: AlignLeft, bg: "bg-accent dark:bg-btn" },
+  ann: { Icon: Megaphone, bg: "bg-accent dark:bg-btn" },
+  feed: { Icon: Rss, bg: "bg-teal dark:bg-[color-mix(in_srgb,var(--teal)_45%,var(--navy))]" },
+  digest: { Icon: FileText, bg: "bg-violet dark:bg-[color-mix(in_srgb,var(--violet)_45%,var(--navy))]" },
+  daily: { Icon: FileText, bg: "bg-violet dark:bg-[color-mix(in_srgb,var(--violet)_45%,var(--navy))]" },
+  approvals: { Icon: CircleCheck, bg: "bg-ok-mid" },
+  esc: { Icon: TriangleAlert, bg: "bg-bad-mid" },
+  partner: { Icon: ChartColumn, bg: "bg-accent dark:bg-btn" },
+  incidents: { Icon: TriangleAlert, bg: "bg-bad-mid" },
+  quiet: { Icon: Moon, bg: "bg-navy dark:bg-btn" },
+};
+
+function PrefIcon({ k }: { k: string }) {
+  const x = PREF_ICON[k] ?? PREF_ICON.docs;
+  return (
+    <span className={cn("grid h-[30px] w-[30px] flex-none place-items-center rounded-full text-white", x.bg)} aria-hidden>
+      <x.Icon size={14} strokeWidth={1.5} />
+    </span>
+  );
+}
+
+export function NotificationsCard({ portal, toast, remind: showRemind = true }: { portal: Portal; toast: Toast; remind?: boolean }) {
   const client = portal === "client";
   const [waOn, setWaOn] = React.useState(true);
   const [waNum, setWaNum] = React.useState(PROFILE_EXTRA[portal].mobile);
@@ -348,7 +373,12 @@ function NotificationsCard({ portal, toast }: { portal: Portal; toast: Toast }) 
           <tbody>
             {prefs.map((p) => (
               <tr key={p.key} className="border-t border-line-soft">
-                <td className="px-4 py-2 md:px-5">{p.label}</td>
+                <td className="px-4 py-2 md:px-5">
+                  <span className="flex items-center gap-3">
+                    <PrefIcon k={p.key} />
+                    {p.label}
+                  </span>
+                </td>
                 <td className="py-2 text-center">
                   {p.locked ? (
                     <span className="inline-flex h-[22px] items-center gap-1 rounded-sm bg-raised px-2 text-12 font-semibold text-muted" title="Always on">
@@ -375,6 +405,7 @@ function NotificationsCard({ portal, toast }: { portal: Portal; toast: Toast }) 
         </table>
       </div>
       <ListRow className="bg-raised">
+        <PrefIcon k="quiet" />
         <span className="flex-1">Quiet hours · no WhatsApp 9 pm to 8 am</span>
         <span className={cn("inline-flex", !waOn && "pointer-events-none opacity-40")}>
           <Switch
@@ -387,7 +418,7 @@ function NotificationsCard({ portal, toast }: { portal: Portal; toast: Toast }) 
           />
         </span>
       </ListRow>
-      {client && (
+      {client && showRemind && (
         <ListRow>
           <span className="flex-1">Remind me before a due date</span>
           <Tabs
@@ -422,35 +453,51 @@ function NotificationsCard({ portal, toast }: { portal: Portal; toast: Toast }) 
 
 /* ---------- Appearance and email ---------- */
 
-function AppearanceCard({ toast }: { toast: Toast }) {
-  const { theme, toggle } = useTheme();
+const THEMES = [
+  { key: "light", label: "Light" },
+  { key: "dark", label: "Dark" },
+  { key: "system", label: "System" },
+];
+
+/** Theme picker: Light, Dark or System. System follows prefers-color-scheme (theme-mode.ts). */
+export function ThemePicker({ toast }: { toast?: Toast }) {
+  const { mode, setMode } = useThemeMode();
+  return (
+    <Tabs
+      items={THEMES}
+      value={mode}
+      onChange={(k) => {
+        const was = mode;
+        setMode(k as ThemeMode);
+        toast?.show(`Theme · ${THEMES.find((x) => x.key === k)?.label}`, () => setMode(was));
+      }}
+    />
+  );
+}
+
+export function AppearanceCard({ toast, textSize = true }: { toast: Toast; textSize?: boolean }) {
   const [motion, setMotion] = React.useState(false);
   const [size, setSize] = React.useState("default");
   return (
     <SectionCard title="Appearance" flush>
       <ListRow>
         <span className="flex-1">Theme</span>
-        <Tabs
-          items={[
-            { key: "light", label: "Light" },
-            { key: "dark", label: "Dark" },
-          ]}
-          value={theme}
-          onChange={(k) => k !== theme && toggle()}
-        />
+        <ThemePicker toast={toast} />
       </ListRow>
-      <ListRow>
-        <span className="flex-1">Text size</span>
-        <Tabs
-          items={[
-            { key: "small", label: "Small" },
-            { key: "default", label: "Default" },
-            { key: "large", label: "Large" },
-          ]}
-          value={size}
-          onChange={setSize}
-        />
-      </ListRow>
+      {textSize && (
+        <ListRow>
+          <span className="flex-1">Text size</span>
+          <Tabs
+            items={[
+              { key: "small", label: "Small" },
+              { key: "default", label: "Default" },
+              { key: "large", label: "Large" },
+            ]}
+            value={size}
+            onChange={setSize}
+          />
+        </ListRow>
+      )}
       <ListRow>
         <span className="flex-1">Reduce motion</span>
         <Switch
@@ -492,21 +539,165 @@ function EmailCard({ portal, toast }: { portal: Portal; toast: Toast }) {
   );
 }
 
-/** Settings section of Profile: security with the password form, notification channels with the WhatsApp opt-in, appearance. Every change shows a toast with Undo. */
+/* ---------- Client settings page (settings_redesign) ---------- */
+
+function FactLine({ k, children, end }: { k: string; children: React.ReactNode; end?: React.ReactNode }) {
+  return (
+    <div className="flex min-h-[44px] items-center gap-3 border-t border-line-soft px-4 py-2 text-13.5 first:border-t-0 md:px-5">
+      <span className="w-[92px] flex-none text-12.5 font-semibold text-muted">{k}</span>
+      <span className="min-w-0 flex-1">{children}</span>
+      {end}
+    </div>
+  );
+}
+
+/** The client's Settings: navy profile card, profile facts, security, notifications with an icon on each alert row, appearance. */
+function ClientSettingsView() {
+  const toast = useUndoToast();
+  const me = { name: "Rohan Kumar", ini: "RK", email: "rohan@northwind.in", phone: PROFILE_EXTRA.client.mobile };
+  const [edit, setEdit] = React.useState(false);
+  const [name, setName] = React.useState(me.name);
+  const [phone, setPhone] = React.useState(me.phone);
+  const [pw, setPw] = React.useState(false);
+  const [changed, setChanged] = React.useState("2 Sep");
+  const [motion, setMotion] = React.useState(false);
+  const photo = React.useRef<HTMLInputElement>(null);
+  const device = DEVICES.find((d) => d.current)!;
+
+  return (
+    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[400px_minmax(0,1fr)]">
+      <div className="grid min-w-0 gap-4">
+        <section aria-label="Your profile" className="flex items-center gap-4 rounded-lg bg-navy px-4 py-4 text-white">
+          <span className="relative flex-none">
+            <span className="grid h-[72px] w-[72px] place-items-center rounded-full bg-accent text-22 font-bold text-white ring-2 ring-white/[.25] dark:bg-btn">{me.ini}</span>
+            <button type="button" onClick={() => photo.current?.click()} aria-label="Change photo" title="Change photo" className="absolute -bottom-0.5 -right-1 grid h-7 w-7 place-items-center rounded-md bg-brand text-white">
+              <Camera size={14} strokeWidth={1.5} />
+            </button>
+            <input ref={photo} type="file" accept="image/png,image/jpeg" className="hidden" aria-label="Photo file" onChange={() => toast.show("Photo updated")} />
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-22 font-semibold leading-tight">{name}</span>
+            <span className="block truncate font-mono text-12 text-navy-ink">{me.email}</span>
+            <span className="mt-1.5 flex flex-wrap gap-1.5">
+              <span className="inline-flex h-[22px] items-center rounded-sm bg-brand px-2 text-11.5 font-bold text-white">Primary</span>
+              <span className="inline-flex h-[22px] items-center rounded-sm bg-white/[.12] px-2 text-11.5 font-semibold text-white">Northwind Technologies</span>
+            </span>
+          </span>
+        </section>
+
+        <SectionCard
+          title="Profile"
+          flush
+          right={
+            edit ? (
+              <>
+                <Button size="sm" variant="ghost" onClick={() => { setName(me.name); setPhone(me.phone); setEdit(false); }}>
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => {
+                    setEdit(false);
+                    toast.show("Profile saved", () => { setName(me.name); setPhone(me.phone); });
+                  }}
+                >
+                  Save
+                </Button>
+              </>
+            ) : (
+              <Button size="sm" variant="ghost" onClick={() => setEdit(true)}>
+                Edit
+              </Button>
+            )
+          }
+        >
+          <FactLine k="Full name">{edit ? <Input value={name} onChange={(e) => setName(e.target.value)} aria-label="Full name" /> : name}</FactLine>
+          <FactLine k="Email">
+            <span className="font-mono text-13">{me.email}</span>
+          </FactLine>
+          <FactLine k="Phone">{edit ? <Input value={phone} onChange={(e) => setPhone(e.target.value)} aria-label="Phone" className="font-mono" /> : <span className="whitespace-nowrap font-mono text-13">{phone}</span>}</FactLine>
+          <FactLine k="WhatsApp" end={<Chip tone="ok">Verified</Chip>}>
+            <span className="whitespace-nowrap font-mono text-13">{phone}</span>
+          </FactLine>
+        </SectionCard>
+
+        <SectionCard title="Security" flush>
+          <FactLine
+            k="Password"
+            end={
+              !pw && (
+                <Button size="sm" onClick={() => setPw(true)}>
+                  Change
+                </Button>
+              )
+            }
+          >
+            <span className="whitespace-nowrap font-mono text-12.5">••••••••</span>
+            <span className="ml-2 text-12 text-muted">changed {changed}</span>
+          </FactLine>
+          {pw && (
+            <div className="border-t border-line-soft px-4 py-3 md:px-5">
+              <PasswordForm
+                onCancel={() => setPw(false)}
+                onSave={() => {
+                  const was = changed;
+                  setPw(false);
+                  setChanged("6 Oct");
+                  toast.show("Password changed", () => setChanged(was));
+                }}
+              />
+            </div>
+          )}
+          <FactLine k="This device" end={<Chip tone="ok">{device.when}</Chip>}>
+            {device.name}
+          </FactLine>
+        </SectionCard>
+      </div>
+
+      <div className="grid min-w-0 gap-4">
+        <NotificationsCard portal="client" toast={toast} remind={false} />
+        <SectionCard title="Appearance">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid justify-items-start gap-1.5">
+              <span className="text-12.5 font-semibold text-muted">Theme</span>
+              <ThemePicker toast={toast} />
+            </div>
+            <div className="grid justify-items-start gap-1.5">
+              <span className="text-12.5 font-semibold text-muted">Reduce motion</span>
+              <Switch
+                on={motion}
+                onChange={(v) => {
+                  setMotion(v);
+                  toast.show(v ? "Reduce motion on" : "Reduce motion off", () => setMotion(!v));
+                }}
+                label="Reduce motion"
+              />
+            </div>
+          </div>
+        </SectionCard>
+      </div>
+      {toast.node}
+    </div>
+  );
+}
+
+/** Settings section of Profile. Client: the old Settings page. Super admin and developer: security, notification channels with the WhatsApp opt-in, appearance. Every change shows a toast with Undo. */
 export function SettingsSection({ portal }: { portal: Portal }) {
   const toast = useUndoToast();
-  const staffMail = portal !== "client" && portal !== "dev";
+  if (portal === "client") return <ClientSettingsView />;
+  const staffMail = portal !== "dev";
   return (
-    <Row>
-      <div className="grid min-w-0 grid-cols-1 gap-5">
+    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-4">
         <NotificationsCard portal={portal} toast={toast} />
       </div>
-      <div className="grid min-w-0 grid-cols-1 gap-5">
+      <div className="grid min-w-0 grid-cols-1 gap-4">
         <SecurityCard portal={portal} toast={toast} />
         {staffMail && <EmailCard portal={portal} toast={toast} />}
         <AppearanceCard toast={toast} />
       </div>
       {toast.node}
-    </Row>
+    </div>
   );
 }
