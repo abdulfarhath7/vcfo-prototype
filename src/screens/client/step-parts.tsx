@@ -279,7 +279,7 @@ export function StepNeedsCard({
 export function ApprovalBar({ pct, blocked, notify, onChange }: { pct: number; blocked?: string; notify: Notify; onChange: () => void }) {
   const [sent, setSent] = React.useState(false);
   return (
-    <div className="sticky bottom-[132px] z-20 rounded-lg border border-line bg-surface px-4 py-3 md:bottom-[68px] md:px-5" role="region" aria-label="Approval">
+    <div className="sticky bottom-[132px] z-20 rounded-md border-1.5 border-line bg-surface px-4 py-3 md:bottom-[68px] md:px-5" role="region" aria-label="Approval">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-md", sent ? "bg-ok-soft text-ok" : "bg-warn text-surface")} aria-hidden>
@@ -360,8 +360,8 @@ function RailIcon({ step, index }: { step: Step; index: number }) {
 export function PhaseStepsRail({ step }: { step: Step }) {
   const list = STEPS.filter((x) => x.phase === step.phase);
   return (
-    <aside className="min-w-0 rounded-lg border border-line bg-surface px-3 py-4 md:px-4" aria-label={`${PHASE_LABEL[step.phase - 1]} steps`}>
-      <h2 className="px-2 font-mono text-11.5 font-semibold text-muted">{PHASE_LABEL[step.phase - 1]}</h2>
+    <aside className="min-w-0 rounded-md border-1.5 border-line bg-surface px-3 py-4 md:px-4" aria-label={`${PHASE_LABEL[step.phase - 1]} steps`}>
+      <h2 className="px-2 text-11.5 font-semibold text-muted">{PHASE_LABEL[step.phase - 1]}</h2>
       <ol className="mt-3 grid gap-0.5">
         {list.map((x, i) => {
           const cur = x.n === step.n;

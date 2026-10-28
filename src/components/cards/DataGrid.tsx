@@ -56,12 +56,12 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
   const tile = icon ?? head;
 
   return (
-    <section className={cn("min-w-0 overflow-hidden bg-surface", !inset && "rounded-lg border border-line", className)} aria-label={title}>
+    <section className={cn("min-w-0 overflow-hidden bg-surface", !inset && "rounded-md border-1.5 border-line", className)} aria-label={title}>
       {(title || filters) && (
         <header className="flex min-h-head flex-wrap items-center gap-2.5 border-b border-line-soft px-4 py-2 md:px-5">
           {tile && title && <IconTile Icon={tile.Icon} tone={tile.tone} />}
-          {title && <h2 className="whitespace-nowrap text-14.5 font-semibold">{title}</h2>}
-          {meta && <span className="truncate text-12.5 text-muted">{meta}</span>}
+          {title && <h2 className="whitespace-nowrap text-15 font-medium">{title}</h2>}
+          {meta && <span className="truncate text-13 text-muted">{meta}</span>}
           {filters && <div className="ml-auto flex flex-wrap items-center gap-2">{filters}</div>}
         </header>
       )}
@@ -107,9 +107,9 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
                 >
                   {columns.map((c, ci) => {
                     const v = c.render ? c.render(r, (cur - 1) * pageSize + i) : String((r as Record<string, unknown>)[c.key] ?? "");
-                    const cell = href && ci === 0 ? <Link href={href} className="block -mx-3 -my-2.5 px-3 py-2.5 hover:underline">{v}</Link> : v;
+                    const cell = href && ci === 0 ? <Link href={href} className="-mx-2.5 -my-2.5 block px-2.5 py-2.5 font-medium text-ink hover:underline">{v}</Link> : v;
                     return (
-                      <td key={c.key} className={cn(c.mono && "font-mono text-12.5", c.align === "right" && "text-right", c.align === "center" && "text-center", c.className)}>
+                      <td key={c.key} className={cn(c.mono && "font-mono text-13", c.align === "right" && "text-right", c.align === "center" && "text-center", c.className)}>
                         {cell}
                       </td>
                     );
@@ -120,14 +120,14 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
           </tbody>
         </table>
       </div>
-      <footer className="flex items-center gap-3 border-t border-line-soft px-4 py-2 text-12.5 text-muted md:px-5">
+      <footer className="flex items-center gap-3 border-t border-line-soft px-4 py-2 text-13 text-muted md:px-5">
         <span>
           {rows.length === 0 ? "0" : `${(cur - 1) * pageSize + 1}–${Math.min(rows.length, cur * pageSize)}`} of {rows.length}
         </span>
         {footer}
         {pages > 1 && (
           <nav className="ml-auto flex items-center gap-1" aria-label="Pages">
-            <button type="button" onClick={() => setPage(Math.max(1, cur - 1))} disabled={cur === 1} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-raised disabled:opacity-40" aria-label="Previous page">
+            <button type="button" onClick={() => setPage(Math.max(1, cur - 1))} disabled={cur === 1} className="grid h-7 w-7 place-items-center rounded-md hover:bg-ghost disabled:opacity-40" aria-label="Previous page">
               <ChevronLeft size={14} strokeWidth={1.6} />
             </button>
             {Array.from({ length: pages }, (_, i) => i + 1)
@@ -143,12 +143,12 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
                     …
                   </span>
                 ) : (
-                  <button key={p} type="button" onClick={() => setPage(p)} aria-current={p === cur ? "page" : undefined} className={cn("h-7 min-w-7 rounded-sm px-1.5 font-semibold", p === cur ? "bg-btn text-white" : "hover:bg-raised")}>
+                  <button key={p} type="button" onClick={() => setPage(p)} aria-current={p === cur ? "page" : undefined} className={cn("h-7 min-w-7 rounded-md px-1.5 font-medium", p === cur ? "bg-primary text-primary-on" : "hover:bg-ghost")}>
                     {p}
                   </button>
                 ),
               )}
-            <button type="button" onClick={() => setPage(Math.min(pages, cur + 1))} disabled={cur === pages} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-raised disabled:opacity-40" aria-label="Next page">
+            <button type="button" onClick={() => setPage(Math.min(pages, cur + 1))} disabled={cur === pages} className="grid h-7 w-7 place-items-center rounded-md hover:bg-ghost disabled:opacity-40" aria-label="Next page">
               <ChevronRight size={14} strokeWidth={1.6} />
             </button>
           </nav>

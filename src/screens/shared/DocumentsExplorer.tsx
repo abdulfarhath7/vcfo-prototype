@@ -241,7 +241,7 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
           </span>
           <span className="min-w-0 flex-1 truncate font-semibold">{n.label}</span>
           {phase ? (
-            <span className="w-8 flex-none text-right font-mono text-12 text-muted">{kids.length}</span>
+            <span className="w-8 flex-none text-right text-12 text-muted">{kids.length}</span>
           ) : (
             tot > 0 && (
               <span className="flex flex-none items-center gap-2" title={`${n.label.replace(/^\d+ · /, "")} · ${ok} received · ${rv} in review · ${ms} missing`}>
@@ -344,7 +344,7 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <section aria-label="Documents" className="min-w-0 overflow-hidden rounded-lg border border-line bg-surface">
+      <section aria-label="Documents" className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface">
         <div className="flex flex-wrap items-center gap-2 border-b border-line-soft px-3 py-2.5">
           {staff && <Select value={client} onChange={(e) => setClient(e.target.value)} options={CLIENTS.map((c) => ({ value: c.id, label: c.name.replace(/ (India )?Pvt Ltd$/, "") }))} aria-label="Client" />}
           <label className="flex h-[34px] min-w-[140px] flex-1 items-center gap-2 rounded-md border border-line bg-surface px-2.5 sm:max-w-[300px]">

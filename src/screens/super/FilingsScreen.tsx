@@ -112,7 +112,7 @@ export function FilingsScreen() {
           <Button size="iconSm" variant="ghost" aria-label="Previous year" onClick={() => toast.show("FY 2025-26 is closed")}>
             <ChevronLeft size={16} strokeWidth={1.6} />
           </Button>
-          <b className="px-1 font-mono text-13 font-semibold">FY 2026-27</b>
+          <b className="px-1 text-13 font-semibold">FY 2026-27</b>
           <Button size="iconSm" variant="ghost" aria-label="Next year" onClick={() => toast.show("FY 2027-28 opens on 1 Apr 2027")}>
             <ChevronRight size={16} strokeWidth={1.6} />
           </Button>
@@ -131,7 +131,7 @@ export function FilingsScreen() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-        <section className="rounded-lg border border-line bg-surface px-4 py-4 md:px-5" aria-label="Filings by status">
+        <section className="rounded-md border-1.5 border-line bg-surface px-4 py-4 md:px-5" aria-label="Filings by status">
           <Donut
             size={96}
             total={
@@ -148,7 +148,7 @@ export function FilingsScreen() {
             ]}
           />
         </section>
-        <section className="rounded-lg border border-line bg-surface px-4 py-4 md:px-5" aria-label="By area">
+        <section className="rounded-md border-1.5 border-line bg-surface px-4 py-4 md:px-5" aria-label="By area">
           <p className="mb-2.5 text-13 font-semibold">By area · Sep-Oct</p>
           <ul className="grid gap-2">
             {SUPER_FILING_AREAS.map((a) => {

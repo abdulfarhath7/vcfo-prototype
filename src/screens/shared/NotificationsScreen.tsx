@@ -196,7 +196,7 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
           {GROUPS.map((g) => (
             <ListRow key={g} onClick={() => setDrill(g)} className="py-2 text-13">
               <span className="min-w-0 flex-1">{g}</span>
-              <b className="font-mono font-semibold">{cnt(g)}</b>
+              <b className=" font-semibold">{cnt(g)}</b>
               <ChevronRight size={14} strokeWidth={1.6} className="text-faint" />
             </ListRow>
           ))}

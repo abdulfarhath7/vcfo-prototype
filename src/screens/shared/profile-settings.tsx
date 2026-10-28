@@ -139,7 +139,7 @@ function SecurityCard({ portal, toast }: { portal: Portal; toast: Toast }) {
       {devices.map((d) => (
         <ListRow key={d.id}>
           <span className="min-w-0 flex-1 truncate">{d.name}</span>
-          {d.current ? <Chip tone="ok">{d.when}</Chip> : <span className="font-mono text-12.5 text-muted">{d.when}</span>}
+          {d.current ? <Chip tone="ok">{d.when}</Chip> : <span className=" text-12.5 text-muted">{d.when}</span>}
         </ListRow>
       ))}
       {devices.length > 1 && (

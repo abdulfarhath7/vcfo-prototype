@@ -174,7 +174,7 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <section className="flex items-center rounded-lg border border-line bg-surface px-5 py-4" aria-label="Filings by status">
+        <section className="flex items-center rounded-md border-1.5 border-line bg-surface px-5 py-4" aria-label="Filings by status">
           <Donut
             size={84}
             className="w-full [&>div:last-child]:flex-1"
@@ -187,7 +187,7 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
             segments={STATUSES.map((s) => ({ label: s, value: inWindow.filter((f) => f.status === s).length, tone: S_BAR[s] }))}
           />
         </section>
-        <section className="rounded-lg border border-line bg-surface px-5 py-4" aria-label="By area">
+        <section className="rounded-md border-1.5 border-line bg-surface px-5 py-4" aria-label="By area">
           <p className="mb-2 text-12.5 font-semibold">By area · {short}</p>
           <div className="grid gap-1.5">
             {OLD_FILING_AREAS.map((a) => {

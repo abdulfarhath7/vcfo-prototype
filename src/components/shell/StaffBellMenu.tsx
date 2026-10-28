@@ -112,7 +112,7 @@ export function StaffNotificationsBell({ portal }: { portal: StaffPortal }) {
                       {i.context && ` · ${i.context}`}
                     </span>
                   </span>
-                  <span className="flex-none font-mono text-11.5 text-muted">{i.when}</span>
+                  <span className="flex-none text-11.5 text-muted">{i.when}</span>
                 </Link>
               </li>
             );

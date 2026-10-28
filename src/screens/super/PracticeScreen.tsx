@@ -329,7 +329,7 @@ export function PracticeScreen({ area }: { area: Area }) {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <section className="overflow-hidden rounded-lg border border-line bg-surface" aria-label="Summary">
+      <section className="overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="Summary">
         <NumberStrip items={stats(area, all)} />
       </section>
       <Cols>

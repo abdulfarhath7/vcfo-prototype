@@ -363,7 +363,7 @@ export function ProfileScreen({ portal }: { portal: Portal }) {
 
   return (
     <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
-      <nav aria-label="Profile sections" className="rounded-lg border border-line bg-surface p-2 md:sticky md:top-5">
+      <nav aria-label="Profile sections" className="rounded-md border-1.5 border-line bg-surface p-2 md:sticky md:top-5">
         <div className="flex items-center gap-2.5 border-b border-line-soft px-2 pb-3 pt-2">
           <span className="grid h-10 w-10 flex-none place-items-center rounded-full bg-navy text-12.5 font-bold text-white dark:bg-btn" aria-hidden>
             {me.ini ?? me.name.slice(0, 2).toUpperCase()}

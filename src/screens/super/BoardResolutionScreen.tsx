@@ -149,7 +149,7 @@ export function BoardResolutionScreen() {
             <ListRow key={s}>
               <StatusCircle status={i < stage ? "done" : i === stage ? "current" : "planned"} />
               <span className={cn("min-w-0 flex-1 truncate", i > stage && "text-muted", i === stage && "font-semibold")}>{s}</span>
-              {i < stage && <span className="font-mono text-12 text-muted">{fmt(TODAY)}</span>}
+              {i < stage && <span className=" text-12 text-muted">{fmt(TODAY)}</span>}
             </ListRow>
           ))}
           <div className="border-t border-line-soft px-4 py-3 text-13 md:px-5">

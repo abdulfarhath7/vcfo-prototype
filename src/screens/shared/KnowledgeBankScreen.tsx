@@ -116,7 +116,7 @@ export function KnowledgeBankScreen() {
                     <span className="block truncate font-semibold">{f.title}</span>
                     <span className="block truncate text-12.5 text-muted">{f.note}</span>
                   </span>
-                  <span className="flex-none font-mono text-12 text-muted">{f.when}</span>
+                  <span className="flex-none text-12 text-muted">{f.when}</span>
                 </ListRow>
               ))
             )}

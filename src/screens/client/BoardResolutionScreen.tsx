@@ -34,7 +34,7 @@ function CompanyStamp() {
 /** Stages of the resolution. The last one is the large "Received by SBC" tile (old board.html .trk). */
 function BoardTrack({ stages, received }: { stages: Array<{ label: string; sub?: string; done: boolean }>; received?: { sub: string } }) {
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-lg border border-line bg-surface px-4 py-3.5 md:flex-row md:items-center md:gap-0 md:px-5" aria-label="Progress">
+    <section className="flex min-w-0 flex-col gap-3 rounded-md border-1.5 border-line bg-surface px-4 py-3.5 md:flex-row md:items-center md:gap-0 md:px-5" aria-label="Progress">
       {stages.map((st) => (
         <React.Fragment key={st.label}>
           <div className={cn("flex min-w-0 items-center gap-2.5 md:flex-none md:flex-col md:gap-1 md:text-center", !st.done && "opacity-60")}>

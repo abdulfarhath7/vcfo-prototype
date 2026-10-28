@@ -64,6 +64,10 @@
   .bg-wash {
     background: var(--wash);
   }
+  /* R-21: remaining part of the current phase, blurple hatch */
+  .hatch {
+    background: repeating-linear-gradient(135deg, var(--accent-soft) 0 4px, var(--accent-line) 4px 6px);
+  }
   /* R-46: regulator spectrum ribbon */
   .spectrum {
     background: linear-gradient(

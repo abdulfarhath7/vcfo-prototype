@@ -42,7 +42,7 @@ export function Palette({ portal, onClose }: { portal: Portal; onClose: () => vo
   const starts = groups.reduce<number[]>((acc, g, gi) => [...acc, gi === 0 ? 0 : acc[gi - 1] + groups[gi - 1].hits.length], []);
   return (
     <div className="fixed inset-0 z-50 bg-scrim p-4 pt-[12vh]" onClick={onClose} role="dialog" aria-modal="true" aria-label="Search">
-      <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border border-line bg-surface shadow-pop" onClick={(e) => e.stopPropagation()} onKeyDown={onKey}>
+      <div className="mx-auto max-w-[600px] overflow-hidden rounded-md border-1.5 border-line bg-surface shadow-pop" onClick={(e) => e.stopPropagation()} onKeyDown={onKey}>
         <div className="flex h-12 items-center gap-2.5 border-b border-line-soft px-4">
           <Search size={16} strokeWidth={1.6} className="text-muted" />
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search clients, steps, filings, documents" className="h-full flex-1 bg-transparent text-14 outline-none placeholder:text-faint" aria-label="Search" />

@@ -246,7 +246,7 @@ export function TimelineEditor({ open, onOpenChange, phases, start, end, mode, o
           <span />
           <div ref={laneRef} className="relative h-9 border-b border-line">
             {ticks.map((n, k) => (
-              <span key={n} className={cn("absolute bottom-1 -translate-x-1/2 whitespace-nowrap font-mono text-11 text-faint", k % 2 === 1 && "hidden sm:block")} style={{ left: x(n) }}>
+              <span key={n} className={cn("absolute bottom-1 -translate-x-1/2 whitespace-nowrap text-11 text-faint", k % 2 === 1 && "hidden sm:block")} style={{ left: x(n) }}>
                 {fmt(toDate(n, start))}
               </span>
             ))}
@@ -304,7 +304,7 @@ export function TimelineEditor({ open, onOpenChange, phases, start, end, mode, o
                   <span className="pointer-events-none absolute inset-y-0 border-l-[1.5px] border-brand" style={{ left: `${frac(TODAY, start, end) * 100}%` }} aria-hidden />
                 </div>
                 <div className="hidden h-[52px] flex-col items-end justify-center border-t border-line-soft text-right md:flex">
-                  <b className="font-mono text-11.5 font-semibold">{label(p, i)}</b>
+                  <b className=" text-11.5 font-semibold">{label(p, i)}</b>
                   {dd !== 0 && <span className={cn("text-11.5 font-semibold", dd > 0 ? "text-bad" : "text-ok")}>{`${dd > 0 ? "+" : ""}${dd} d`}</span>}
                 </div>
               </React.Fragment>
@@ -314,7 +314,7 @@ export function TimelineEditor({ open, onOpenChange, phases, start, end, mode, o
       </div>
 
       <div className="mx-4 mt-4 flex flex-wrap items-center gap-3 rounded-md bg-raised px-3.5 py-3 md:mx-5">
-        <span className="text-14.5 font-semibold">
+        <span className="text-15 font-medium">
           COI {fmt(toDate(coi0, start))}
           {slip !== 0 && ` → ${fmt(toDate(coi, start))}`}
         </span>

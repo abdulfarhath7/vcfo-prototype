@@ -149,7 +149,7 @@ export function MonthCalendar({
               >
                 {day.getDate()}
               </span>
-              {list.length > 1 && <span className="ml-auto hidden font-mono text-11 text-muted md:inline">{list.length}</span>}
+              {list.length > 1 && <span className="ml-auto hidden text-11 text-muted md:inline">{list.length}</span>}
             </span>
           );
           if (!list.length)

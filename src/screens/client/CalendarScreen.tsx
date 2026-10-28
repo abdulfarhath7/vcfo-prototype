@@ -139,7 +139,7 @@ export function CalendarScreen() {
         filingsHref="/client/filings"
       />
       {/* Phone (calMobile): three numbers above the calendar. */}
-      <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-line bg-surface md:hidden">
+      <div className="grid grid-cols-3 overflow-hidden rounded-md border-1.5 border-line bg-surface md:hidden">
         {[
           { v: thisWeek, l: "Due this week", c: "text-warn" },
           { v: counts.Overdue, l: "Overdue", c: "text-bad" },
@@ -152,7 +152,7 @@ export function CalendarScreen() {
         ))}
       </div>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 rounded-lg border border-line bg-surface p-3">
+        <div className="min-w-0 rounded-md border-1.5 border-line bg-surface p-3">
           {view === "month" && (
             <MonthCalendar
               year={year}

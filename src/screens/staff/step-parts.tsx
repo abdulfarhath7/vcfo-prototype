@@ -45,7 +45,7 @@ export function AboutStepPanel({ open, onOpenChange, n }: { open: boolean; onOpe
       }
     >
       <div className="grid gap-4 px-5 py-4 text-13">
-        <div className="grid gap-2.5 rounded-lg border border-line bg-navy-tint p-3.5">
+        <div className="grid gap-2.5 rounded-md border-1.5 border-line bg-navy-tint p-3.5">
           <b className="font-semibold">{s.title}</b>
           <p className="text-ink-2">{a.what}</p>
           {a.points.length > 0 && (

@@ -195,7 +195,7 @@ export function LibraryScreen({ portal }: { portal: Portal; title?: string }) {
         })}
       </section>
 
-      <section aria-label="Shelves" className="rounded-lg border border-line bg-surface px-1 pb-6 pt-2 sm:px-3">
+      <section aria-label="Shelves" className="rounded-md border-1.5 border-line bg-surface px-1 pb-6 pt-2 sm:px-3">
         {shelves.length === 0 && (
           <div className="grid justify-items-center gap-3 px-4 py-10 text-center">
             <span className="text-13.5 font-semibold">{s ? <>No book matches “{q.trim()}”</> : "No books on this shelf"}</span>
@@ -215,7 +215,7 @@ export function LibraryScreen({ portal }: { portal: Portal; title?: string }) {
             <div className="flex items-center gap-2 px-3">
               <span className={cn("h-2.5 w-2.5 flex-none rounded-[2px]", COVER[g.c.id])} aria-hidden />
               <h2 className="text-13.5 font-semibold">{g.c.id}</h2>
-              <span className="font-mono text-12 text-faint">{g.books.length}</span>
+              <span className=" text-12 text-faint">{g.books.length}</span>
             </div>
             <div className="mx-3 grid grid-cols-[repeat(auto-fill,128px)] items-end justify-center gap-x-[18px] gap-y-10 px-1 pt-[22px] sm:justify-start sm:px-4" style={PLANK}>
               {g.books.map((b) => (
@@ -255,7 +255,7 @@ function ReaderTimeline({ steps }: { steps: NonNullable<ReturnType<typeof reader
               {t.state === "done" ? <Check size={16} strokeWidth={1.6} /> : i + 1}
             </span>
             <span className="text-13 font-semibold leading-snug">{t.label}</span>
-            <span className="font-mono text-11.5 text-muted">{t.when}</span>
+            <span className=" text-11.5 text-muted">{t.when}</span>
           </li>
         </React.Fragment>
       ))}

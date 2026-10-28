@@ -220,7 +220,7 @@ export function ClientRecordScreen({ id }: { id: string }) {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <section className="rounded-lg border border-line bg-raised px-4 pb-3 pt-4 md:px-5" aria-label={c.name}>
+      <section className="rounded-md border-1.5 border-line bg-raised px-4 pb-3 pt-4 md:px-5" aria-label={c.name}>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <ClientTile client={c} className="h-8 w-8 text-12" />
           <h1 className="min-w-0 truncate text-[20px] font-semibold leading-tight tracking-tight">{c.name}</h1>
@@ -332,7 +332,7 @@ export function ClientRecordScreen({ id }: { id: string }) {
         <SectionCard title="Notes" meta={String(notes.length)} flush>
           {notes.map((n) => (
             <ListRow key={n.id} className="items-start">
-              <span className="w-[64px] flex-none font-mono text-12 text-muted">{fmt(n.date)}</span>
+              <span className="w-[64px] flex-none text-12 text-muted">{fmt(n.date)}</span>
               <span className="min-w-0 flex-1">{n.text}</span>
               <span className="flex-none text-12.5 text-muted">{n.who}</span>
             </ListRow>

@@ -105,7 +105,7 @@ function Email({ portal }: { portal: StaffPortal }) {
       </div>
 
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="min-w-0 overflow-hidden rounded-lg border border-line bg-surface" aria-label="New message">
+        <section className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="New message">
           <Line label="From">
             <span className="block truncate font-mono text-13">{MAIL_ADDRESS[portal]}</span>
           </Line>

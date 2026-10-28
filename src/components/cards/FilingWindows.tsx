@@ -105,7 +105,7 @@ export function FilingWindows({
     const tick = level === "Days" ? true : level === "Weeks" ? d.getDay() === 1 : d.getDate() === 15;
     if (tick)
       ruler.push(
-        <span key={`t${n}`} className="absolute bottom-1 -translate-x-1/2 whitespace-nowrap font-mono text-[10.5px] text-faint" style={{ left: n * p + (level === "Days" ? p / 2 : 0) }}>
+        <span key={`t${n}`} className="absolute bottom-1 -translate-x-1/2 whitespace-nowrap text-[10.5px] text-faint" style={{ left: n * p + (level === "Days" ? p / 2 : 0) }}>
           {level === "Weeks" ? fmt(d) : d.getDate()}
         </span>,
       );

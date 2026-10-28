@@ -45,7 +45,7 @@ export function GrowthScreen() {
     <div className="grid grid-cols-1 gap-5">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {tiles.map((t) => (
-          <div key={t.label} className="rounded-lg border border-line bg-surface px-4 py-3.5">
+          <div key={t.label} className="rounded-md border-1.5 border-line bg-surface px-4 py-3.5">
             <b className={cn("block text-22 font-semibold leading-tight", t.cls)}>{t.n}</b>
             <span className="text-12.5 text-muted">{t.label}</span>
           </div>

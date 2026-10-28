@@ -498,7 +498,7 @@ function Record({ portal }: { portal: StaffPortal }) {
         <SectionCard title="Notes" meta={String(notes.length)} flush>
           {notes.map((n) => (
             <ListRow key={n.id} className="items-start">
-              <span className="w-[64px] flex-none font-mono text-12 text-muted">{fmt(n.date)}</span>
+              <span className="w-[64px] flex-none text-12 text-muted">{fmt(n.date)}</span>
               <span className="min-w-0 flex-1">{n.text}</span>
               <span className="flex-none text-12.5 text-muted">{n.who}</span>
             </ListRow>

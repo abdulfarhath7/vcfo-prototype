@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { StepMark } from "@/components/ui/StepMark";
 import { fmt } from "@/lib/dates";
 import { OwnerChip, type Owner } from "@/components/ui/Chip";
 
@@ -24,7 +25,7 @@ export function Thread({ steps, className }: { steps: ThreadStep[]; className?: 
         return (
           <li key={s.id} className={cn("relative grid grid-cols-[20px_minmax(0,1fr)] gap-x-3 pb-4 last:pb-0", s.state === "upcoming" && "opacity-50")}>
             {!last && <span className="absolute left-[9px] top-5 h-[calc(100%-20px)] border-l border-line" aria-hidden />}
-            <span
+            <StepMark state={s.state === "done" ? "done" : s.state === "current" ? "now" : "next"} size={20} /><span
               className={cn(
                 "grid h-5 w-5 place-items-center rounded-sm",
                 s.state === "done" && "bg-ok-soft text-ok",

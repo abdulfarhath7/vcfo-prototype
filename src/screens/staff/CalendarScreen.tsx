@@ -152,7 +152,7 @@ export function StaffCalendar({ events, clients, client, onClient, hrefFor, fili
     <div className="grid grid-cols-1 gap-4">
       <CalendarBar lead={lead} month={key} onMonth={setKey} now={nowKey} areas={areas} area={area} onArea={setArea} view={view} onView={setView} filingsHref={filingsHref} />
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 rounded-lg border border-line bg-surface p-3">
+        <div className="min-w-0 rounded-md border-1.5 border-line bg-surface p-3">
           {view === "month" && (
             <MonthCalendar
               year={year}

@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
-import { Check, Clock } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { StepMark } from "@/components/ui/StepMark";
 import { fmt, frac, TODAY } from "@/lib/dates";
 import { Chevron } from "@/components/ui/Chevron";
 
@@ -34,28 +34,14 @@ export interface GanttRow {
 const barCls: Record<BarKind, string> = {
   done: "bg-ok-mid",
   late: "bg-bad-mid",
-  cur: "bg-accent",
-  rest: "border border-dashed border-accent-line bg-accent-soft",
-  plan: "bg-idle-soft",
+  cur: "bg-primary",
+  rest: "hatch",
+  plan: "bg-raised shadow-[inset_0_0_0_1px_var(--line)]",
 };
 
-/** R-22: one status circle per row. Done green tick, current one blue clock circle, planned grey ring. */
+/** R-22 (ST5): one marker per row. Done green tick, current a ring with a blurple square, planned a dashed square. */
 export function StatusCircle({ status, className }: { status: RowStatus; className?: string }) {
-  return (
-    <span
-      className={cn(
-        "grid h-5 w-5 flex-none place-items-center rounded-sm",
-        status === "done" && "bg-ok-soft text-ok",
-        status === "current" && "bg-accent-soft text-accent",
-        status === "planned" && "shadow-[inset_0_0_0_1.5px_var(--line)]",
-        className,
-      )}
-      aria-label={status}
-    >
-      {status === "done" && <Check size={12} strokeWidth={2.4} />}
-      {status === "current" && <Clock size={12} strokeWidth={2} />}
-    </span>
-  );
+  return <StepMark state={status === "done" ? "done" : status === "current" ? "now" : "next"} size={20} className={className} label={status} />;
 }
 
 export interface GanttTimelineProps {
@@ -105,7 +91,7 @@ export function GanttTimeline({ start, end, ticks, rows, today = TODAY, wideName
               ))}
             </div>
             <span className="absolute -bottom-1.5 h-[22px] border-l-[1.5px] border-brand" style={{ left: todayX }}>
-              <span className="absolute -left-6 -top-[22px] rounded-sm bg-brand px-1.5 py-px text-[10.5px] font-bold text-white">Today</span>
+              <span className="absolute -left-6 -top-[22px] rounded-sm bg-brand px-1.5 py-px text-[10.5px] font-medium text-white">Today</span>
             </span>
           </div>
           <span />
@@ -116,12 +102,12 @@ export function GanttTimeline({ start, end, ticks, rows, today = TODAY, wideName
           return (
             <div key={r.id} className="border-t border-line-soft">
               <div
-                className={cn("grid h-row items-center px-4 md:px-5", cols, expandable && "cursor-pointer hover:bg-raised")}
+                className={cn("grid h-row items-center px-4 md:px-5", cols, expandable && "cursor-pointer hover:bg-hover")}
                 onClick={expandable ? () => setOpen(isOpen ? null : r.id) : undefined}
                 role={expandable ? "button" : undefined}
                 aria-expanded={expandable ? isOpen : undefined}
               >
-                <div className="flex min-w-0 items-center gap-2 text-13.5 font-semibold">
+                <div className="flex min-w-0 items-center gap-2 text-14 font-medium">
                   {expandable ? <Chevron open={isOpen} /> : <span className="w-4" />}
                   <StatusCircle status={r.status} />
                   <span className="min-w-0 truncate">
@@ -133,7 +119,7 @@ export function GanttTimeline({ start, end, ticks, rows, today = TODAY, wideName
                   {r.bars.map((b, i) => (
                     <span
                       key={i}
-                      className={cn("absolute top-1/2 h-4 -translate-y-1/2 rounded-[6px]", barCls[b.kind], b.kind === "late" && "rounded-l-none")}
+                      className={cn("absolute top-1/2 h-[14px] -translate-y-1/2 rounded-bar", barCls[b.kind], b.kind === "late" && "rounded-l-none")}
                       style={{ left: x(b.from), width: `calc(${x(b.to)} - ${x(b.from)})` }}
                     />
                   ))}

@@ -253,9 +253,9 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
                         <ol className="grid gap-1.5">
                           {a.phases.map((p, i) => (
                             <li key={p.name} className="flex items-center gap-2.5">
-                              <span className="grid h-5 w-5 flex-none place-items-center rounded-sm bg-raised font-mono text-11 text-muted">{i + 1}</span>
+                              <span className="grid h-5 w-5 flex-none place-items-center rounded-sm bg-raised text-11 text-muted">{i + 1}</span>
                               <span className="min-w-0 flex-1 truncate font-semibold">{p.name}</span>
-                              <span className="font-mono text-12 text-muted">{p.count}</span>
+                              <span className=" text-12 text-muted">{p.count}</span>
                               <Chip tone={p.tone}>{p.label}</Chip>
                             </li>
                           ))}
@@ -275,7 +275,7 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
                         <ol className="grid gap-1">
                           {a.sources.map((s, i) => (
                             <li key={s.label} className="flex items-center gap-2 text-12.5">
-                              <span className="grid h-4 w-4 place-items-center rounded-sm bg-accent-soft font-mono text-11 text-accent">{i + 1}</span>
+                              <span className="grid h-4 w-4 place-items-center rounded-sm bg-accent-soft text-11 text-accent">{i + 1}</span>
                               <a href={s.href} className="truncate font-semibold text-accent hover:underline" target={s.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
                                 {s.label}
                               </a>

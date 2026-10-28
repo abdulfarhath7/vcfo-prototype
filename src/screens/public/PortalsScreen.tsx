@@ -11,7 +11,7 @@ export function PortalsScreen() {
         <h1 className="text-22 font-semibold">VCFO Suite</h1>
         <span className="ml-auto font-mono text-12 text-muted">prototype · round 5</span>
       </div>
-      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="overflow-hidden rounded-md border-1.5 border-line bg-surface">
         {Object.values(PORTALS).map((p, i) => (
           <Link key={p.key} href={p.home} className={`flex h-14 min-w-0 items-center gap-3 px-4 hover:bg-raised ${i ? "border-t border-line-soft" : ""}`}>
             <Avatar name={p.person} size={30} />

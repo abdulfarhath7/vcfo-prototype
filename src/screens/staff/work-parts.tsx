@@ -592,7 +592,7 @@ export function PlanCalendar({
                 <div key={i} className={cn("min-h-[72px] border-b border-r border-line-soft px-2 py-1.5 [&:nth-child(7n)]:border-r-0", x.getMonth() !== 9 && "text-faint", isToday(x) && "bg-accent-soft")}>
                   <span className="flex items-center gap-1">
                     <b className={cn("font-semibold", isToday(x) && "text-accent")}>{x.getDate()}</b>
-                    {due.length > 0 && <span className={cn("ml-auto rounded-sm px-1 font-mono text-11 font-bold text-white", late ? "bg-bad-mid" : "bg-btn")}>{due.length}</span>}
+                    {due.length > 0 && <span className={cn("ml-auto rounded-sm px-1 text-11 font-bold text-white", late ? "bg-bad-mid" : "bg-btn")}>{due.length}</span>}
                   </span>
                   {due.slice(0, 2).map((t) => (
                     <button key={t.id} type="button" onClick={() => onOpen(t)} className="mt-1 block w-full truncate rounded-sm bg-raised px-1 text-left text-11 hover:underline">
@@ -840,7 +840,7 @@ export function WorkBoard({ portal, tasks, onOpen, notify }: { portal: StaffPort
       {BOARD_COLS.map((col) => {
         const items = tasks.filter((t) => boardColOf(t) === col.key);
         return (
-          <section key={col.key} className="min-w-0 rounded-lg border border-line bg-raised" aria-label={col.label}>
+          <section key={col.key} className="min-w-0 rounded-md border-1.5 border-line bg-raised" aria-label={col.label}>
             <header className="flex h-11 items-center gap-2 border-b border-line-soft px-4">
               <h2 className="text-13.5 font-semibold">{col.label}</h2>
               <Tag tone={col.key === "action" ? "warn" : col.key === "doing" ? "prog" : col.key === "done" ? "ok" : "idle"}>{items.length}</Tag>
@@ -1013,7 +1013,7 @@ export function WorkDrawer({
             <ul>
               {x.sessions.map((s) => (
                 <li key={s.when} className="flex items-center gap-3 border-t border-line-soft px-5 py-2 text-13">
-                  <span className="w-[150px] flex-none font-mono text-12 text-muted">{s.when}</span>
+                  <span className="w-[150px] flex-none text-12 text-muted">{s.when}</span>
                   <span className="min-w-0 flex-1 truncate">{s.text}</span>
                   {s.late && <Chip tone="warn">After span</Chip>}
                 </li>
@@ -1048,7 +1048,7 @@ export function WorkDrawer({
             <ul className="grid gap-2 text-13">
               {x.activity.map((a, i) => (
                 <li key={i}>
-                  <b className="font-semibold">{a.who}</b> {a.text} <span className="font-mono text-12 text-muted">· {a.when}</span>
+                  <b className="font-semibold">{a.who}</b> {a.text} <span className=" text-12 text-muted">· {a.when}</span>
                 </li>
               ))}
             </ul>

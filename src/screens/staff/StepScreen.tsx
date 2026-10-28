@@ -274,7 +274,7 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
       </div>
 
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <section className="min-w-0 overflow-hidden rounded-lg border border-line bg-surface" aria-label={tab === "forms" ? "Forms" : "Activity"}>
+        <section className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label={tab === "forms" ? "Forms" : "Activity"}>
           <header className="flex min-h-head items-center border-b border-line px-4 py-2 md:px-[18px]">
             <Tabs
               items={[

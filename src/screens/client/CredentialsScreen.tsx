@@ -257,7 +257,7 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
         {modeButtons("page")}
       </div>
       <IdTiles after={after} rev={rev} now={now} previewing={previewing} onReveal={(key, label) => setGate({ kind: "id", key, label })} onTab={setTab} directors={book.find((s) => s.id === "kyc")!.cols.length - 1} />
-      <section aria-label={sheet.label} className="min-w-0 rounded-lg border border-line bg-surface p-3 md:p-4">
+      <section aria-label={sheet.label} className="min-w-0 rounded-md border-1.5 border-line bg-surface p-3 md:p-4">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Tabs items={sheetTabs} value={tab} onChange={(k) => setTab(k as Sheet["id"])} size="md" className="hidden lg:inline-flex" />
           <Select aria-label="Sheet" size="md" value={tab} onChange={(e) => setTab(e.target.value as Sheet["id"])} options={sheetTabs.map((t) => ({ value: t.key, label: `${t.label} (${t.count})` }))} className="lg:hidden" />
@@ -283,7 +283,7 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
         <ul>
           {[...log].reverse().map((e, i) => (
             <li key={i} className="grid gap-0.5 border-b border-line-soft px-5 py-3 text-13">
-              <time className="font-mono text-12 text-muted">
+              <time className=" text-12 text-muted">
                 {fmt(e.at)} {e.at.getFullYear()} · {String(e.at.getHours()).padStart(2, "0")}:{String(e.at.getMinutes()).padStart(2, "0")}
               </time>
               <span>{e.text}</span>

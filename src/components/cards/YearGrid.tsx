@@ -47,7 +47,7 @@ export function YearGrid({ months, marks, legend, onPick, today = TODAY }: { mon
           >
             <span className="mb-1.5 flex items-center gap-2">
               <b className="flex-1 text-12.5 font-semibold">{m.short}</b>
-              <span className="font-mono text-11 text-muted">{inMonth.length}</span>
+              <span className=" text-11 text-muted">{inMonth.length}</span>
             </span>
             <span className="grid grid-cols-7 gap-0.5">
               {cells.map((n, i) => {

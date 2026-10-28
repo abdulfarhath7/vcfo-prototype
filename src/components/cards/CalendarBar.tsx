@@ -82,7 +82,7 @@ export function MonthNav({ value, onChange, now }: { value: string; onChange: (k
             if (anchor.current?.contains(e.target as Node)) e.preventDefault();
           }}
           aria-label="Choose month and year"
-          className="z-50 w-[304px] max-w-[calc(100vw-24px)] rounded-lg border border-line bg-surface p-3 text-ink shadow-pop outline-none"
+          className="z-50 w-[304px] max-w-[calc(100vw-24px)] rounded-md border-1.5 border-line bg-surface p-3 text-ink shadow-pop outline-none"
         >
           <div className="mb-2.5 flex items-center justify-between gap-1.5">
             <button

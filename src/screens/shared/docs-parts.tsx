@@ -234,7 +234,7 @@ export function DocDrillDialog({
                 {f.label}
               </Link>
             )}
-            <span className="hidden font-mono text-12 text-muted sm:inline">{fmt(f.date)}</span>
+            <span className="hidden text-12 text-muted sm:inline">{fmt(f.date)}</span>
             {isMissing(f) ? <MissingChip f={f} /> : <Chip tone={docStatusTone[f.status]}>{f.status}</Chip>}
             {isMissing(f) ? (
               !staff || f.status === "Requested" ? (
@@ -300,7 +300,7 @@ export function PreviewSheet({ f, open, onOpenChange, viewHref, onDownload }: { 
         <>
           <Chip tone={docStatusTone[f.status]}>{f.status}</Chip>
           <OwnerChip owner={f.from} label={f.from === "client" ? "Northwind" : undefined} />
-          <span className="font-mono">{fmt(f.date)}</span>
+          <span className="">{fmt(f.date)}</span>
         </>
       }
       footer={

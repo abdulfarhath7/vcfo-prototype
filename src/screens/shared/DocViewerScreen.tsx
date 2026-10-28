@@ -152,7 +152,7 @@ export function DocViewerScreen({ portal, id }: { portal: Portal; id: string }) 
               <button type="button" aria-label="Zoom out" disabled={zoom <= ZOOMS[0]} onClick={() => setZoom((z) => ZOOMS[Math.max(0, ZOOMS.indexOf(z) - 1)])} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
                 <Minus size={14} strokeWidth={1.6} />
               </button>
-              <button type="button" onClick={() => setZoom(100)} aria-label="Reset zoom" className="h-7 w-12 rounded-sm font-mono text-12 hover:bg-white/[.12]">
+              <button type="button" onClick={() => setZoom(100)} aria-label="Reset zoom" className="h-7 w-12 rounded-sm text-12 hover:bg-white/[.12]">
                 {zoom}%
               </button>
               <button type="button" aria-label="Zoom in" disabled={zoom >= ZOOMS[ZOOMS.length - 1]} onClick={() => setZoom((z) => ZOOMS[Math.min(ZOOMS.length - 1, ZOOMS.indexOf(z) + 1)])} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">

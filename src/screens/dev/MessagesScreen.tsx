@@ -42,7 +42,7 @@ function Timeline({ m }: { m: Message }) {
             <i className={`h-[8px] w-[8px] flex-none rounded-md ${t.tone === "ok" ? "bg-ok-mid" : t.tone === "bad" ? "bg-bad-mid" : "border border-faint"}`} aria-hidden />
             {t.label}
           </div>
-          {t.at && <div className="pl-4 font-mono text-12 text-muted">{stampSec(t.at)}</div>}
+          {t.at && <div className="pl-4 text-12 text-muted">{stampSec(t.at)}</div>}
         </li>
       ))}
     </ol>

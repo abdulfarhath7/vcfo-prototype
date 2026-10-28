@@ -27,7 +27,7 @@ export interface StripItem {
 /** R-18 number strip. Each number is a toggle: a click filters the table, a second click clears it. */
 export function FilterStrip({ items, value, onChange }: { items: StripItem[]; value: string; onChange: (key: string) => void }) {
   return (
-    <div role="group" aria-label="Filter by state" className="grid grid-cols-2 overflow-hidden rounded-lg border border-line bg-surface md:grid-cols-5">
+    <div role="group" aria-label="Filter by state" className="grid grid-cols-2 overflow-hidden rounded-md border-1.5 border-line bg-surface md:grid-cols-5">
       {items.map((s, i) => {
         const on = value === s.key;
         return (
@@ -113,10 +113,10 @@ export function GroupedGrid<T>({
   React.useEffect(() => setPage(1), [total]);
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-lg border border-line bg-surface" aria-label={title}>
+    <section className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label={title}>
       <header className="flex min-h-head flex-wrap items-center gap-2.5 border-b border-line-soft px-4 py-2 md:px-5">
         <IconTile Icon={iconFor(title).Icon} tone={iconFor(title).tone} />
-        <h2 className="whitespace-nowrap text-14.5 font-semibold">{title}</h2>
+        <h2 className="whitespace-nowrap text-15 font-medium">{title}</h2>
         <span className="inline-flex h-[20px] items-center rounded-sm bg-accent-soft px-1.5 font-mono text-11.5 font-semibold text-accent">{count ?? total}</span>
         {meta && <span className="ml-auto truncate text-12.5 text-muted">{meta}</span>}
         {right && <div className="ml-auto flex flex-wrap items-center gap-2">{right}</div>}
@@ -148,7 +148,7 @@ export function GroupedGrid<T>({
                       <button type="button" aria-expanded={e.open} onClick={() => setClosed({ ...closed, [e.g.id]: e.open })} className="flex h-9 w-full items-center gap-2 px-3 text-left text-13 font-semibold">
                         <i className={cn("h-1.5 w-1.5 flex-none rounded-[2px]", e.g.dot)} aria-hidden />
                         {e.g.label}
-                        <span className="font-mono text-12 font-semibold text-muted">{e.g.rows.length}</span>
+                        <span className=" text-12 font-semibold text-muted">{e.g.rows.length}</span>
                         <ChevronDown size={16} strokeWidth={1.6} className={cn("ml-auto text-muted transition-transform", !e.open && "-rotate-90")} aria-hidden />
                       </button>
                     </td>

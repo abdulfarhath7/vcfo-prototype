@@ -159,10 +159,10 @@ export function PracticeStrip({ portal }: { portal: StaffPortal }) {
     { n: p.filings.overdue, label: "Filings overdue", href: `${b}/compliances/filings` },
   ];
   return (
-    <nav className="flex flex-wrap overflow-hidden rounded-lg border border-line bg-surface" aria-label="Practice areas">
+    <nav className="flex flex-wrap overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="Practice areas">
       {items.map((x) => (
         <Link key={x.label} href={x.href} className="flex items-baseline gap-2.5 border-r border-line-soft px-4 py-2.5 last:border-r-0 hover:bg-raised md:px-5">
-          <b className="font-mono text-[18px] font-semibold leading-none">{x.n}</b>
+          <b className=" text-[18px] font-semibold leading-none">{x.n}</b>
           <span className="text-13 text-ink-2">{x.label}</span>
         </Link>
       ))}
@@ -392,7 +392,7 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
   if (view === "list") return <DataGrid title="Action queue" meta={`${all.length} open`} columns={listCols} rows={all} rowKey={(t) => t.id} rowHref={(t) => taskHref(portal, t)} pageSize={8} filters={head} />;
 
   return (
-    <div className="grid gap-0 overflow-hidden rounded-lg border border-line bg-surface">
+    <div className="grid gap-0 overflow-hidden rounded-md border-1.5 border-line bg-surface">
       <DataGrid inset title="Action queue" meta={`${all.length} open`} columns={mapCols} rows={rows} rowKey={(r) => r.client.id} pageSize={8} filters={head} />
       {pick && pickedCol && (
         <div className="border-t border-line">
@@ -886,7 +886,7 @@ export function TaskStatusCard({ portal, scope, title = "Task status", tasks }: 
                   <span className={cn("h-full", barFill.bad)} style={{ width: `${(x.late / max) * 100}%` }} />
                   <span className={cn("h-full", barFill.accent)} style={{ width: `${((x.n - x.late) / max) * 100}%` }} />
                 </span>
-                <span className="text-right font-mono text-11.5 text-muted">{x.n}</span>
+                <span className="text-right text-11.5 text-muted">{x.n}</span>
               </li>
             ))}
           </ul>

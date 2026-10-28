@@ -10,7 +10,7 @@ export const barFill: Record<BarTone, string> = {
   violet: "bg-violet-mid",
   teal: "bg-teal-mid",
   idle: "bg-faint",
-  navy: "bg-btn",
+  navy: "bg-primary",
 };
 
 /** 6 px progress bar on a quiet track, 3 px corners (R-44). */

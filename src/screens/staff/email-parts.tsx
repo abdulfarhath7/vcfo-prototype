@@ -104,7 +104,7 @@ export function RecipientField({ value, onChange, bare, initialQuery = "" }: { v
         />
       </div>
       {open && (clients.length > 0 || team.length > 0 || groups.length > 0) && (
-        <div className="absolute left-0 top-[calc(100%+4px)] z-30 w-full max-w-[380px] rounded-lg border border-line bg-surface p-1.5 shadow-pop" role="listbox" aria-label="Recipients">
+        <div className="absolute left-0 top-[calc(100%+4px)] z-30 w-full max-w-[380px] rounded-md border-1.5 border-line bg-surface p-1.5 shadow-pop" role="listbox" aria-label="Recipients">
           {clients.length > 0 && (
             <>
               <p className="px-2 pb-1 pt-1.5 text-11 font-semibold text-faint">Client</p>

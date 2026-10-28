@@ -131,7 +131,7 @@ function View({ id, n }: { id: string; n: number }) {
       <Chip fixed tone={formTone[f.state]}>
         {f.state === "Asked" ? `Asked · ${Math.max(0, Math.round((STAFF_TODAY.getTime() - f.date.getTime()) / 86400000))}d` : f.state === "Submitted" ? "Review" : f.state}
       </Chip>
-      <span className="w-12 flex-none font-mono text-12 text-muted">{fmt(f.date)}</span>
+      <span className="w-12 flex-none text-12 text-muted">{fmt(f.date)}</span>
       {f.state === "Asked" && (
         <Button size="sm" variant="outline" onClick={() => toast.show(`Reminder sent to ${c.contacts[0]?.name ?? c.short}: ${f.name}`)}>
           <Send size={14} strokeWidth={1.6} /> Send reminder
@@ -183,7 +183,7 @@ function View({ id, n }: { id: string; n: number }) {
             { k: "Status", v: <Chip tone={stepTone[status]}>{status}</Chip> },
             { k: "Owner", v: <OwnerChip owner={step.owner} label={step.owner === "client" ? c.short : undefined} /> },
             { k: "Phase", v: `Phase ${step.phase} · ${phasesOf(c)[step.phase - 1]} of ${PHASE_TOTALS[step.phase - 1]}` },
-            { k: "Window", v: <span className="font-mono text-13">From {fmt(new Date(from))} to {fmt(new Date(to))}</span> },
+            { k: "Window", v: <span className=" text-13">From {fmt(new Date(from))} to {fmt(new Date(to))}</span> },
             { k: "Manager", v: c.manager },
             { k: "Project lead", v: c.lead },
           ]}
@@ -241,9 +241,9 @@ function View({ id, n }: { id: string; n: number }) {
                 <Empty />
               ) : (
                 <>
-                  <div className="border-b border-line-soft px-4 py-2 font-mono text-11.5 font-semibold text-muted md:px-5">FILED · {filed.length}</div>
+                  <div className="border-b border-line-soft px-4 py-2 text-11.5 font-semibold text-muted md:px-5">FILED · {filed.length}</div>
                   {filed.map(formRow)}
-                  <div className="border-y border-line-soft px-4 py-2 font-mono text-11.5 font-semibold text-muted md:px-5">TO FILE · {toFile.length}</div>
+                  <div className="border-y border-line-soft px-4 py-2 text-11.5 font-semibold text-muted md:px-5">TO FILE · {toFile.length}</div>
                   {toFile.map(formRow)}
                   <div className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
                     <span className="mr-auto inline-flex items-center gap-1.5 text-12.5 text-muted">

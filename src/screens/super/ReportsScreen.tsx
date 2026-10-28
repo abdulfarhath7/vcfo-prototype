@@ -52,7 +52,7 @@ const mgrCols: Column<ManagerRow>[] = [
 function PartnerReport() {
   const nums = PARTNER_NUMBERS("Oct");
   return (
-    <article className="mx-auto grid w-full min-w-0 max-w-[900px] grid-cols-1 gap-6 [&>*]:min-w-0 rounded-lg border border-line bg-surface px-5 py-6 md:px-10 md:py-9">
+    <article className="mx-auto grid w-full min-w-0 max-w-[900px] grid-cols-1 gap-6 [&>*]:min-w-0 rounded-md border-1.5 border-line bg-surface px-5 py-6 md:px-10 md:py-9">
       <header className="flex items-start gap-4 border-b border-line pb-4">
         <div className="min-w-0 flex-1">
           <span className="text-12.5 text-muted">SBC · monthly partner report</span>

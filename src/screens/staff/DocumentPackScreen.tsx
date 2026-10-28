@@ -59,7 +59,7 @@ function Preview({ doc, portal, onDownload }: { doc: PackDoc; portal: StaffPorta
   const s = PACK_STATE[doc.state];
   const moa = doc.id === "moa";
   return (
-    <section className="grid gap-2.5 rounded-lg border border-line bg-surface p-3.5" aria-label="Preview">
+    <section className="grid gap-2.5 rounded-md border-1.5 border-line bg-surface p-3.5" aria-label="Preview">
       <div className="flex items-center gap-2">
         <b className="text-13 font-semibold">Preview</b>
         <Chip tone={s.tone}>{s.label}</Chip>
@@ -138,7 +138,7 @@ export function DocumentPackScreen({ portal }: { portal: StaffPortal }) {
         </Link>
       </div>
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <section className="min-w-0 overflow-hidden rounded-lg border border-line bg-surface" aria-label="Document pack">
+        <section className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="Document pack">
           {parts.map((p, pi) => {
             const done = p.docs.filter((x) => x.state === "ready").length;
             return (

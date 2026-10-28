@@ -233,7 +233,7 @@ export function ItemScreen({ kind, portal, id }: { kind: ItemKind; portal: Staff
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-      <section className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg border border-line bg-surface px-4 py-3.5 md:px-5" aria-label="Deadline band">
+      <section className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-md border-1.5 border-line bg-surface px-4 py-3.5 md:px-5" aria-label="Deadline band">
         <div className="flex min-w-0 flex-[1_1_auto] items-center gap-3.5">
           <Ring v={v} />
           <div className="min-w-0">

@@ -90,7 +90,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
       </div>
 
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <section className="min-w-0 overflow-hidden rounded-lg border border-line bg-surface" aria-label="Document preview">
+        <section className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="Document preview">
           <div className="flex flex-wrap items-center gap-1.5 border-b border-line-soft px-4 py-2.5">
             <b className="mr-2 text-13 font-semibold">Document preview</b>
             {(
@@ -124,7 +124,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
         </section>
 
         <aside className="grid gap-4">
-          <section className="rounded-lg border border-line bg-surface p-4" aria-label="Word document ready">
+          <section className="rounded-md border-1.5 border-line bg-surface p-4" aria-label="Word document ready">
             <div className="mb-3 flex items-center gap-2.5">
               <IconTile Icon={Check} tone="green" />
               <b className="text-13.5 font-semibold">Word document ready</b>
@@ -145,7 +145,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
             </div>
           </section>
 
-          <section className="rounded-lg border border-line bg-surface p-4" aria-label="Progress">
+          <section className="rounded-md border-1.5 border-line bg-surface p-4" aria-label="Progress">
             <ol className="relative grid gap-3">
               <span className="absolute bottom-2.5 left-[10px] top-2.5 w-px bg-line" aria-hidden />
               {STAGES.map((t, i) => (
@@ -187,7 +187,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
           </section>
 
           {(confirm || stage === 2) && (
-            <section className="rounded-lg border border-line bg-surface p-4" aria-label="Finalise board resolution">
+            <section className="rounded-md border-1.5 border-line bg-surface p-4" aria-label="Finalise board resolution">
               {stage === 1 && (
                 <>
                   <b className="block text-13.5 font-semibold">Finalise board resolution?</b>

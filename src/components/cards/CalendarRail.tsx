@@ -9,7 +9,7 @@ import { AreaShort, CAL_FILL, CAL_STATUSES, CAL_STROKE, CalDateTile, CalStatusCh
 // Old calendar right rail (index.html donutCard, focusCard variant A, agendaRail): status donut,
 // next deadline and coming up. The rail cards have no 52 px head, as in the old screen.
 
-const card = "rounded-lg border border-line bg-surface";
+const card = "rounded-md border-1.5 border-line bg-surface";
 
 /** Donut of the month with the four statuses. Click a ring part or a legend row to drill down. */
 export function CalDonutCard({ counts, label, onPick }: { counts: Record<CalStatus, number>; label: string; onPick?: (s: CalStatus | "all") => void }) {
@@ -58,13 +58,13 @@ export function CalDonutCard({ counts, label, onPick }: { counts: Record<CalStat
               <button type="button" onClick={() => onPick(s)} className="flex w-full items-center gap-2 text-left text-12.5 font-semibold hover:text-accent">
                 <i className={cn("h-2.5 w-2.5 flex-none rounded-[3px]", CAL_FILL[s])} aria-hidden />
                 <span className="flex-1">{s}</span>
-                <b className="font-mono font-semibold">{counts[s]}</b>
+                <b className=" font-semibold">{counts[s]}</b>
               </button>
             ) : (
               <span className="flex w-full items-center gap-2 text-12.5 font-semibold">
                 <i className={cn("h-2.5 w-2.5 flex-none rounded-[3px]", CAL_FILL[s])} aria-hidden />
                 <span className="flex-1">{s}</span>
-                <b className="font-mono font-semibold">{counts[s]}</b>
+                <b className=" font-semibold">{counts[s]}</b>
               </span>
             )}
           </li>
@@ -169,7 +169,7 @@ export function ComingUpCard({ items, onPick, title = "Coming up" }: { items: Co
     <div className={cn(card, "px-4 pb-1.5 pt-3.5")}>
       <div className="mb-1 flex items-center gap-2 border-b border-line-soft pb-2">
         <h2 className="flex-1 text-12.5 font-bold">{title}</h2>
-        <span className="font-mono text-11 text-muted">{items.length}</span>
+        <span className=" text-11 text-muted">{items.length}</span>
       </div>
       {days.length === 0 ? (
         <p className="py-3 text-13 text-faint">None</p>
