@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { ArrowRight, Check, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -111,10 +111,7 @@ export function NextDeadlineCard({ next, onOpen, onRemind, onTile, reminded }: {
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               <AreaShort title={next.areaTitle}>{next.area}</AreaShort>
               {next.state && (
-                <Chip tone={next.state.tone} dot={false} className="h-5 gap-1 px-1.5 text-11.5">
-                  {next.state.tone === "ok" && <Check size={11} strokeWidth={2.4} aria-hidden />}
-                  {next.state.label}
-                </Chip>
+                <Chip tone={next.state.tone}>{next.state.label}</Chip>
               )}
               {next.extra}
             </div>
@@ -168,7 +165,7 @@ export function ComingUpCard({ items, onPick, title = "Coming up" }: { items: Co
   return (
     <div className={cn(card, "px-4 pb-1.5 pt-3.5")}>
       <div className="mb-1 flex items-center gap-2 border-b border-line-soft pb-2">
-        <h2 className="flex-1 text-12.5 font-bold">{title}</h2>
+        <h2 className="flex-1 text-13 font-medium">{title}</h2>
         <span className=" text-11 text-muted">{items.length}</span>
       </div>
       {days.length === 0 ? (
@@ -182,8 +179,8 @@ export function ComingUpCard({ items, onPick, title = "Coming up" }: { items: Co
                 <li key={x.id} className="min-w-0">
                   <button type="button" onClick={() => onPick?.(x.id)} className="flex w-full min-w-0 items-center gap-2 text-left hover:text-accent">
                     <AreaShort title={x.areaTitle}>{x.area}</AreaShort>
-                    <span className="min-w-0 flex-1 truncate text-12.5 font-bold">{x.name}</span>
-                    <CalStatusChip status={x.status} className="flex-none" />
+                    <span className="min-w-0 flex-1 truncate text-13 font-medium">{x.name}</span>
+                    <CalStatusChip status={x.status} compact />
                   </button>
                 </li>
               ))}

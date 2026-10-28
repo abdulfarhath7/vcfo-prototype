@@ -50,13 +50,24 @@ export const CAL_STROKE: Record<CalStatus, string> = {
 const CHIP_TONE = { Filed: "ok", "Due soon": "warn", Overdue: "bad", Upcoming: "idle" } as const;
 
 /** Status chip with its icon (old chip(): filled glyph and label). */
-export function CalStatusChip({ status, className }: { status: CalStatus; className?: string }) {
+export function CalStatusChip({ status, className, compact }: { status: CalStatus; className?: string; compact?: boolean }) {
+  // Compact (narrow rails): the status dot only; the word stays for screen readers.
+  if (compact)
+    return (
+      <span title={status} className={cn("inline-flex h-6 w-6 flex-none items-center justify-center rounded-md", CAL_CHIP_SOFT[CHIP_TONE[status]], className)}>
+        <i className={cn("h-[7px] w-[7px] rounded-[2px]", CAL_CHIP_DOT[CHIP_TONE[status]])} aria-hidden />
+        <span className="sr-only">{status}</span>
+      </span>
+    );
   return (
     <Chip tone={CHIP_TONE[status]} fixed className={className}>
       {status}
     </Chip>
   );
 }
+
+const CAL_CHIP_SOFT: Record<string, string> = { ok: "bg-ok-soft", warn: "bg-warn-soft", bad: "bg-bad-soft", idle: "bg-idle-soft", prog: "bg-accent-soft", teal: "bg-teal-soft", violet: "bg-violet-soft" };
+const CAL_CHIP_DOT: Record<string, string> = { ok: "bg-ok-mid", warn: "bg-warn-mid", bad: "bg-bad-mid", idle: "bg-idle-mid", prog: "bg-accent-mid", teal: "bg-teal-mid", violet: "bg-violet-mid" };
 
 /** Short area tag for tight spots (IT, GST, PAY, FEMA, MCA): the R-43 swatch and the short word. */
 export function AreaShort({ children, title }: { children: React.ReactNode; title?: string }) {

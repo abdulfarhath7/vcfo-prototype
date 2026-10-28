@@ -63,7 +63,7 @@ export function GanttTimeline({ start, end, ticks, rows, today = TODAY, wideName
   const x = (d: Date) => `${frac(d, start, end) * 100}%`;
   const todayX = x(today);
   const cols = cn(
-    noCount ? "grid-cols-[minmax(140px,200px)_minmax(0,1fr)_16px]" : "grid-cols-[minmax(140px,200px)_minmax(0,1fr)_72px]",
+    noCount ? "grid-cols-[200px_minmax(0,1fr)_16px]" : "grid-cols-[200px_minmax(0,1fr)_72px]",
     wideNames
       ? noCount
         ? "md:grid-cols-[280px_minmax(0,1fr)_56px]"
@@ -79,13 +79,13 @@ export function GanttTimeline({ start, end, ticks, rows, today = TODAY, wideName
 
   return (
     <div className={cn("overflow-x-auto", className)}>
-      <div className="min-w-[560px]">
+      <div className="min-w-[680px] md:min-w-[560px]">
         <div className={cn("grid h-[46px] items-end px-4 pb-1.5 text-11.5 text-faint md:px-5", cols)}>
           <span />
           <div className="relative h-full">
             <div className="absolute inset-x-0 bottom-0 flex justify-between">
               {ticks.map((t) => (
-                <span key={t.getTime()} className="w-0 whitespace-nowrap">
+                <span key={t.getTime()} className="w-0 whitespace-nowrap max-md:[&:nth-child(even)]:invisible">
                   {fmt(t)}
                 </span>
               ))}
