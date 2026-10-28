@@ -12,9 +12,27 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
   const [drawer, setDrawer] = React.useState(false);
   const path = usePathname();
   React.useEffect(() => setDrawer(false), [path]);
+  const drawerRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     if (!drawer) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setDrawer(false);
+    const box = drawerRef.current;
+    box?.querySelector<HTMLElement>("a, button")?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawer(false);
+      // aria-modal: Tab stays inside the drawer.
+      if (e.key !== "Tab" || !box) return;
+      const items = [...box.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), input, select, [tabindex]:not([tabindex='-1'])")];
+      if (!items.length) return;
+      const first = items[0]!;
+      const last = items[items.length - 1]!;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [drawer]);
@@ -29,7 +47,7 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
         <Sidebar portal={portal} incorporated={incorporated} />
       </div>
       {drawer && (
-        <div className="fixed inset-x-0 bottom-0 top-[3px] z-[80] flex md:hidden" role="dialog" aria-modal="true">
+        <div ref={drawerRef} className="fixed inset-x-0 bottom-0 top-[3px] z-[80] flex md:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="h-full">
             <Sidebar portal={portal} incorporated={incorporated} onClose={() => setDrawer(false)} />
           </div>
