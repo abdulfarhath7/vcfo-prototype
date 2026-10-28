@@ -11,7 +11,7 @@ export const taskTone = {
   Overdue: "bad",
   "Due this week": "warn",
   "In progress": "prog",
-  "With client": "warn",
+  "With client": "teal",
   "Not started": "idle",
   Done: "ok",
 } as const satisfies Record<TaskStatus, string>;

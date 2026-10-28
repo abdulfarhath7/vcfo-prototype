@@ -85,23 +85,7 @@ export function ScopeTabs({ portal, value, onChange }: { portal: StaffPortal; va
     ["incorporating", "Incorporating", inc],
     ["compliance", "Compliance", cl.length - inc],
   ];
-  return (
-    <div role="tablist" aria-label="Client scope" className="inline-flex gap-0.5 rounded-md border border-navy-line bg-white/[.08] p-[3px]">
-      {items.map(([k, label, n]) => (
-        <button
-          key={k}
-          type="button"
-          role="tab"
-          aria-selected={value === k}
-          onClick={() => onChange(k)}
-          className={cn("inline-flex h-7 items-center gap-1.5 rounded-sm px-2.5 text-12 font-semibold", value === k ? "bg-white text-navy" : "text-navy-ink hover:text-white")}
-        >
-          {label}
-          <span className={cn("font-mono text-11", value === k ? "text-muted" : "text-navy-faint")}>{n}</span>
-        </button>
-      ))}
-    </div>
-  );
+  return <Tabs size="md" items={items.map(([key, label, n]) => ({ key, label, count: n }))} value={value} onChange={(k) => onChange(k as Scope)} />;
 }
 
 /** Client code tile: initials in the client colour (Main.dc.html av). */
@@ -157,11 +141,11 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
   const late = queue.filter((t) => t.status === "Overdue").length + filingCounts(clientsFor(portal).filter((c) => inScope(scope, c.id))).overdue;
   const week = weekItems(portal).filter((w) => w.kind !== "done" && inScope(scope, w.client)).length;
   return [
-    { label: "Action", value: queue.length, Icon: ListChecks, tone: "blue", href: `${b}/work` },
+    { label: "Needs action", value: queue.length, Icon: ListChecks, tone: "blue", href: `${b}/work` },
     { label: "Overdue", value: late, Icon: AlertTriangle, tone: "red", bad: late > 0, href: `${b}/work` },
-    { label: "Waiting", value: waitingOnClient(portal).filter((t) => inScope(scope, t.client)).length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length, Icon: User, tone: "amber", href: `${b}/work` },
-    { label: "This week", value: week, Icon: CalendarDays, tone: "teal", href: `${b}/work` },
-    { label: "Done today", value: DONE_TODAY[portal], Icon: CheckCheck, tone: "green" },
+    { label: "Waiting on clients", value: waitingOnClient(portal).filter((t) => inScope(scope, t.client)).length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length, Icon: User, tone: "amber", href: `${b}/work` },
+    { label: "Due this week", value: week, Icon: CalendarDays, tone: "teal", href: `${b}/work` },
+    { label: "Done today", value: DONE_TODAY[portal], Icon: CheckCheck, tone: "green", good: DONE_TODAY[portal] > 0 },
   ];
 }
 

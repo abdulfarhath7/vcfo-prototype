@@ -1060,7 +1060,7 @@ export function WorkDrawer({
 }
 
 /** New to-do dialog. */
-export function NewTodoDialog({ open, onOpenChange, clients, onAdd }: { open: boolean; onOpenChange: (v: boolean) => void; clients: Array<{ id: string; short: string }>; onAdd: (t: Todo) => void }) {
+export function NewTodoDialog({ open, onOpenChange, clients, onAdd, title = "New to-do" }: { open: boolean; onOpenChange: (v: boolean) => void; clients: Array<{ id: string; short: string }>; onAdd: (t: Todo) => void; title?: string }) {
   const [text, setText] = React.useState("");
   const [client, setClient] = React.useState("");
   // Staff today is Fri 16 Oct (STAFF_TODAY).
@@ -1069,7 +1069,7 @@ export function NewTodoDialog({ open, onOpenChange, clients, onAdd }: { open: bo
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title="New to-do"
+      title={title}
       size="sm"
       footer={
         <>

@@ -108,7 +108,7 @@ export function RegistrationsScreen() {
             segments={[
               { label: "Granted", value: count("Granted"), tone: "ok" },
               { label: "In progress", value: count("In progress"), tone: "accent" },
-              { label: "Waiting on client", value: count("Waiting on client"), tone: "warn" },
+              { label: "Waiting on client", value: count("Waiting on client"), tone: "teal" },
               { label: "Not started", value: count("Not started"), tone: "idle" },
             ]}
           />

@@ -82,7 +82,7 @@ const SEG_TONE = {
   Overdue: "bad",
   "Due this week": "warn",
   "In progress": "accent",
-  "With client": "violet",
+  "With client": "teal",
   "Not started": "idle",
   Done: "ok",
 } as const;

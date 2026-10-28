@@ -71,7 +71,7 @@ export const incDone = (c: StaffClient) => c.phases[0] + c.phases[1] + c.phases[
 
 export const healthTone = {
   "In progress": "prog",
-  "With client": "warn",
+  "With client": "teal",
   "Due this week": "warn",
   Overdue: "bad",
   Stuck: "bad",
@@ -100,7 +100,7 @@ export const REG_CODES: Record<string, string> = {
 export const REG_STATUS = {
   d: { label: "Granted", tone: "ok" },
   p: { label: "In progress", tone: "prog" },
-  w: { label: "With client", tone: "warn" },
+  w: { label: "With client", tone: "teal" },
   n: { label: "After COI", tone: "idle" },
   x: { label: "Not needed", tone: "idle" },
 } as const;

@@ -22,8 +22,8 @@ const KIND: Record<BellKind, { Icon: LucideIcon; tone: Tone }> = {
   reminder: { Icon: Clock, tone: "amber" },
 };
 
-const BTN = "relative grid h-9 w-9 place-items-center rounded-md border border-line bg-surface text-ink-2 hover:bg-raised";
-const FOOT = "text-12.5 font-semibold text-accent hover:underline";
+const BTN = "relative grid h-9 w-9 place-items-center rounded-md text-ink-2 hover:bg-ghost data-[state=open]:bg-ghost";
+const FOOT = "text-13 font-medium text-accent hover:underline";
 
 function Count({ n }: { n: number }) {
   if (!n) return null;

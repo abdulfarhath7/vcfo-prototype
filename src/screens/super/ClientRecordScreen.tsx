@@ -106,8 +106,8 @@ const filingCols: Column<Work>[] = [
 
 // The lead record's grids (s/lead/Overview.dc.html), so the super admin sees the same statuses as the lead.
 // The super portal has no registration or obligation page, so these rows do not link (the admin pages open the admin portal).
-const leadRegTone: Record<StaffRegistration["status"], ChipTone> = { Granted: "ok", "In progress": "prog", "Waiting on client": "warn", "Not started": "idle", "Not needed": "idle" };
-const leadObTone: Record<StaffObligation["status"], ChipTone> = { Filed: "ok", "In progress": "prog", "Waiting on client": "warn", Upcoming: "idle", Overdue: "bad" };
+const leadRegTone: Record<StaffRegistration["status"], ChipTone> = { Granted: "ok", "In progress": "prog", "Waiting on client": "teal", "Not started": "idle", "Not needed": "idle" };
+const leadObTone: Record<StaffObligation["status"], ChipTone> = { Filed: "ok", "In progress": "prog", "Waiting on client": "teal", Upcoming: "idle", Overdue: "bad" };
 const afterCoiChip = () => (
   <Chip tone="idle" fixed>
     After COI

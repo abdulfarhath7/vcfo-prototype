@@ -51,7 +51,7 @@ export type ObStatus = "Filed" | "In progress" | "Waiting on client" | "Upcoming
 export const OB_STATUS_TONE: Record<ObStatus, ChipTone> = {
   Filed: "ok",
   "In progress": "prog",
-  "Waiting on client": "warn",
+  "Waiting on client": "teal",
   Upcoming: "idle",
   Overdue: "bad",
 };
@@ -59,7 +59,7 @@ export const OB_STATUS_TONE: Record<ObStatus, ChipTone> = {
 export const OB_STATUS_BAR: Record<ObStatus, BarTone> = {
   Filed: "ok",
   "In progress": "accent",
-  "Waiting on client": "warn",
+  "Waiting on client": "teal",
   Upcoming: "idle",
   Overdue: "bad",
 };

@@ -34,6 +34,20 @@ export function toneFor(status: string): ChipTone {
   return "idle";
 }
 
+/** R-13: six words only. Long status variants collapse to the six; other words (Filed, Approved) stay. */
+const SIX: Array<[RegExp, string]> = [
+  [/^(due this week|due today|due tomorrow|due soon|due)$/i, "Due soon"],
+  [/^(with client|waiting on client|waiting on the client|waiting|pending with client)$/i, "Waiting"],
+  [/^(in progress|running|working)$/i, "In progress"],
+  [/^(overdue|late)$/i, "Overdue"],
+  [/^(done|complete|completed)$/i, "Done"],
+  [/^(not started)$/i, "Not started"],
+];
+export function statusWord(s: string) {
+  const hit = SIX.find(([re]) => re.test(s.trim()));
+  return hit ? hit[1] : s;
+}
+
 export interface ChipProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: ChipTone;
   /** R-13: exactly 104 px, so status columns line up. Without it the chip is at least 104 px. */
@@ -44,8 +58,10 @@ export interface ChipProps extends React.HTMLAttributes<HTMLSpanElement> {
 /** R-13: status chip. 24 px high, 6 px corners, 104 px wide, 7 px square dot, 12 px weight 500. */
 export function Chip({ tone, fixed, dot = true, className, children, ...rest }: ChipProps) {
   const t = tone ?? (typeof children === "string" ? toneFor(children) : "idle");
+  const word = typeof children === "string" ? statusWord(children) : children;
   return (
     <span
+      title={typeof children === "string" && word !== children ? children : undefined}
       className={cn(
         "inline-flex h-6 flex-none items-center gap-[7px] whitespace-nowrap rounded-md px-[9px] text-12 font-medium",
         tones[t],
@@ -55,7 +71,7 @@ export function Chip({ tone, fixed, dot = true, className, children, ...rest }: 
       {...rest}
     >
       {dot && <i className={cn("h-[7px] w-[7px] flex-none rounded-[2px]", dots[t])} aria-hidden />}
-      <span className="min-w-0 truncate">{children}</span>
+      <span className="min-w-0 truncate">{word}</span>
     </span>
   );
 }

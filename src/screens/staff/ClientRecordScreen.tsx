@@ -86,14 +86,14 @@ function phasesOf(c: StaffClient, portal: StaffPortal): Phase[] {
 const regTone: Record<StaffRegistration["status"], ChipTone> = {
   Granted: "ok",
   "In progress": "prog",
-  "Waiting on client": "warn",
+  "Waiting on client": "teal",
   "Not started": "idle",
   "Not needed": "idle",
 };
 const obTone: Record<StaffObligation["status"], ChipTone> = {
   Filed: "ok",
   "In progress": "prog",
-  "Waiting on client": "warn",
+  "Waiting on client": "teal",
   Upcoming: "idle",
   Overdue: "bad",
 };

@@ -33,7 +33,7 @@ export type RegStatus = "Granted" | "In progress" | "Waiting on client" | "Not s
 export const REG_STATUS_TONE: Record<RegStatus, ChipTone> = {
   Granted: "ok",
   "In progress": "prog",
-  "Waiting on client": "warn",
+  "Waiting on client": "teal",
   "Not started": "idle",
   "Not needed": "idle",
 };

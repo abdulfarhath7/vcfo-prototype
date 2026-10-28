@@ -20,7 +20,7 @@ import { waitWord } from "@/data/status-words";
 const HEALTH: Array<[Health, BarTone]> = [
   ["In progress", "accent"],
   ["Due this week", "teal"],
-  ["With client", "warn"],
+  ["With client", "teal"],
   ["Overdue", "bad"],
   ["Stuck", "violet"],
   ["Not started", "idle"],

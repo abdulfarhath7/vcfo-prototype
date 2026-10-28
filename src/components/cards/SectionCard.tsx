@@ -25,17 +25,17 @@ export interface SectionCardProps {
   titleLead?: React.ReactNode;
 }
 
-/** R-15, R-16: white card, 1 px line, 10 px corners, 52 px head with a tinted icon tile. */
+/** R-15, R-16: white card, 1.5 px line, 6 px corners, 52 px head with a 28 px tinted icon tile. Title 15 px weight 500. */
 export const SectionCard = React.forwardRef<HTMLElement, SectionCardProps>(function SectionCard({ title, meta, right, icon, flush, bare, className, bodyClassName, children, id, titleLead }, ref) {
   const { Icon, tone } = icon ?? iconFor(title);
   return (
-    <section ref={ref} id={id} className={cn("min-w-0 overflow-hidden rounded-lg border border-line bg-surface", className)} aria-label={title}>
+    <section ref={ref} id={id} className={cn("min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface", className)} aria-label={title}>
       {!bare && (
         <header className="flex min-h-head flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-line-soft px-4 py-2 md:px-5">
           <IconTile Icon={Icon} tone={tone} />
           {titleLead}
-          <h2 className="min-w-0 truncate text-14.5 font-semibold">{title}</h2>
-          {meta && <span className="truncate text-12.5 text-muted">{meta}</span>}
+          <h2 className="min-w-0 truncate text-15 font-medium">{title}</h2>
+          {meta && <span className="truncate text-13 text-muted">{meta}</span>}
           {right && <div className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">{right}</div>}
         </header>
       )}
@@ -51,7 +51,7 @@ export function Empty({ children = "None" }: { children?: React.ReactNode }) {
 
 /** Full-width list row with a hairline between rows (R-19). */
 export function ListRow({ children, className, href, onClick }: { children: React.ReactNode; className?: string; href?: string; onClick?: () => void }) {
-  const base = cn("flex items-center gap-3 border-t border-line-soft px-4 py-3 text-13.5 first:border-t-0 md:px-5", (href || onClick) && "hover:bg-raised", className);
+  const base = cn("flex items-center gap-3 border-t border-line-soft px-4 py-3 text-14 first:border-t-0 md:px-5", (href || onClick) && "hover:bg-hover", className);
   if (href)
     return (
       <Link href={href} className={base}>
@@ -70,7 +70,7 @@ export function ListRow({ children, className, href, onClick }: { children: Reac
 /** Small link in a card head: "Open incorporation ›". */
 export function HeadLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="inline-flex items-center gap-1 whitespace-nowrap text-13 font-semibold text-accent hover:underline">
+    <Link href={href} className="inline-flex items-center gap-1 whitespace-nowrap text-13 font-medium text-accent hover:underline">
       {children}
     </Link>
   );

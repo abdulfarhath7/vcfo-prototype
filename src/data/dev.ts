@@ -940,7 +940,7 @@ export const DOMAIN: DomainRecord[] = [
 ];
 
 export type TplStatus = "Approved" | "Waiting" | "Registered" | "In the app";
-export const TPL_TONE: Record<TplStatus, ChipTone> = { Approved: "ok", Waiting: "warn", Registered: "ok", "In the app": "idle" };
+export const TPL_TONE: Record<TplStatus, ChipTone> = { Approved: "ok", Waiting: "teal", Registered: "ok", "In the app": "idle" };
 
 export interface ChannelTemplate {
   id: string;

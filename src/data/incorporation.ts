@@ -19,7 +19,7 @@ export interface Step {
 
 export const stepTone: Record<StepStatus, ChipTone> = {
   Completed: "ok",
-  Waiting: "warn",
+  Waiting: "teal",
   "In progress": "prog",
   Upcoming: "idle",
   "Sent back": "bad",

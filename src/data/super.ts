@@ -91,7 +91,7 @@ export type Health = "In progress" | "With client" | "Due soon" | "Overdue" | "S
 
 export const HEALTH_TONE: Record<Health, ChipTone> = {
   "In progress": "prog",
-  "With client": "warn",
+  "With client": "teal",
   "Due soon": "warn",
   Overdue: "bad",
   Stuck: "bad",
@@ -238,7 +238,7 @@ export type WorkStatus = "In progress" | "With client" | "Due soon" | "Overdue" 
 
 export const WORK_TONE: Record<WorkStatus, ChipTone> = {
   "In progress": "prog",
-  "With client": "warn",
+  "With client": "teal",
   "Due soon": "warn",
   Overdue: "bad",
   Stuck: "bad",
@@ -699,7 +699,7 @@ export interface Service {
   owner: string;
 }
 
-export const SERVICE_TONE: Record<Service["status"], ChipTone> = { Active: "ok", "In progress": "prog", "With client": "warn", Done: "ok" };
+export const SERVICE_TONE: Record<Service["status"], ChipTone> = { Active: "ok", "In progress": "prog", "With client": "teal", Done: "ok" };
 
 /** Services SBC runs for one client, from its stage and registrations. */
 export function servicesOf(c: FirmClient): Service[] {

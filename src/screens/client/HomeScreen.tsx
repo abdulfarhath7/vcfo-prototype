@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { Chip } from "@/components/ui/Chip";
 import { AlertTriangle, Award, Building2, CalendarCheck, FileText, IdCard, ShieldCheck, Upload, User } from "lucide-react";
 import { TODAY, fmt } from "@/lib/dates";
 import { NORTHWIND } from "@/data/people";
@@ -145,7 +146,7 @@ export function HomeScreen() {
     { label: "Waiting on Northwind", value: 4, Icon: User, tone: "amber", href: "#dd-you" },
     { label: "With SBC", value: 1, Icon: Building2, tone: "blue", href: "#dd-sbc" },
     { label: "Overdue", value: 1, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
-    { label: "Documents in", value: 4, of: "/ 6", Icon: FileText, tone: "teal", href: "#dd-docs" },
+    { label: "Documents in", value: "4/6", bar: 67, Icon: FileText, tone: "teal", href: "#dd-docs" },
     { label: "Expected COI", value: fmt(COI_EXPECTED), Icon: Award, tone: "green", href: "/client/incorporation" },
   ];
   const statsAfter: StatItem[] = [
@@ -177,9 +178,8 @@ export function HomeScreen() {
     <button
       type="button"
       onClick={() => (after ? open(POST_DRILL, 2) : open(stepsDrill(), 1))}
-      className="inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-sm bg-white/[.12] px-2 text-12 font-semibold text-white hover:bg-white/[.2]"
+      className="whitespace-nowrap text-accent underline-offset-2 hover:underline"
     >
-      <i className="h-1.5 w-1.5 rounded-[2px] bg-current" aria-hidden />
       {after ? `Setup · ${done} of ${total} done` : `SPICe+ · ${done} of ${total} steps`} · {Math.round((done / total) * 100)}%
     </button>
   );
@@ -192,14 +192,24 @@ export function HomeScreen() {
         <GreetingCard
           date={today}
           name={NORTHWIND.name}
-          tag={progress}
+          lead={
+            <span className="grid h-[52px] w-[52px] flex-none place-items-center rounded-md bg-accent-soft text-18 font-medium text-accent shadow-tile" aria-hidden>
+              NT
+            </span>
+          }
+          tag={<Chip tone={after ? "ok" : "prog"}>{after ? "Incorporated" : "Incorporating"}</Chip>}
+          sub={
+            <>
+              Project lead · <b className="font-medium text-ink">{NORTHWIND.lead}</b> · {progress}
+            </>
+          }
           actions={
             <>
-              <Button variant="onNavy" onClick={report}>
+              <Button variant="secondary" onClick={report}>
                 Report
               </Button>
-              <Button variant="onNavyPrimary" onClick={() => setUpload(true)}>
-                <Upload size={16} strokeWidth={1.6} /> Upload documents
+              <Button variant="primary" onClick={() => setUpload(true)}>
+                <Upload size={16} strokeWidth={1.6} /> Upload document
               </Button>
             </>
           }

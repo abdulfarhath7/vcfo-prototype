@@ -1,6 +1,7 @@
 "use client";
 import { waitWord } from "@/data/status-words";
 import * as React from "react";
+import { Plus } from "lucide-react";
 import { STAFF_TODAY as TODAY, fmt } from "@/lib/dates";
 import { clientsFor } from "@/data/staff-clients";
 import { tasksFor, type StaffTask } from "@/data/staff-tasks";
@@ -14,6 +15,7 @@ import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { ClientName, TaskChip, personOf, taskHref, type StaffPortal } from "./parts";
 import { FirmClientsGrid, ManagersGrid } from "./grids";
 import { ClientSelect } from "./filters";
+import { NewTodoDialog } from "./work-parts";
 import {
   ActionQueue,
   ApprovalsWaiting,
@@ -22,7 +24,6 @@ import {
   InboxCard,
   PhaseProgress,
   PracticeAreas,
-  PracticeStrip,
   ScopeTabs,
   TaskStatusCard,
   WaitingOnClient,
@@ -92,6 +93,7 @@ function TeamTasks({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
 
 export function TodayScreen({ portal }: { portal: StaffPortal }) {
   const [scope, setScope] = React.useState<Scope>("all");
+  const [assign, setAssign] = React.useState(false);
   const toast = useUndoToast();
   const cl = clientsFor(portal);
   const showInc = scope !== "compliance" && cl.some((c) => c.stage === "incorporating");
@@ -101,7 +103,18 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
       date={TODAY}
       time="12:31 PM"
       name={`Good afternoon, ${personOf(portal)}`}
-      actions={portal === "admin" ? undefined : <ScopeTabs portal={portal} value={scope} onChange={setScope} />}
+      actions={
+        portal === "admin" ? undefined : (
+          <>
+            <ScopeTabs portal={portal} value={scope} onChange={setScope} />
+            {portal === "manager" && (
+              <Button variant="primary" onClick={() => setAssign(true)}>
+                <Plus size={16} strokeWidth={1.6} aria-hidden /> Assign task
+              </Button>
+            )}
+          </>
+        )
+      }
       stats={todayStats(portal, scope)}
     />
   );
@@ -126,7 +139,6 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
   return (
     <div className="grid grid-cols-1 gap-5">
       {greeting}
-      <PracticeStrip portal={portal} />
       {portal === "manager" && (
         <Cols>
           <Col>
@@ -149,6 +161,15 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
           <WaitingOnClient portal={portal} scope={scope} notify={toast.show} />
         </Col>
       </Cols>
+      {portal === "manager" && (
+        <NewTodoDialog
+          open={assign}
+          onOpenChange={setAssign}
+          title="Assign task"
+          clients={clientsFor(portal).map((c) => ({ id: c.id, short: c.short }))}
+          onAdd={(t) => toast.show(`Task assigned · ${t.text}`)}
+        />
+      )}
       {toast.node}
     </div>
   );

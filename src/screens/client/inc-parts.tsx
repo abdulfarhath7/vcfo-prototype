@@ -120,7 +120,7 @@ export function DrillModal({ spec, onClose }: { spec: DrillSpec | null; onClose:
 /** Steps grouped by status, for a drill. */
 export function statusGroups(list: Step[]): StatSeg[] {
   const groups: Array<[string, StatSeg["tone"], (s: Step) => boolean]> = [
-    ["Waiting", "warn", (s) => s.status === "Waiting" || s.status === "Sent back"],
+    ["Waiting", "teal", (s) => s.status === "Waiting" || s.status === "Sent back"],
     ["In progress", "accent", (s) => s.status === "In progress" && s.owner === "client"],
     ["With SBC", "accent", (s) => s.status === "In progress" && s.owner !== "client"],
     ["Done", "ok", (s) => s.status === "Completed"],
