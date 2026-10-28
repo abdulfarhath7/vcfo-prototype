@@ -150,7 +150,7 @@ export function HomeScreen() {
   const open = (spec: DrillSpec, tab = 0) => drill.open(spec, tab);
 
   const statsBefore: StatItem[] = [
-    { label: "Waiting on Northwind", value: 4, Icon: User, tone: "amber", href: "#dd-you" },
+    { label: "Waiting on Northwind", value: 4, sub: "1 overdue", Icon: User, tone: "amber", href: "#dd-you" },
     { label: "With SBC", value: 1, sub: SBC_STEP?.title, Icon: Building2, tone: "blue", href: "#dd-sbc" },
     { label: "Overdue", value: 1, sub: LATE_NEED?.title, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
     { label: "Documents in", value: "4/6", bar: 67, Icon: FileText, tone: "teal", href: "#dd-docs" },

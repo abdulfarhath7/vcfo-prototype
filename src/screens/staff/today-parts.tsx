@@ -9,7 +9,7 @@ import { clientById, clientsFor, PHASE_TOTALS, type StaffClient } from "@/data/s
 import { INBOX, queueFor, tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
 import { LEAD_STATS, MANAGERS, leadOpen, managerRows, UNASSIGNED } from "@/data/staff-team";
 import { APPROVALS } from "@/data/staff-tasks";
-import { TODOS, sameDay, type Todo } from "@/data/staff-work";
+import { DAY_SHORT, TODOS, WEEK, sameDay, type Todo } from "@/data/staff-work";
 import {
   DAYS_TO_COI,
   DONE_TODAY,
@@ -26,6 +26,7 @@ import {
   filingRow,
   phaseCells,
   practiceNumbers,
+  TODAY_NOTES,
   waitingOnClient,
   weekItems,
   type FilingCell,
@@ -160,10 +161,14 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
   if (portal === "admin") {
     const cl = clientsFor(portal).filter((c) => inScope(scope, c.id));
     const open = tasksFor(portal).filter((t) => t.status !== "Done" && inScope(scope, t.client));
+    const overdue = open.filter((t) => t.status === "Overdue");
+    const stuck = cl.filter((c) => c.health === "Stuck");
+    const lastDay = WEEK[WEEK.length - 1];
     return [
       {
         label: "Clients",
         value: cl.length,
+        sub: `${new Set(cl.map((c) => c.manager)).size} managers`,
         Icon: Building2,
         tone: "blue",
         href: `${b}/clients`,
@@ -171,6 +176,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "Incorporating",
         value: cl.filter((c) => c.stage === "incorporating").length,
+        sub: `${cl.filter((c) => c.stage === "incorporating" && c.pendingWith === "MCA").length} with MCA`,
         Icon: Rocket,
         tone: "violet",
         href: `${b}/clients`,
@@ -178,13 +184,15 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "In compliance",
         value: cl.filter((c) => c.stage === "compliance").length,
+        sub: `${cl.filter((c) => c.stage === "compliance" && c.pendingWith === "Client").length} waiting on client`,
         Icon: ShieldCheck,
         tone: "green",
         href: `${b}/clients`,
       },
       {
         label: "Overdue",
-        value: open.filter((t) => t.status === "Overdue").length,
+        value: overdue.length,
+        sub: `${new Set(overdue.map((t) => t.client)).size} clients`,
         Icon: AlertTriangle,
         tone: "red",
         bad: true,
@@ -192,7 +200,8 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       },
       {
         label: "Stuck",
-        value: cl.filter((c) => c.health === "Stuck").length,
+        value: stuck.length,
+        sub: stuck.length ? `longest ${Math.max(...stuck.map((c) => c.days))} days` : undefined,
         Icon: Clock,
         tone: "amber",
         bad: true,
@@ -201,6 +210,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "Due this week",
         value: open.filter((t) => t.status === "Due this week").length,
+        sub: `by ${DAY_SHORT[lastDay.getDay()]} ${fmt(lastDay)}`,
         Icon: CalendarDays,
         tone: "teal",
         href: `${b}/work`,
@@ -210,10 +220,18 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
   const queue = queueFor(portal).filter((t) => inScope(scope, t.client));
   const late = queue.filter((t) => t.status === "Overdue").length + filingCounts(clientsFor(portal).filter((c) => inScope(scope, c.id))).overdue;
   const week = weekItems(portal).filter((w) => w.kind !== "done" && inScope(scope, w.client)).length;
+  const notes = TODAY_NOTES[portal];
+  const lateTasks = queue.filter((t) => t.status === "Overdue");
+  const lateClients = new Set(lateTasks.map((t) => t.client)).size;
+  const waits = waitingOnClient(portal).filter((t) => inScope(scope, t.client));
+  const oldest = Math.max(0, ...waits.map((t) => t.days));
+  const lastDay = WEEK[WEEK.length - 1];
+  const full = scope === "all";
   return [
     {
       label: "Needs action",
       value: queue.length,
+      sub: full && notes.newToday ? `${notes.newToday} new today` : undefined,
       Icon: ListChecks,
       tone: "blue",
       href: `${b}/work`,
@@ -221,6 +239,9 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     {
       label: "Overdue",
       value: late,
+      sub: lateClients ? `${lateClients} ${lateClients === 1 ? "client" : "clients"}` : undefined,
+      spark: full ? notes.overdueTrend : undefined,
+      sparkTone: "bad",
       Icon: AlertTriangle,
       tone: "red",
       bad: late > 0,
@@ -228,7 +249,10 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     },
     {
       label: "Waiting on clients",
-      value: waitingOnClient(portal).filter((t) => inScope(scope, t.client)).length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length,
+      value: waits.length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length,
+      sub: oldest ? `oldest ${oldest} days` : undefined,
+      spark: full ? notes.waitingTrend : undefined,
+      sparkTone: "teal",
       Icon: User,
       tone: "amber",
       href: `${b}/work`,
@@ -236,12 +260,14 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     {
       label: "Due this week",
       value: week,
+      sub: `by ${DAY_SHORT[lastDay.getDay()]} ${fmt(lastDay)}`,
       Icon: CalendarDays,
       tone: "teal",
       href: `${b}/work`,
     },
     {
       label: "Done today",
+      sub: notes.doneWhat,
       value: DONE_TODAY[portal],
       Icon: CheckCheck,
       tone: "green",
@@ -847,11 +873,11 @@ export function ApprovalsWaiting({ portal, notify }: { portal: StaffPortal; noti
           <ListRow key={a.id}>
             {c && <ClientCodeTile c={c} size={30} />}
             <span className="min-w-0 flex-1">
-              <Link href={clientHref(portal, a.client)} className="block font-medium leading-snug text-ink hover:underline">
+              <Link href={clientHref(portal, a.client)} title={`${a.title} · sent by ${a.by}`} className="block truncate font-medium leading-snug text-ink hover:underline">
                 {a.title}
               </Link>
               <span className="block truncate text-12.5 text-muted">
-                {c?.short} · <span className={today ? "text-warn" : "text-accent"}>{today ? "Due today" : `Due ${fmt(a.sent)}`}</span> · {a.by.split(" ")[0]}
+                {c?.short} · <span className={today ? "text-warn" : "text-accent"}>{today ? "Due today" : `Due ${fmt(a.sent)}`}</span>
               </span>
             </span>
             <Button

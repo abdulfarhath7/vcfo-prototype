@@ -201,6 +201,16 @@ export function practiceNumbers(portal: StaffPortal) {
 /** Done today count for the greeting (Main.dc.html KPIs). */
 export const DONE_TODAY: Record<StaffPortal, number> = { lead: 2, manager: 2, admin: 6 };
 
+/**
+ * Home card sub lines and trends (R-18). Lead and manager share Bharath's queue, so they share these.
+ * Trends are the last seven working days, ending today. Admin has no history in the sample data.
+ */
+export const TODAY_NOTES: Record<StaffPortal, { newToday?: number; doneWhat?: string; overdueTrend?: number[]; waitingTrend?: number[] }> = {
+  lead: { newToday: 3, doneWhat: "GSTR-1 · PT", overdueTrend: [2, 2, 3, 3, 5, 4, 4], waitingTrend: [4, 5, 5, 7, 6, 6, 6] },
+  manager: { newToday: 3, doneWhat: "GSTR-1 · PT", overdueTrend: [2, 2, 3, 3, 5, 4, 4], waitingTrend: [4, 5, 5, 7, 6, 6, 6] },
+  admin: {},
+};
+
 /** Week strip default: today. */
 export const WEEK_TODAY = WEEK.findIndex((w) => sameDay(w, STAFF_TODAY));
 

@@ -20,6 +20,8 @@ export interface StatItem {
   sub?: string;
   /** Sparkline points. */
   spark?: number[];
+  /** Sparkline colour; default from bad/good, else blurple. */
+  sparkTone?: "bad" | "ok" | "teal" | "warn" | "accent";
   /** Small green progress bar under the number, in percent. */
   bar?: number;
   href?: string;
@@ -32,27 +34,29 @@ export function NumberStrip({ items, className, onWash }: { items: StatItem[]; c
       {items.map((s) => {
         const inner = (
           <>
-            <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <span className="flex items-start gap-1.5 text-13 font-medium leading-[18px] text-ink-2">
-                <s.Icon size={15} strokeWidth={1.6} className="mt-px flex-none text-muted" aria-hidden />
-                <span className="min-w-0">{s.label}</span>
-              </span>
-              <b className={cn("text-26 font-medium tabular-nums", s.bad ? "text-bad" : s.good ? "text-ok" : "text-ink")}>
-                {s.value}
-                {s.of && <small className="ml-1 text-14 font-medium text-muted">{s.of}</small>}
-              </b>
-              {s.bar !== undefined && (
-                <span className="block h-1 w-full max-w-[120px] overflow-hidden rounded-bar bg-line" aria-hidden>
-                  <i className="block h-full rounded-bar bg-ok-mid" style={{ width: `${s.bar}%` }} />
-                </span>
-              )}
-              {s.sub && <span className="truncate text-12.5 text-muted">{s.sub}</span>}
+            <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap text-13 font-medium text-ink-2">
+              <s.Icon size={15} strokeWidth={1.6} className="flex-none text-muted" aria-hidden />
+              <span className="truncate">{s.label}</span>
             </span>
-            {s.spark && <Spark points={s.spark} className={s.bad ? "text-bad-mid" : s.good ? "text-ok-mid" : "text-accent-mid"} />}
+            <span className="flex min-w-0 items-end gap-2.5">
+              <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <b className={cn("text-26 font-medium tabular-nums", s.bad ? "text-bad" : s.good ? "text-ok" : "text-ink")}>
+                  {s.value}
+                  {s.of && <small className="ml-1 text-14 font-medium text-muted">{s.of}</small>}
+                </b>
+                {s.bar !== undefined && (
+                  <span className="block h-1 w-full max-w-[120px] overflow-hidden rounded-bar bg-line" aria-hidden>
+                    <i className="block h-full rounded-bar bg-ok-mid" style={{ width: `${s.bar}%` }} />
+                  </span>
+                )}
+                {s.sub && <span className="truncate text-12.5 text-muted">{s.sub}</span>}
+              </span>
+              {s.spark && <Spark points={s.spark} className={SPARK[s.sparkTone ?? (s.bad ? "bad" : s.good ? "ok" : "accent")]} />}
+            </span>
           </>
         );
         const cls = cn(
-          "flex min-w-0 items-end gap-2.5 rounded-md px-4 py-3.5",
+          "flex min-w-0 flex-col justify-start gap-1.5 rounded-md px-4 py-3.5",
           onWash ? "border border-wash-tile-line bg-wash-tile shadow-tile" : "border-1.5 border-line bg-surface",
           s.href && "transition-colors hover:border-line-2",
         );
@@ -69,6 +73,8 @@ export function NumberStrip({ items, className, onWash }: { items: StatItem[]; c
     </div>
   );
 }
+
+const SPARK = { bad: "text-bad-mid", ok: "text-ok-mid", teal: "text-teal-mid", warn: "text-warn-mid", accent: "text-accent-mid" } as const;
 
 /** 68 x 30 sparkline in the colour of what it measures. */
 function Spark({ points, className }: { points: number[]; className?: string }) {
