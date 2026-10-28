@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { Bar } from "@/components/ui/Bar";
+import { FileBadge } from "@/components/ui/FileBadge";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { clientHref, stepHrefFor, type StaffPortal } from "./parts";
 
@@ -19,27 +20,20 @@ const ready = all.filter((x) => x.state === "ready");
 const needs = all.filter((x) => x.state === "needs" || x.state === "missing");
 const waiting = all.filter((x) => x.state === "waiting");
 
-/** The missing row is hatched, as in the old pack. */
-const HATCH: React.CSSProperties = { backgroundImage: "repeating-linear-gradient(135deg, var(--surface) 0 8px, var(--raised) 8px 16px)" };
-
 function DocRow({ doc, picked, onPreview, onDownload }: { doc: PackDoc; picked: boolean; onPreview: () => void; onDownload: () => void }) {
   const s = PACK_STATE[doc.state];
   const missing = doc.state === "missing";
   return (
-    <div
-      className={cn("grid grid-cols-[4px_36px_minmax(0,1fr)_auto] items-center gap-3 border-t border-line py-2.5 pr-4 md:grid-cols-[4px_36px_minmax(0,1fr)_130px_150px_68px]", picked && !missing && "bg-accent-soft")}
-      style={missing ? HATCH : undefined}
-    >
-      <span className={cn("self-stretch", doc.type === "DOCX" ? "bg-accent" : "bg-bad")} aria-hidden />
-      <span className={cn("grid h-10 w-[34px] place-items-center rounded-sm font-mono text-[8.5px] font-semibold", missing ? "border border-dashed border-faint text-faint" : "bg-raised text-muted")}>{doc.type}</span>
+    <div className={cn("grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-t border-line-soft px-4 py-2.5 md:grid-cols-[44px_minmax(0,1fr)_120px_150px_68px] md:px-5", picked && !missing && "bg-accent-soft")}>
+      {missing ? <span className="inline-flex h-6 w-11 items-center justify-center rounded-sm border-1.5 border-dashed border-line-2 text-11 text-faint">{doc.type}</span> : <FileBadge type={doc.type} />}
       <span className="min-w-0">
-        <b className="block truncate text-13 font-semibold">{doc.title}</b>
-        <span className="block truncate text-11.5 text-muted">{doc.sub}</span>
+        <b className={cn("block truncate text-14 font-medium", missing ? "text-muted" : "text-ink")}>{doc.title}</b>
+        <span className="block truncate text-12.5 text-muted">{doc.sub}</span>
         <span className="mt-1 block md:hidden">
           <Chip tone={s.tone}>{s.label}</Chip>
         </span>
       </span>
-      <span className="hidden truncate font-mono text-11 text-muted md:block">{doc.meta}</span>
+      <span className="hidden truncate text-13 text-muted md:block">{doc.meta}</span>
       <span className="hidden md:block">
         <Chip tone={s.tone}>{s.label}</Chip>
       </span>
@@ -59,14 +53,14 @@ function Preview({ doc, portal, onDownload }: { doc: PackDoc; portal: StaffPorta
   const s = PACK_STATE[doc.state];
   const moa = doc.id === "moa";
   return (
-    <section className="grid gap-2.5 rounded-md border-1.5 border-line bg-surface p-3.5" aria-label="Preview">
+    <section className="grid gap-3 rounded-md border-1.5 border-line bg-surface p-4" aria-label="Preview">
       <div className="flex items-center gap-2">
-        <b className="text-13 font-semibold">Preview</b>
+        <h2 className="text-15 font-medium">Preview</h2>
         <Chip tone={s.tone}>{s.label}</Chip>
-        <span className="ml-auto truncate text-11.5 text-muted">{moa ? `MOA · page 1 of ${MOA_PREVIEW.pages}` : `${doc.title} · page 1`}</span>
+        <span className="ml-auto truncate text-12.5 text-muted">{moa ? `MOA · page 1 of ${MOA_PREVIEW.pages}` : `${doc.title} · page 1`}</span>
       </div>
       <div className="flex justify-center rounded-md bg-raised p-4">
-        <div className="h-[400px] w-full max-w-[300px] overflow-hidden bg-white px-[26px] py-7 text-[10.5px] leading-normal text-navy" style={{ fontFamily: "Tinos, 'Times New Roman', serif" }}>
+        <div className="h-[400px] w-full max-w-[300px] overflow-hidden rounded-sm bg-white px-[26px] py-7 text-[10.5px] leading-normal text-navy shadow-[0_0_0_1px_var(--line)]" style={{ fontFamily: "Tinos, 'Times New Roman', serif" }}>
           {moa ? (
             <>
               <div className="text-center font-bold">
@@ -117,23 +111,25 @@ export function DocumentPackScreen({ portal }: { portal: StaffPortal }) {
   }, [zipped]);
 
   return (
-    <div className="grid gap-3.5">
-      <div className="flex flex-wrap items-center gap-2.5">
-        <Tag tone="ok">{ready.length} ready</Tag>
-        <Tag tone="warn">{needs.length} need inputs</Tag>
-        <Tag>{waiting.length} waiting for release</Tag>
-        <Button variant="primary" className="ml-auto" onClick={() => setZipped(true)}>
+    <div className="grid gap-4">
+      {/* R-02 plain head: 28 px title, the counts in a muted line, the one main button on the right. */}
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <div className="min-w-0 flex-[1_1_260px]">
+          <h1 className="text-28 font-medium leading-9 tracking-[-0.01em]">Document pack</h1>
+          <p className="flex flex-wrap items-center gap-1.5 pt-1">
+            <Tag tone="ok">{ready.length} ready</Tag>
+            <Tag tone="warn">{needs.length} need inputs</Tag>
+            <Tag>{waiting.length} waiting for release</Tag>
+          </p>
+        </div>
+        <Button variant="primary" onClick={() => setZipped(true)}>
           {zipped ? <Check size={16} strokeWidth={1.6} /> : <Download size={16} strokeWidth={1.6} />}
           {zipped ? `${ready.length} files in the .zip` : `Download ready (${ready.length}) as .zip`}
         </Button>
-      </div>
+      </header>
       <div className="flex flex-wrap items-center gap-2.5">
-        <Tabs
-          items={[{ key: "all", label: "All", count: all.length }, ...PACK.map((p) => ({ key: p.id, label: p.label, count: p.docs.length }))]}
-          value={part}
-          onChange={setPart}
-        />
-        <Link href={clientHref(portal, PACK_CLIENT)} className="text-12 font-semibold text-accent hover:underline">
+        <Tabs items={[{ key: "all", label: "All", count: all.length }, ...PACK.map((p) => ({ key: p.id, label: p.label, count: p.docs.length }))]} value={part} onChange={setPart} />
+        <Link href={clientHref(portal, PACK_CLIENT)} className="text-13 font-medium text-accent hover:underline">
           Not in the pack yet: Proposed Directors →
         </Link>
       </div>
@@ -143,10 +139,10 @@ export function DocumentPackScreen({ portal }: { portal: StaffPortal }) {
             const done = p.docs.filter((x) => x.state === "ready").length;
             return (
               <div key={p.id}>
-                <div className={cn("flex items-center gap-2.5 bg-raised px-4 py-2.5", pi > 0 && "border-t border-line")}>
-                  <b className="text-12 font-semibold uppercase tracking-[.07em]">{p.label}</b>
-                  <Bar pct={(done / p.docs.length) * 100} tone="ok" className="max-w-[160px] flex-1" />
-                  <span className="font-mono text-11 text-muted">
+                <div className={cn("flex items-center gap-2.5 bg-raised px-4 py-2.5 md:px-5", pi > 0 && "border-t-1.5 border-line")}>
+                  <b className="text-11.5 font-medium uppercase tracking-[.07em] text-ink-2">{p.label}</b>
+                  <Bar pct={(done / p.docs.length) * 100} tone="ok" height={8} className="max-w-[160px] flex-1 bg-surface" />
+                  <span className="text-12.5 text-muted">
                     {done} of {p.docs.length}
                   </span>
                 </div>

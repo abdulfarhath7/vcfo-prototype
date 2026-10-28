@@ -27,7 +27,7 @@ import { PortalLink } from "./comp-parts";
 
 const LONG_DOW = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const LONG_MON = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const STC: Record<CalStatus, BarTone> = { Overdue: "bad", "Due soon": "warn", Filed: "ok", Upcoming: "navy" };
+const STC: Record<CalStatus, BarTone> = { Overdue: "bad", "Due soon": "warn", Filed: "ok", Upcoming: "idle" };
 const addDays = (date: Date, n: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
 const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 const nameOf = (e: StaffEvent) => e.title.split(" · ")[0];
@@ -138,15 +138,7 @@ export function StaffCalendar({ events, clients, client, onClient, hrefFor, fili
     }
   }
 
-  const lead = (
-    <Select
-      aria-label="Company"
-      value={client}
-      onChange={(e) => onClient(e.target.value)}
-      className="flex-none [&_select]:h-8 [&_select]:text-13 [&_select]:text-ink"
-      options={[{ value: "", label: "All companies" }, ...clients.map((c) => ({ value: c.id, label: c.short }))]}
-    />
-  );
+  const lead = <Select aria-label="Company" value={client} onChange={(e) => onClient(e.target.value)} className="flex-none" options={[{ value: "", label: "All companies" }, ...clients.map((c) => ({ value: c.id, label: c.short }))]} />;
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -165,10 +157,10 @@ export function StaffCalendar({ events, clients, client, onClient, hrefFor, fili
                   <span className="flex items-center gap-2.5">
                     <CalDateTile date={day} status={worstStatus(list.map((e) => ({ status: e.cal })))} className="h-11 w-10" />
                     <span className="min-w-0">
-                      <b className="block text-14">
+                      <b className="block text-14 font-medium">
                         {LONG_DOW[day.getDay()]} {day.getDate()} {LONG_MON[day.getMonth()]}
                       </b>
-                      <span className="block text-11.5 font-bold text-muted">{list.length === 1 ? "1 filing" : `${list.length} filings`}</span>
+                      <span className="block text-12 text-muted">{list.length === 1 ? "1 filing" : `${list.length} filings`}</span>
                     </span>
                   </span>
                 );
@@ -184,8 +176,8 @@ export function StaffCalendar({ events, clients, client, onClient, hrefFor, fili
                         <>
                           <AreaShort>{AREA_SHORT[e.kind]}</AreaShort>
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate text-12.5 font-bold">{e.title}</span>
-                            <span className="flex min-w-0 items-center gap-1.5 text-11.5 text-muted">
+                            <span className="block truncate text-13.5 font-medium">{e.title}</span>
+                            <span className="flex min-w-0 items-center gap-1.5 text-12 text-muted">
                               {c && <ClientDot tone={c.tone} />}
                               <span className="truncate">{c?.short ?? e.period}</span>
                             </span>
@@ -196,7 +188,7 @@ export function StaffCalendar({ events, clients, client, onClient, hrefFor, fili
                       return (
                         <li key={e.id} className="border-t border-line-soft first:border-t-0">
                           {h ? (
-                            <Link href={h} className="flex items-center gap-2 px-4 py-2 hover:bg-raised">
+                            <Link href={h} className="flex items-center gap-2 px-4 py-2 hover:bg-hover">
                               {inner}
                             </Link>
                           ) : (

@@ -29,16 +29,17 @@ const CAT_DOT: Record<string, string> = { tax: "bg-accent", labour: "bg-ok-mid",
 const CELL: Record<Exclude<RowState, "bad">, { cls: string; Icon?: typeof Check }> = {
   done: { cls: "bg-ok-soft text-ok", Icon: Check },
   run: { cls: "bg-accent-soft text-accent", Icon: MoreHorizontal },
-  wait: { cls: "bg-warn-soft text-warn", Icon: AlertCircle },
+  wait: { cls: "bg-teal-soft text-teal", Icon: AlertCircle },
   none: { cls: "bg-raised text-faint" },
-  na: { cls: "border border-line-soft text-faint" },
+  na: { cls: "border-1.5 border-dashed border-line-2 text-faint" },
 };
-const HATCH: React.CSSProperties = { backgroundImage: "repeating-linear-gradient(45deg, transparent 0 4px, var(--line-soft) 4px 5px)" };
+/** Spectrum: waiting is teal (R-13). The data keeps its own tone; the screen shows teal. */
+const regTone = (st: keyof typeof REG_STATE) => (st === "wait" ? "teal" : REG_STATE[st].tone);
 
 function Cell({ state, href, tip }: { state: Exclude<RowState, "bad">; href?: string; tip: string }) {
   const c = CELL[state];
   const inner = (
-    <span className={cn("mx-auto grid h-6 w-9 place-items-center rounded-sm", c.cls)} style={state === "na" ? HATCH : undefined} title={tip} aria-label={tip}>
+    <span className={cn("mx-auto grid h-6 w-9 place-items-center rounded-sm", c.cls)} title={tip} aria-label={tip}>
       {c.Icon && <c.Icon size={14} strokeWidth={1.8} />}
     </span>
   );
@@ -53,14 +54,12 @@ function Cell({ state, href, tip }: { state: Exclude<RowState, "bad">; href?: st
 
 function Legend() {
   return (
-    <span className="hidden flex-wrap items-center gap-3 md:flex">
+    <span className="hidden flex-wrap items-center gap-3 text-12.5 md:flex">
       {(Object.keys(CELL) as Array<keyof typeof CELL>).map((s) => {
         const c = CELL[s];
         return (
           <span key={s} className="inline-flex items-center gap-1.5">
-            <span className={cn("grid h-4 w-5 place-items-center rounded-sm", c.cls)} style={s === "na" ? HATCH : undefined}>
-              {c.Icon && <c.Icon size={10} strokeWidth={2} />}
-            </span>
+            <span className={cn("grid h-4 w-5 place-items-center rounded-[3px]", c.cls)}>{c.Icon && <c.Icon size={10} strokeWidth={2} />}</span>
             {REG_STATE[s].label}
           </span>
         );
@@ -87,8 +86,8 @@ export function RegistrationsScreen({ portal }: { portal: StaffPortal }) {
 
   const strip: StripItem[] = [
     { key: "done", label: "Granted", value: count("done"), Icon: CircleCheck, tone: "green", valueClass: "text-ok" },
-    { key: "run", label: "In progress", value: count("run"), Icon: Clock, tone: "blue", valueClass: "text-accent" },
-    { key: "wait", label: "Waiting on client", value: count("wait"), Icon: User, tone: "amber", valueClass: "text-warn" },
+    { key: "run", label: "In progress", value: count("run"), Icon: Clock, tone: "blue" },
+    { key: "wait", label: "Waiting on client", value: count("wait"), Icon: User, tone: "amber" },
     { key: "none", label: "Not started", value: count("none"), Icon: CircleDashed, tone: "violet" },
     { key: "ren", label: "Renewals in 60 days", value: count("ren"), Icon: Calendar, tone: "teal" },
   ];
@@ -103,37 +102,39 @@ export function RegistrationsScreen({ portal }: { portal: StaffPortal }) {
       label: "Registration",
       render: (x) => (
         <span className="block min-w-0">
-          <b className="block truncate text-13 font-semibold">{x.reg.name}</b>
-          <span className="block truncate text-12 text-muted">{x.state === "na" ? `${x.clientName} · No contract labour yet` : x.clientName}</span>
+          <b className="block truncate text-14 font-medium text-ink">{x.reg.name}</b>
+          <span className="block truncate text-12.5 text-muted">{x.state === "na" ? `${x.clientName} · No contract labour yet` : x.clientName}</span>
         </span>
       ),
     },
-    { key: "auth", label: "Authority", width: 150, render: (x) => <span className="text-ink-2">{x.reg.auth}</span> },
-    { key: "num", label: "Number", width: 150, render: (x) => (x.num ? <span className={x.reg.id === "gst" ? "font-mono text-12.5" : "text-ink-2"}>{x.num}</span> : <span className="text-muted">{x.reg.form}</span>) },
-    { key: "status", label: "Status", width: 132, render: (x) => <Chip tone={REG_STATE[x.state as keyof typeof REG_STATE].tone} fixed>{REG_STATE[x.state as keyof typeof REG_STATE].label}</Chip> },
+    { key: "auth", label: "Authority", width: 150, className: "hidden md:table-cell", render: (x) => <span className="text-ink-2">{x.reg.auth}</span> },
+    { key: "num", label: "Number", width: 150, className: "hidden md:table-cell", render: (x) => (x.num ? <span className={x.reg.id === "gst" ? "font-mono text-12.5" : "text-ink-2"}>{x.num}</span> : <span className="text-muted">{x.reg.form}</span>) },
     {
-      key: "date",
-      label: "Date",
-      width: 140,
-      render: (x) => <span className={x.state === "wait" ? "font-semibold text-warn" : "text-muted"}>{x.state === "na" ? "Changed by Pranay" : x.date}</span>,
+      key: "status",
+      label: "Status",
+      width: 128,
+      render: (x) => (
+        <Chip tone={regTone(x.state as keyof typeof REG_STATE)} fixed>
+          {REG_STATE[x.state as keyof typeof REG_STATE].label}
+        </Chip>
+      ),
     },
+    { key: "date", label: "Date", width: 140, render: (x) => <span className={x.state === "wait" ? "font-medium text-teal" : "text-muted"}>{x.state === "na" ? "Changed by Pranay" : x.date}</span> },
   ];
 
   const gridRows = REG_CLIENTS.filter((c) => !client || c.id === client);
   const gridCols: Column<(typeof REG_CLIENTS)[number]>[] = [
-    { key: "client", label: "Client", width: 180, render: (c) => <b className="font-semibold">{c.name}</b> },
-    ...REG_TYPES.map(
-      (r): Column<(typeof REG_CLIENTS)[number]> => ({
-        key: r.id,
-        label: r.short,
-        align: "center",
-        render: (c) => {
-          const st = regState(c.id, r.id) as keyof typeof CELL;
-          const key = `${c.id}-${r.id}`;
-          return <Cell state={st} href={itemExists("reg", key) ? staffRegHref(portal, key) : undefined} tip={`${c.name} · ${r.name} · ${REG_STATE[st].label}`} />;
-        },
-      }),
-    ),
+    { key: "client", label: "Client", width: 180, render: (c) => <b className="font-medium text-ink">{c.name}</b> },
+    ...REG_TYPES.map((r): Column<(typeof REG_CLIENTS)[number]> => ({
+      key: r.id,
+      label: r.short,
+      align: "center",
+      render: (c) => {
+        const st = regState(c.id, r.id) as keyof typeof CELL;
+        const key = `${c.id}-${r.id}`;
+        return <Cell state={st} href={itemExists("reg", key) ? staffRegHref(portal, key) : undefined} tip={`${c.name} · ${r.name} · ${REG_STATE[st].label}`} />;
+      },
+    })),
   ];
 
   const head = (
@@ -183,6 +184,7 @@ export function RegistrationsScreen({ portal }: { portal: StaffPortal }) {
                 right={head}
                 columns={listCols}
                 groups={groups}
+                phoneFit
                 rowKey={(x) => x.key}
                 rowHref={hrefOf}
                 footer={
@@ -205,12 +207,8 @@ export function RegistrationsScreen({ portal }: { portal: StaffPortal }) {
               { label: "Granted", value: done.length },
             ]}
           />
-          <RailCard
-            title="Renewals and expiry"
-            count={REG_RENEWALS.length}
-            items={REG_RENEWALS.map((r) => ({ key: r.id, title: r.title, sub: r.auth, right: r.date, rightClass: r.soon ? "font-semibold text-warn" : undefined }))}
-          />
-          <RailCard title="Waiting on client" count={wait.length} items={wait.slice(0, 5).map((x) => ({ key: x.key, title: x.reg.name, sub: x.clientName, right: "4 days", rightClass: "font-semibold text-warn", href: hrefOf(x) }))} />
+          <RailCard title="Renewals and expiry" count={REG_RENEWALS.length} items={REG_RENEWALS.map((r) => ({ key: r.id, title: r.title, sub: r.auth, right: r.date, rightClass: r.soon ? "font-medium text-warn" : undefined }))} />
+          <RailCard title="Waiting on client" count={wait.length} items={wait.slice(0, 5).map((x) => ({ key: x.key, title: x.reg.name, sub: x.clientName, right: "4 days", rightClass: "font-medium text-teal", href: hrefOf(x) }))} />
           <RailCard title="Recently granted" count={Math.min(4, done.length)} items={done.slice(0, 4).map((x) => ({ key: x.key, title: x.reg.name, sub: `${x.clientName} · ${x.num}`, href: hrefOf(x) }))} />
           <RailCard title="Next to start" count={next.length} items={next.map((x) => ({ key: x.key, title: x.reg.name, sub: x.clientName }))} />
         </Col>

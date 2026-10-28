@@ -1,11 +1,13 @@
 "use client";
 import * as React from "react";
-import { Check, FileText, Upload } from "lucide-react";
+import { Check, Upload } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { CONTACTS } from "@/data/staff-clients";
+import { CONTACTS, clientById } from "@/data/staff-clients";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { IconTile } from "@/components/ui/IconTile";
+import { StepMark } from "@/components/ui/StepMark";
+import { SectionCard } from "@/components/cards/SectionCard";
+import { ClientTile } from "./grids";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { type StaffPortal } from "./parts";
 
@@ -27,7 +29,7 @@ function Page({ docKey, editable, onInput, pageRef }: { docKey: number; editable
       suppressContentEditableWarning
       onInput={onInput}
       aria-label="Board resolution text"
-      className="mx-auto min-h-[650px] w-full max-w-[600px] bg-white px-7 py-12 text-[12.5px] leading-[1.65] text-navy outline-none focus-visible:ring-2 focus-visible:ring-accent-line md:px-14"
+      className="mx-auto min-h-[650px] w-full max-w-[600px] rounded-sm bg-white px-7 py-12 text-[12.5px] leading-[1.65] text-navy shadow-[0_0_0_1px_var(--line)] outline-none focus-visible:ring-2 focus-visible:ring-accent-line md:px-14"
       style={{ fontFamily: "Tinos, 'Times New Roman', serif" }}
     >
       <h3 className="mb-4 text-center font-bold">CERTIFIED TRUE COPY OF THE RESOLUTION PASSED BY THE BOARD OF DIRECTORS OF LARKSPUR DATA GMBH</h3>
@@ -64,6 +66,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
   const fileRef = React.useRef<HTMLInputElement>(null);
   const editable = stage <= 1;
   const contact = CONTACTS[CLIENT];
+  const client = clientById(CLIENT);
 
   const fmtCmd = (cmd: "bold" | "italic" | "underline") => {
     page.current?.focus();
@@ -80,19 +83,24 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-      <div className="flex flex-wrap items-center gap-2.5">
-        <IconTile Icon={FileText} tone="blue" size={30} />
-        <Chip tone={stage >= 2 ? "ok" : "warn"} dot={false}>
+      {/* R-02 plain head: 28 px title, the client and step in a muted line, the stage chip on the right. */}
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {client && <ClientTile c={client} size={44} />}
+        <div className="min-w-0 flex-[1_1_260px]">
+          <h1 className="text-28 font-medium leading-9 tracking-[-0.01em]">Board resolution</h1>
+          <p className="text-13.5 text-muted">
+            Larkspur Analytics · <span className="font-mono text-13">Pre-2</span>
+          </p>
+        </div>
+        <Chip tone={stage >= 2 ? "ok" : "warn"} fixed>
           {["Generated", "Draft", "Finalized", "Sent", "Signed"][stage]}
         </Chip>
-        <span className="grid h-[22px] w-[26px] place-items-center rounded-sm bg-ok-soft text-[10px] font-bold text-ok">LA</span>
-        <span className="text-13.5 text-muted">Larkspur Analytics · Pre-2</span>
-      </div>
+      </header>
 
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="Document preview">
-          <div className="flex flex-wrap items-center gap-1.5 border-b border-line-soft px-4 py-2.5">
-            <b className="mr-2 text-13 font-semibold">Document preview</b>
+          <div className="flex min-h-head flex-wrap items-center gap-1.5 border-b border-line-soft px-4 py-2 md:px-5">
+            <h2 className="mr-2 text-15 font-medium">Document preview</h2>
             {(
               [
                 ["bold", "B", "Bold", "font-bold"],
@@ -108,13 +116,13 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
                 disabled={!editable}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => fmtCmd(cmd)}
-                className={cn("grid h-[30px] w-[30px] place-items-center rounded-md border border-line text-13 text-ink hover:bg-raised disabled:opacity-50", cls, marks[cmd] && "bg-raised")}
+                className={cn("grid h-[30px] w-[30px] place-items-center rounded-md border-1.5 border-line-2 text-14 text-ink hover:bg-hover disabled:opacity-50", cls, marks[cmd] && "border-accent-line bg-accent-soft text-accent")}
               >
                 {glyph}
               </button>
             ))}
-            <span className="ml-auto inline-flex items-center gap-1.5 text-12.5 text-muted">
-              <i className={cn("h-1.5 w-1.5 rounded-[2px]", dirty ? "bg-warn-mid" : "bg-ok-mid")} aria-hidden />
+            <span className="ml-auto inline-flex items-center gap-1.5 text-13 text-muted">
+              <i className={cn("h-[7px] w-[7px] rounded-[2px]", dirty ? "bg-warn-mid" : "bg-ok-mid")} aria-hidden />
               {dirty ? "Unsaved changes" : "Saved"}
             </span>
           </div>
@@ -124,12 +132,8 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
         </section>
 
         <aside className="grid gap-4">
-          <section className="rounded-md border-1.5 border-line bg-surface p-4" aria-label="Word document ready">
-            <div className="mb-3 flex items-center gap-2.5">
-              <IconTile Icon={Check} tone="green" />
-              <b className="text-13.5 font-semibold">Word document ready</b>
-            </div>
-            <div className="grid gap-2 pl-[38px]">
+          <SectionCard title="Word document ready" icon={{ Icon: Check, tone: "green" }}>
+            <div className="grid gap-2">
               <Button size="sm" className="justify-start" disabled={!dirty || !editable} onClick={() => reset("Changes saved")}>
                 Save changes
               </Button>
@@ -143,22 +147,15 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
                 Download Word document
               </Button>
             </div>
-          </section>
+          </SectionCard>
 
           <section className="rounded-md border-1.5 border-line bg-surface p-4" aria-label="Progress">
-            <ol className="relative grid gap-3">
-              <span className="absolute bottom-2.5 left-[10px] top-2.5 w-px bg-line" aria-hidden />
+            <ol className="flex flex-col">
               {STAGES.map((t, i) => (
-                <li key={t} className="relative flex items-center gap-2.5 text-13">
-                  <span
-                    className={cn(
-                      "grid h-[21px] w-[21px] flex-none place-items-center rounded-sm text-[10px] font-bold",
-                      i < stage ? "bg-ok text-white" : i === stage ? "bg-navy text-white ring-2 ring-navy ring-offset-2 ring-offset-surface" : "border border-dashed border-faint bg-surface text-faint",
-                    )}
-                  >
-                    {i < stage ? <Check size={11} strokeWidth={2.5} /> : i + 1}
-                  </span>
-                  <span className={cn(i === stage ? "font-semibold text-ink" : i < stage ? "text-ink" : "text-muted")}>{t}</span>
+                <li key={t} className={cn("relative -mx-2 flex items-center gap-2.5 rounded-md px-2 py-1.5 text-14", i === stage && "bg-hover")}>
+                  {i < STAGES.length - 1 && <span className={cn("absolute bottom-[-6px] left-[18px] top-[26px] w-[1.5px]", i < stage ? "bg-ok-mid" : "bg-line")} aria-hidden />}
+                  <StepMark state={i < stage ? "done" : i === stage ? "now" : "next"} size={20} className="relative z-[1]" />
+                  <span className={cn(i === stage ? "font-medium text-ink" : i < stage ? "text-ink" : "text-muted")}>{t}</span>
                 </li>
               ))}
             </ol>
@@ -190,8 +187,8 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
             <section className="rounded-md border-1.5 border-line bg-surface p-4" aria-label="Finalise board resolution">
               {stage === 1 && (
                 <>
-                  <b className="block text-13.5 font-semibold">Finalise board resolution?</b>
-                  <p className="text-12.5 text-muted">The client can see and download it after this.</p>
+                  <b className="block text-14 font-medium">Finalise board resolution?</b>
+                  <p className="text-13 text-muted">The client can see and download it after this.</p>
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <Button onClick={() => setConfirm(false)}>Cancel</Button>
                     <Button
@@ -208,8 +205,8 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
                   </div>
                 </>
               )}
-              <p className={cn("text-12.5 text-ink-2", stage === 1 && "mt-3 border-t border-line-soft pt-3")}>
-                <b className="font-semibold">Next:</b> Send board resolution to client?{" "}
+              <p className={cn("text-13 text-ink-2", stage === 1 && "mt-3 border-t border-line-soft pt-3")}>
+                <b className="font-medium">Next:</b> Send board resolution to client?{" "}
                 {stage === 2 ? (
                   <a
                     href={`mailto:${contact?.email ?? ""}?subject=${encodeURIComponent("Board resolution for signature")}`}
@@ -217,7 +214,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
                       setStage(3);
                       show("Sent to client · Outlook opened");
                     }}
-                    className="font-semibold text-accent hover:underline"
+                    className="font-medium text-accent hover:underline"
                   >
                     Send to client
                   </a>

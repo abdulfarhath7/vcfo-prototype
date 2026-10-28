@@ -10,6 +10,7 @@ import { clientById } from "@/data/staff-clients";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { StepMark } from "@/components/ui/StepMark";
 import { Chevron } from "@/components/ui/Chevron";
 import { FileBadge } from "@/components/ui/FileBadge";
 import { Checkbox, Input } from "@/components/ui/Input";
@@ -37,7 +38,12 @@ export function FoldingGroups({ groups, folded = [] }: { groups: TileGroup[]; fo
         const open = !closed[key];
         return (
           <div key={key} className="border-t border-line-soft first:border-t-0">
-            <button type="button" aria-expanded={open} onClick={() => setClosed({ ...closed, [key]: open })} className="flex w-full items-center gap-2 bg-raised px-4 py-1.5 text-left text-11.5 font-semibold text-faint hover:text-ink md:px-5">
+            <button
+              type="button"
+              aria-expanded={open}
+              onClick={() => setClosed({ ...closed, [key]: open })}
+              className="flex w-full items-center gap-2 bg-raised px-4 py-2 text-left text-11.5 font-medium uppercase tracking-[.07em] text-muted hover:text-ink md:px-5"
+            >
               <Chevron open={open} />
               {g.label}
               <span>{g.tiles.length}</span>
@@ -85,7 +91,7 @@ export function useListKeys(ref: React.RefObject<HTMLElement | null>, filterRef:
 
 /** The keyboard hint under a list. Hidden on phones. */
 export function KeyHint() {
-  const k = "rounded-sm border border-line px-1 font-mono text-11 text-muted";
+  const k = "rounded-sm border border-line px-1 text-11 text-muted";
   return (
     <span className="hidden items-center gap-1 text-12 text-faint md:inline-flex">
       <kbd className={k}>↑</kbd>
@@ -165,7 +171,7 @@ export function ProofDialog({ proof, onOpenChange }: { proof: Proof | null; onOp
             {files.map((f) => (
               <ListRow key={f}>
                 <FileBadge type="PDF" />
-                <span className="min-w-0 flex-1 truncate font-mono text-12.5">{f}</span>
+                <span className="min-w-0 flex-1 truncate text-13.5">{f}</span>
                 <Button size="iconSm" variant="ghost" aria-label={`Download ${f}`} onClick={() => toast.show(`Downloaded ${f}`)}>
                   <Download size={16} strokeWidth={1.6} />
                 </Button>
@@ -248,7 +254,6 @@ export function AssistCard({ portalName, form, onFiled }: { portalName: string; 
   return (
     <SectionCard
       title="File with VCFO Assist"
-      meta="Runs in your browser on the portal"
       icon={{ Icon: ScanLine, tone: "blue" }}
       flush
       right={
@@ -263,16 +268,14 @@ export function AssistCard({ portalName, form, onFiled }: { portalName: string; 
           const ok = i < at;
           const now = i === at;
           return (
-            <li key={t} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 md:px-5">
-              <span className={cn("grid h-5 w-5 flex-none place-items-center rounded-sm", ok ? "bg-ok-soft text-ok" : now ? "bg-accent-soft text-accent" : "shadow-[inset_0_0_0_1.5px_var(--line)]")} aria-hidden>
-                {ok ? <Check size={12} strokeWidth={2.4} /> : now ? <Loader2 size={12} strokeWidth={2} className="animate-spin motion-reduce:animate-none" /> : null}
-              </span>
+            <li key={t} className={cn("flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-14 first:border-t-0 md:px-5", now && "bg-hover")}>
+              <StepMark state={ok ? "done" : now ? "now" : "next"} size={20} />
               <span className="min-w-0 flex-1">
-                <span className={cn("block truncate", now ? "font-semibold" : "font-medium")}>{t}</span>
-                <span className="block text-12 text-muted">{ok ? `Done · 10:0${2 + i} am` : now ? "Working on it" : "Waiting"}</span>
+                <span className={cn("block truncate", now ? "font-medium text-ink" : "font-normal")}>{t}</span>
+                <span className="block text-12.5 text-muted">{ok ? `Done · 10:0${2 + i} am` : now ? "Working on it" : "Waiting"}</span>
               </span>
               {ok && (
-                <span className="flex-none rounded-sm border border-line px-1.5 py-0.5 font-mono text-11 text-muted" title="Screenshot of this page">
+                <span className="flex-none rounded-sm bg-raised px-1.5 py-0.5 text-12 text-muted" title="Screenshot of this page">
                   {short} · p{i + 1}
                 </span>
               )}
@@ -280,12 +283,12 @@ export function AssistCard({ portalName, form, onFiled }: { portalName: string; 
           );
         })}
       </ol>
-      <p className="border-t border-line-soft px-4 py-2.5 text-12.5 text-muted md:px-5">{ran ? "Replay kept in Audit · 5 screenshots" : "Nothing is submitted before the last step"}</p>
+      {ran && <p className="border-t border-line-soft px-4 py-2.5 text-13 text-muted md:px-5">Replay kept in Audit · 5 screenshots</p>}
       <Modal open={replay} onOpenChange={setReplay} title="VCFO Assist replay" sub={`${form} · 5 screenshots`} size="lg">
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {STEPS.map((t, i) => (
             <li key={t} className="grid gap-1.5">
-              <span className="grid aspect-[4/3] place-items-center rounded-md border border-line bg-raised font-mono text-12 text-muted">
+              <span className="grid aspect-[4/3] place-items-center rounded-md border-1.5 border-line bg-raised text-12.5 text-muted">
                 {short} · p{i + 1}
               </span>
               <span className="truncate text-12.5">{t}</span>
@@ -324,7 +327,7 @@ export function FromClientCard({ docs, details, confirmedBy, client }: { docs: I
               <div className="flex flex-wrap items-center gap-3 px-4 py-3 text-13.5 md:px-5">
                 <FileBadge type={x.type} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">{x.name}</span>
+                  <span className="block truncate font-medium">{x.name}</span>
                   <span className="block truncate text-12.5 text-muted">
                     {sent[x.id]
                       ? `Asked again · ${sent[x.id]}`
@@ -339,7 +342,7 @@ export function FromClientCard({ docs, details, confirmedBy, client }: { docs: I
                               : "SBC asks when this starts"}
                   </span>
                 </span>
-                <Chip tone={DOC_STATUS_TONE[st]} className="hidden sm:inline-flex">
+                <Chip tone={DOC_STATUS_TONE[st]} fixed className="hidden sm:inline-flex">
                   {st}
                 </Chip>
                 {st === "To review" && asking !== x.id && (
@@ -349,6 +352,7 @@ export function FromClientCard({ docs, details, confirmedBy, client }: { docs: I
                     </Button>
                     <Button
                       size="sm"
+                      variant="outline"
                       onClick={() => {
                         setAsking(x.id);
                         setReason("");
@@ -376,7 +380,7 @@ export function FromClientCard({ docs, details, confirmedBy, client }: { docs: I
                       setErr(false);
                     }}
                     placeholder="What should the client fix? For example: stamp missing on page 2"
-                    className="h-[30px] min-w-[200px] flex-1 text-13"
+                    className="min-w-[200px] flex-1"
                   />
                   <Button
                     size="sm"
@@ -393,7 +397,7 @@ export function FromClientCard({ docs, details, confirmedBy, client }: { docs: I
                   <Button size="sm" variant="ghost" onClick={() => setAsking(null)}>
                     Cancel
                   </Button>
-                  {err && <span className="w-full text-12.5 font-semibold text-bad">Enter a reason first</span>}
+                  {err && <span className="w-full text-13 font-medium text-bad">Enter a reason first</span>}
                 </div>
               )}
             </div>
@@ -410,25 +414,28 @@ export function FromClientCard({ docs, details, confirmedBy, client }: { docs: I
   );
 }
 
+/** R-28: mono only for identifiers (GSTIN, PAN, CIN, ARN, SRN): long runs of capitals and digits. */
+const isId = (v: string) => /^[A-Z0-9][A-Z0-9-]{7,}$/.test(v.trim()) && /\d/.test(v);
+
 /** "Filled by SBC": click a value to edit it. Save keeps the change (R-40: a plain setting saves as it changes). */
 export function SbcFieldsCard({ rows, locked }: { rows: Array<[string, string]>; locked?: boolean }) {
   const [vals, setVals] = React.useState<Record<string, string>>({});
   const [edit, setEdit] = React.useState<string | null>(null);
   return (
-    <SectionCard title="Filled by SBC" meta={locked ? "Locked after filing" : "Click a value to edit"}>
+    <SectionCard title="Filled by SBC" meta={locked ? "Locked after filing" : undefined}>
       <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
         {rows.map(([k, v]) => {
           const val = vals[k] ?? v;
           return (
             <div key={k} className="min-w-0">
-              <dt className="text-12 text-muted">{k}</dt>
-              <dd className="font-mono text-13">
+              <dt className="text-12.5 text-muted">{k}</dt>
+              <dd className={cn("text-14", isId(val) && "font-mono text-13.5")}>
                 {edit === k && !locked ? (
                   <Input
                     autoFocus
                     aria-label={k}
                     defaultValue={val === "-" ? "" : val}
-                    className="mt-0.5 h-[30px] font-mono text-13"
+                    className={cn("mt-0.5", isId(val) && "font-mono")}
                     onBlur={(e) => {
                       setVals({ ...vals, [k]: e.target.value.trim() || "-" });
                       setEdit(null);
@@ -456,12 +463,12 @@ export function SbcFieldsCard({ rows, locked }: { rows: Array<[string, string]>;
 export function NoteCard({ title, children, link }: { title: string; children: React.ReactNode; link?: { label: string; href: string } }) {
   return (
     <SectionCard title={title}>
-      <p className="text-13.5 leading-relaxed text-ink-2">
+      <p className="text-14 leading-relaxed text-ink-2">
         {children}
         {link && (
           <>
             {" "}
-            <Link href={link.href} className="font-semibold text-accent hover:underline">
+            <Link href={link.href} className="font-medium text-accent hover:underline">
               {link.label}
             </Link>
           </>
@@ -477,7 +484,7 @@ export function ReviewCard({ items, initial }: { items: string[]; initial: numbe
   return (
     <SectionCard title="Before filing" meta={`${on.filter(Boolean).length} of ${items.length} · staff only`} flush icon={{ Icon: Check, tone: "green" }}>
       {items.map((t, i) => (
-        <label key={t} className="flex cursor-pointer items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 md:px-5">
+        <label key={t} className="flex cursor-pointer items-center gap-3 border-t border-line-soft px-4 py-2.5 text-14 first:border-t-0 md:px-5">
           <Checkbox checked={on[i]} onChange={(v) => setOn(on.map((x, j) => (j === i ? v : x)))} label={t} />
           <span className={cn("min-w-0 flex-1", on[i] && "text-muted line-through")}>{t}</span>
         </label>

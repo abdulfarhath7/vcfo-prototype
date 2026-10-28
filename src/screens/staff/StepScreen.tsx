@@ -2,15 +2,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowRight, Calendar, Check, Clock, User } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { STAFF_TODAY as TODAY, fmt } from "@/lib/dates";
 import { PORTALS } from "@/data/nav";
-import { STEPS, PHASES, type StepStatus } from "@/data/incorporation";
+import { STEPS, PHASES, stepTone, type StepStatus } from "@/data/incorporation";
 import { clientById, CONTACTS } from "@/data/staff-clients";
 import { stepState, stepHistory, stepForm, stepDocs, assistText, fieldTone, type FormField, type FieldState } from "@/data/staff-steps";
 import { Button } from "@/components/ui/Button";
 import { Chip, Tag } from "@/components/ui/Chip";
+import { StepMark, type StepState, type StepTone } from "@/components/ui/StepMark";
 import { Field, Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Tabs } from "@/components/ui/Tabs";
@@ -21,7 +22,8 @@ import type { StaffPortal } from "./parts";
 import { AboutStepPanel } from "./step-parts";
 
 // Ported from reference/old-screens/s/lead/Step.dc.html. Lead, manager, admin and super admin share it (the old pages are the same).
-// K-27: the step code is "Step 7", not "Pre-7". R-11: picked tab is navy. R-15, R-16: card heads with a tile.
+// K-27: the step code is "Step 7", not "Pre-7". R-11: Forms and Activity are views of one step, so underline tabs (N4).
+// R-22: ST5 marks on the form rows and the phase rail. R-15, R-16: card heads with a tile.
 
 export type StepPortal = StaffPortal | "super";
 
@@ -34,49 +36,26 @@ const fromIso = (s: string) => {
   return new Date(y, m - 1, dd);
 };
 
-/** Status glyph of the step: the old 20 px circle next to the step code. */
-const STATUS_GLYPH: Record<StepStatus, { cls: string; Icon: typeof Check; label: string }> = {
-  Completed: { cls: "bg-ok text-surface", Icon: Check, label: "Done" },
-  Waiting: {
-    cls: "bg-accent text-surface",
-    Icon: ArrowRight,
-    label: "Waiting on the client",
-  },
-  "In progress": {
-    cls: "bg-btn text-white",
-    Icon: Clock,
-    label: "In progress",
-  },
-  "Sent back": {
-    cls: "bg-bad text-surface",
-    Icon: ArrowRight,
-    label: "Sent back",
-  },
-  Upcoming: { cls: "bg-faint text-surface", Icon: Clock, label: "Upcoming" },
+/** ST5 marks (R-22): done green tick, live a ring in the status colour, upcoming a dashed square. */
+const MARK: Record<StepStatus, { state: StepState; tone: StepTone }> = {
+  Completed: { state: "done", tone: "prog" },
+  Waiting: { state: "now", tone: "teal" },
+  "In progress": { state: "now", tone: "prog" },
+  "Sent back": { state: "now", tone: "bad" },
+  Upcoming: { state: "next", tone: "prog" },
 };
 
-/** Row glyph of a form field: green tick, blue arrow, red "!" for a review with a problem. */
+/** Row mark of a form field: accepted done, asked waiting (teal), review amber or red with a problem, not asked dashed. */
 function FieldGlyph({ f }: { f: FormField }) {
-  if (f.state === "Not asked") return <span className="h-5 w-5 rounded-sm border-[1.5px] border-dashed border-faint" aria-label="Not asked" />;
+  if (f.state === "Not asked") return <StepMark state="next" size={20} label="Not asked" />;
+  if (f.state === "Accepted") return <StepMark state="done" size={20} label="Accepted" />;
   const bad = f.state === "Review" && !!f.note;
-  const cls = f.state === "Accepted" ? "bg-ok" : bad ? "bg-bad" : f.state === "Review" ? "bg-warn" : "bg-accent";
-  return (
-    <span className={cn("grid h-5 w-5 place-items-center rounded-sm text-11 font-bold text-surface", cls)} aria-label={f.state}>
-      {f.state === "Accepted" ? <Check size={11} strokeWidth={3} /> : bad ? "!" : <ArrowRight size={11} strokeWidth={3} />}
-    </span>
-  );
+  return <StepMark state="now" size={20} tone={bad ? "bad" : f.state === "Review" ? "warn" : "teal"} label={f.state} />;
 }
 
-/** "rent-agreement-2026.pdf · 2.1 MB": file name in mono (R-28), the rest in the interface font. */
+/** "rent-agreement-2026.pdf · 2.1 MB". R-28: a file name is not an identifier, so it stays in the interface font. */
 function FileLine({ value }: { value: string }) {
-  const [head, ...rest] = value.split(" · ");
-  const isFile = /\.[a-z0-9]{2,4}$/i.test(head);
-  return (
-    <>
-      <span className={cn(isFile && "font-mono")}>{head}</span>
-      {rest.length > 0 && ` · ${rest.join(" · ")}`}
-    </>
-  );
+  return <>{value}</>;
 }
 
 function DropZone({ onFile }: { onFile: (name: string) => void }) {
@@ -84,7 +63,7 @@ function DropZone({ onFile }: { onFile: (name: string) => void }) {
   const [over, setOver] = React.useState(false);
   return (
     <span
-      className={cn("mt-1.5 flex h-10 items-center gap-1 rounded-md border border-dashed px-3 text-12", over ? "border-accent bg-accent-soft" : "border-faint bg-raised")}
+      className={cn("mt-1.5 flex h-10 items-center gap-1 rounded-md border-1.5 border-dashed px-3 text-13 text-muted", over ? "border-accent-mid bg-accent-soft" : "border-line-2")}
       onDragOver={(e) => {
         e.preventDefault();
         setOver(true);
@@ -98,7 +77,7 @@ function DropZone({ onFile }: { onFile: (name: string) => void }) {
       }}
     >
       Drop a file or
-      <button type="button" className="font-semibold text-accent hover:underline" onClick={() => ref.current?.click()}>
+      <button type="button" className="font-medium text-accent hover:underline" onClick={() => ref.current?.click()}>
         browse
       </button>
       <input
@@ -115,25 +94,25 @@ function DropZone({ onFile }: { onFile: (name: string) => void }) {
   );
 }
 
-/** One form row: glyph, name and detail, 120 px chip column, action column (old .fr grid). */
+/** One form row: ST5 mark, name and detail, 104 px chip column, action column (old .fr grid). */
 function FieldRow({ f, onChange, onState, onRemind }: { f: FormField; onChange: (v: string) => void; onState: (s: FieldState, note?: string) => void; onRemind: () => void }) {
   const days = f.note?.match(/\d+/)?.[0];
   return (
-    <div className="grid grid-cols-[28px_minmax(0,1fr)] items-center gap-x-3 gap-y-2 border-t border-line px-4 py-[11px] sm:grid-cols-[28px_minmax(0,1fr)_120px_150px] md:px-[18px]">
+    <div className="grid grid-cols-[24px_minmax(0,1fr)] items-center gap-x-3 gap-y-2 border-t border-line-soft px-4 py-3 sm:grid-cols-[24px_minmax(0,1fr)_104px_150px] md:px-5">
       <FieldGlyph f={f} />
       <span className="min-w-0">
-        <b className="block font-semibold">
+        <b className="block text-14 font-medium">
           {f.label}
           {f.required && f.state === "Asked" && <span className="text-bad"> *</span>}
         </b>
         {f.state === "Accepted" ? (
-          <span className="block text-11.5 text-muted">
+          <span className="block text-12.5 text-muted">
             <FileLine value={f.value} />
           </span>
         ) : f.kind === "text" && f.state !== "Not asked" ? (
-          <Input value={f.value} onChange={(e) => onChange(e.target.value)} aria-label={f.label} className="mt-1.5 h-8 text-13" />
+          <Input value={f.value} onChange={(e) => onChange(e.target.value)} aria-label={f.label} className="mt-1.5" />
         ) : f.state === "Review" ? (
-          <span className="block text-11.5 text-muted">
+          <span className="block text-12.5 text-muted">
             <FileLine value={f.value} />
             {f.date && ` · client submitted ${fmt(f.date)}`}
             {f.note && ` · ${f.note}`}
@@ -148,22 +127,22 @@ function FieldRow({ f, onChange, onState, onRemind }: { f: FormField; onChange: 
         ) : null}
       </span>
       <span className="col-start-2 flex flex-wrap items-center gap-2 sm:contents">
-        <Chip tone={fieldTone[f.state]} fixed>
+        <Chip tone={f.state === "Asked" ? "teal" : fieldTone[f.state]} fixed>
           {f.state === "Asked" && days ? `Asked · ${days}d` : f.state}
         </Chip>
         <span className="flex items-center gap-1">
-          {f.state === "Accepted" && <span className="font-mono text-11.5 text-muted">{f.date ? fmt(f.date) : ""}</span>}
+          {f.state === "Accepted" && <span className="text-13 text-muted">{f.date ? fmt(f.date) : ""}</span>}
           {f.state === "Asked" && (
-            <Button size="sm" variant="outline" className="h-7 text-11.5" onClick={onRemind}>
+            <Button size="sm" variant="outline" onClick={onRemind}>
               Send reminder
             </Button>
           )}
           {f.state === "Review" && (
             <>
-              <Button size="sm" variant="outline" className="h-7 px-2 text-11.5" onClick={() => onState("Accepted")}>
+              <Button size="sm" variant="soft" onClick={() => onState("Accepted")}>
                 Accept
               </Button>
-              <Button size="sm" variant="outline" className="h-7 px-2 text-11.5 text-bad" onClick={() => onState("Asked", "Sent back")}>
+              <Button size="sm" variant="outline" className="text-bad" onClick={() => onState("Asked", "Sent back")}>
                 Reject
               </Button>
             </>
@@ -174,7 +153,7 @@ function FieldRow({ f, onChange, onState, onRemind }: { f: FormField; onChange: 
   );
 }
 
-const groupHead = "bg-raised px-4 py-2 font-mono text-11 tracking-[.06em] text-faint md:px-[18px]";
+const groupHead = "bg-raised px-4 py-2 text-11.5 font-medium uppercase tracking-[.07em] text-muted md:px-5";
 
 export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n: number }) {
   const c = clientById(id);
@@ -184,10 +163,7 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
   const me = PORTALS[portal].person;
   const [status, setStatus] = React.useState<StepStatus>(base?.status ?? "Upcoming");
   const [win, setWin] = React.useState({ from: base?.from, to: base?.to });
-  const [editWin, setEditWin] = React.useState<{
-    from: string;
-    to: string;
-  } | null>(null);
+  const [editWin, setEditWin] = React.useState<{ from: string; to: string } | null>(null);
   const [fields, setFields] = React.useState<FormField[]>(() => (c && step ? stepForm(c, n) : []));
   const [history, setHistory] = React.useState<ThreadStep[]>(() => (c && step ? stepHistory(c, n) : []));
   const [tab, setTab] = React.useState("forms");
@@ -203,64 +179,60 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
   const phase = PHASES[step.phase - 1];
   const states = phaseSteps.map((s) => (s.n === n ? status : stepState(c, s.n).status));
   const docs = stepDocs(c, n);
-  const glyph = STATUS_GLYPH[status];
+  const mark = MARK[status];
 
   const patch = (fid: string, p: Partial<FormField>) => setFields((fs) => fs.map((x) => (x.id === fid ? { ...x, ...p } : x)));
   const log = (title: string, owner?: ThreadStep["owner"]) =>
     setHistory((h) => {
       const doneRows = h.filter((x) => x.state === "done");
       const rest = h.filter((x) => x.state !== "done");
-      return [
-        ...doneRows,
-        {
-          id: `l${Date.now()}`,
-          title,
-          state: "done",
-          date: TODAY,
-          by: me,
-          owner,
-        },
-        ...rest,
-      ];
+      return [...doneRows, { id: `l${Date.now()}`, title, state: "done", date: TODAY, by: me, owner }, ...rest];
     });
 
   return (
     <div className="grid grid-cols-1 gap-3.5">
-      {/* Compact head: step code, status glyph, "What's this?" */}
-      <div className="flex flex-wrap items-center gap-2.5">
-        <Tag tone="idle" className="font-mono">
-          Step {step.n}
-        </Tag>
-        <span className={cn("grid h-5 w-5 place-items-center rounded-sm", glyph.cls)} title={glyph.label} role="img" aria-label={glyph.label}>
-          <glyph.Icon size={11} strokeWidth={3} />
-        </span>
-        <Button size="sm" variant="outline" className="h-7 border-brand bg-warn-soft text-warn hover:bg-warn-soft hover:brightness-95" onClick={() => setAbout(true)}>
+      {/* R-02 plain head: step code, 28 px title, client and phase, the status chip, "What's this?" on the right. */}
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <StepMark state={mark.state} tone={mark.tone} label={status} />
+        <div className="min-w-0 flex-[1_1_280px]">
+          <h1 className="text-28 font-medium leading-9 tracking-[-0.01em]">{step.title}</h1>
+          <p className="flex flex-wrap items-center gap-x-2 text-13.5 text-muted">
+            <span className="font-mono text-13">Step {step.n}</span>
+            <span aria-hidden>·</span>
+            <span>{c.name}</span>
+            <span aria-hidden>·</span>
+            <span>{phase.short}</span>
+          </p>
+        </div>
+        <Chip tone={stepTone[status]} fixed>
+          {status}
+        </Chip>
+        <Button variant="outline" onClick={() => setAbout(true)}>
           What&apos;s this?
         </Button>
-      </div>
+      </header>
 
       {/* Window bar */}
-      <div className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-surface px-3 py-2">
+      <div className="flex flex-wrap items-center gap-2.5 rounded-md border-1.5 border-line bg-surface px-4 py-2.5">
         <Calendar size={15} strokeWidth={1.6} className="text-muted" aria-hidden />
-        <span className="text-12 text-muted">Window</span>
-        <span className="font-mono text-12 font-semibold">From {win.from ? fmt(win.from) : ""}</span>
+        <span className="text-13 text-muted">Window</span>
+        <span className="text-14 font-medium">From {win.from ? fmt(win.from) : ""}</span>
         <span className="text-muted" aria-hidden>
           →
         </span>
-        <span className="font-mono text-12 font-semibold">To {win.to ? fmt(win.to) : ""}</span>
+        <span className="text-14 font-medium">To {win.to ? fmt(win.to) : ""}</span>
         {!done && (
-          <Button size="sm" variant="outline" className="h-[26px] text-11.5" onClick={() => setEditWin({ from: iso(win.from), to: iso(win.to) })}>
+          <Button size="sm" variant="ghost" onClick={() => setEditWin({ from: iso(win.from), to: iso(win.to) })}>
             Edit
           </Button>
         )}
-        <span className="hidden h-[18px] w-px bg-line sm:block" aria-hidden />
-        <Link href={packHref(portal)} className="text-12 font-bold text-accent hover:underline">
+        <Link href={packHref(portal)} className="text-13 font-medium text-accent hover:underline">
           Open in document pack →
         </Link>
         <Button
           size="sm"
           variant="outline"
-          className="ml-auto h-[26px] text-11.5"
+          className="ml-auto"
           onClick={() => {
             try {
               navigator.clipboard?.writeText(assistText(c, n)).catch(() => undefined);
@@ -275,24 +247,24 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
 
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label={tab === "forms" ? "Forms" : "Activity"}>
-          <header className="flex min-h-head items-center border-b border-line px-4 py-2 md:px-[18px]">
-            <Tabs
-              items={[
-                { key: "forms", label: "Forms", count: fields.length },
-                { key: "activity", label: "Activity", count: history.length },
-              ]}
-              value={tab}
-              onChange={setTab}
-            />
-          </header>
+          <Tabs
+            variant="underline"
+            className="px-4 pt-1.5 md:px-5"
+            items={[
+              { key: "forms", label: "Forms", count: fields.length },
+              { key: "activity", label: "Activity", count: history.length },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
           {tab === "forms" ? (
             <>
               {fields.length === 0 && <Empty />}
-              {filed.length > 0 && <h3 className={groupHead}>FILED · {filed.length}</h3>}
+              {filed.length > 0 && <h3 className={groupHead}>Filed · {filed.length}</h3>}
               {filed.map((f) => (
                 <FieldRow key={f.id} f={f} onChange={(v) => patch(f.id, { value: v })} onState={(st, note) => patch(f.id, { state: st, note, date: TODAY })} onRemind={() => toast.show(`Reminder sent for ${f.label}`)} />
               ))}
-              {toFile.length > 0 && <h3 className={cn(groupHead, "border-t border-line")}>TO FILE · {toFile.length}</h3>}
+              {toFile.length > 0 && <h3 className={cn(groupHead, "border-t border-line-soft")}>To file · {toFile.length}</h3>}
               {toFile.map((f) => (
                 <FieldRow
                   key={f.id}
@@ -310,9 +282,9 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
                   }}
                 />
               ))}
-              <footer className="flex flex-wrap items-center gap-2 border-t border-line bg-raised px-4 py-3 md:px-[18px]">
-                <span className="inline-flex items-center gap-1.5 text-12 text-muted">
-                  <i className="h-[7px] w-[7px] rounded-md bg-ok" aria-hidden />
+              <footer className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
+                <span className="inline-flex items-center gap-1.5 text-13 text-muted">
+                  <i className="h-[7px] w-[7px] rounded-[2px] bg-ok-mid" aria-hidden />
                   Draft saved
                 </span>
                 <span className="flex-1" />
@@ -343,29 +315,9 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
                       variant="primary"
                       onClick={() => {
                         const before = { fields, history };
-                        setFields(
-                          fields.map((f) =>
-                            f.state === "Accepted"
-                              ? f
-                              : {
-                                  ...f,
-                                  state: "Accepted",
-                                  date: TODAY,
-                                  note: undefined,
-                                },
-                          ),
-                        );
+                        setFields(fields.map((f) => (f.state === "Accepted" ? f : { ...f, state: "Accepted", date: TODAY, note: undefined })));
                         setStatus("Completed");
-                        setHistory((h) => [
-                          ...h.filter((x) => x.state === "done"),
-                          {
-                            id: "fin",
-                            title: "Step complete",
-                            state: "done",
-                            date: TODAY,
-                            by: me,
-                          },
-                        ]);
+                        setHistory((h) => [...h.filter((x) => x.state === "done"), { id: "fin", title: "Step complete", state: "done", date: TODAY, by: me }]);
                         toast.show(`Step ${n} marked complete`, () => {
                           setFields(before.fields);
                           setHistory(before.history);
@@ -380,50 +332,42 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
               </footer>
             </>
           ) : (
-            <div className="px-4 py-4 md:px-[18px]">
+            <div className="px-4 py-4 md:px-5">
               <Thread steps={history} />
             </div>
           )}
         </section>
 
         <div className="grid min-w-0 grid-cols-1 gap-3.5">
-          <SectionCard title={step.phase === 2 ? "SPICe+ Part B" : phase.name} meta={`${states.filter((x) => x === "Completed").length} of ${phaseSteps.length}`} bodyClassName="px-4 py-3">
-            <div className="relative">
-              <span className="absolute bottom-3.5 left-[11px] top-3.5 w-0.5 bg-line" aria-hidden />
+          <SectionCard title={step.phase === 2 ? "SPICe+ Part B" : phase.name} meta={`${states.filter((x) => x === "Completed").length} of ${phaseSteps.length}`} bodyClassName="px-4 py-3 md:px-4">
+            <ol className="flex flex-col">
               {phaseSteps.map((s, i) => {
                 const st = states[i];
                 const cur = s.n === n;
+                const m = MARK[st];
                 const who = s.owner === "client" ? "Client" : s.owner === "mca" ? "MCA" : "Project lead";
                 return (
-                  <Link
-                    key={s.n}
-                    href={stepHref(portal, c.id, s.n)}
-                    aria-current={cur ? "step" : undefined}
-                    className={cn("relative grid grid-cols-[24px_minmax(0,1fr)_16px] items-center gap-2.5 py-1.5 text-12.5 hover:underline", cur && "-mx-1.5 rounded-md bg-warn-soft px-1.5")}
-                  >
-                    <span
-                      className={cn(
-                        "relative z-[1] grid h-[22px] w-[22px] place-items-center rounded-sm text-[10px] font-extrabold",
-                        st === "Completed" ? "bg-ok text-surface" : cur ? "bg-btn text-white ring-[3px] ring-warn-mid" : "border-[1.5px] border-dashed border-faint bg-surface text-faint",
-                      )}
-                    >
-                      {st === "Completed" ? <Check size={11} strokeWidth={3} /> : s.n}
-                    </span>
-                    <span className={cn("min-w-0 truncate", cur && "font-bold")}>{s.title}</span>
-                    <User size={14} strokeWidth={1.6} className={s.owner === "client" ? "text-faint" : "text-ink"} role="img" aria-label={who} />
-                  </Link>
+                  <li key={s.n} className={cn("relative -mx-2 flex items-center gap-2.5 rounded-md px-2 py-1.5", cur && "bg-hover")}>
+                    {i < phaseSteps.length - 1 && <span className={cn("absolute bottom-[-6px] left-[18px] top-[26px] w-[1.5px]", st === "Completed" ? "bg-ok-mid" : "bg-line")} aria-hidden />}
+                    <StepMark state={m.state} tone={m.tone} size={20} className="relative z-[1]" label={st} />
+                    <span className="w-[50px] flex-none font-mono text-12 text-muted">Step {s.n}</span>
+                    <Link href={stepHref(portal, c.id, s.n)} aria-current={cur ? "step" : undefined} className={cn("min-w-0 flex-1 truncate text-13.5 after:absolute after:inset-0 hover:underline", cur ? "font-medium text-ink" : "text-ink-2")}>
+                      {s.title}
+                    </Link>
+                    <User size={14} strokeWidth={1.6} className={s.owner === "client" ? "text-faint" : "text-ink-2"} role="img" aria-label={who} />
+                  </li>
                 );
               })}
-            </div>
+            </ol>
           </SectionCard>
 
-          <SectionCard title={step.phase === 3 ? "Post-incorporation documents" : "Pre-incorporation documents"} bodyClassName="px-4 py-3">
+          <SectionCard title={step.phase === 3 ? "Post-incorporation documents" : "Pre-incorporation documents"} bodyClassName="px-4 py-3 md:px-4">
             <div className="flex flex-wrap gap-1.5">
               <Tag tone="ok">{docs.ready} ready</Tag>
               <Tag tone="warn">{docs.need} need inputs</Tag>
               <Tag tone="idle">{docs.waiting} waiting</Tag>
             </div>
-            <Link href={packHref(portal)} className="mt-2.5 inline-block text-12 font-bold text-accent hover:underline">
+            <Link href={packHref(portal)} className="mt-3 inline-block text-13 font-medium text-accent hover:underline">
               Open document pack →
             </Link>
           </SectionCard>
@@ -446,10 +390,7 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
               variant="primary"
               onClick={() => {
                 if (editWin) {
-                  setWin({
-                    from: editWin.from ? fromIso(editWin.from) : win.from,
-                    to: editWin.to ? fromIso(editWin.to) : win.to,
-                  });
+                  setWin({ from: editWin.from ? fromIso(editWin.from) : win.from, to: editWin.to ? fromIso(editWin.to) : win.to });
                   log(`Window moved to ${editWin.to ? fmt(fromIso(editWin.to)) : ""}`, "sbc");
                   toast.show("Window saved. The client sees the new date.");
                 }

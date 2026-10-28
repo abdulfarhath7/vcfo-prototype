@@ -3,10 +3,10 @@ import * as React from "react";
 import Link from "next/link";
 import { Calendar, ChevronLeft, ChevronRight, Download, FileCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { AREA_TONE, type Area } from "@/data/compliance";
+import { type Area } from "@/data/compliance";
 import { OLD_FILINGS, OLD_FILING_AREAS, type OldFiling, type OldFilingStatus } from "@/data/staff-filings-table";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag, type ChipTone } from "@/components/ui/Chip";
+import { AreaPill, Chip, type ChipTone } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { barFill, type BarTone } from "@/components/ui/Bar";
@@ -31,19 +31,16 @@ const STEP: Record<Period, number> = { monthly: 1, quarterly: 3, annual: 12 };
 const STATUSES: OldFilingStatus[] = ["Filed", "Due soon", "Overdue", "Upcoming"];
 const S_TONE: Record<OldFilingStatus, ChipTone> = { Filed: "ok", "Due soon": "warn", Overdue: "bad", Upcoming: "idle" };
 const S_BAR: Record<OldFilingStatus, BarTone> = { Filed: "ok", "Due soon": "warn", Overdue: "bad", Upcoming: "idle" };
-const TILE: Record<OldFilingStatus, string> = {
-  Filed: "border-transparent bg-ok-soft text-ok",
-  "Due soon": "border-transparent bg-warn-soft text-warn",
-  Overdue: "border-transparent bg-bad-soft text-bad",
-  Upcoming: "border-line bg-surface text-ink",
-};
+const TILE: Record<OldFilingStatus, string> = { Filed: "bg-ok-soft text-ok", "Due soon": "bg-warn-soft text-warn", Overdue: "bg-bad-soft text-bad", Upcoming: "bg-raised text-ink-2" };
 const AREA_LABEL: Record<Area, string> = { GST: "GST", "Income tax": "Income tax", MCA: "MCA", Payroll: "Payroll", FEMA: "FEMA", Labour: "Labour" };
+/** R-43 regulator swatches. */
+const REG_SWATCH: Record<Area, string> = { GST: "bg-reg-gst", "Income tax": "bg-reg-it", MCA: "bg-reg-mca", Payroll: "bg-reg-payroll", FEMA: "bg-reg-fema", Labour: "bg-reg-labour" };
 
 function DueTile({ f }: { f: OldFiling }) {
   return (
-    <span className={cn("grid w-11 place-items-center rounded border py-1 leading-none", TILE[f.status])} aria-label={`Due ${f.due.getDate()} ${MONTHS[fyIndex(f.due)]}`}>
-      <b className="text-16 font-semibold">{f.due.getDate()}</b>
-      <span className={cn("text-[10.5px] font-semibold", f.status === "Upcoming" ? "text-muted" : "opacity-80")}>{MONTHS[fyIndex(f.due)]}</span>
+    <span className={cn("inline-flex h-11 w-11 flex-col items-center justify-center rounded-md leading-none", TILE[f.status])} aria-label={`Due ${f.due.getDate()} ${MONTHS[fyIndex(f.due)]}`}>
+      <b className="text-16 font-medium">{f.due.getDate()}</b>
+      <span className="mt-[3px] text-[10.5px] font-medium uppercase tracking-[.06em]">{MONTHS[fyIndex(f.due)]}</span>
     </span>
   );
 }
@@ -83,55 +80,52 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
   };
 
   const cols: Column<OldFiling>[] = [
-    { key: "due", label: "Due", width: 72, render: (f) => <DueTile f={f} /> },
-    {
-      key: "area",
-      label: "Area",
-      width: 76,
-      render: (f) => (
-        <Tag tone={AREA_TONE[f.area]} className="font-mono">
-          <span title={AREA_LABEL[f.area]}>{f.code}</span>
-        </Tag>
-      ),
-    },
+    { key: "due", label: "Due", width: 68, render: (f) => <DueTile f={f} /> },
+    { key: "area", label: "Area", width: 124, render: (f) => <AreaPill area={AREA_LABEL[f.area]} /> },
     {
       key: "filing",
       label: "Filing",
       render: (f) => (
         <span className="block min-w-0">
           <span className="flex items-center gap-1">
-            <b className="truncate text-13 font-semibold">{f.form}</b>
+            <b className="truncate text-14 font-medium text-ink">{f.form}</b>
             <PortalLink area={f.area} />
           </span>
-          <span className="block text-12 text-muted">{f.period}</span>
+          <span className="block text-12.5 text-muted">{f.period}</span>
         </span>
       ),
     },
     { key: "freq", label: "Frequency", width: 120, render: (f) => <span className="text-ink-2">{f.frequency}</span> },
+    { key: "filed", label: "Filed on", width: 130, render: (f) => <span className={f.status === "Overdue" ? "font-medium text-bad" : f.status === "Filed" ? "text-ink" : "text-muted"}>{f.filedOn}</span> },
     {
-      key: "filed",
-      label: "Filed on",
-      width: 130,
-      render: (f) => <span className={f.status === "Overdue" ? "font-semibold text-bad" : f.status === "Filed" ? "font-semibold" : "text-muted"}>{f.filedOn}</span>,
+      key: "status",
+      label: "Status",
+      width: 128,
+      render: (f) => (
+        <Chip tone={S_TONE[f.status]} fixed>
+          {f.status}
+        </Chip>
+      ),
     },
-    { key: "status", label: "Status", width: 132, render: (f) => <Chip tone={S_TONE[f.status]} fixed>{f.status}</Chip> },
     {
       key: "proof",
       label: "Proof",
-      width: 136,
+      width: 140,
       align: "right",
       render: (f) =>
         f.proof === "file" ? (
           <span className="inline-flex items-center gap-1.5">
-            <button type="button" onClick={() => setProof({ title: f.form, period: f.period, client: "", area: f.area })} className="inline-flex h-[22px] items-center gap-1 rounded-sm bg-accent-soft px-2 text-12 font-semibold text-accent hover:underline">
-              <FileCheck size={12} strokeWidth={1.6} /> Proof
-            </button>
+            <Button size="sm" variant="soft" onClick={() => setProof({ title: f.form, period: f.period, client: "", area: f.area })}>
+              <FileCheck size={14} strokeWidth={1.6} /> Proof
+            </Button>
             <Button size="iconSm" variant="outline" aria-label={`Download proof of ${f.form}`} title="Download" onClick={() => toast.show(`Downloaded ${f.form} proof · ${f.period}`)}>
               <Download size={14} strokeWidth={1.6} />
             </Button>
           </span>
         ) : f.proof === "pending" ? (
-          <Tag tone="warn">Proof pending</Tag>
+          <Chip tone="warn" fixed dot={false}>
+            Proof pending
+          </Chip>
         ) : (
           <span className="text-faint">-</span>
         ),
@@ -181,28 +175,37 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
             total={
               <span className="grid place-items-center leading-none">
                 {inWindow.length}
-                <small className="mt-0.5 text-11 font-medium text-muted">filings</small>
+                <small className="mt-0.5 text-11.5 font-normal text-muted">filings</small>
               </span>
             }
             segments={STATUSES.map((s) => ({ label: s, value: inWindow.filter((f) => f.status === s).length, tone: S_BAR[s] }))}
           />
         </section>
         <section className="rounded-md border-1.5 border-line bg-surface px-5 py-4" aria-label="By area">
-          <p className="mb-2 text-12.5 font-semibold">By area · {short}</p>
+          <p className="mb-3 text-15 font-medium">By area · {short}</p>
           <div className="grid gap-1.5">
             {OLD_FILING_AREAS.map((a) => {
               const list = inWindow.filter((f) => f.area === a);
               const filed = list.filter((f) => f.status === "Filed").length;
               return (
-                <button key={a} type="button" onClick={() => setArea(area === a ? "all" : a)} aria-pressed={area === a} className={cn("grid grid-cols-[84px_minmax(0,1fr)_36px] items-center gap-3 rounded-sm text-left hover:bg-raised", area === a && "bg-raised")}>
-                  <span className="text-12.5 font-semibold">{AREA_LABEL[a]}</span>
-                  <span className="flex h-2 gap-0.5 overflow-hidden rounded-bar bg-line-soft" title={`${AREA_LABEL[a]} · ${list.length} filings`}>
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => setArea(area === a ? "all" : a)}
+                  aria-pressed={area === a}
+                  className={cn("-mx-1.5 grid grid-cols-[96px_minmax(0,1fr)_36px] items-center gap-3 rounded-sm px-1.5 py-0.5 text-left hover:bg-hover", area === a && "bg-accent-soft")}
+                >
+                  <span className="flex items-center gap-1.5 text-13 font-medium text-ink-2">
+                    <i className={cn("h-2 w-2 flex-none rounded-[2px]", REG_SWATCH[a])} aria-hidden />
+                    {AREA_LABEL[a]}
+                  </span>
+                  <span className="flex h-2 gap-0.5 overflow-hidden rounded-bar bg-raised" title={`${AREA_LABEL[a]} · ${list.length} filings`}>
                     {STATUSES.map((s) => {
                       const n = list.filter((f) => f.status === s).length;
                       return n ? <i key={s} className={cn("block h-full", barFill[S_BAR[s]])} style={{ flex: n }} title={`${AREA_LABEL[a]} · ${n} ${s.toLowerCase()}`} /> : null;
                     })}
                   </span>
-                  <span className="text-right font-mono text-12 text-muted">
+                  <span className="text-right text-12.5 text-muted">
                     {filed}/{list.length}
                   </span>
                 </button>
