@@ -36,10 +36,10 @@ function ToChip({ t, onRemove }: { t: To; onRemove: () => void }) {
   const tone = c ? identityTag[c.tone] : "idle";
   return (
     <Tag tone={tone} className="h-[24px] gap-1.5 pr-1">
-      {t.kind === "group" && <Users size={12} strokeWidth={1.5} aria-hidden />}
+      {t.kind === "group" && <Users size={12} strokeWidth={1.6} aria-hidden />}
       <span className="max-w-[200px] truncate">{toLabel(t)}</span>
       <button type="button" onClick={onRemove} className="grid h-4 w-4 place-items-center rounded-sm hover:bg-white/40" aria-label={`Remove ${toLabel(t)}`}>
-        <X size={12} strokeWidth={1.5} />
+        <X size={12} strokeWidth={1.6} />
       </button>
     </Tag>
   );
@@ -128,7 +128,7 @@ export function RecipientField({ value, onChange, bare, initialQuery = "" }: { v
                 {groups.map((g) => (
                   <button key={g.id} type="button" title={g.members} onMouseDown={(e) => e.preventDefault()} onClick={() => add({ kind: "group", id: g.id })} className="rounded-sm hover:opacity-80">
                     <Tag>
-                      <Users size={12} strokeWidth={1.5} className="mr-1" aria-hidden />
+                      <Users size={12} strokeWidth={1.6} className="mr-1" aria-hidden />
                       {g.name}
                     </Tag>
                   </button>
@@ -152,7 +152,7 @@ export function Attachments({ files, onChange }: { files: string[]; onChange: (f
           <FileBadge type={fileType(f)} />
           <span className="min-w-0 truncate font-mono text-12">{f}</span>
           <Button size="iconSm" variant="ghost" className="h-6 w-6" onClick={() => onChange(files.filter((x) => x !== f))} aria-label={`Remove ${f}`}>
-            <X size={14} strokeWidth={1.5} />
+            <X size={14} strokeWidth={1.6} />
           </Button>
         </span>
       ))}
@@ -168,7 +168,7 @@ export function Attachments({ files, onChange }: { files: string[]; onChange: (f
         }}
       />
       <Button size="sm" variant="ghost" onClick={() => ref.current?.click()}>
-        <Paperclip size={16} strokeWidth={1.5} /> Attach
+        <Paperclip size={16} strokeWidth={1.6} /> Attach
       </Button>
     </div>
   );
@@ -259,7 +259,7 @@ export function TemplateList({ templates, active, onUse, onEdit, onDelete, onCre
       {onCreate && (
         <div className="flex justify-end border-t border-line-soft px-4 py-2.5">
           <Button size="sm" onClick={onCreate}>
-            <Plus size={16} strokeWidth={1.5} /> Create
+            <Plus size={16} strokeWidth={1.6} /> Create
           </Button>
         </div>
       )}

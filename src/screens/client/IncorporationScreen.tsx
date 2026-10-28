@@ -97,8 +97,8 @@ function CoiCard({ incorporated, onDrill }: { incorporated: boolean; onDrill: (d
         <button type="button" onClick={drillAll} className="flex w-full gap-1 text-left" aria-label="All steps by status">
           {counts.map((c) => (
             <div key={c.p.id} className="min-w-0" style={{ flex: c.total }}>
-              <span className="block h-2 overflow-hidden rounded-full bg-white/[.12]" aria-hidden>
-                <i className={cn("block h-full rounded-full", c.done === c.total ? barFill.ok : barFill.accent)} style={{ width: `${(c.done / c.total) * 100}%` }} />
+              <span className="block h-2 overflow-hidden rounded-bar bg-white/[.12]" aria-hidden>
+                <i className={cn("block h-full rounded-bar", c.done === c.total ? barFill.ok : barFill.accent)} style={{ width: `${(c.done / c.total) * 100}%` }} />
               </span>
               <small className={cn("mt-1.5 block truncate text-11.5", c.cur ? "font-semibold text-navy-ink" : "text-navy-faint")}>
                 {c.p.short} · {c.done}/{c.total}

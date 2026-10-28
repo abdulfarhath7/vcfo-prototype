@@ -59,7 +59,7 @@ export function AnswersCard({ step, about, rows, notify, onChange, onMessage }: 
       {about && <p className="border-b border-line-soft px-4 py-3 text-13.5 text-ink-2 md:px-5">{about}</p>}
       {STEP_PREFILL[step.n] && (k === "done" || k === "you") && (
         <div className="flex items-center gap-2 border-b border-line-soft bg-raised px-4 py-2 text-12.5 text-muted md:px-5">
-          <RefreshCw size={14} strokeWidth={1.5} className="flex-none" />
+          <RefreshCw size={14} strokeWidth={1.6} className="flex-none" />
           {STEP_PREFILL[step.n]}
         </div>
       )}
@@ -95,17 +95,17 @@ export function AnswersCard({ step, about, rows, notify, onChange, onMessage }: 
       <footer className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
         {k === "done" && (
           <Button onClick={onChange} className="ml-auto">
-            <MessageSquare size={16} strokeWidth={1.5} /> Request a change
+            <MessageSquare size={16} strokeWidth={1.6} /> Request a change
           </Button>
         )}
         {k === "with" && (
           <Button onClick={onMessage} className="ml-auto">
-            <MessageSquare size={16} strokeWidth={1.5} /> Message {step.by ?? "Bharath"}
+            <MessageSquare size={16} strokeWidth={1.6} /> Message {step.by ?? "Bharath"}
           </Button>
         )}
         {k === "prog" && (
           <Button onClick={() => notify("Draft saved", () => setVals({}))} className="ml-auto">
-            <PenLine size={16} strokeWidth={1.5} /> Save draft
+            <PenLine size={16} strokeWidth={1.6} /> Save draft
           </Button>
         )}
         {k === "up" && prev && (
@@ -183,7 +183,7 @@ export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify, due,
             {file ? (
               <Button asChild size="iconSm" variant="ghost" aria-label={`Preview ${x.name}`}>
                 <Link href={`/client/documents/view/${file.id}`}>
-                  <Eye size={16} strokeWidth={1.5} />
+                  <Eye size={16} strokeWidth={1.6} />
                 </Link>
               </Button>
             ) : (
@@ -191,7 +191,7 @@ export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify, due,
             )}
             {x.status === "Accepted" || x.status === "To review" || up ? (
               <Button size="iconSm" variant="ghost" aria-label={`Download ${x.name}`} onClick={() => notify(`Download started · ${file?.name ?? x.name}`)}>
-                <Download size={16} strokeWidth={1.5} />
+                <Download size={16} strokeWidth={1.6} />
               </Button>
             ) : (
               <span className="w-[30px] flex-none" />
@@ -248,7 +248,7 @@ export function StepNeedsCard({
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             <Button onClick={onChange}>
-              <MessageSquare size={16} strokeWidth={1.5} /> Request a change
+              <MessageSquare size={16} strokeWidth={1.6} /> Request a change
             </Button>
             <Button
               variant="primary"
@@ -262,7 +262,7 @@ export function StepNeedsCard({
                 notify("Submitted for review · Bharath checks it", () => setSent(false));
               }}
             >
-              <Check size={16} strokeWidth={1.5} /> {sent ? "Submitted" : "Submit for review"}
+              <Check size={16} strokeWidth={1.6} /> {sent ? "Submitted" : "Submit for review"}
             </Button>
           </div>
         </div>
@@ -282,19 +282,19 @@ export function ApprovalBar({ pct, blocked, notify, onChange }: { pct: number; b
     <div className="sticky bottom-[132px] z-20 rounded-lg border border-line bg-surface px-4 py-3 md:bottom-[68px] md:px-5" role="region" aria-label="Approval">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-full", sent ? "bg-ok-soft text-ok" : "bg-warn text-surface")} aria-hidden>
+          <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-md", sent ? "bg-ok-soft text-ok" : "bg-warn text-surface")} aria-hidden>
             {sent ? <Check size={13} strokeWidth={2.4} /> : <User size={13} strokeWidth={2} />}
           </span>
           <span className="min-w-0">
             <b className="block truncate text-13.5 font-semibold">{sent ? "Approved by Northwind" : "Awaiting Northwind’s approval"}</b>
-            <span className="mt-1 block h-1 w-[200px] max-w-full overflow-hidden rounded-full bg-line-soft" aria-hidden>
-              <i className={cn("block h-full rounded-full", sent ? "bg-ok-mid" : "bg-accent")} style={{ width: `${sent ? 100 : Math.max(pct, 6)}%` }} />
+            <span className="mt-1 block h-1 w-[200px] max-w-full overflow-hidden rounded-bar bg-line-soft" aria-hidden>
+              <i className={cn("block h-full rounded-bar", sent ? "bg-ok-mid" : "bg-accent")} style={{ width: `${sent ? 100 : Math.max(pct, 6)}%` }} />
             </span>
           </span>
         </div>
         <div className="flex flex-none gap-2">
           <Button onClick={onChange} className="max-sm:flex-1">
-            <MessageSquare size={16} strokeWidth={1.5} /> Request a change
+            <MessageSquare size={16} strokeWidth={1.6} /> Request a change
           </Button>
           <Button
             variant="primary"
@@ -309,7 +309,7 @@ export function ApprovalBar({ pct, blocked, notify, onChange }: { pct: number; b
               notify("Approved and submitted · Bharath files it next", () => setSent(false));
             }}
           >
-            <Check size={16} strokeWidth={1.5} /> {sent ? "Approved" : "Approve"}
+            <Check size={16} strokeWidth={1.6} /> {sent ? "Approved" : "Approve"}
           </Button>
         </div>
       </div>
@@ -325,7 +325,7 @@ const ownerName = { client: "Northwind", sbc: "SBC", mca: "MCA" } as const;
 
 function RailIcon({ step, index }: { step: Step; index: number }) {
   const k = stepKind(step);
-  const base = "grid h-6 w-6 flex-none place-items-center rounded-full";
+  const base = "grid h-6 w-6 flex-none place-items-center rounded-md";
   if (k === "done")
     return (
       <span className={cn(base, "bg-ok text-surface")} role="img" aria-label="Done">
@@ -375,7 +375,7 @@ export function PhaseStepsRail({ step }: { step: Step }) {
               >
                 <RailIcon step={x} index={i + 1} />
                 <span className="min-w-0 flex-1 leading-snug">{x.title}</span>
-                <User size={14} strokeWidth={1.5} className={cn("flex-none", ownerTone[x.owner])} aria-label={`Owner · ${ownerName[x.owner]}`} />
+                <User size={14} strokeWidth={1.6} className={cn("flex-none", ownerTone[x.owner])} aria-label={`Owner · ${ownerName[x.owner]}`} />
               </Link>
             </li>
           );

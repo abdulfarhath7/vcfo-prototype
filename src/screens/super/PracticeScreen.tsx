@@ -117,7 +117,7 @@ function IncPipeline() {
                   </li>
                 ))}
               </ul>
-              {i < INC_PIPELINE.length - 1 && <ChevronRight size={16} strokeWidth={1.5} className="absolute -right-[19px] top-1/2 hidden -translate-y-1/2 text-faint xl:block" aria-hidden />}
+              {i < INC_PIPELINE.length - 1 && <ChevronRight size={16} strokeWidth={1.6} className="absolute -right-[19px] top-1/2 hidden -translate-y-1/2 text-faint xl:block" aria-hidden />}
             </li>
           );
         })}

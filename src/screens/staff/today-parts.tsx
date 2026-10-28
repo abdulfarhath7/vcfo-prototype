@@ -251,7 +251,7 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
           {p.regSplit.slice(0, 3).map((r) => (
             <li key={r.name} className="grid grid-cols-[84px_minmax(0,1fr)_24px] items-center gap-3 text-12.5" title={`${r.name}: ${r.d} done, ${r.p} in progress, ${r.w} pending`}>
               <span className="font-semibold">{r.name}</span>
-              <span className="flex h-2 overflow-hidden rounded-full bg-line-soft" aria-hidden>
+              <span className="flex h-2 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
                 <i className={barFill.ok} style={{ width: `${(r.d / r.total) * 100}%` }} />
                 <i className={barFill.accent} style={{ width: `${(r.p / r.total) * 100}%` }} />
                 <i className={barFill.warn} style={{ width: `${(r.w / r.total) * 100}%` }} />
@@ -274,7 +274,7 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
             <b className="text-24 font-semibold leading-tight">{fTotal}</b>
             <span className="text-12.5 text-muted">filings</span>
           </p>
-          <span className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-full" aria-hidden>
+          <span className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-bar" aria-hidden>
             {fSegs.map((x) => (
               <i key={x.label} className={barFill[x.tone]} style={{ width: `${(x.value / fTotal) * 100}%` }} />
             ))}
@@ -389,7 +389,7 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
     <>
       {stuck.length > 0 && (
         <Link href={clientHref(portal, stuck[0].client)} className="hidden items-center gap-1.5 rounded-sm bg-bad-soft px-2 py-0.5 text-12 font-semibold text-bad hover:underline md:inline-flex">
-          <i className="h-1.5 w-1.5 rounded-full bg-bad" aria-hidden />
+          <i className="h-1.5 w-1.5 rounded-[2px] bg-bad" aria-hidden />
           {stuck.length} stuck · {stuck[0].text}
         </Link>
       )}
@@ -420,7 +420,7 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
               {picked.length}
             </Chip>
             <Button variant="ghost" size="iconSm" className="ml-auto" aria-label="Close the task list" onClick={() => setPick(null)}>
-              <X size={16} strokeWidth={1.5} />
+              <X size={16} strokeWidth={1.6} />
             </Button>
           </div>
           {picked.map((t) => (
@@ -742,7 +742,7 @@ export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scop
                       notify("To-do removed", () => setTodos(before));
                     }}
                   >
-                    <X size={14} strokeWidth={1.5} />
+                    <X size={14} strokeWidth={1.6} />
                   </button>
                 </li>
               );
@@ -898,7 +898,7 @@ export function TaskStatusCard({ portal, scope, title = "Task status", tasks }: 
               <li key={x.o} className="grid grid-cols-[24px_56px_minmax(0,1fr)_24px] items-center gap-2 text-12.5">
                 <span className="grid h-6 w-6 place-items-center rounded-md bg-raised text-[10px] font-bold text-ink">{initials(x.o)}</span>
                 <span className="truncate text-ink-2" title={x.o}>{x.o.split(" ")[0]}</span>
-                <span className="flex h-1.5 overflow-hidden rounded-full bg-raised" title={`${x.o} · ${x.n} open${x.late ? ` · ${x.late} late` : ""}`}>
+                <span className="flex h-1.5 overflow-hidden rounded-bar bg-raised" title={`${x.o} · ${x.n} open${x.late ? ` · ${x.late} late` : ""}`}>
                   <span className={cn("h-full", barFill.bad)} style={{ width: `${(x.late / max) * 100}%` }} />
                   <span className={cn("h-full", barFill.accent)} style={{ width: `${((x.n - x.late) / max) * 100}%` }} />
                 </span>

@@ -59,7 +59,7 @@ export function SessionButton({ timer, now, onToggle, label }: { timer?: Timer; 
     <span className="inline-flex flex-none items-center gap-1.5">
       {ms > 0 && <span className={cn("font-mono text-12", running ? "font-semibold text-accent" : "text-muted")}>{clock(ms)}</span>}
       <Button size="iconSm" variant={running ? "outline" : "ghost"} onClick={onToggle} aria-label={running ? `Stop session on ${label}` : `Start session on ${label}`} title={running ? "Stop session" : "Start session"}>
-        {running ? <Pause size={14} strokeWidth={1.5} /> : <Play size={14} strokeWidth={1.5} />}
+        {running ? <Pause size={14} strokeWidth={1.6} /> : <Play size={14} strokeWidth={1.6} />}
       </Button>
     </span>
   );
@@ -148,7 +148,7 @@ export function WorkTimeline({ tasks, onOpen, onLocked }: { tasks: StaffTask[]; 
                     title={`${t.title} · ${fmt(SPAN[start])} to ${fmt(t.due)} · ${locked ? `dates set by ${t.setBy}` : "your dates"}`}
                     onClick={() => (locked ? onLocked(t) : onOpen(t))}
                   >
-                    {locked && <Lock size={11} strokeWidth={1.5} className="flex-none" />}
+                    {locked && <Lock size={11} strokeWidth={1.6} className="flex-none" />}
                     <span className="truncate">{kind === "wait" ? "Waiting on client" : kind === "mine" ? "Mine" : `${fmt(SPAN[start])} to ${fmt(t.due)}`}</span>
                   </button>
                 )}
@@ -239,8 +239,8 @@ export function PlanTimeline({ rows, tasks, onOpen, onLocked }: { rows: Timeline
                     const El = t ? "button" : "span";
                     return (
                       <El {...(t ? { type: "button" as const, onClick: click } : {})} className={bar} style={{ gridColumn: `${r.from + 2} / ${r.to + 2}`, gridRow: 1 }} title={`${r.title} · ${fmt(SPAN[r.from])} to ${fmt(SPAN[r.to - 1])}${r.kind === "locked" ? " · dates set by manager" : ""}`}>
-                        {r.kind === "locked" && <Lock size={11} strokeWidth={1.5} className="flex-none" />}
-                        {r.kind === "repeat" && <Repeat size={11} strokeWidth={1.5} className="flex-none" />}
+                        {r.kind === "locked" && <Lock size={11} strokeWidth={1.6} className="flex-none" />}
+                        {r.kind === "repeat" && <Repeat size={11} strokeWidth={1.6} className="flex-none" />}
                         <span className="truncate">{r.kind === "wait" ? "Waiting on client" : r.kind === "mine" ? "Mine" : r.kind === "repeat" ? "repeats" : ""}</span>
                       </El>
                     );
@@ -340,7 +340,7 @@ function DelegateButton({ id, label, value, onPick }: { id: string; label: strin
           </button>
         ) : (
           <button type="button" title="Hand to a project lead" aria-label={`Hand ${label} to a project lead`} className="grid h-6 w-6 flex-none place-items-center rounded-md border border-dashed border-line text-muted hover:bg-raised">
-            <UserPlus size={13} strokeWidth={1.5} />
+            <UserPlus size={13} strokeWidth={1.6} />
           </button>
         )
       }
@@ -433,7 +433,7 @@ export function TodoCard({
               {clientById(t.client)?.short} · {t.code} · {t.setBy}
             </span>
           </button>
-          <Lock size={13} strokeWidth={1.5} className="flex-none text-muted" aria-label="Due date set by manager" />
+          <Lock size={13} strokeWidth={1.6} className="flex-none text-muted" aria-label="Due date set by manager" />
           {dg(t.id, t.title)}
           <Chip tone={t.status === "Overdue" ? "bad" : t.due.getTime() === TODAY.getTime() ? "warn" : "idle"}>{t.status === "Overdue" ? "Overdue" : dayLabel(t.due)}</Chip>
         </Row>
@@ -483,7 +483,7 @@ export function TodoCard({
       <Head label="Recurring this month" count={rec.length} />
       {rec.map((r) => (
         <Row key={r.id}>
-          <Repeat size={14} strokeWidth={1.5} className="flex-none text-muted" aria-hidden />
+          <Repeat size={14} strokeWidth={1.6} className="flex-none text-muted" aria-hidden />
           <span className="min-w-0 flex-1">
             <b className="block truncate font-semibold">{r.text}</b>
             <span className="block truncate text-12 text-muted">
@@ -548,10 +548,10 @@ export function PlanCalendar({
       {cal !== "month" && (
         <span className="flex items-center gap-1">
           <Button variant="outline" size="iconSm" aria-label="Previous week" disabled={wk === 0} onClick={() => setWk(0)}>
-            <ChevronLeft size={16} strokeWidth={1.5} />
+            <ChevronLeft size={16} strokeWidth={1.6} />
           </Button>
           <Button variant="outline" size="iconSm" aria-label="Next week" disabled={wk === 1} onClick={() => setWk(1)}>
-            <ChevronRight size={16} strokeWidth={1.5} />
+            <ChevronRight size={16} strokeWidth={1.6} />
           </Button>
           <Button variant="outline" size="sm" onClick={() => setWk(0)}>
             Today
@@ -692,10 +692,10 @@ export function PlanWeekDialog({ open, onOpenChange, onApply }: { open: boolean;
           {view === "day" && (
             <span className="ml-auto flex items-center gap-1">
               <Button variant="outline" size="iconSm" aria-label="Previous day" disabled={dayIdx === 0} onClick={() => setDayIdx(dayIdx - 1)}>
-                <ChevronLeft size={16} strokeWidth={1.5} />
+                <ChevronLeft size={16} strokeWidth={1.6} />
               </Button>
               <Button variant="outline" size="iconSm" aria-label="Next day" disabled={dayIdx === 4} onClick={() => setDayIdx(dayIdx + 1)}>
-                <ChevronRight size={16} strokeWidth={1.5} />
+                <ChevronRight size={16} strokeWidth={1.6} />
               </Button>
             </span>
           )}
@@ -799,7 +799,7 @@ export function WorkStatus({ tasks, mine }: { tasks: StaffTask[]; mine: boolean 
             return (
               <li key={a} className="grid grid-cols-[84px_minmax(0,1fr)_40px] items-center gap-3 text-12.5" title={`${a}: ${done} done, ${pend} pending, ${late} overdue`}>
                 <span className="text-ink-2">{a}</span>
-                <span className="flex h-2 overflow-hidden rounded-full bg-line-soft" aria-hidden>
+                <span className="flex h-2 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
                   <i className={barFill.ok} style={{ width: seg(done) }} />
                   <i className={barFill.accent} style={{ width: seg(pend) }} />
                   <i className={barFill.bad} style={{ width: seg(late) }} />

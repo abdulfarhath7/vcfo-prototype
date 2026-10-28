@@ -2,7 +2,7 @@ import { cn } from "@/lib/cn";
 
 /** Grey placeholder block. Pulses (R-41: the one motion moment); globals.css stops it under reduced motion. */
 export function Skeleton({ className }: { className?: string }) {
-  return <span aria-hidden className={cn("block animate-pulse rounded-sm bg-raised", className)} />;
+  return <span aria-hidden className={cn("block animate-pulse rounded-sm bg-line-soft", className)} />;
 }
 
 /** Placeholder list rows with hairlines, for a list that loads. */
@@ -16,7 +16,7 @@ export function SkeletonRows({ rows = 5, className }: { rows?: number; className
             <Skeleton className="h-3 w-3/5" />
             <Skeleton className="h-2.5 w-2/5" />
           </span>
-          <Skeleton className="h-[22px] w-20" />
+          <Skeleton className="h-6 w-[104px]" />
         </div>
       ))}
     </div>

@@ -208,12 +208,12 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
                         }}
                         className={cn("flex items-center gap-3 px-3 py-2.5 hover:bg-raised", i > 0 && "border-t border-line-soft")}
                       >
-                        {i === 0 ? <Clock size={15} strokeWidth={1.5} className="text-muted" /> : <FileText size={15} strokeWidth={1.5} className="text-muted" />}
+                        {i === 0 ? <Clock size={15} strokeWidth={1.6} className="text-muted" /> : <FileText size={15} strokeWidth={1.6} className="text-muted" />}
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-13 font-semibold">{r.title}</span>
                           <span className="block truncate text-12 text-muted">{r.sub}</span>
                         </span>
-                        <ChevronRight size={15} strokeWidth={1.5} className="text-faint" />
+                        <ChevronRight size={15} strokeWidth={1.6} className="text-faint" />
                       </Link>
                     </li>
                   ))}
@@ -224,7 +224,7 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
         ) : (
           <div className="grid gap-4 p-4">
             <button type="button" onClick={() => setMsgs([])} className="inline-flex w-fit items-center gap-1.5 text-12.5 font-semibold text-muted hover:text-ink">
-              <ArrowLeft size={14} strokeWidth={1.5} /> Questions
+              <ArrowLeft size={14} strokeWidth={1.6} /> Questions
             </button>
             {msgs.map((m) => {
               const a = pack.answers[m.q];
@@ -235,7 +235,7 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
                     <ol className="grid gap-1 rounded-md bg-raised px-3 py-2 text-12.5" aria-live="polite">
                       {THINK.map((t, i) => (
                         <li key={t} className={cn("flex items-center gap-2", i > m.step ? "text-faint" : i === m.step ? "font-semibold text-ink" : "text-muted")}>
-                          {i < m.step ? <Check size={13} strokeWidth={1.5} className="text-ok" /> : <span className={cn("h-1.5 w-1.5 rounded-full", i === m.step ? "bg-accent" : "bg-line")} />}
+                          {i < m.step ? <Check size={13} strokeWidth={1.6} className="text-ok" /> : <span className={cn("h-1.5 w-1.5 rounded-[2px]", i === m.step ? "bg-accent" : "bg-line")} />}
                           {t}…
                         </li>
                       ))}
@@ -253,7 +253,7 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
                         <ol className="grid gap-1.5">
                           {a.phases.map((p, i) => (
                             <li key={p.name} className="flex items-center gap-2.5">
-                              <span className="grid h-5 w-5 flex-none place-items-center rounded-full bg-raised font-mono text-11 text-muted">{i + 1}</span>
+                              <span className="grid h-5 w-5 flex-none place-items-center rounded-sm bg-raised font-mono text-11 text-muted">{i + 1}</span>
                               <span className="min-w-0 flex-1 truncate font-semibold">{p.name}</span>
                               <span className="font-mono text-12 text-muted">{p.count}</span>
                               <Chip tone={p.tone}>{p.label}</Chip>
@@ -289,10 +289,10 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
                         </Button>
                         <span className="ml-auto text-12 text-muted">Helpful?</span>
                         <button type="button" aria-label="Helpful" aria-pressed={m.vote === "up"} onClick={() => patch(m.id, { vote: "up" })} className={cn("grid h-7 w-7 place-items-center rounded-sm hover:bg-raised", m.vote === "up" ? "text-ok" : "text-muted")}>
-                          <ThumbsUp size={14} strokeWidth={1.5} />
+                          <ThumbsUp size={14} strokeWidth={1.6} />
                         </button>
                         <button type="button" aria-label="Not helpful" aria-pressed={m.vote === "down"} onClick={() => patch(m.id, { vote: "down" })} className={cn("grid h-7 w-7 place-items-center rounded-sm hover:bg-raised", m.vote === "down" ? "text-bad" : "text-muted")}>
-                          <ThumbsDown size={14} strokeWidth={1.5} />
+                          <ThumbsDown size={14} strokeWidth={1.6} />
                         </button>
                       </div>
                     </div>
@@ -345,7 +345,7 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
                   )}
                   {m.handoff === "sent" && (
                     <div role="status" className="flex items-center gap-2 rounded-md bg-ok-soft px-3 py-2 text-13 text-ok">
-                      <Check size={15} strokeWidth={1.5} /> Sent to {pack.lead.name}. Reply comes by email.
+                      <Check size={15} strokeWidth={1.6} /> Sent to {pack.lead.name}. Reply comes by email.
                     </div>
                   )}
                 </div>
@@ -363,7 +363,7 @@ export function AskThread({ portal, className }: { portal: Portal; className?: s
       >
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={pack.placeholder} aria-label="Ask VCFO" className="h-9 min-w-0 flex-1 rounded-md border border-line bg-surface px-3 text-13.5 outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-accent-line" />
         <Button type="submit" variant="primary" size="icon" aria-label="Send" disabled={!q.trim()}>
-          <SendHorizontal size={16} strokeWidth={1.5} />
+          <SendHorizontal size={16} strokeWidth={1.6} />
         </Button>
       </form>
     </div>

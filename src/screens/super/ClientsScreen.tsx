@@ -149,7 +149,7 @@ export function ClientsScreen() {
               </Button>
             )}
             <Button size="sm" variant="primary" onClick={() => setAssignOpen(true)}>
-              <UserPlus size={14} strokeWidth={1.5} /> Assign client
+              <UserPlus size={14} strokeWidth={1.6} /> Assign client
             </Button>
           </>
         }

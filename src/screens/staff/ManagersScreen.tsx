@@ -76,7 +76,7 @@ export function ManagersScreen() {
               width={200}
               trigger={
                 <Button size="iconSm" variant="outline" aria-label="More actions">
-                  <MoreHorizontal size={16} strokeWidth={1.5} />
+                  <MoreHorizontal size={16} strokeWidth={1.6} />
                 </Button>
               }
             >

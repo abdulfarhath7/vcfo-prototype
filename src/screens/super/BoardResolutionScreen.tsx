@@ -58,7 +58,7 @@ export function BoardResolutionScreen() {
           title="Board resolution"
           meta={
             <span className="inline-flex items-center gap-1.5">
-              <i className={cn("h-2 w-2 rounded-full", barFill[c.tone])} aria-hidden />
+              <i className={cn("h-2 w-2 rounded-[2px]", barFill[c.tone])} aria-hidden />
               {c.short} · Step 2
             </span>
           }
@@ -68,7 +68,7 @@ export function BoardResolutionScreen() {
           <div className="flex items-center gap-1 border-b border-line-soft px-4 py-2 md:px-5">
             {tools.map((t) => (
               <Button key={t.k} size="iconSm" variant="ghost" aria-label={t.label} aria-pressed={!!marks[t.k]} className={cn(marks[t.k] && "bg-raised text-ink")} onClick={() => mark(t.k)} disabled={stage >= 2}>
-                <t.Icon size={15} strokeWidth={1.5} />
+                <t.Icon size={15} strokeWidth={1.6} />
               </Button>
             ))}
             {dirty && <span className="ml-2 text-12.5 text-warn">Unsaved changes</span>}
@@ -115,10 +115,10 @@ export function BoardResolutionScreen() {
               Apply latest template
             </Button>
             <Button size="sm" variant="outline" onClick={() => toast.show("Draft generated again from step 1")} disabled={stage >= 2}>
-              <RefreshCw size={14} strokeWidth={1.5} /> Generate again from step 1
+              <RefreshCw size={14} strokeWidth={1.6} /> Generate again from step 1
             </Button>
             <Button size="sm" variant="outline" onClick={() => toast.show("Downloaded board-resolution-larkspur.docx")}>
-              <Download size={14} strokeWidth={1.5} /> Download Word document
+              <Download size={14} strokeWidth={1.6} /> Download Word document
             </Button>
           </div>
         </SectionCard>
@@ -140,7 +140,7 @@ export function BoardResolutionScreen() {
                   toast.show("Sent to Sofia Moreau");
                 }}
               >
-                <Send size={14} strokeWidth={1.5} /> Send to client
+                <Send size={14} strokeWidth={1.6} /> Send to client
               </Button>
             ) : undefined
           }

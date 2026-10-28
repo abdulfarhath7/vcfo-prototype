@@ -179,7 +179,7 @@ export function HomeScreen() {
       onClick={() => (after ? open(POST_DRILL, 2) : open(stepsDrill(), 1))}
       className="inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-sm bg-white/[.12] px-2 text-12 font-semibold text-white hover:bg-white/[.2]"
     >
-      <i className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
+      <i className="h-1.5 w-1.5 rounded-[2px] bg-current" aria-hidden />
       {after ? `Setup · ${done} of ${total} done` : `SPICe+ · ${done} of ${total} steps`} · {Math.round((done / total) * 100)}%
     </button>
   );
@@ -199,7 +199,7 @@ export function HomeScreen() {
                 Report
               </Button>
               <Button variant="onNavyPrimary" onClick={() => setUpload(true)}>
-                <Upload size={16} strokeWidth={1.5} /> Upload documents
+                <Upload size={16} strokeWidth={1.6} /> Upload documents
               </Button>
             </>
           }

@@ -87,7 +87,7 @@ export function KnowledgeBankScreen() {
           All › <b className="font-semibold text-ink">{KB_OPEN_SHELF}</b>
         </nav>
         <label className="flex h-9 w-full items-center gap-2 rounded-md border border-line bg-surface px-3 sm:w-[260px]">
-          <Search size={14} strokeWidth={1.5} className="text-muted" />
+          <Search size={14} strokeWidth={1.6} className="text-muted" />
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search files by name…" aria-label="Search files" className="h-full min-w-0 flex-1 bg-transparent text-13 outline-none placeholder:text-faint" />
         </label>
         <Button onClick={() => setFolder(true)}>New folder</Button>

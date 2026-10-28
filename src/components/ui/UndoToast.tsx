@@ -21,12 +21,12 @@ export function useUndoToast(ms = 5000) {
   }, [t, ms]);
   const show = React.useCallback((text: string, onUndo?: () => void) => setT({ id: Date.now(), text, onUndo }), []);
   const node = t ? (
-    <div role="status" aria-live="polite" className="fixed bottom-[132px] left-1/2 z-[80] flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-3 rounded-md bg-navy px-4 py-2.5 text-13 text-white shadow-pop md:bottom-16 md:left-[calc(248px+20px)] md:translate-x-0">
+    <div role="status" aria-live="polite" className="fixed bottom-[132px] left-1/2 z-[80] flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-3 rounded-md bg-navy px-4 py-2.5 text-13.5 text-white shadow-float md:bottom-16 md:left-[calc(248px+20px)] md:translate-x-0">
       <span className="min-w-0 truncate">{t.text}</span>
       {t.onUndo && (
         <button
           type="button"
-          className="flex-none font-semibold text-navy-ink underline-offset-2 hover:underline"
+          className="flex-none font-medium text-navy-on-ink underline-offset-2 hover:underline"
           onClick={() => {
             t.onUndo?.();
             setT(null);
@@ -36,7 +36,7 @@ export function useUndoToast(ms = 5000) {
         </button>
       )}
       <button type="button" className="grid h-6 w-6 flex-none place-items-center rounded-sm text-navy-ink hover:bg-white/[.12]" aria-label="Dismiss" onClick={() => setT(null)}>
-        <X size={14} strokeWidth={1.5} />
+        <X size={14} strokeWidth={1.6} />
       </button>
     </div>
   ) : null;

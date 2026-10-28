@@ -58,7 +58,7 @@ export function MonthNav({ value, onChange, now }: { value: string; onChange: (k
       <P.Anchor asChild>
         <div ref={anchor} className="inline-flex h-8 flex-none items-center rounded-md border border-line bg-surface px-0.5">
           <button type="button" className="grid h-7 w-6 place-items-center rounded-sm text-ink-2 hover:bg-raised" aria-label="Previous month" onClick={() => onChange(stepKey(value, -1))}>
-            <ChevronLeft size={15} strokeWidth={1.5} />
+            <ChevronLeft size={15} strokeWidth={1.6} />
           </button>
           <button type="button" className={pkBtn} aria-haspopup="dialog" aria-expanded={open && mode === "m"} aria-label="Choose month" onClick={() => toggle("m")}>
             {MONTHS[month]}
@@ -69,7 +69,7 @@ export function MonthNav({ value, onChange, now }: { value: string; onChange: (k
             <ChevronDown size={12} strokeWidth={2} className="text-muted" />
           </button>
           <button type="button" className="grid h-7 w-6 place-items-center rounded-sm text-ink-2 hover:bg-raised" aria-label="Next month" onClick={() => onChange(stepKey(value, 1))}>
-            <ChevronRight size={15} strokeWidth={1.5} />
+            <ChevronRight size={15} strokeWidth={1.6} />
           </button>
         </div>
       </P.Anchor>
@@ -91,7 +91,7 @@ export function MonthNav({ value, onChange, now }: { value: string; onChange: (k
               aria-label={mode === "m" ? "Previous year" : "Earlier years"}
               onClick={() => (mode === "m" ? setViewY(viewY - 1) : setBase(base - 32))}
             >
-              <ChevronLeft size={15} strokeWidth={1.5} />
+              <ChevronLeft size={15} strokeWidth={1.6} />
             </button>
             <span className="flex items-center gap-1">
               <button type="button" className={cn("inline-flex h-[30px] items-center gap-1 rounded-md px-2.5 text-14 font-bold hover:bg-raised", mode === "m" && "bg-raised")} onClick={() => setMode("m")}>
@@ -107,7 +107,7 @@ export function MonthNav({ value, onChange, now }: { value: string; onChange: (k
               aria-label={mode === "m" ? "Next year" : "Later years"}
               onClick={() => (mode === "m" ? setViewY(viewY + 1) : setBase(base + 32))}
             >
-              <ChevronRight size={15} strokeWidth={1.5} />
+              <ChevronRight size={15} strokeWidth={1.6} />
             </button>
           </div>
           {mode === "m" ? (
@@ -203,7 +203,7 @@ export function CalendarBar({
         {filingsHref && (
           <Button asChild size="sm" className="h-8 font-bold text-ink">
             <Link href={filingsHref}>
-              <FileText size={14} strokeWidth={1.5} /> Filings
+              <FileText size={14} strokeWidth={1.6} /> Filings
             </Link>
           </Button>
         )}

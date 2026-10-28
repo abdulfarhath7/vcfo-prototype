@@ -141,7 +141,7 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
               className={cn("grid h-6 w-6 place-items-center rounded-sm hover:bg-raised", live(rowKey) ? "text-ok" : "text-faint")}
               aria-label={`${live(rowKey) ? "Lock" : "Preview"} row ${snoOf(r)} · ${rowName(sheet, r)}`}
             >
-              {live(rowKey) ? <EyeOff size={13} strokeWidth={1.5} /> : <Eye size={13} strokeWidth={1.5} />}
+              {live(rowKey) ? <EyeOff size={13} strokeWidth={1.6} /> : <Eye size={13} strokeWidth={1.6} />}
             </button>
           )}
         </span>
@@ -169,7 +169,7 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
         <Chip tone="warn">Proof pending</Chip>
       ) : (
         <Link href="/client/documents/view/d2" className="inline-flex items-center gap-1 whitespace-nowrap font-mono text-12 font-semibold text-accent hover:underline">
-          <Paperclip size={12} strokeWidth={1.5} /> {v}
+          <Paperclip size={12} strokeWidth={1.6} /> {v}
         </Link>
       );
     const auto = sheet.auto?.[`${r}|${c}`];
@@ -181,7 +181,7 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
           <span className="flex items-center gap-2">
             <span className="font-mono tracking-wider text-muted">••••••</span>
             <button type="button" onClick={() => setGate({ kind: "cell", key: k, label: `${sheet.label} · ${rowName(sheet, r)} · ${col.name}` })} className="inline-flex h-6 items-center gap-1 rounded-sm border border-line px-1.5 text-11.5 font-semibold text-ink-2 hover:bg-raised" aria-label={`Reveal ${rowName(sheet, r)} · ${col.name}`}>
-              <Lock size={12} strokeWidth={1.5} /> Reveal
+              <Lock size={12} strokeWidth={1.6} /> Reveal
             </button>
           </span>
         );
@@ -207,12 +207,12 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
       {session && <Chip tone={session.mode === "edit" ? "warn" : "ok"}>{`${session.mode === "edit" ? "Edit" : "Preview"} · ${mmss(sessLeft)}`}</Chip>}
       {!session && (
         <Button size="sm" onClick={() => setGate({ kind: "preview", key: "page", label: scope === "page" ? "all sheets" : sheet.label })}>
-          <Eye size={14} strokeWidth={1.5} /> {scope === "page" ? "Preview" : "Preview sheet"}
+          <Eye size={14} strokeWidth={1.6} /> {scope === "page" ? "Preview" : "Preview sheet"}
         </Button>
       )}
       {editing && scope === "sheet" && sheet.add && (
         <Button size="sm" onClick={addRow}>
-          <Plus size={14} strokeWidth={1.5} /> {sheet.add === "director" ? "Add director" : "Add row"}
+          <Plus size={14} strokeWidth={1.6} /> {sheet.add === "director" ? "Add director" : "Add row"}
         </Button>
       )}
       {editing ? (
@@ -223,12 +223,12 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
         )
       ) : (
         <Button size="sm" variant="primary" onClick={() => setGate({ kind: "edit", key: "page", label: scope === "page" ? "all sheets" : sheet.label })}>
-          <Pencil size={14} strokeWidth={1.5} /> {scope === "page" ? "Edit" : "Edit sheet"}
+          <Pencil size={14} strokeWidth={1.6} /> {scope === "page" ? "Edit" : "Edit sheet"}
         </Button>
       )}
       {session && scope === "page" && (
         <Button size="sm" onClick={lock}>
-          <Lock size={14} strokeWidth={1.5} /> Lock
+          <Lock size={14} strokeWidth={1.6} /> Lock
         </Button>
       )}
     </>
@@ -238,7 +238,7 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
     <>
       <div className="flex flex-wrap items-center gap-2.5" role="toolbar" aria-label="Credentials">
         <span className="grid h-8 w-8 flex-none place-items-center rounded-md bg-accent-soft text-accent">
-          <KeyRound size={16} strokeWidth={1.5} />
+          <KeyRound size={16} strokeWidth={1.6} />
         </span>
         <h1 className="text-13 font-extrabold uppercase tracking-[.07em]">Credentials</h1>
         <Tabs
@@ -252,7 +252,7 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
         />
         <span className="flex-1" />
         <Button size="sm" onClick={() => setShowLog(true)}>
-          <History size={14} strokeWidth={1.5} /> Access log
+          <History size={14} strokeWidth={1.6} /> Access log
         </Button>
         {modeButtons("page")}
       </div>
@@ -357,7 +357,7 @@ function SheetGrid({ sheet, cell, editing, onEditRow }: { sheet: Sheet; cell: (r
                     <span className="font-mono">{r + 1}</span>
                     {!spacer && !editing && (
                       <button type="button" onClick={() => onEditRow(r)} className="grid h-6 w-6 place-items-center rounded-sm text-faint hover:bg-surface hover:text-ink" aria-label={`Edit row ${r + 1}`}>
-                        <Pencil size={13} strokeWidth={1.5} />
+                        <Pencil size={13} strokeWidth={1.6} />
                       </button>
                     )}
                   </span>
@@ -419,7 +419,7 @@ function IdTiles({
             <CopyButton value={id.value} label={id.label} className="h-6 w-6" />
           ) : (
             <button type="button" onClick={() => onReveal(k, `Company · ${id.label}`)} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink" aria-label={`Reveal ${id.label}`}>
-              <Eye size={14} strokeWidth={1.5} />
+              <Eye size={14} strokeWidth={1.6} />
             </button>
           ),
         );
@@ -430,7 +430,7 @@ function IdTiles({
         after ? <span className="truncate text-13.5 font-semibold">PF · ESI · PT</span> : pend,
         after ? (
           <button type="button" onClick={() => onTab("reg")} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink" aria-label="Open the registrations sheet">
-            <ArrowRight size={14} strokeWidth={1.5} />
+            <ArrowRight size={14} strokeWidth={1.6} />
           </button>
         ) : undefined,
       )}
@@ -440,7 +440,7 @@ function IdTiles({
         after ? <span className="truncate text-13.5 font-semibold">{directors} holders</span> : pend,
         after ? (
           <button type="button" onClick={() => onTab("kyc")} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink" aria-label="Open the directors KYC sheet">
-            <ArrowRight size={14} strokeWidth={1.5} />
+            <ArrowRight size={14} strokeWidth={1.6} />
           </button>
         ) : undefined,
       )}

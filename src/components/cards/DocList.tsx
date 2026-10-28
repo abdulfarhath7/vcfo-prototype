@@ -50,7 +50,7 @@ export function DocList({ groups, className }: { groups: DocGroup[]; className?:
                       </span>
                     </span>
                     <span className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised" aria-label={`Download ${d.name}`} title="Download">
-                      <Download size={16} strokeWidth={1.5} />
+                      <Download size={16} strokeWidth={1.6} />
                     </span>
                   </>
                 );

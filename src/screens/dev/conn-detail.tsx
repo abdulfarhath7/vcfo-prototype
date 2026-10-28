@@ -303,7 +303,7 @@ export function ConnectFlow({ c, onConnect, onCancel }: { c: Connection; onConne
           return (
             <li key={s.label} className={`grid gap-2 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5 ${!open ? "opacity-50" : ""}`}>
               <div className="flex items-center gap-2.5 text-13.5 font-semibold">
-                <span className={`grid h-[22px] w-[22px] flex-none place-items-center rounded-full text-12 ${done ? "bg-ok-soft text-ok" : i === firstOpen ? "bg-accent-soft text-accent" : "border border-line text-faint"}`}>
+                <span className={`grid h-[22px] w-[22px] flex-none place-items-center rounded-sm text-12 ${done ? "bg-ok-soft text-ok" : i === firstOpen ? "bg-accent-soft text-accent" : "border border-line text-faint"}`}>
                   {done ? <Check size={13} strokeWidth={2} /> : i + 1}
                 </span>
                 {s.label}

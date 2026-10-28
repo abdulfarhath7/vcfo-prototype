@@ -58,7 +58,7 @@ export function PasswordForm({ onCancel, onSave }: { onCancel: () => void; onSav
             const on = c.test(next);
             return (
               <span key={c.label} className={cn("inline-flex items-center gap-1", on ? "text-ok" : "text-muted")}>
-                {on ? <Check size={13} strokeWidth={1.5} /> : <X size={13} strokeWidth={1.5} />}
+                {on ? <Check size={13} strokeWidth={1.6} /> : <X size={13} strokeWidth={1.6} />}
                 {c.label}
               </span>
             );
@@ -196,7 +196,7 @@ function WhatsAppDialog({ open, onOpenChange, onDone, number }: { open: boolean;
         <ol className="flex items-center gap-2" aria-label="Steps">
           {steps.map((s, i) => (
             <li key={s} className={cn("inline-flex items-center gap-1.5 text-12.5 font-semibold", i === step ? "text-ink" : i < step ? "text-ok" : "text-faint")} aria-current={i === step ? "step" : undefined}>
-              <span className={cn("grid h-5 w-5 place-items-center rounded-full text-11", i < step ? "bg-ok-soft text-ok" : i === step ? "bg-navy text-white" : "bg-raised text-faint")}>{i < step ? <Check size={12} strokeWidth={1.5} /> : i + 1}</span>
+              <span className={cn("grid h-5 w-5 place-items-center rounded-sm text-11", i < step ? "bg-ok-soft text-ok" : i === step ? "bg-navy text-white" : "bg-raised text-faint")}>{i < step ? <Check size={12} strokeWidth={1.6} /> : i + 1}</span>
               {s}
               {i < steps.length - 1 && <span className="ml-1 text-faint">›</span>}
             </li>
@@ -270,8 +270,8 @@ function WhatsAppDialog({ open, onOpenChange, onDone, number }: { open: boolean;
       )}
       {step === 2 && (
         <div className="flex items-center gap-3">
-          <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-ok-soft text-ok">
-            <Check size={18} strokeWidth={1.5} />
+          <span className="grid h-9 w-9 flex-none place-items-center rounded-md bg-ok-soft text-ok">
+            <Check size={18} strokeWidth={1.6} />
           </span>
           <span className="min-w-0">
             <span className="block text-14 font-semibold">WhatsApp is on</span>
@@ -305,8 +305,8 @@ const PREF_ICON: Record<string, { Icon: LucideIcon; bg: string }> = {
 function PrefIcon({ k }: { k: string }) {
   const x = PREF_ICON[k] ?? PREF_ICON.docs;
   return (
-    <span className={cn("grid h-[30px] w-[30px] flex-none place-items-center rounded-full text-white", x.bg)} aria-hidden>
-      <x.Icon size={14} strokeWidth={1.5} />
+    <span className={cn("grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-white", x.bg)} aria-hidden>
+      <x.Icon size={14} strokeWidth={1.6} />
     </span>
   );
 }
@@ -382,7 +382,7 @@ export function NotificationsCard({ portal, toast, remind: showRemind = true }: 
                 <td className="py-2 text-center">
                   {p.locked ? (
                     <span className="inline-flex h-[22px] items-center gap-1 rounded-sm bg-raised px-2 text-12 font-semibold text-muted" title="Always on">
-                      <Lock size={11} strokeWidth={1.5} /> On
+                      <Lock size={11} strokeWidth={1.6} /> On
                     </span>
                   ) : (
                     <span className="inline-flex">
@@ -571,7 +571,7 @@ function ClientSettingsView() {
           <span className="relative flex-none">
             <span className="grid h-[72px] w-[72px] place-items-center rounded-full bg-accent text-22 font-bold text-white ring-2 ring-white/[.25] dark:bg-btn">{me.ini}</span>
             <button type="button" onClick={() => photo.current?.click()} aria-label="Change photo" title="Change photo" className="absolute -bottom-0.5 -right-1 grid h-7 w-7 place-items-center rounded-md bg-brand text-white">
-              <Camera size={14} strokeWidth={1.5} />
+              <Camera size={14} strokeWidth={1.6} />
             </button>
             <input ref={photo} type="file" accept="image/png,image/jpeg" className="hidden" aria-label="Photo file" onChange={() => toast.show("Photo updated")} />
           </span>

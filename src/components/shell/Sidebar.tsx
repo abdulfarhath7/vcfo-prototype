@@ -2,20 +2,21 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronRight, Headphones, LogOut, Mail, MessageCircle, MessagesSquare, Phone, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Headphones, LogOut, Mail, MessageCircle, MessagesSquare, Phone, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui/Avatar";
 import { CLIENT_TEAM, PORTALS, navFor, type NavItem, type Portal, type TeamContact } from "@/data/nav";
 import { ClientsFold, FoldButton, LeadsFold, ManagersFold, MiniCalendar, NewTag, ReportsTo, showsCompliancesNew, useStaffFold } from "./StaffSidebarExtras";
 import { SuperClientsFold, SuperManagersFold, useSuperFold } from "./SuperSidebarExtras";
 import { BeforeAfter } from "./BeforeAfter";
+import { openAsk } from "./AskButton";
 
 type StaffPortal = "lead" | "manager" | "admin";
 const isStaff = (p: Portal): p is StaffPortal => p === "lead" || p === "manager" || p === "admin";
 
 // Ported from reference/old-screens/shell.js (client) and s/<portal>/Side.dc.html (staff, super, dev).
-// 248 px wide. Logo band with a hairline. Rows 36 px with a 16 px glyph. The picked row has a soft pill and an orange edge.
-const PICKED = "bg-navy-on font-semibold text-white shadow-[inset_3px_0_0_var(--brand)]";
+// R-45: 248 px wide, navy. Rows 34 px, 6 px corners. The picked row has a soft blurple fill and lilac text and icon.
+const PICKED = "bg-navy-on font-medium text-navy-on-ink hover:!bg-navy-on hover:!text-navy-on-ink";
 
 /** A folded list under a nav row: people or clients (old Side.dc.html). */
 interface Fold {
@@ -28,7 +29,7 @@ interface Fold {
 function Count({ n, hot }: { n?: string | number; hot?: boolean }) {
   if (n === undefined) return null;
   return (
-    <span className={cn("ml-auto inline-grid h-5 min-w-5 flex-none place-items-center rounded-md px-1.5 text-11 font-bold text-white", hot ? "bg-bad-mid" : "bg-white/[.12]")}>
+    <span className={cn("ml-auto inline-grid h-[18px] min-w-[18px] flex-none place-items-center text-12 font-medium", hot ? "rounded-sm bg-bad-mid px-1 text-white" : "text-navy-faint")}>
       {n}
     </span>
   );
@@ -37,7 +38,7 @@ function Count({ n, hot }: { n?: string | number; hot?: boolean }) {
 function Glyph({ item, on }: { item: NavItem; on: boolean }) {
   const Icon = item.icon;
   if (!Icon) return null;
-  return <Icon size={16} strokeWidth={1.5} className={cn("flex-none", on ? "text-white" : "text-navy-faint")} aria-hidden />;
+  return <Icon size={16} strokeWidth={1.6} className={cn("flex-none", on ? "text-navy-on-ink" : "text-navy-faint")} aria-hidden />;
 }
 
 function Item({ item, path, portal, depth = 0, fold, tag }: { item: NavItem; path: string; portal: Portal; depth?: number; fold?: Fold; tag?: React.ReactNode }) {
@@ -58,8 +59,8 @@ function Item({ item, path, portal, depth = 0, fold, tag }: { item: NavItem; pat
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           className={cn(
-            "flex h-9 w-full items-center gap-[11px] rounded-lg px-2.5 text-13.5 font-medium text-navy-ink hover:bg-white/[.06] hover:text-white",
-            holds && "font-semibold text-white",
+            "flex h-[34px] w-full items-center gap-2.5 rounded-md px-2.5 text-14 font-normal text-navy-ink hover:bg-navy-hover hover:text-white",
+            holds && "font-medium text-white",
           )}
         >
           <Glyph item={item} on={holds} />
@@ -68,9 +69,9 @@ function Item({ item, path, portal, depth = 0, fold, tag }: { item: NavItem; pat
           {/* shell.js hides the group count while the group is open */}
           {!(client && open) && <Count n={item.count} hot={item.hot} />}
           {client ? (
-            <ChevronRight size={14} strokeWidth={1.5} className={cn("flex-none text-navy-faint transition-transform", open && "rotate-90")} aria-hidden />
+            <ChevronRight size={14} strokeWidth={1.6} className={cn("flex-none text-navy-faint transition-transform", open && "rotate-90")} aria-hidden />
           ) : (
-            <ChevronDown size={14} strokeWidth={1.5} className={cn("flex-none text-navy-faint transition-transform", open && "rotate-180")} aria-hidden />
+            <ChevronDown size={14} strokeWidth={1.6} className={cn("flex-none text-navy-faint transition-transform", open && "rotate-180")} aria-hidden />
           )}
         </button>
         {open &&
@@ -95,18 +96,18 @@ function Item({ item, path, portal, depth = 0, fold, tag }: { item: NavItem; pat
     ? cn(
         "h-8 pl-[37px] text-13 text-navy-ink",
         // tree dot on the line (shell.js .vps-sub .vps-i:after)
-        "after:absolute after:left-4 after:top-1/2 after:-mt-[2.5px] after:h-[5px] after:w-[5px] after:rounded-full after:bg-navy-faint",
+        "after:absolute after:left-4 after:top-1/2 after:-mt-[2.5px] after:h-[5px] after:w-[5px] after:rounded-[2px] after:bg-navy-faint",
         active && "after:bg-accent-line after:ring-[3px] after:ring-white/[.12]",
       )
-    : "h-[26px] text-12.5 text-navy-faint";
+    : "h-7 text-13 text-navy-faint";
 
   const link = (
     <Link
       href={item.href ?? "#"}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex min-w-0 flex-1 items-center gap-[11px] rounded-lg px-2.5 font-medium hover:bg-white/[.06] hover:text-white",
-        depth ? kidCls : "h-9 text-13.5 text-navy-ink",
+        "relative flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-2.5 font-normal hover:bg-navy-hover hover:text-white",
+        depth ? kidCls : "h-[34px] text-14 text-navy-ink",
         active && PICKED,
       )}
     >
@@ -170,12 +171,12 @@ const CONTACT = [
 function TeamRow({ p }: { p: TeamContact }) {
   const who = p.support ? "support" : p.name;
   return (
-    <div tabIndex={0} role="group" aria-label={`${p.name}, ${p.role} · contact`} className="group relative flex h-[38px] items-center gap-[9px] rounded-lg px-2 outline-none hover:bg-white/[.06] focus-within:bg-white/[.06]">
+    <div tabIndex={0} role="group" aria-label={`${p.name}, ${p.role} · contact`} className="group relative flex h-[38px] items-center gap-[9px] rounded-md px-2 outline-none hover:bg-white/[.06] focus-within:bg-white/[.06]">
       <span className="grid h-[26px] w-[26px] flex-none place-items-center rounded-full bg-white/[.12] text-11 font-bold text-navy-ink ring-[1.5px] ring-white/[.22]" aria-hidden>
-        {p.support ? <Headphones size={14} strokeWidth={1.5} /> : p.ini}
+        {p.support ? <Headphones size={14} strokeWidth={1.6} /> : p.ini}
       </span>
       <span className="min-w-0 flex-1 truncate text-12.5 text-white">
-        <b className="font-bold">{p.name}</b> <small className="text-[11.5px] text-navy-faint">· {p.role}</small>
+        <b className="font-medium">{p.name}</b> <small className="text-[11.5px] text-navy-faint">· {p.role}</small>
       </span>
       <span className="invisible absolute right-1.5 top-1/2 flex -translate-y-1/2 gap-[3px] bg-navy pl-2 opacity-0 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
         {CONTACT.map(({ key, verb, Icon }) => (
@@ -186,7 +187,7 @@ function TeamRow({ p }: { p: TeamContact }) {
             title={`${verb} ${who}`}
             className={cn("grid h-6 w-6 place-items-center rounded-md text-white", key === "wa" ? "bg-ok-mid hover:bg-ok" : "bg-white/[.12] hover:bg-white/[.22]")}
           >
-            <Icon size={14} strokeWidth={1.5} aria-hidden />
+            <Icon size={14} strokeWidth={1.6} aria-hidden />
           </button>
         ))}
       </span>
@@ -198,7 +199,7 @@ function TeamRow({ p }: { p: TeamContact }) {
 function TeamBlock() {
   return (
     <div className="flex-none border-t border-navy-line px-0 pb-1 pt-2.5">
-      <div className="mx-2 mb-1.5 text-11 font-bold text-warn-mid">Northwind&rsquo;s team</div>
+      <div className="mx-2 mb-1.5 text-11.5 font-medium uppercase tracking-[.07em] text-navy-faint">Northwind&rsquo;s team</div>
       {CLIENT_TEAM.map((p) => (
         <TeamRow key={p.name} p={p} />
       ))}
@@ -213,15 +214,15 @@ export function Sidebar({ portal, incorporated, onClose }: { portal: Portal; inc
   const client = portal === "client";
 
   return (
-    <aside className="flex h-full w-[248px] flex-none flex-col bg-navy text-navy-ink" aria-label="Sidebar">
+    <aside className="flex h-full w-[248px] flex-none flex-col border-r-1.5 border-navy-line bg-navy text-navy-ink" aria-label="Sidebar">
       <div className={cn("flex flex-none items-center gap-2 border-b border-navy-line pl-4 pr-2.5", client ? "h-16" : "h-14")}>
         <Link href={meta.home} className="flex min-w-0 items-center" aria-label="VCFO Suite · home">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/vcfo-logo-on-black.webp" alt="VCFO Suite by SBC" className={cn("block w-auto max-w-full object-contain object-left", client ? "h-[34px]" : "h-[26px]")} />
         </Link>
         {onClose && (
-          <button type="button" onClick={onClose} className="ml-auto grid h-10 w-10 flex-none place-items-center rounded-lg bg-white/[.08] hover:bg-white/[.14]" aria-label="Close menu">
-            <X size={18} strokeWidth={1.5} />
+          <button type="button" onClick={onClose} className="ml-auto grid h-10 w-10 flex-none place-items-center rounded-md bg-white/[.08] hover:bg-white/[.14]" aria-label="Close menu">
+            <X size={18} strokeWidth={1.6} />
           </button>
         )}
       </div>
@@ -240,16 +241,30 @@ export function Sidebar({ portal, incorporated, onClose }: { portal: Portal; inc
         )}
       </div>
       {client && <TeamBlock />}
-      <div className="flex flex-none items-center gap-2.5 border-t border-navy-line px-2.5 pb-3 pt-2">
-        <Link href={meta.profile} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-1.5 hover:bg-white/[.06]" title="Your profile">
-          <Avatar name={meta.person} size={30} onNavy className={client ? "rounded-full" : undefined} />
+      {/* R-45: Ask VCFO is a sidebar button, never a floating bubble. "/" opens it too. */}
+      <div className="flex-none px-3 pb-2.5 pt-2">
+        <button
+          type="button"
+          onClick={openAsk}
+          className="flex h-[38px] w-full items-center gap-2.5 rounded-md border-1.5 border-navy-line bg-navy px-2.5 text-14 font-medium text-white hover:bg-navy-hover"
+        >
+          <span className="grid h-[22px] w-[22px] flex-none place-items-center rounded-sm bg-primary text-white" aria-hidden>
+            <Sparkles size={13} strokeWidth={1.6} />
+          </span>
+          <span className="flex-1 text-left">Ask VCFO</span>
+          <kbd className="rounded-sm border border-navy-line bg-white/[.07] px-[5px] font-sans text-11 font-medium leading-[18px] text-navy-faint">/</kbd>
+        </button>
+      </div>
+      <div className="flex flex-none items-center gap-2.5 border-t-1.5 border-navy-line px-2.5 pb-3 pt-2">
+        <Link href={meta.profile} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md p-1.5 hover:bg-navy-hover" title="Your profile">
+          <Avatar name={meta.person} size={30} onNavy />
           <span className="min-w-0">
-            <b className="block truncate text-13 font-semibold text-white">{meta.person}</b>
-            <span className="block truncate text-11 text-navy-faint">{meta.role}</span>
+            <b className="block truncate text-13.5 font-medium text-white">{meta.person}</b>
+            <span className="block truncate text-12 text-navy-faint">{meta.role}</span>
           </span>
         </Link>
-        <Link href="/sign-in" className="grid h-[30px] w-[30px] flex-none place-items-center rounded-lg text-navy-faint hover:bg-white/[.12] hover:text-white" aria-label="Sign out" title="Sign out">
-          <LogOut size={16} strokeWidth={1.5} />
+        <Link href="/sign-in" className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-navy-faint hover:bg-white/[.12] hover:text-white" aria-label="Sign out" title="Sign out">
+          <LogOut size={16} strokeWidth={1.6} />
         </Link>
       </div>
     </aside>

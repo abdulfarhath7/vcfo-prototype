@@ -6,7 +6,7 @@ export function Chevron({ open, className }: { open?: boolean; className?: strin
   return (
     <ChevronRight
       size={16}
-      strokeWidth={1.5}
+      strokeWidth={1.6}
       aria-hidden
       className={cn("flex-none text-faint transition-transform", open && "rotate-90", className)}
     />

@@ -22,7 +22,7 @@ export function StageTrack({ stages, now, className }: { stages: TrackStage[]; n
             <li key={s.label} className={cn("flex min-w-0 items-center md:flex-1", last && "md:flex-none")}>
               {isNow ? (
                 <div className="flex min-w-0 items-center gap-2.5 rounded-md bg-navy px-3 py-2 text-white">
-                  <span className="h-2 w-2 flex-none rounded-full bg-brand" aria-hidden />
+                  <span className="h-2 w-2 flex-none rounded-[2px] bg-brand" aria-hidden />
                   <span className="min-w-0">
                     <span className="block truncate text-11.5 text-navy-ink">{now.kicker}</span>
                     <b className="block truncate text-13 font-semibold">{now.title}</b>
@@ -33,7 +33,7 @@ export function StageTrack({ stages, now, className }: { stages: TrackStage[]; n
               ) : (
                 <div className={cn("flex min-w-0 items-center gap-2.5", s.state === "todo" && "opacity-60")}>
                   <span
-                    className={cn("grid h-5 w-5 flex-none place-items-center rounded-full", s.state === "done" ? "bg-ok-soft text-ok" : s.state === "now" ? "bg-accent-soft text-accent" : "shadow-[inset_0_0_0_1.5px_var(--line)]")}
+                    className={cn("grid h-5 w-5 flex-none place-items-center rounded-sm", s.state === "done" ? "bg-ok-soft text-ok" : s.state === "now" ? "bg-accent-soft text-accent" : "shadow-[inset_0_0_0_1.5px_var(--line)]")}
                     aria-hidden
                   >
                     {s.state === "done" && <Check size={12} strokeWidth={2.4} />}

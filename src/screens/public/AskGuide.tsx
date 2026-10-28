@@ -69,7 +69,7 @@ export function AskGuide({ onDemo }: { onDemo: () => void }) {
               <span>Quick answers about the product</span>
             </div>
             <button type="button" className="lp-guide-x" aria-label="Close Ask VCFO" onClick={hide}>
-              <X size={18} strokeWidth={1.5} />
+              <X size={18} strokeWidth={1.6} />
             </button>
           </div>
           <div ref={logRef} className="lp-guide-log" aria-live="polite">

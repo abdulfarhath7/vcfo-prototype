@@ -57,11 +57,11 @@ const STATUS_GLYPH: Record<StepStatus, { cls: string; Icon: typeof Check; label:
 
 /** Row glyph of a form field: green tick, blue arrow, red "!" for a review with a problem. */
 function FieldGlyph({ f }: { f: FormField }) {
-  if (f.state === "Not asked") return <span className="h-5 w-5 rounded-full border-[1.5px] border-dashed border-faint" aria-label="Not asked" />;
+  if (f.state === "Not asked") return <span className="h-5 w-5 rounded-sm border-[1.5px] border-dashed border-faint" aria-label="Not asked" />;
   const bad = f.state === "Review" && !!f.note;
   const cls = f.state === "Accepted" ? "bg-ok" : bad ? "bg-bad" : f.state === "Review" ? "bg-warn" : "bg-accent";
   return (
-    <span className={cn("grid h-5 w-5 place-items-center rounded-full text-11 font-bold text-surface", cls)} aria-label={f.state}>
+    <span className={cn("grid h-5 w-5 place-items-center rounded-sm text-11 font-bold text-surface", cls)} aria-label={f.state}>
       {f.state === "Accepted" ? <Check size={11} strokeWidth={3} /> : bad ? "!" : <ArrowRight size={11} strokeWidth={3} />}
     </span>
   );
@@ -231,7 +231,7 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
         <Tag tone="idle" className="font-mono">
           Step {step.n}
         </Tag>
-        <span className={cn("grid h-5 w-5 place-items-center rounded-full", glyph.cls)} title={glyph.label} role="img" aria-label={glyph.label}>
+        <span className={cn("grid h-5 w-5 place-items-center rounded-sm", glyph.cls)} title={glyph.label} role="img" aria-label={glyph.label}>
           <glyph.Icon size={11} strokeWidth={3} />
         </span>
         <Button size="sm" variant="outline" className="h-7 border-brand bg-warn-soft text-warn hover:bg-warn-soft hover:brightness-95" onClick={() => setAbout(true)}>
@@ -241,7 +241,7 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
 
       {/* Window bar */}
       <div className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-surface px-3 py-2">
-        <Calendar size={15} strokeWidth={1.5} className="text-muted" aria-hidden />
+        <Calendar size={15} strokeWidth={1.6} className="text-muted" aria-hidden />
         <span className="text-12 text-muted">Window</span>
         <span className="font-mono text-12 font-semibold">From {win.from ? fmt(win.from) : ""}</span>
         <span className="text-muted" aria-hidden>
@@ -312,7 +312,7 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
               ))}
               <footer className="flex flex-wrap items-center gap-2 border-t border-line bg-raised px-4 py-3 md:px-[18px]">
                 <span className="inline-flex items-center gap-1.5 text-12 text-muted">
-                  <i className="h-[7px] w-[7px] rounded-full bg-ok" aria-hidden />
+                  <i className="h-[7px] w-[7px] rounded-md bg-ok" aria-hidden />
                   Draft saved
                 </span>
                 <span className="flex-1" />
@@ -403,14 +403,14 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
                   >
                     <span
                       className={cn(
-                        "relative z-[1] grid h-[22px] w-[22px] place-items-center rounded-full text-[10px] font-extrabold",
+                        "relative z-[1] grid h-[22px] w-[22px] place-items-center rounded-sm text-[10px] font-extrabold",
                         st === "Completed" ? "bg-ok text-surface" : cur ? "bg-btn text-white ring-[3px] ring-warn-mid" : "border-[1.5px] border-dashed border-faint bg-surface text-faint",
                       )}
                     >
                       {st === "Completed" ? <Check size={11} strokeWidth={3} /> : s.n}
                     </span>
                     <span className={cn("min-w-0 truncate", cur && "font-bold")}>{s.title}</span>
-                    <User size={14} strokeWidth={1.5} className={s.owner === "client" ? "text-faint" : "text-ink"} role="img" aria-label={who} />
+                    <User size={14} strokeWidth={1.6} className={s.owner === "client" ? "text-faint" : "text-ink"} role="img" aria-label={who} />
                   </Link>
                 );
               })}

@@ -86,7 +86,7 @@ export function StatusGlyph({ f }: { f: DocItem }) {
   const [Icon, cls] =
     f.status === "Verified" ? [Check, "bg-ok-soft text-ok"] : f.status === "Received" ? [Clock, "bg-accent-soft text-accent"] : late ? [AlertTriangle, "bg-bad-soft text-bad"] : [User, "bg-warn-soft text-warn"];
   return (
-    <span role="img" title={statusTip(f)} aria-label={statusTip(f)} className={cn("grid h-5 w-5 flex-none place-items-center rounded-full", cls)}>
+    <span role="img" title={statusTip(f)} aria-label={statusTip(f)} className={cn("grid h-5 w-5 flex-none place-items-center rounded-sm", cls)}>
       <Icon size={12} strokeWidth={1.75} />
     </span>
   );
@@ -101,7 +101,7 @@ export function MissingChip({ f, className }: { f: DocItem; className?: string }
 export function FileMark({ f }: { f: DocItem }) {
   return isMissing(f) && f.status === "Requested" ? (
     <span className="inline-flex h-6 w-11 flex-none items-center justify-center rounded-sm border border-dashed border-line text-faint" aria-label="Not uploaded yet">
-      <FileQuestion size={14} strokeWidth={1.5} />
+      <FileQuestion size={14} strokeWidth={1.6} />
     </span>
   ) : (
     <FileBadge type={f.type} />
@@ -113,7 +113,7 @@ export function ProgressTrack({ files, className }: { files: DocItem[]; classNam
   const p = progress(files);
   if (!p.tot) return null;
   return (
-    <span className={cn("flex h-1.5 w-16 flex-none overflow-hidden rounded-full bg-line", className)} aria-hidden>
+    <span className={cn("flex h-1.5 w-16 flex-none overflow-hidden rounded-bar bg-line", className)} aria-hidden>
       <span className="bg-ok-mid" style={{ width: `${(p.ok / p.tot) * 100}%` }} />
       <span className="bg-accent" style={{ width: `${(p.rv / p.tot) * 100}%` }} />
       <span className="bg-warn-mid" style={{ width: `${(p.ms / p.tot) * 100}%` }} />
@@ -151,7 +151,7 @@ export function NoPreview({ f, onDownload }: { f: DocItem; onDownload?: () => vo
       <FileBadge type={f.type} />
       <span className="text-13.5 font-semibold">Preview not available for this file type</span>
       <Button variant="primary" size="sm" onClick={onDownload}>
-        <Download size={15} strokeWidth={1.5} /> Download
+        <Download size={15} strokeWidth={1.6} /> Download
       </Button>
     </div>
   );
@@ -239,7 +239,7 @@ export function DocDrillDialog({
             {isMissing(f) ? (
               !staff || f.status === "Requested" ? (
                 <Button size="iconSm" variant="ghost" aria-label={`Upload ${f.label}`} onClick={() => onUpload(f.id)}>
-                  <Upload size={15} strokeWidth={1.5} />
+                  <Upload size={15} strokeWidth={1.6} />
                 </Button>
               ) : (
                 <span className="w-[30px]" />
@@ -247,7 +247,7 @@ export function DocDrillDialog({
             ) : (
               <Button asChild size="iconSm" variant="ghost">
                 <Link href={viewHref(f.id)} aria-label={`Preview ${f.label}`}>
-                  <Eye size={15} strokeWidth={1.5} />
+                  <Eye size={15} strokeWidth={1.6} />
                 </Link>
               </Button>
             )}
@@ -309,7 +309,7 @@ export function PreviewSheet({ f, open, onOpenChange, viewHref, onDownload }: { 
             <Link href={viewHref(f.id)}>Open</Link>
           </Button>
           <Button variant="primary" onClick={onDownload}>
-            <Download size={15} strokeWidth={1.5} /> Download
+            <Download size={15} strokeWidth={1.6} /> Download
           </Button>
         </>
       }

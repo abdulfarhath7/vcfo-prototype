@@ -274,7 +274,7 @@ export function Story() {
               ))}
             </div>
             <Link className="lp-step-open" href={`/client/incorporation/step/${s.step}`}>
-              Open this step in the portal <ArrowRight size={14} strokeWidth={1.5} />
+              Open this step in the portal <ArrowRight size={14} strokeWidth={1.6} />
             </Link>
           </div>
         ))}

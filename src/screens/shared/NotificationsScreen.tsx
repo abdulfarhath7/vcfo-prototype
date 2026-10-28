@@ -105,14 +105,14 @@ function NotifRow({ n, unread, onRead, onOpen, portal }: { n: Notif; unread: boo
       </span>
       <span className="flex flex-none items-center gap-1.5">
         {unread ? (
-          <button type="button" onClick={onRead} className="grid h-5 w-5 place-items-center rounded-full hover:bg-surface" aria-label="Unread · mark as read" title="Mark as read">
-            <span className="h-2 w-2 rounded-full bg-accent" />
+          <button type="button" onClick={onRead} className="grid h-5 w-5 place-items-center rounded-sm hover:bg-surface" aria-label="Unread · mark as read" title="Mark as read">
+            <span className="h-2 w-2 rounded-[2px] bg-accent" />
           </button>
         ) : (
           <span className="w-5" />
         )}
         <Button size="iconSm" onClick={onOpen} aria-label={`Open ${n.title}`}>
-          <ArrowRight size={15} strokeWidth={1.5} />
+          <ArrowRight size={15} strokeWidth={1.6} />
         </Button>
       </span>
     </div>
@@ -197,7 +197,7 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
             <ListRow key={g} onClick={() => setDrill(g)} className="py-2 text-13">
               <span className="min-w-0 flex-1">{g}</span>
               <b className="font-mono font-semibold">{cnt(g)}</b>
-              <ChevronRight size={14} strokeWidth={1.5} className="text-faint" />
+              <ChevronRight size={14} strokeWidth={1.6} className="text-faint" />
             </ListRow>
           ))}
         </SectionCard>
@@ -276,7 +276,7 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
         eyebrow={
           detail && (
             <>
-              <Bell size={14} strokeWidth={1.5} /> {NOTIF_TYPE[detail.type].tip}
+              <Bell size={14} strokeWidth={1.6} /> {NOTIF_TYPE[detail.type].tip}
             </>
           )
         }

@@ -116,7 +116,7 @@ export function RevealGate({ open, onOpenChange, mode, title, confirm, manager =
             <span className="relative block">
               <Input type={show ? "text" : "password"} value={pw} onChange={(e) => setPw(e.target.value)} autoFocus className={cn("pr-10", wrong > 0 && "border-bad")} aria-invalid={wrong > 0} />
               <button type="button" onClick={() => setShow((s) => !s)} className="absolute right-1 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-sm text-muted hover:bg-raised" aria-label={show ? "Hide password" : "Show password"}>
-                {show ? <EyeOff size={15} strokeWidth={1.5} /> : <Eye size={15} strokeWidth={1.5} />}
+                {show ? <EyeOff size={15} strokeWidth={1.6} /> : <Eye size={15} strokeWidth={1.6} />}
               </button>
             </span>
           </Field>

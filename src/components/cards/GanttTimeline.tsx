@@ -44,7 +44,7 @@ export function StatusCircle({ status, className }: { status: RowStatus; classNa
   return (
     <span
       className={cn(
-        "grid h-5 w-5 flex-none place-items-center rounded-full",
+        "grid h-5 w-5 flex-none place-items-center rounded-sm",
         status === "done" && "bg-ok-soft text-ok",
         status === "current" && "bg-accent-soft text-accent",
         status === "planned" && "shadow-[inset_0_0_0_1.5px_var(--line)]",

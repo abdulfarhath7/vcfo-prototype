@@ -128,7 +128,7 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
         {pages > 1 && (
           <nav className="ml-auto flex items-center gap-1" aria-label="Pages">
             <button type="button" onClick={() => setPage(Math.max(1, cur - 1))} disabled={cur === 1} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-raised disabled:opacity-40" aria-label="Previous page">
-              <ChevronLeft size={14} strokeWidth={1.5} />
+              <ChevronLeft size={14} strokeWidth={1.6} />
             </button>
             {Array.from({ length: pages }, (_, i) => i + 1)
               .filter((p) => p === 1 || p === pages || Math.abs(p - cur) <= 1)
@@ -149,7 +149,7 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
                 ),
               )}
             <button type="button" onClick={() => setPage(Math.min(pages, cur + 1))} disabled={cur === pages} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-raised disabled:opacity-40" aria-label="Next page">
-              <ChevronRight size={14} strokeWidth={1.5} />
+              <ChevronRight size={14} strokeWidth={1.6} />
             </button>
           </nav>
         )}

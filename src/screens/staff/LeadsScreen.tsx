@@ -114,7 +114,7 @@ export function AreaRows({ tasks }: { tasks: StaffTask[] }) {
             title={`${a}: ${done} done, ${pend} pending, ${late} overdue`}
           >
             <span className="truncate">{a}</span>
-            <span className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-line-soft">
+            <span className="flex h-2 gap-0.5 overflow-hidden rounded-bar bg-line-soft">
               {done > 0 && (
                 <i className="block bg-ok-mid" style={{ width: w(done) }} />
               )}
@@ -152,7 +152,7 @@ function OldAreaRows({
             title={`${a}: ${done} done, ${pend} pending, ${late} overdue, ${total - done - pend - late} not started`}
           >
             <span className="truncate">{a}</span>
-            <span className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-line-soft">
+            <span className="flex h-2 gap-0.5 overflow-hidden rounded-bar bg-line-soft">
               {done > 0 && (
                 <i className="block bg-ok-mid" style={{ width: w(done) }} />
               )}
@@ -271,7 +271,7 @@ export function LeadExpandList({
               >
                 {late}
               </span>
-              <span className="hidden h-2 overflow-hidden rounded-full bg-line-soft md:flex">
+              <span className="hidden h-2 overflow-hidden rounded-bar bg-line-soft md:flex">
                 <i
                   className="block bg-bad-mid"
                   style={{ width: `${(late / maxOpen) * 100}%` }}
@@ -537,7 +537,7 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
           <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto">
             <Button size="sm" variant="outline" asChild>
               <Link href={`${base(portal)}/work`}>
-                <Sparkles size={14} strokeWidth={1.5} /> Plan the week
+                <Sparkles size={14} strokeWidth={1.6} /> Plan the week
               </Link>
             </Button>
             <Button
@@ -553,7 +553,7 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
                 setAssignOpen(true);
               }}
             >
-              <Plus size={14} strokeWidth={1.5} /> Assign to-do
+              <Plus size={14} strokeWidth={1.6} /> Assign to-do
             </Button>
             <PopoverCard
               align="end"
@@ -564,7 +564,7 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
                   variant="outline"
                   aria-label="More actions"
                 >
-                  <MoreHorizontal size={16} strokeWidth={1.5} />
+                  <MoreHorizontal size={16} strokeWidth={1.6} />
                 </Button>
               }
             >

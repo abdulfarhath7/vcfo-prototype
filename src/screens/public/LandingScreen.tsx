@@ -103,7 +103,7 @@ export function LandingScreen() {
               Book a demo
             </button>
             <button type="button" className="lp-nav-toggle" aria-expanded={menu} aria-controls="lp-nav-mobile" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
-              {menu ? <X size={18} strokeWidth={1.5} /> : <Menu size={18} strokeWidth={1.5} />}
+              {menu ? <X size={18} strokeWidth={1.6} /> : <Menu size={18} strokeWidth={1.6} />}
             </button>
           </div>
         </div>
@@ -339,7 +339,7 @@ export function LandingScreen() {
                   <Link key={c.key} href="/client/registrations" className={`lp-card lp-cluster ${c.key}`} style={{ "--i": i } as React.CSSProperties}>
                     <header>
                       <span className="tile">
-                        <Ic size={14} strokeWidth={1.5} />
+                        <Ic size={14} strokeWidth={1.6} />
                       </span>
                       <b>{c.title}</b>
                       <span className="n">{c.chips.length}</span>
@@ -390,7 +390,7 @@ export function LandingScreen() {
                 </ul>
                 <Link href="/client/notifications" className="lp-card lp-remind" aria-label="How a reminder works. Open notifications.">
                   <div className="box">
-                    <CalendarClock size={20} strokeWidth={1.5} />
+                    <CalendarClock size={20} strokeWidth={1.6} />
                     <b>Due date</b>
                     <span>from the calendar</span>
                   </div>
@@ -398,7 +398,7 @@ export function LandingScreen() {
                     <i />
                   </div>
                   <div className="box">
-                    <Bell size={20} strokeWidth={1.5} />
+                    <Bell size={20} strokeWidth={1.6} />
                     <b>Reminder</b>
                     <span>email is the record, WhatsApp the reminder</span>
                   </div>
@@ -406,7 +406,7 @@ export function LandingScreen() {
                     <i />
                   </div>
                   <div className="box">
-                    <FileCheck size={20} strokeWidth={1.5} />
+                    <FileCheck size={20} strokeWidth={1.6} />
                     <b>Filed</b>
                     <span>acknowledgement attached</span>
                   </div>
@@ -591,7 +591,7 @@ export function LandingScreen() {
                     </header>
                     <p>{p.desc}</p>
                     <span className="go">
-                      {p.open} <ArrowRight size={14} strokeWidth={1.5} />
+                      {p.open} <ArrowRight size={14} strokeWidth={1.6} />
                     </span>
                   </Link>
                 ))}
@@ -633,7 +633,7 @@ export function LandingScreen() {
                   {ASK_QUESTIONS.map((q, i) => (
                     <li key={q} data-stagger style={{ "--i": i } as React.CSSProperties}>
                       <Link href="/client/home">
-                        <MessageSquare size={14} strokeWidth={1.5} />
+                        <MessageSquare size={14} strokeWidth={1.6} />
                         {q}
                       </Link>
                     </li>

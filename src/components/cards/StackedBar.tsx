@@ -18,7 +18,7 @@ export function StackedBar({ segments, total, title, className, height = 8, form
           {total !== undefined && <span className="ml-auto text-24 font-semibold leading-none">{total}</span>}
         </div>
       )}
-      <span className="flex w-full gap-0.5 overflow-hidden rounded-full" style={{ height }} aria-hidden>
+      <span className="flex w-full gap-0.5 overflow-hidden rounded-bar" style={{ height }} aria-hidden>
         {segments
           .filter((s) => s.value > 0)
           .map((s) => (

@@ -124,10 +124,10 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
         f.proof === "file" ? (
           <span className="inline-flex items-center gap-1.5">
             <button type="button" onClick={() => setProof({ title: f.form, period: f.period, client: "", area: f.area })} className="inline-flex h-[22px] items-center gap-1 rounded-sm bg-accent-soft px-2 text-12 font-semibold text-accent hover:underline">
-              <FileCheck size={12} strokeWidth={1.5} /> Proof
+              <FileCheck size={12} strokeWidth={1.6} /> Proof
             </button>
             <Button size="iconSm" variant="outline" aria-label={`Download proof of ${f.form}`} title="Download" onClick={() => toast.show(`Downloaded ${f.form} proof · ${f.period}`)}>
-              <Download size={14} strokeWidth={1.5} />
+              <Download size={14} strokeWidth={1.6} />
             </Button>
           </span>
         ) : f.proof === "pending" ? (
@@ -142,10 +142,10 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
     <>
       <span className="inline-flex items-center">
         <Button size="iconSm" variant="ghost" onClick={() => move(-1)} disabled={period === "annual" || start === 0} aria-label="Previous period">
-          <ChevronLeft size={16} strokeWidth={1.5} />
+          <ChevronLeft size={16} strokeWidth={1.6} />
         </Button>
         <Button size="iconSm" variant="ghost" onClick={() => move(1)} disabled={period === "annual" || end === 11} aria-label="Next period">
-          <ChevronRight size={16} strokeWidth={1.5} />
+          <ChevronRight size={16} strokeWidth={1.6} />
         </Button>
       </span>
       <Tabs
@@ -161,11 +161,11 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
         Full year
       </Button>
       <Button size="sm" onClick={() => exportCsv(rows)}>
-        <Download size={16} strokeWidth={1.5} /> Export
+        <Download size={16} strokeWidth={1.6} /> Export
       </Button>
       <Button size="sm" asChild>
         <Link href={`/${portal}/compliances/calendar`}>
-          <Calendar size={16} strokeWidth={1.5} /> Calendar
+          <Calendar size={16} strokeWidth={1.6} /> Calendar
         </Link>
       </Button>
     </>
@@ -196,7 +196,7 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
               return (
                 <button key={a} type="button" onClick={() => setArea(area === a ? "all" : a)} aria-pressed={area === a} className={cn("grid grid-cols-[84px_minmax(0,1fr)_36px] items-center gap-3 rounded-sm text-left hover:bg-raised", area === a && "bg-raised")}>
                   <span className="text-12.5 font-semibold">{AREA_LABEL[a]}</span>
-                  <span className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-line-soft" title={`${AREA_LABEL[a]} · ${list.length} filings`}>
+                  <span className="flex h-2 gap-0.5 overflow-hidden rounded-bar bg-line-soft" title={`${AREA_LABEL[a]} · ${list.length} filings`}>
                     {STATUSES.map((s) => {
                       const n = list.filter((f) => f.status === s).length;
                       return n ? <i key={s} className={cn("block h-full", barFill[S_BAR[s]])} style={{ flex: n }} title={`${AREA_LABEL[a]} · ${n} ${s.toLowerCase()}`} /> : null;

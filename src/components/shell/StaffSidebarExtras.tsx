@@ -54,7 +54,7 @@ export function FoldButton({ open, onToggle, label }: { open: boolean; onToggle:
       title={`${open ? "Hide" : "Show"} ${label}`}
       className="grid h-7 w-7 flex-none place-items-center rounded-md text-navy-faint hover:bg-white/[.08] hover:text-white"
     >
-      <ChevronDown size={14} strokeWidth={1.5} className={cn("transition-transform", open && "rotate-180")} aria-hidden />
+      <ChevronDown size={14} strokeWidth={1.6} className={cn("transition-transform", open && "rotate-180")} aria-hidden />
     </button>
   );
 }
@@ -255,7 +255,7 @@ export function ReportsTo({ portal }: { portal: StaffPortal }) {
           <span className="block truncate text-11 text-navy-faint">{p.role}</span>
         </span>
         <Link href={`/${portal}/email?to=${p.name.toLowerCase()}`} aria-label={`Email ${p.name}`} title={`Email ${p.name}`} className="grid h-7 w-7 place-items-center rounded-md bg-white/[.08] text-white hover:bg-white/[.14]">
-          <Mail size={14} strokeWidth={1.5} />
+          <Mail size={14} strokeWidth={1.6} />
         </Link>
       </div>
     </div>

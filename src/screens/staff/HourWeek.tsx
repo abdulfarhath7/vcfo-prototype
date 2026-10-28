@@ -193,7 +193,7 @@ export function HourWeek({ days, blocks, allDay = [], today, now, solidBlocks, s
                       title={a.kind === "locked" ? `${a.text} · manager date · locked` : `${a.text} · filing · read-only`}
                       className={cn("flex min-w-0 items-center gap-1 truncate rounded-sm border border-line border-l-[3px] bg-surface px-1.5 py-0.5 text-11.5 font-semibold", a.kind === "filing" ? "border-l-bad" : "border-l-navy")}
                     >
-                      {a.kind === "locked" && <Lock size={11} strokeWidth={1.5} className="flex-none" aria-hidden />}
+                      {a.kind === "locked" && <Lock size={11} strokeWidth={1.6} className="flex-none" aria-hidden />}
                       <span className="truncate">{a.text}</span>
                     </span>
                   ))}
@@ -264,7 +264,7 @@ export function HourWeek({ days, blocks, allDay = [], today, now, solidBlocks, s
                 })}
               {isToday(x) && now !== undefined && now >= H0 && now <= H0 + HOURS && (
                 <span className="pointer-events-none absolute inset-x-0 z-[2] flex items-center" style={{ top: (now - H0) * PX }} aria-hidden>
-                  <i className="-ml-1 h-2 w-2 rounded-full bg-brand" />
+                  <i className="-ml-1 h-2 w-2 rounded-[2px] bg-brand" />
                   <i className="h-0.5 flex-1 bg-brand" />
                 </span>
               )}

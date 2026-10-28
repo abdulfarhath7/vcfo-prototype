@@ -166,10 +166,10 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
   const actions = (
     <>
       <Button variant="outline" size="sm" onClick={() => setPlanOpen(true)}>
-        <Sparkles size={14} strokeWidth={1.5} /> Plan my week
+        <Sparkles size={14} strokeWidth={1.6} /> Plan my week
       </Button>
       <Button variant="primary" size="sm" onClick={() => setNewOpen(true)}>
-        <Plus size={14} strokeWidth={1.5} /> New to-do
+        <Plus size={14} strokeWidth={1.6} /> New to-do
       </Button>
       <PopoverCard
         open={moreOpen}
@@ -178,7 +178,7 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
         width={200}
         trigger={
           <Button variant="outline" size="iconSm" aria-label="More actions" title="More actions">
-            <MoreHorizontal size={16} strokeWidth={1.5} />
+            <MoreHorizontal size={16} strokeWidth={1.6} />
           </Button>
         }
       >

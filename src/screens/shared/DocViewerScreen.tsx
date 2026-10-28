@@ -110,10 +110,10 @@ export function DocViewerScreen({ portal, id }: { portal: Portal; id: string }) 
               {pos + 1} of {seq.length}
             </span>
             <Button size="sm" onClick={download} aria-label="Download">
-              <Download size={15} strokeWidth={1.5} /> <span className="hidden sm:inline">Download</span>
+              <Download size={15} strokeWidth={1.6} /> <span className="hidden sm:inline">Download</span>
             </Button>
             <Button ref={closeBtn} size="iconSm" onClick={close} aria-label="Close preview (Esc)" title="Close (Esc)">
-              <X size={16} strokeWidth={1.5} />
+              <X size={16} strokeWidth={1.6} />
             </Button>
           </div>
 
@@ -126,18 +126,18 @@ export function DocViewerScreen({ portal, id }: { portal: Portal; id: string }) 
               </div>
             )}
           </div>
-          <Link href={`${base}/documents/view/${prev.id}`} aria-label="Previous document" className="absolute left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface text-ink-2 hover:text-ink md:grid">
-            <ChevronLeft size={18} strokeWidth={1.5} />
+          <Link href={`${base}/documents/view/${prev.id}`} aria-label="Previous document" className="absolute left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-md border border-line bg-surface text-ink-2 hover:text-ink md:grid">
+            <ChevronLeft size={18} strokeWidth={1.6} />
           </Link>
-          <Link href={`${base}/documents/view/${next.id}`} aria-label="Next document" className="absolute right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface text-ink-2 hover:text-ink md:grid">
-            <ChevronRight size={18} strokeWidth={1.5} />
+          <Link href={`${base}/documents/view/${next.id}`} aria-label="Next document" className="absolute right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-md border border-line bg-surface text-ink-2 hover:text-ink md:grid">
+            <ChevronRight size={18} strokeWidth={1.6} />
           </Link>
 
           {can && (
             <div className="absolute bottom-16 left-1/2 flex h-[38px] -translate-x-1/2 items-center gap-1 rounded-md bg-navy px-2 text-12.5 font-semibold text-white md:bottom-4">
               {pages > 1 && (
                 <button type="button" aria-label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="grid h-7 w-6 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
-                  <ChevronLeft size={14} strokeWidth={1.5} />
+                  <ChevronLeft size={14} strokeWidth={1.6} />
                 </button>
               )}
               <span className="whitespace-nowrap px-1.5">
@@ -145,30 +145,30 @@ export function DocViewerScreen({ portal, id }: { portal: Portal; id: string }) 
               </span>
               {pages > 1 && (
                 <button type="button" aria-label="Next page" disabled={page >= pages} onClick={() => setPage((p) => p + 1)} className="grid h-7 w-6 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
-                  <ChevronRight size={14} strokeWidth={1.5} />
+                  <ChevronRight size={14} strokeWidth={1.6} />
                 </button>
               )}
               <span className="mx-1 h-4 w-px bg-white/[.25]" aria-hidden />
               <button type="button" aria-label="Zoom out" disabled={zoom <= ZOOMS[0]} onClick={() => setZoom((z) => ZOOMS[Math.max(0, ZOOMS.indexOf(z) - 1)])} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
-                <Minus size={14} strokeWidth={1.5} />
+                <Minus size={14} strokeWidth={1.6} />
               </button>
               <button type="button" onClick={() => setZoom(100)} aria-label="Reset zoom" className="h-7 w-12 rounded-sm font-mono text-12 hover:bg-white/[.12]">
                 {zoom}%
               </button>
               <button type="button" aria-label="Zoom in" disabled={zoom >= ZOOMS[ZOOMS.length - 1]} onClick={() => setZoom((z) => ZOOMS[Math.min(ZOOMS.length - 1, ZOOMS.indexOf(z) + 1)])} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
-                <Plus size={14} strokeWidth={1.5} />
+                <Plus size={14} strokeWidth={1.6} />
               </button>
             </div>
           )}
           <div className="flex flex-none items-center justify-between gap-2 border-t border-line-soft bg-surface px-3 py-2 md:hidden">
             <Button asChild size="sm">
               <Link href={`${base}/documents/view/${prev.id}`}>
-                <ChevronLeft size={15} strokeWidth={1.5} /> Previous
+                <ChevronLeft size={15} strokeWidth={1.6} /> Previous
               </Link>
             </Button>
             <Button asChild size="sm">
               <Link href={`${base}/documents/view/${next.id}`}>
-                Next <ChevronRight size={15} strokeWidth={1.5} />
+                Next <ChevronRight size={15} strokeWidth={1.6} />
               </Link>
             </Button>
           </div>

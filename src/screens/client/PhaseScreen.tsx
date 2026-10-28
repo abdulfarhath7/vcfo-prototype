@@ -85,7 +85,7 @@ export function PhaseScreen({ n }: { n: 1 | 2 | 3 }) {
       align: "center",
       render: (s) => (
         <Link href={stepHref("client", s.n)} aria-label={`Open step ${s.n} · ${s.title}`} className="inline-grid text-faint hover:text-ink">
-          <ArrowRight size={16} strokeWidth={1.5} />
+          <ArrowRight size={16} strokeWidth={1.6} />
         </Link>
       ),
     },

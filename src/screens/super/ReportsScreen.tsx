@@ -213,7 +213,7 @@ export function ReportsScreen() {
       render: (r) => (
         <span className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => run(r)}>
-            <Play size={14} strokeWidth={1.5} /> Run
+            <Play size={14} strokeWidth={1.6} /> Run
           </Button>
           <Button
             size="sm"
@@ -223,10 +223,10 @@ export function ReportsScreen() {
               setFreq(r.schedule);
             }}
           >
-            <CalendarClock size={14} strokeWidth={1.5} /> Schedule
+            <CalendarClock size={14} strokeWidth={1.6} /> Schedule
           </Button>
           <Button size="sm" variant="outline" onClick={() => download(r)} aria-label={`Download ${r.name}`}>
-            <Download size={14} strokeWidth={1.5} /> Download
+            <Download size={14} strokeWidth={1.6} /> Download
           </Button>
         </span>
       ),
@@ -246,7 +246,7 @@ export function ReportsScreen() {
         />
         <span className="text-12.5 text-muted">Partner report · prepared on 16 Oct 2026, final on 1 Nov</span>
         <Button variant="primary" className="ml-auto" onClick={() => toast.show("Downloaded SBC-partner-report-October-2026.pdf")}>
-          <Download size={14} strokeWidth={1.5} /> Download PDF
+          <Download size={14} strokeWidth={1.6} /> Download PDF
         </Button>
       </div>
       <PartnerReport />
@@ -274,10 +274,10 @@ export function ReportsScreen() {
             right={
               <>
                 <Button size="sm" variant="primary" onClick={() => download(open)}>
-                  <Download size={14} strokeWidth={1.5} /> Download PDF
+                  <Download size={14} strokeWidth={1.6} /> Download PDF
                 </Button>
                 <Button size="iconSm" variant="ghost" aria-label="Close report" onClick={() => setOpenId(null)}>
-                  <X size={16} strokeWidth={1.5} />
+                  <X size={16} strokeWidth={1.6} />
                 </Button>
               </>
             }

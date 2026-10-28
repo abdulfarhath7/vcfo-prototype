@@ -26,7 +26,7 @@ export function Thread({ steps, className }: { steps: ThreadStep[]; className?: 
             {!last && <span className="absolute left-[9px] top-5 h-[calc(100%-20px)] border-l border-line" aria-hidden />}
             <span
               className={cn(
-                "grid h-5 w-5 place-items-center rounded-full",
+                "grid h-5 w-5 place-items-center rounded-sm",
                 s.state === "done" && "bg-ok-soft text-ok",
                 s.state === "current" && "bg-accent-soft text-accent shadow-[inset_0_0_0_2px_var(--accent)]",
                 s.state === "upcoming" && "shadow-[inset_0_0_0_1.5px_var(--line)]",
@@ -34,7 +34,7 @@ export function Thread({ steps, className }: { steps: ThreadStep[]; className?: 
               aria-hidden
             >
               {s.state === "done" && <Check size={12} strokeWidth={2.4} />}
-              {s.state === "current" && <span className="h-1.5 w-1.5 rounded-full bg-accent" />}
+              {s.state === "current" && <span className="h-1.5 w-1.5 rounded-[2px] bg-accent" />}
             </span>
             <div className="min-w-0 pt-px">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

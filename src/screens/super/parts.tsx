@@ -30,7 +30,7 @@ export function ClientTile({ client, className }: { client?: Pick<Client, "name"
 export function ClientName({ client, href, sub, className }: { client: Pick<Client, "name" | "tone">; href?: string; sub?: string; className?: string }) {
   const body = (
     <>
-      <i className={cn("h-2 w-2 flex-none rounded-full", barFill[client.tone])} aria-hidden />
+      <i className={cn("h-2 w-2 flex-none rounded-[2px]", barFill[client.tone])} aria-hidden />
       <span className="min-w-0">
         <span className="block truncate font-semibold">{client.name}</span>
         {sub && <span className="block truncate text-12 text-muted">{sub}</span>}

@@ -208,10 +208,10 @@ export function PrototypeBar({ portal, incorporated = false }: { portal: Portal;
               </option>
             ))}
           </select>
-          <ChevronDown size={14} strokeWidth={1.5} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" aria-hidden />
+          <ChevronDown size={14} strokeWidth={1.6} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" aria-hidden />
         </span>
         <button type="button" onClick={() => hide(true)} aria-label="Hide prototype controls" className="grid h-[26px] w-[26px] flex-none place-items-center rounded-md text-white/[.7] hover:text-white">
-          <X size={14} strokeWidth={1.5} />
+          <X size={14} strokeWidth={1.6} />
         </button>
       </div>
     </>

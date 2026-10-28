@@ -538,7 +538,7 @@ function Record({ portal }: { portal: StaffPortal }) {
                   Send reminder
                 </Button>
                 <Button size="sm" variant="primary" onClick={() => toast.show(`Invoice sent to ${contact?.email ?? c.short}`)}>
-                  <Send size={14} strokeWidth={1.5} /> Send invoice
+                  <Send size={14} strokeWidth={1.6} /> Send invoice
                 </Button>
               </>
             }

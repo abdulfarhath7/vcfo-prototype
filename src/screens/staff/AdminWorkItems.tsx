@@ -118,7 +118,7 @@ export function AdminWorkItems({ tabs }: { tabs: React.ReactNode }) {
             width={200}
             trigger={
               <Button variant="outline" size="iconSm" aria-label="More actions" title="More actions">
-                <MoreHorizontal size={16} strokeWidth={1.5} />
+                <MoreHorizontal size={16} strokeWidth={1.6} />
               </Button>
             }
           >
@@ -160,7 +160,7 @@ export function AdminWorkItems({ tabs }: { tabs: React.ReactNode }) {
               {mgrRows.map((m) => (
                 <li key={m.name} className="grid grid-cols-[96px_minmax(0,1fr)_28px] items-center gap-3 text-12.5" title={`${m.name}: ${m.open} open, ${m.late} overdue`}>
                   <span className="truncate font-semibold">{m.name}</span>
-                  <span className="flex h-2 overflow-hidden rounded-full bg-line-soft" aria-hidden>
+                  <span className="flex h-2 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
                     <span className="flex h-full" style={{ width: `${(m.open / maxOpen) * 100}%` }}>
                       <Seg n={m.late} total={m.open || 1} tone="bad" />
                       <Seg n={m.open - m.late} total={m.open || 1} tone="accent" />
@@ -187,7 +187,7 @@ export function AdminWorkItems({ tabs }: { tabs: React.ReactNode }) {
                 return (
                   <li key={k} className="grid grid-cols-[96px_minmax(0,1fr)_36px] items-center gap-3 text-12.5" title={`${k}: ${done} done, ${mine.length - done - late} pending, ${late} overdue`}>
                     <span className="truncate font-semibold">{k}</span>
-                    <span className="flex h-2 overflow-hidden rounded-full bg-line-soft" aria-hidden>
+                    <span className="flex h-2 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
                       <Seg n={done} total={total} tone="ok" />
                       <Seg n={mine.length - done - late} total={total} tone="warn" />
                       <Seg n={late} total={total} tone="bad" />

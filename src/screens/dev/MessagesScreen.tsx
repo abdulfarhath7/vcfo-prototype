@@ -39,7 +39,7 @@ function Timeline({ m }: { m: Message }) {
       {timeline(m).map((t) => (
         <li key={t.label} className={`min-w-0 ${t.at ? "" : "opacity-50"}`}>
           <div className="flex items-center gap-2 text-13 font-semibold">
-            <i className={`h-[8px] w-[8px] flex-none rounded-full ${t.tone === "ok" ? "bg-ok-mid" : t.tone === "bad" ? "bg-bad-mid" : "border border-faint"}`} aria-hidden />
+            <i className={`h-[8px] w-[8px] flex-none rounded-md ${t.tone === "ok" ? "bg-ok-mid" : t.tone === "bad" ? "bg-bad-mid" : "border border-faint"}`} aria-hidden />
             {t.label}
           </div>
           {t.at && <div className="pl-4 font-mono text-12 text-muted">{stampSec(t.at)}</div>}

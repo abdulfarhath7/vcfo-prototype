@@ -22,12 +22,14 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
   const updatesBase = portal === "client" ? "/client" : `/${portal}/updates`;
 
   return (
-    <div className="flex min-h-screen">
-      <div className="sticky top-0 hidden h-screen flex-none md:block">
+    <div className="flex min-h-screen pt-[3px]">
+      {/* R-46: the regulator spectrum ribbon, 3 px, across the very top. The only decorative line. */}
+      <div className="spectrum fixed inset-x-0 top-0 z-[90] h-[3px]" aria-hidden />
+      <div className="sticky top-[3px] hidden h-[calc(100vh-3px)] flex-none md:block">
         <Sidebar portal={portal} incorporated={incorporated} />
       </div>
       {drawer && (
-        <div className="fixed inset-0 z-[80] flex md:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-x-0 bottom-0 top-[3px] z-[80] flex md:hidden" role="dialog" aria-modal="true">
           <div className="h-full">
             <Sidebar portal={portal} incorporated={incorporated} onClose={() => setDrawer(false)} />
           </div>

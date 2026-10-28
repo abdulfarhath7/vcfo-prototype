@@ -45,10 +45,10 @@ function DocRow({ doc, picked, onPreview, onDownload }: { doc: PackDoc; picked: 
       </span>
       <span className="flex gap-1">
         <Button size="iconSm" variant="outline" aria-label={`Preview ${doc.title}`} title="Preview" onClick={onPreview}>
-          <Eye size={14} strokeWidth={1.5} />
+          <Eye size={14} strokeWidth={1.6} />
         </Button>
         <Button size="iconSm" variant="outline" aria-label={`Download ${doc.title} as Word`} title="Download as Word" disabled={missing} onClick={onDownload}>
-          <Download size={14} strokeWidth={1.5} />
+          <Download size={14} strokeWidth={1.6} />
         </Button>
       </span>
     </div>
@@ -123,7 +123,7 @@ export function DocumentPackScreen({ portal }: { portal: StaffPortal }) {
         <Tag tone="warn">{needs.length} need inputs</Tag>
         <Tag>{waiting.length} waiting for release</Tag>
         <Button variant="primary" className="ml-auto" onClick={() => setZipped(true)}>
-          {zipped ? <Check size={16} strokeWidth={1.5} /> : <Download size={16} strokeWidth={1.5} />}
+          {zipped ? <Check size={16} strokeWidth={1.6} /> : <Download size={16} strokeWidth={1.6} />}
           {zipped ? `${ready.length} files in the .zip` : `Download ready (${ready.length}) as .zip`}
         </Button>
       </div>

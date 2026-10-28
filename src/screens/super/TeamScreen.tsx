@@ -108,7 +108,7 @@ export function TeamScreen() {
               Assign task
             </Button>
             <Button size="sm" variant="primary" onClick={() => setAssign({ open: true, mode: "client" })}>
-              <UserPlus size={14} strokeWidth={1.5} /> Assign client
+              <UserPlus size={14} strokeWidth={1.6} /> Assign client
             </Button>
           </>
         }

@@ -44,7 +44,7 @@ export function Palette({ portal, onClose }: { portal: Portal; onClose: () => vo
     <div className="fixed inset-0 z-50 bg-scrim p-4 pt-[12vh]" onClick={onClose} role="dialog" aria-modal="true" aria-label="Search">
       <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border border-line bg-surface shadow-pop" onClick={(e) => e.stopPropagation()} onKeyDown={onKey}>
         <div className="flex h-12 items-center gap-2.5 border-b border-line-soft px-4">
-          <Search size={16} strokeWidth={1.5} className="text-muted" />
+          <Search size={16} strokeWidth={1.6} className="text-muted" />
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search clients, steps, filings, documents" className="h-full flex-1 bg-transparent text-14 outline-none placeholder:text-faint" aria-label="Search" />
           <kbd className="rounded-sm border border-line px-1.5 font-mono text-11 text-muted">Esc</kbd>
         </div>
@@ -66,7 +66,7 @@ export function Palette({ portal, onClose }: { portal: Portal; onClose: () => vo
                     onClick={() => go(h)}
                     className={cn("flex h-10 w-full items-center gap-2.5 px-4 text-left", on ? "bg-navy-tint" : "hover:bg-raised")}
                   >
-                    {h.tone && <i className={cn("h-2 w-2 flex-none rounded-full", barFill[h.tone])} aria-hidden />}
+                    {h.tone && <i className={cn("h-2 w-2 flex-none rounded-[2px]", barFill[h.tone])} aria-hidden />}
                     <span className="min-w-0 flex-1 truncate text-13.5">
                       <span className="font-semibold">{h.title}</span>
                       {h.sub && <span className="ml-2 text-12.5 text-muted">{h.sub}</span>}

@@ -236,7 +236,7 @@ export function ClientRecordScreen({ id }: { id: string }) {
             <span className="inline-flex min-w-0 items-center gap-1.5">
               {contact.name} ·
               <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-1 text-accent hover:underline">
-                <Mail size={14} strokeWidth={1.5} /> {contact.email}
+                <Mail size={14} strokeWidth={1.6} /> {contact.email}
               </a>
             </span>
           )}
@@ -244,7 +244,7 @@ export function ClientRecordScreen({ id }: { id: string }) {
             Admin: <b className="font-semibold text-ink">{adminOf(manager)}</b> · Manager: <b className="font-semibold text-ink">{manager}</b> · Project lead: <b className="font-semibold text-ink">{c.lead}</b>
           </span>
           <Button size="sm" variant="link" onClick={() => setAssignOpen(true)}>
-            <Repeat size={14} strokeWidth={1.5} /> Reassign
+            <Repeat size={14} strokeWidth={1.6} /> Reassign
           </Button>
         </div>
         <div className="mt-3 flex flex-wrap items-baseline gap-x-8 gap-y-2">

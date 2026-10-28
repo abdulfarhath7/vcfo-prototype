@@ -134,7 +134,7 @@ function View({ id, n }: { id: string; n: number }) {
       <span className="w-12 flex-none font-mono text-12 text-muted">{fmt(f.date)}</span>
       {f.state === "Asked" && (
         <Button size="sm" variant="outline" onClick={() => toast.show(`Reminder sent to ${c.contacts[0]?.name ?? c.short}: ${f.name}`)}>
-          <Send size={14} strokeWidth={1.5} /> Send reminder
+          <Send size={14} strokeWidth={1.6} /> Send reminder
         </Button>
       )}
       {f.state === "Submitted" && (
@@ -157,7 +157,7 @@ function View({ id, n }: { id: string; n: number }) {
         icon={{ Icon: List, tone: "blue" }}
         meta={
           <span className="inline-flex items-center gap-1.5">
-            <i className={cn("h-2 w-2 rounded-full", barFill[c.tone])} aria-hidden />
+            <i className={cn("h-2 w-2 rounded-[2px]", barFill[c.tone])} aria-hidden />
             {c.short}
           </span>
         }
@@ -212,7 +212,7 @@ function View({ id, n }: { id: string; n: number }) {
               toast.show("Copied for Assist");
             }}
           >
-            <Copy size={14} strokeWidth={1.5} /> Copy for Assist
+            <Copy size={14} strokeWidth={1.6} /> Copy for Assist
           </Button>
           <Link href="/super/documents" className="ml-auto text-13 font-semibold text-accent hover:underline">
             Open in document pack ›
@@ -247,7 +247,7 @@ function View({ id, n }: { id: string; n: number }) {
                   {toFile.map(formRow)}
                   <div className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
                     <span className="mr-auto inline-flex items-center gap-1.5 text-12.5 text-muted">
-                      <i className="h-1.5 w-1.5 rounded-full bg-ok" aria-hidden /> Draft saved
+                      <i className="h-1.5 w-1.5 rounded-[2px] bg-ok" aria-hidden /> Draft saved
                     </span>
                     <Button size="sm" variant="outline" onClick={() => toast.show(`Sent to ${c.contacts[0]?.name ?? c.short} to fill`)}>
                       Request client to fill

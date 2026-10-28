@@ -1,97 +1,207 @@
-/* Tokens from docs/RULES.md. This is the only file with colour values. */
+/* Tokens from docs/RULES.md (VCFO Spectrum, 28 Oct 2026). This is the only file with colour values. */
 
 :root {
   --white: #ffffff;
-  --canvas: #f3f5f9;
+  --canvas: #f6f8fb;
   --surface: #ffffff;
-  --raised: #f5f6f8;
-  --line: #e3e6eb;
-  --line-soft: #eef0f3;
-  --ink: #16212f;
-  --ink-2: #3f4a59;
-  --muted: #667180;
-  --faint: #98a1ae;
+  --raised: #f1f4f8;
+  --hover: #f4f6fa;
+  --line: #e3e8ef;
+  /* edges of controls: inputs, secondary buttons, checkboxes (R-12, R-47) */
+  --line-2: #cbd3de;
+  /* hairline between table rows (R-07) */
+  --line-soft: #edf1f5;
+  --ink: #0a2540;
+  --ink-2: #3c4f69;
+  --muted: #5e6e85;
+  --faint: #8896a8;
 
-  --navy: #15263b;
-  --navy-2: #1b3049;
-  --navy-hover: #1b3049;
-  --navy-tint: #eef2f8;
-  --navy-ink: #c9d4e2;
-  --navy-faint: #7f93ab;
-  --navy-line: rgba(255, 255, 255, 0.08);
-  --navy-on: rgba(110, 160, 230, 0.18);
+  /* sidebar (R-45) and strong button */
+  --navy: #0a2540;
+  --navy-2: #0f2d4d;
+  --navy-hover: rgba(255, 255, 255, 0.06);
+  --navy-tint: #f4f6fa;
+  --navy-ink: #c6d1e0;
+  --navy-faint: #8fa3bf;
+  --navy-line: #17375c;
+  --navy-on: rgba(122, 114, 255, 0.26);
+  --navy-on-ink: #d9d6ff;
 
-  --accent: #2563a8;
-  --accent-soft: #e6effa;
-  --accent-line: #b9d0ec;
-  --ok: #1e7f55;
-  --ok-soft: #e2f3ea;
-  --ok-mid: #46a87a;
-  --warn: #a35f00;
-  --warn-soft: #fcefd8;
-  --warn-mid: #e3a040;
-  --bad: #be3434;
-  --bad-soft: #fbe6e6;
-  --bad-mid: #dd6262;
-  --violet: #6a4fb6;
-  --violet-soft: #efeafb;
-  --teal: #0f7c86;
-  --teal-soft: #e0f3f4;
-  --idle: #56627a;
-  --idle-soft: #eceff4;
-  --brand: #e9792f;
-  --scrim: rgba(22, 33, 47, 0.4);
-  /* main button and picked tab (R-11, R-12): sidebar navy in light mode */
-  --btn: #15263b;
-  --btn-hover: #1b3049;
+  /* blurple: main button, picked tab, focus (R-12) */
+  --primary: #635bff;
+  --primary-hover: #5249f0;
+  --primary-on: #ffffff;
+  --strong: #0a2540;
+  --strong-on: #ffffff;
+  --focus: rgba(99, 91, 255, 0.24);
+  --danger: #d92d20;
+  --danger-hover: #b8241a;
+  /* ghost button and quiet fills: 6 % ink */
+  --ghost: rgba(10, 37, 64, 0.06);
+  --ghost-hover: rgba(10, 37, 64, 0.1);
+
+  /* accent = in progress and links */
+  --accent: #4a3fe0;
+  --accent-soft: #efeeff;
+  --accent-line: rgba(99, 91, 255, 0.28);
+  --accent-mid: #635bff;
+  /* done */
+  --ok: #0b7a43;
+  --ok-soft: #dff5e7;
+  --ok-mid: #16a34a;
+  /* due soon */
+  --warn: #9a4d00;
+  --warn-soft: #fff0d9;
+  --warn-mid: #f59e0b;
+  /* overdue */
+  --bad: #c0182f;
+  --bad-soft: #ffe6e9;
+  --bad-mid: #e11d48;
+  /* waiting */
+  --teal: #06708c;
+  --teal-soft: #dff3f9;
+  --teal-mid: #0ea5c6;
+  /* not started */
+  --idle: #4e5d73;
+  --idle-soft: #edf0f5;
+  --idle-mid: #94a3b8;
+  /* MCA owner */
+  --violet: #5b3fc4;
+  --violet-soft: #efeafc;
+  --violet-mid: #8b5cf6;
+  /* SBC owner and info banners */
+  --info: #0a5fc2;
+  --info-soft: #e8f1fd;
+  --info-line: #bfd8f7;
+  --info-mid: #2f6feb;
+  /* warning banner */
+  --caution: #7a4100;
+  --caution-soft: #fff6e0;
+  --caution-line: #f5dc9c;
+
+  /* regulator spectrum (R-43, R-46) */
+  --reg-mca: #2f6feb;
+  --reg-gst: #0e9f8e;
+  --reg-it: #8b5cf6;
+  --reg-payroll: #f29d12;
+  --reg-fema: #e8457a;
+  --reg-labour: #6ba815;
+
+  --brand: #f26b1d;
+  --scrim: rgba(10, 37, 64, 0.42);
+  /* main button and picked tab (R-11, R-12) */
+  --btn: #635bff;
+  --btn-hover: #5249f0;
+
+  /* floating things only (R-02) */
+  --shadow-float: 0 16px 40px -12px rgba(10, 37, 64, 0.28), 0 4px 10px -4px rgba(10, 37, 64, 0.1);
+  --shadow-dialog: 0 32px 64px -16px rgba(10, 37, 64, 0.4), 0 12px 24px -12px rgba(10, 37, 64, 0.18);
+  --shadow-tile: 0 8px 22px -12px rgba(10, 37, 64, 0.45);
+  --shine: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  --shadow-control: 0 1px 2px rgba(10, 37, 64, 0.05);
+
+  /* home card wash (R-17) */
+  --wash: radial-gradient(55% 140% at 0% 0%, rgba(99, 91, 255, 0.62), transparent 62%),
+    radial-gradient(45% 130% at 42% 0%, rgba(14, 159, 142, 0.42), transparent 62%),
+    radial-gradient(45% 140% at 100% 0%, rgba(242, 107, 29, 0.48), transparent 62%),
+    radial-gradient(55% 110% at 78% 100%, rgba(232, 69, 122, 0.4), transparent 62%),
+    radial-gradient(45% 100% at 20% 100%, rgba(47, 111, 235, 0.34), transparent 62%), #e9e7ff;
+  --wash-tile: rgba(255, 255, 255, 0.9);
+  --wash-tile-line: rgba(255, 255, 255, 0.95);
+  --wash-ink-2: #3c4f69;
 
   /* sizes */
-  --r-card: 10px;
-  --r-btn: 8px;
-  --r-chip: 5px;
+  --r: 6px;
+  --r-mark: 4px;
+  --r-bar: 3px;
+  --r-card: 6px;
+  --r-btn: 6px;
+  --r-chip: 6px;
   --h-head: 52px;
-  --h-row: 46px;
+  --h-row: 44px;
   --h-btn: 36px;
   --h-btn-sm: 30px;
-  --h-chip: 22px;
-  --w-chip: 108px;
-  --w-owner: 96px;
-  --w-side: 236px;
+  --h-chip: 24px;
+  --w-chip: 104px;
+  --w-owner: 104px;
+  --w-side: 248px;
   --h-top: 60px;
 }
 
 :root[data-theme="dark"] {
-  --canvas: #111821;
-  --surface: #18202b;
-  --raised: #1f2935;
-  --line: #2c3745;
-  --line-soft: #263140;
-  --ink: #e6eaf0;
-  --ink-2: #c3ccd8;
-  --muted: #9aa7b8;
-  --faint: #6f7c8d;
+  --canvas: #0b0c10;
+  --surface: #13151a;
+  --raised: #0f1115;
+  --hover: #1a1d23;
+  --line: #242830;
+  --line-2: #323742;
+  --line-soft: #1d2027;
+  --ink: #f2f4f8;
+  --ink-2: #b6beca;
+  --muted: #8e97a5;
+  --faint: #6b7482;
 
-  --navy-tint: #1f2935;
-  /* navy vanishes on the dark surface; lift the button one step */
-  --btn: #2b4766;
-  --btn-hover: #335378;
+  --navy: #0b1424;
+  --navy-2: #111c30;
+  --navy-tint: #1a1d23;
+  --navy-line: #1c2a40;
 
-  --accent: #6fa3e0;
-  --accent-soft: color-mix(in srgb, #6fa3e0 16%, var(--surface));
-  --accent-line: color-mix(in srgb, #6fa3e0 40%, var(--surface));
-  --ok: #8fdcb4;
-  --ok-soft: color-mix(in srgb, #8fdcb4 16%, var(--surface));
-  --ok-mid: #46a87a;
-  --warn: #f2c27a;
-  --warn-soft: color-mix(in srgb, #f2c27a 16%, var(--surface));
-  --warn-mid: #e3a040;
-  --bad: #f29b9b;
-  --bad-soft: color-mix(in srgb, #f29b9b 16%, var(--surface));
-  --bad-mid: #dd6262;
+  --primary: #7a72ff;
+  --primary-hover: #8c85ff;
+  --strong: #f2f4f8;
+  --strong-on: #0a2540;
+  --focus: rgba(122, 114, 255, 0.32);
+  --danger: #f04452;
+  --danger-hover: #f25a66;
+  --ghost: rgba(255, 255, 255, 0.06);
+  --ghost-hover: rgba(255, 255, 255, 0.1);
+  --btn: #7a72ff;
+  --btn-hover: #8c85ff;
+
+  --accent: #aba6ff;
+  --accent-soft: rgba(122, 114, 255, 0.16);
+  --accent-line: rgba(122, 114, 255, 0.4);
+  --accent-mid: #7a72ff;
+  --ok: #5be08e;
+  --ok-soft: rgba(74, 222, 128, 0.12);
+  --ok-mid: #4ade80;
+  --warn: #ffcb5c;
+  --warn-soft: rgba(251, 191, 36, 0.12);
+  --warn-mid: #fbbf24;
+  --bad: #ff7f8e;
+  --bad-soft: rgba(255, 107, 125, 0.14);
+  --bad-mid: #fb5468;
+  --teal: #6ad4ee;
+  --teal-soft: rgba(56, 189, 248, 0.12);
+  --teal-mid: #38bdf8;
+  --idle: #a9b2bf;
+  --idle-soft: rgba(163, 172, 185, 0.12);
+  --idle-mid: #6b7482;
   --violet: #c4b2f2;
-  --violet-soft: color-mix(in srgb, #c4b2f2 16%, var(--surface));
-  --teal: #7fd0d6;
-  --teal-soft: color-mix(in srgb, #7fd0d6 16%, var(--surface));
-  --idle: #9aa7b8;
-  --idle-soft: color-mix(in srgb, #9aa7b8 16%, var(--surface));
+  --violet-soft: rgba(139, 92, 246, 0.16);
+  --violet-mid: #a78bfa;
+  --info: #7cb4f5;
+  --info-soft: rgba(47, 111, 235, 0.14);
+  --info-line: rgba(47, 111, 235, 0.4);
+  --info-mid: #5b8ff0;
+  --caution: #ffcb5c;
+  --caution-soft: rgba(251, 191, 36, 0.1);
+  --caution-line: rgba(251, 191, 36, 0.32);
+
+  --brand: #ff7a2e;
+  --scrim: rgba(0, 0, 0, 0.6);
+
+  --shadow-float: 0 16px 40px -12px rgba(0, 0, 0, 0.7);
+  --shadow-dialog: 0 32px 64px -16px rgba(0, 0, 0, 0.75);
+  --shadow-tile: 0 8px 22px -12px rgba(0, 0, 0, 0.6);
+  --shine: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --shadow-control: none;
+
+  --wash: radial-gradient(55% 140% at 0% 0%, rgba(122, 114, 255, 0.55), transparent 62%),
+    radial-gradient(45% 130% at 42% 0%, rgba(14, 159, 142, 0.34), transparent 62%),
+    radial-gradient(45% 140% at 100% 0%, rgba(242, 107, 29, 0.32), transparent 62%),
+    radial-gradient(55% 110% at 78% 100%, rgba(232, 69, 122, 0.3), transparent 62%), #15132e;
+  --wash-tile: rgba(19, 21, 26, 0.8);
+  --wash-tile-line: rgba(255, 255, 255, 0.08);
+  --wash-ink-2: #c9cdf5;
 }

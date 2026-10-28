@@ -110,7 +110,7 @@ export function PortalLink({ area }: { area: Area }) {
   const [label, href] = PORTAL[area];
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-grid h-6 w-6 flex-none place-items-center rounded-sm text-faint hover:bg-raised hover:text-accent" aria-label={`Open ${label}`} title={`Open ${label}`}>
-      <ExternalLink size={14} strokeWidth={1.5} />
+      <ExternalLink size={14} strokeWidth={1.6} />
     </a>
   );
 }
@@ -148,7 +148,7 @@ export function ProofDialog({ proof, onOpenChange }: { proof: Proof | null; onOp
               onOpenChange(false);
             }}
           >
-            <Download size={16} strokeWidth={1.5} /> Download all
+            <Download size={16} strokeWidth={1.6} /> Download all
           </Button>
         }
       >
@@ -167,7 +167,7 @@ export function ProofDialog({ proof, onOpenChange }: { proof: Proof | null; onOp
                 <FileBadge type="PDF" />
                 <span className="min-w-0 flex-1 truncate font-mono text-12.5">{f}</span>
                 <Button size="iconSm" variant="ghost" aria-label={`Download ${f}`} onClick={() => toast.show(`Downloaded ${f}`)}>
-                  <Download size={16} strokeWidth={1.5} />
+                  <Download size={16} strokeWidth={1.6} />
                 </Button>
               </ListRow>
             ))}
@@ -219,7 +219,7 @@ export function useNextStep(total: number, initial: number) {
 export function NextStepButton({ busy, disabled, onClick }: { busy: boolean; disabled?: boolean; onClick: () => void }) {
   return (
     <Button size="sm" onClick={onClick} disabled={disabled || busy}>
-      {busy ? <Loader2 size={16} strokeWidth={1.5} className="animate-spin motion-reduce:animate-none" /> : <Check size={16} strokeWidth={1.5} />}
+      {busy ? <Loader2 size={16} strokeWidth={1.6} className="animate-spin motion-reduce:animate-none" /> : <Check size={16} strokeWidth={1.6} />}
       {busy ? "Working" : "Mark next step done"}
     </Button>
   );
@@ -253,7 +253,7 @@ export function AssistCard({ portalName, form, onFiled }: { portalName: string; 
       flush
       right={
         <Button size="sm" variant="primary" disabled={running} onClick={() => (ran ? setReplay(true) : setAt(0))}>
-          {running ? <Loader2 size={16} strokeWidth={1.5} className="animate-spin motion-reduce:animate-none" /> : <Play size={16} strokeWidth={1.5} />}
+          {running ? <Loader2 size={16} strokeWidth={1.6} className="animate-spin motion-reduce:animate-none" /> : <Play size={16} strokeWidth={1.6} />}
           {ran ? "View replay" : running ? "Filing" : "Start filing"}
         </Button>
       }
@@ -264,7 +264,7 @@ export function AssistCard({ portalName, form, onFiled }: { portalName: string; 
           const now = i === at;
           return (
             <li key={t} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 md:px-5">
-              <span className={cn("grid h-5 w-5 flex-none place-items-center rounded-full", ok ? "bg-ok-soft text-ok" : now ? "bg-accent-soft text-accent" : "shadow-[inset_0_0_0_1.5px_var(--line)]")} aria-hidden>
+              <span className={cn("grid h-5 w-5 flex-none place-items-center rounded-sm", ok ? "bg-ok-soft text-ok" : now ? "bg-accent-soft text-accent" : "shadow-[inset_0_0_0_1.5px_var(--line)]")} aria-hidden>
                 {ok ? <Check size={12} strokeWidth={2.4} /> : now ? <Loader2 size={12} strokeWidth={2} className="animate-spin motion-reduce:animate-none" /> : null}
               </span>
               <span className="min-w-0 flex-1">
@@ -361,7 +361,7 @@ export function FromClientCard({ docs, details, confirmedBy, client }: { docs: I
                 )}
                 {st === "Accepted" && (
                   <Button size="iconSm" variant="ghost" aria-label={`Download ${x.name}`}>
-                    <Download size={16} strokeWidth={1.5} />
+                    <Download size={16} strokeWidth={1.6} />
                   </Button>
                 )}
               </div>

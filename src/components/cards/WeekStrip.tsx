@@ -57,7 +57,7 @@ export function WeekStrip({ days, value, onChange, legend, className }: { days: 
                 </span>
                 {n > 0 && <span className={cn("hidden h-[18px] min-w-[20px] place-items-center rounded-sm px-1 text-11 font-bold text-white md:inline-grid", allDone ? "bg-ok-mid" : "bg-navy")}>{n}</span>}
               </span>
-              <i className={cn("h-1.5 w-1.5 rounded-full md:hidden", n ? (allDone ? "bg-ok-mid" : "bg-btn") : "bg-transparent")} aria-hidden />
+              <i className={cn("h-1.5 w-1.5 rounded-[2px] md:hidden", n ? (allDone ? "bg-ok-mid" : "bg-btn") : "bg-transparent")} aria-hidden />
               <span className="hidden min-w-0 flex-col gap-1 md:flex">
                 {dd.items.slice(0, 2).map((x) => (
                   <span key={x.id} className={cn("flex min-w-0 items-center gap-1.5 text-11.5", x.strong ? "font-semibold text-bad" : x.tone === "ok" ? "text-muted" : "text-ink")}>

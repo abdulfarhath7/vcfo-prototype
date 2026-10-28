@@ -162,11 +162,11 @@ export function FilingWindows({
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1 rounded-md border border-line bg-raised p-0.5" role="group" aria-label="Zoom the timeline">
           <Button size="iconSm" variant="ghost" onClick={() => zoom(p / 1.5)} disabled={p <= minP + 0.01} aria-label="Zoom out">
-            <Minus size={14} strokeWidth={1.5} />
+            <Minus size={14} strokeWidth={1.6} />
           </Button>
           <span className="min-w-[56px] text-center text-12 font-semibold text-muted">{level}</span>
           <Button size="iconSm" variant="ghost" onClick={() => zoom(p * 1.5)} disabled={p >= ZMAX - 0.01} aria-label="Zoom in">
-            <Plus size={14} strokeWidth={1.5} />
+            <Plus size={14} strokeWidth={1.6} />
           </Button>
           <Button size="sm" variant="ghost" onClick={() => zoom(fitP)}>
             Fit
@@ -229,7 +229,7 @@ export function FilingWindows({
                             </>
                           )}
                         </span>
-                        <span className={cn("pointer-events-none absolute top-1 h-[22px] w-0.5 rounded-full", late ? "bg-bad" : "bg-btn")} style={{ left: due * p }} aria-hidden />
+                        <span className={cn("pointer-events-none absolute top-1 h-[22px] w-0.5 rounded-bar", late ? "bg-bad" : "bg-btn")} style={{ left: due * p }} aria-hidden />
                       </React.Fragment>
                     );
                   })}

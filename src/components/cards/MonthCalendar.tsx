@@ -182,7 +182,7 @@ export function MonthCalendar({
                   </span>
                   <span className="flex flex-wrap gap-0.5 md:hidden" aria-hidden>
                     {list.map((x) => (
-                      <i key={x.id} className={cn("h-1.5 w-1.5 rounded-full", CAL_FILL[x.status])} />
+                      <i key={x.id} className={cn("h-1.5 w-1.5 rounded-[2px]", CAL_FILL[x.status])} />
                     ))}
                   </span>
                 </button>

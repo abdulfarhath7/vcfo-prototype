@@ -41,7 +41,7 @@ export function PortalLink({ area, name, className }: { area: Area; name: string
       aria-label={`Open ${p.label}`}
       className={cn("inline-grid h-6 w-6 flex-none place-items-center rounded-sm text-muted hover:bg-raised hover:text-accent", className)}
     >
-      <ExternalLink size={13} strokeWidth={1.5} />
+      <ExternalLink size={13} strokeWidth={1.6} />
     </a>
   );
 }
@@ -66,7 +66,7 @@ export function FilingTrack({ steps }: { steps: TrackStep[] }) {
         <li key={i} className={cn("grid min-w-0 grid-cols-[20px_minmax(0,1fr)] gap-x-2", s.state === "upcoming" && "opacity-55")}>
           <span
             className={cn(
-              "mt-px grid h-5 w-5 place-items-center rounded-full",
+              "mt-px grid h-5 w-5 place-items-center rounded-sm",
               s.state === "done" && "bg-ok-soft text-ok",
               s.state === "current" && "bg-accent-soft text-accent shadow-[inset_0_0_0_2px_var(--accent)]",
               s.state === "upcoming" && "shadow-[inset_0_0_0_1.5px_var(--line)]",
@@ -74,7 +74,7 @@ export function FilingTrack({ steps }: { steps: TrackStep[] }) {
             aria-hidden
           >
             {s.state === "done" && <Check size={12} strokeWidth={2.4} />}
-            {s.state === "current" && <span className="h-1.5 w-1.5 rounded-full bg-accent" />}
+            {s.state === "current" && <span className="h-1.5 w-1.5 rounded-[2px] bg-accent" />}
           </span>
           <span className="min-w-0">
             <span className={cn("block truncate text-13", s.state === "current" ? "font-semibold" : "font-medium")}>{s.label}</span>
@@ -129,10 +129,10 @@ export function ProofList({ f, onPreview, onDownload }: { f: Filing; onPreview: 
             </span>
           </span>
           <Button size="iconSm" variant="ghost" aria-label={`Preview ${x.name}`} onClick={onPreview}>
-            <Eye size={16} strokeWidth={1.5} />
+            <Eye size={16} strokeWidth={1.6} />
           </Button>
           <Button size="iconSm" variant="ghost" aria-label={`Download ${x.name}`} onClick={() => onDownload?.(x.name)}>
-            <Download size={16} strokeWidth={1.5} />
+            <Download size={16} strokeWidth={1.6} />
           </Button>
         </li>
       ))}
@@ -248,7 +248,7 @@ export function EventDialog({ event, onClose, onRemind }: { event: YearEvent | n
           f && (
             <>
               <Button onClick={() => onRemind(`${f.form} · ${f.period} added to your calendar`)}>
-                <CalendarPlus size={16} strokeWidth={1.5} /> Add to my calendar
+                <CalendarPlus size={16} strokeWidth={1.6} /> Add to my calendar
               </Button>
               <Button asChild variant="primary">
                 <Link href={`/client/filings?f=${encodeURIComponent(f.id)}`}>Open in filings</Link>
@@ -275,7 +275,7 @@ export function AckPreview({ filing: f, open, onOpenChange, onDownload }: { fili
       title={<span className="font-mono text-14">{f.form} acknowledgement.pdf</span>}
       footer={
         <Button variant="primary" onClick={() => onDownload?.(`${f.form} acknowledgement.pdf`)}>
-          <Download size={16} strokeWidth={1.5} /> Download
+          <Download size={16} strokeWidth={1.6} /> Download
         </Button>
       }
     >
@@ -396,7 +396,7 @@ export function UploadModal({ open, onOpenChange, requested, onDone }: { open: b
               onOpenChange(false);
             }}
           >
-            <Upload size={16} strokeWidth={1.5} /> Upload{requested.length ? ` · ${requested.length} requested` : ""}
+            <Upload size={16} strokeWidth={1.6} /> Upload{requested.length ? ` · ${requested.length} requested` : ""}
           </Button>
         </>
       }
@@ -426,7 +426,7 @@ export function UploadModal({ open, onOpenChange, requested, onDone }: { open: b
         }}
         className={cn("grid w-full place-items-center gap-1 rounded-md border border-dashed border-line px-4 py-8 text-13 text-muted hover:bg-raised", over && "border-accent bg-accent-soft")}
       >
-        <Upload size={20} strokeWidth={1.5} aria-hidden />
+        <Upload size={20} strokeWidth={1.6} aria-hidden />
         <span>
           Drop the files here or <b className="text-accent">browse</b>
         </span>
@@ -439,7 +439,7 @@ export function UploadModal({ open, onOpenChange, requested, onDone }: { open: b
               <span className="min-w-0 flex-1 truncate font-mono text-12.5">{f.name}</span>
               <span className="text-12 text-muted">{Math.max(1, Math.round(f.size / 1024))} KB</span>
               <button type="button" className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-raised" aria-label={`Remove ${f.name}`} onClick={() => setFiles((x) => x.filter((_, j) => j !== i))}>
-                <X size={14} strokeWidth={1.5} />
+                <X size={14} strokeWidth={1.6} />
               </button>
             </li>
           ))}
@@ -506,7 +506,7 @@ export function RecordAction({ label, onDone }: { label: string; onDone: () => v
     <Button variant={state === "done" ? "soft" : "primary"} onClick={() => state === "idle" && setState("busy")} aria-live="polite">
       {state === "busy" ? "Working" : state === "done" ? (
         <>
-          <Check size={16} strokeWidth={1.5} /> Done
+          <Check size={16} strokeWidth={1.6} /> Done
         </>
       ) : (
         label
@@ -600,7 +600,7 @@ export function HeadSearch({ value, onChange, onEnter, label }: { value: string;
   }, []);
   return (
     <span className="relative hidden sm:inline-flex">
-      <Search size={14} strokeWidth={1.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint" aria-hidden />
+      <Search size={14} strokeWidth={1.6} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint" aria-hidden />
       <input
         ref={ref}
         value={value}

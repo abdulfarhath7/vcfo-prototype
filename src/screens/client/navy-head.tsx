@@ -30,9 +30,9 @@ export function NavyHead({ eyebrow, title, sub, links, mark, label }: { eyebrow:
           {links?.map((l) => (
             <Button key={l.href + l.label} asChild variant="onNavy" size="sm" className="min-w-0 max-w-full">
               <Link href={l.href} aria-label={`${l.dir === "prev" ? "Previous" : "Next"} · ${l.label}`}>
-                {l.dir === "prev" && <ChevronLeft size={15} strokeWidth={1.5} />}
+                {l.dir === "prev" && <ChevronLeft size={15} strokeWidth={1.6} />}
                 <span className="truncate">{l.label}</span>
-                {l.dir === "next" && <ChevronRight size={15} strokeWidth={1.5} />}
+                {l.dir === "next" && <ChevronRight size={15} strokeWidth={1.6} />}
               </Link>
             </Button>
           ))}
@@ -64,7 +64,7 @@ export function PhaseRing({ pct, caption, onClick, ariaLabel }: { pct: number; c
 /** Green tick mark at the end of the board resolution head. */
 export function DoneMark({ label }: { label: string }) {
   return (
-    <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-full bg-ok-mid text-white")} role="img" aria-label={label}>
+    <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-md bg-ok-mid text-white")} role="img" aria-label={label}>
       <Check size={14} strokeWidth={2.4} />
     </span>
   );

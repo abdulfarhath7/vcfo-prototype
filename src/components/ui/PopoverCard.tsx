@@ -38,10 +38,10 @@ export function PopoverCard({
           sideOffset={6}
           aria-label={label}
           collisionPadding={12}
-          className={cn("z-50 max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-line bg-surface text-ink shadow-pop outline-none")}
+          className={cn("z-50 max-w-[calc(100vw-24px)] overflow-hidden rounded-md border border-line bg-surface text-ink shadow-float outline-none")}
           style={{ width }}
         >
-          {title && <div className="border-b border-line-soft px-4 py-2.5 text-13 font-semibold">{title}</div>}
+          {title && <div className="border-b border-line-soft px-4 py-2.5 text-14 font-medium">{title}</div>}
           <div className="max-h-[60vh] overflow-y-auto">{children}</div>
           {footer && <div className="flex items-center justify-end gap-2 border-t border-line-soft px-4 py-2.5">{footer}</div>}
         </P.Content>

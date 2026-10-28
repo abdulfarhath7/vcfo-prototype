@@ -107,7 +107,7 @@ export function UploadDialog({
               onOpenChange(false);
             }}
           >
-            <Upload size={15} strokeWidth={1.5} /> Upload
+            <Upload size={15} strokeWidth={1.6} /> Upload
           </Button>
         </>
       }
@@ -140,7 +140,7 @@ export function UploadDialog({
 
         {req?.note && (
           <div className="flex items-start gap-2.5 rounded-md bg-raised px-3 py-2.5 text-13">
-            <span className="grid h-6 w-6 flex-none place-items-center rounded-full bg-accent-soft font-mono text-11 font-semibold text-accent">{req.noteBy ?? "SBC"}</span>
+            <span className="grid h-6 w-6 flex-none place-items-center rounded-md bg-accent-soft font-mono text-11 font-semibold text-accent">{req.noteBy ?? "SBC"}</span>
             <span className="min-w-0 text-ink-2">“{req.note}”</span>
           </div>
         )}
@@ -162,7 +162,7 @@ export function UploadDialog({
           }}
           className={cn("grid cursor-pointer place-items-center gap-1 rounded-md border border-dashed px-4 py-7 text-center outline-none focus-visible:ring-2 focus-visible:ring-accent-line", over ? "border-accent bg-accent-soft" : "border-line bg-raised hover:border-accent-line")}
         >
-          <Upload size={18} strokeWidth={1.5} className={over ? "text-accent" : "text-muted"} />
+          <Upload size={18} strokeWidth={1.6} className={over ? "text-accent" : "text-muted"} />
           <span className="text-13.5 font-semibold">{over ? "Release to upload" : <>Drop files here or <span className="text-accent">browse</span></>}</span>
           <span className="font-mono text-11.5 text-faint">PDF · JPG · PNG · DOCX · up to 10 MB</span>
           <input ref={input} type="file" multiple className="sr-only" tabIndex={-1} onChange={(e) => { add(e.target.files); e.target.value = ""; }} />
@@ -172,7 +172,7 @@ export function UploadDialog({
           <ul className="overflow-hidden rounded-md border border-line">
             {files.map((f) => (
               <li key={f.key} className={cn("flex items-center gap-3 border-t border-line-soft px-3 py-2.5 text-13 first:border-t-0", f.error && "bg-bad-soft")}>
-                {f.error ? <AlertTriangle size={16} strokeWidth={1.5} className="flex-none text-bad" /> : <FileBadge type={fileType(f.name)} />}
+                {f.error ? <AlertTriangle size={16} strokeWidth={1.6} className="flex-none text-bad" /> : <FileBadge type={fileType(f.name)} />}
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-mono text-12.5 font-medium">{f.name}</span>
                   <span className={cn("block text-12", f.error ? "text-bad" : "text-muted")}>{f.error ? f.error : f.pct >= 100 ? `${sizeLabel(f.size)} · ready` : `${sizeLabel(f.size)} · ${f.pct}%`}</span>
@@ -189,7 +189,7 @@ export function UploadDialog({
                   </Button>
                 ) : (
                   <button type="button" aria-label={`Remove ${f.name}`} onClick={() => setFiles((fs) => fs.filter((x) => x.key !== f.key))} className="grid h-7 w-7 flex-none place-items-center rounded-sm text-muted hover:bg-raised">
-                    <X size={14} strokeWidth={1.5} />
+                    <X size={14} strokeWidth={1.6} />
                   </button>
                 )}
               </li>

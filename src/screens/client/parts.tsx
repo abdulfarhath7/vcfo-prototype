@@ -44,7 +44,7 @@ export function ItemDocsCard({ docs, canUpload, title = "Documents" }: { docs: I
       right={
         canUpload && open > 0 ? (
           <Button variant="primary" size="sm">
-            <Upload size={16} strokeWidth={1.5} /> Upload
+            <Upload size={16} strokeWidth={1.6} /> Upload
           </Button>
         ) : undefined
       }
@@ -82,7 +82,7 @@ export function ItemDocsCard({ docs, canUpload, title = "Documents" }: { docs: I
                 <Button size="sm">Upload</Button>
               ) : x.status === "Accepted" || x.status === "To review" ? (
                 <Button size="iconSm" variant="ghost" aria-label={`Download ${x.name}`}>
-                  <Download size={16} strokeWidth={1.5} />
+                  <Download size={16} strokeWidth={1.6} />
                 </Button>
               ) : (
                 <span className="w-[30px] flex-none" />

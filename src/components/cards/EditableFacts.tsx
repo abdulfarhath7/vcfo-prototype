@@ -51,7 +51,7 @@ export function EditableFacts({ title, rows, editable, onSave, meta, icon, cols 
       right={
         editable && !editing ? (
           <Button size="sm" onClick={start}>
-            <Pencil size={14} strokeWidth={1.5} /> Edit
+            <Pencil size={14} strokeWidth={1.6} /> Edit
           </Button>
         ) : undefined
       }

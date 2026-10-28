@@ -10,7 +10,7 @@ export function IconTile({ Icon, tone, size = 28, className }: { Icon: LucideIco
       style={{ width: size, height: size }}
       aria-hidden
     >
-      <Icon size={size === 28 ? 15 : 16} strokeWidth={1.5} />
+      <Icon size={size === 28 ? 15 : 16} strokeWidth={1.6} />
     </span>
   );
 }

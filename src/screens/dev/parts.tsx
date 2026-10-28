@@ -219,7 +219,7 @@ export function useRevealRef<T extends HTMLElement>(key: string | null) {
 export function CloseButton({ onClick }: { onClick: () => void }) {
   return (
     <Button variant="ghost" size="iconSm" onClick={onClick} aria-label="Close">
-      <X size={16} strokeWidth={1.5} />
+      <X size={16} strokeWidth={1.6} />
     </Button>
   );
 }

@@ -68,13 +68,13 @@ function PeriodSwitch({ fy, value, onChange }: { fy: string; value: number; onCh
   return (
     <span className="inline-flex h-[30px] items-center rounded-md border border-line bg-surface">
       <button type="button" className="grid h-7 w-7 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink disabled:opacity-40" aria-label="Previous period" disabled={!full && cur === 0} onClick={() => onChange(full ? DEFAULT_WINDOW - 1 : cur - 1)}>
-        <ChevronLeft size={15} strokeWidth={1.5} />
+        <ChevronLeft size={15} strokeWidth={1.6} />
       </button>
       <b className="whitespace-nowrap px-1 text-center text-13 font-semibold" aria-live="polite">
         {full ? `FY ${fy}` : windowOf(fy, cur).label}
       </b>
       <button type="button" className="grid h-7 w-7 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink disabled:opacity-40" aria-label="Next period" disabled={!full && cur === WINDOWS - 1} onClick={() => onChange(full ? DEFAULT_WINDOW + 1 : cur + 1)}>
-        <ChevronRight size={15} strokeWidth={1.5} />
+        <ChevronRight size={15} strokeWidth={1.6} />
       </button>
       <button
         type="button"
@@ -188,7 +188,7 @@ function ProofCell({ f }: { f: Filing }) {
           notify(files.length === 1 ? `Downloaded ${files[0].name}` : `Downloaded ${f.form} ${f.period} proof · ${files.length} files`);
         }}
       >
-        <Download size={16} strokeWidth={1.5} />
+        <Download size={16} strokeWidth={1.6} />
       </Button>
     </span>
   );
@@ -307,11 +307,11 @@ export function FilingsScreen() {
                 ]}
               />
               <Button size="sm" onClick={() => toast.show(`Filings FY ${fy}.xlsx downloaded`)}>
-                <Download size={16} strokeWidth={1.5} /> Export
+                <Download size={16} strokeWidth={1.6} /> Export
               </Button>
               <Button asChild size="sm">
                 <Link href="/client/calendar">
-                  <Calendar size={16} strokeWidth={1.5} /> Calendar
+                  <Calendar size={16} strokeWidth={1.6} /> Calendar
                 </Link>
               </Button>
             </>

@@ -38,7 +38,7 @@ function BoardTrack({ stages, received }: { stages: Array<{ label: string; sub?:
       {stages.map((st) => (
         <React.Fragment key={st.label}>
           <div className={cn("flex min-w-0 items-center gap-2.5 md:flex-none md:flex-col md:gap-1 md:text-center", !st.done && "opacity-60")}>
-            <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-full", st.done ? "bg-ok text-surface" : "shadow-[inset_0_0_0_1.5px_var(--line)]")} aria-hidden>
+            <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-md", st.done ? "bg-ok text-surface" : "shadow-[inset_0_0_0_1.5px_var(--line)]")} aria-hidden>
               {st.done && <Check size={13} strokeWidth={2.6} />}
             </span>
             <span className="min-w-0">
@@ -136,14 +136,14 @@ function FilesCard({ files, notify, onReplace }: { files: BoardFile[]; notify: N
           {f.viewId ? (
             <Button asChild size="iconSm" variant="ghost" aria-label={`Preview ${f.file}`}>
               <Link href={`/client/documents/view/${f.viewId}`}>
-                <Eye size={16} strokeWidth={1.5} />
+                <Eye size={16} strokeWidth={1.6} />
               </Link>
             </Button>
           ) : (
             <span className="w-[30px] flex-none" />
           )}
           <Button size="iconSm" variant="ghost" aria-label={`Download ${f.file}`} onClick={() => notify(`Download started · ${f.file}`)}>
-            <Download size={16} strokeWidth={1.5} />
+            <Download size={16} strokeWidth={1.6} />
           </Button>
         </ListRow>
       ))}
@@ -212,14 +212,14 @@ export function BoardResolutionScreen() {
             right={
               <>
                 <Button size="iconSm" variant="ghost" aria-label="Zoom out" disabled={zoom <= 0.6} onClick={() => setZoom((z) => Math.max(0.6, Math.round((z - 0.1) * 10) / 10))}>
-                  <Minus size={16} strokeWidth={1.5} />
+                  <Minus size={16} strokeWidth={1.6} />
                 </Button>
                 <Button size="iconSm" variant="ghost" aria-label="Zoom in" disabled={zoom >= 1.6} onClick={() => setZoom((z) => Math.min(1.6, Math.round((z + 0.1) * 10) / 10))}>
-                  <Plus size={16} strokeWidth={1.5} />
+                  <Plus size={16} strokeWidth={1.6} />
                 </Button>
                 <Button asChild size="iconSm" variant="ghost" aria-label="Open full screen">
                   <Link href="/client/documents/view/f7">
-                    <Maximize2 size={16} strokeWidth={1.5} />
+                    <Maximize2 size={16} strokeWidth={1.6} />
                   </Link>
                 </Button>
               </>

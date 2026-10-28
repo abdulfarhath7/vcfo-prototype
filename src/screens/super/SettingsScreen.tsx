@@ -153,7 +153,7 @@ export function SettingsScreen() {
         aria-label={`${r.role} can ${perm}: ${on ? "yes" : "no"}`}
         className={cn("mx-auto grid h-7 w-7 place-items-center rounded-sm", !locked && "hover:bg-raised", on ? "text-ok" : "text-faint")}
       >
-        {on ? <Check size={16} strokeWidth={2} /> : <Minus size={16} strokeWidth={1.5} />}
+        {on ? <Check size={16} strokeWidth={2} /> : <Minus size={16} strokeWidth={1.6} />}
       </button>
     );
   };
@@ -180,7 +180,7 @@ export function SettingsScreen() {
           pageSize={20}
           filters={
             <Button size="sm" variant="primary" onClick={() => setAdding(true)}>
-              <UserPlus size={14} strokeWidth={1.5} /> Add person
+              <UserPlus size={14} strokeWidth={1.6} /> Add person
             </Button>
           }
         />

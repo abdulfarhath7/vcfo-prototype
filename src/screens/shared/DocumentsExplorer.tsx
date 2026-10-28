@@ -235,9 +235,9 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
       <div key={n.id} role="treeitem" aria-selected={false} aria-expanded={isOpen} className="group relative flex h-9 items-center pr-2 text-13.5 hover:bg-raised">
         {guides}
         <button type="button" onClick={() => flip(n.id)} className="flex h-full min-w-0 flex-1 items-center gap-2 text-left" style={{ paddingLeft: 14 + d * 31 }}>
-          <ChevronRight size={15} strokeWidth={1.5} className={cn("flex-none text-muted transition-transform", isOpen && "rotate-90")} aria-hidden />
+          <ChevronRight size={15} strokeWidth={1.6} className={cn("flex-none text-muted transition-transform", isOpen && "rotate-90")} aria-hidden />
           <span className="grid h-[22px] w-[22px] flex-none place-items-center rounded-[5px] bg-accent-soft text-accent" aria-hidden>
-            <Folder size={12} strokeWidth={1.5} className="fill-current" />
+            <Folder size={12} strokeWidth={1.6} className="fill-current" />
           </span>
           <span className="min-w-0 flex-1 truncate font-semibold">{n.label}</span>
           {phase ? (
@@ -279,11 +279,11 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
             <>
               <Button asChild size="iconSm">
                 <Link href={viewHref(f.id)} aria-label="Open in viewer" title="Open in viewer">
-                  <Eye size={15} strokeWidth={1.5} />
+                  <Eye size={15} strokeWidth={1.6} />
                 </Link>
               </Button>
               <Button size="iconSm" aria-label="Download" title="Download" onClick={() => download(f)}>
-                <Download size={15} strokeWidth={1.5} />
+                <Download size={15} strokeWidth={1.6} />
               </Button>
             </>
           )}
@@ -291,7 +291,7 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
         <div className="grid flex-1 place-items-center bg-raised px-6 py-8">
           {miss ? (
             <button type="button" onClick={() => setUpload({ open: true, id: f.id })} className="grid w-full max-w-[340px] justify-items-center gap-2 rounded-md border border-dashed border-line bg-surface px-4 py-10 text-center hover:border-accent-line">
-              <Upload size={18} strokeWidth={1.5} className="text-muted" />
+              <Upload size={18} strokeWidth={1.6} className="text-muted" />
               <span className="text-13.5 font-semibold">
                 Drop the file or <span className="text-accent">browse</span>
               </span>
@@ -306,7 +306,7 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
               <FileBadge type={doc.type} />
               <span className="text-13.5 font-semibold">Preview not available for this file type</span>
               <Button size="sm" variant="primary" onClick={() => download(f)}>
-                <Download size={15} strokeWidth={1.5} /> Download
+                <Download size={15} strokeWidth={1.6} /> Download
               </Button>
             </div>
           )}
@@ -348,7 +348,7 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
         <div className="flex flex-wrap items-center gap-2 border-b border-line-soft px-3 py-2.5">
           {staff && <Select value={client} onChange={(e) => setClient(e.target.value)} options={CLIENTS.map((c) => ({ value: c.id, label: c.name.replace(/ (India )?Pvt Ltd$/, "") }))} aria-label="Client" />}
           <label className="flex h-[34px] min-w-[140px] flex-1 items-center gap-2 rounded-md border border-line bg-surface px-2.5 sm:max-w-[300px]">
-            <Search size={14} strokeWidth={1.5} className="flex-none text-muted" />
+            <Search size={14} strokeWidth={1.6} className="flex-none text-muted" />
             <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter documents" aria-label="Filter documents" className="h-full min-w-0 flex-1 bg-transparent text-13 outline-none placeholder:text-faint" />
             <span className="flex-none font-mono text-12 text-faint">
               {count}/{total}
@@ -356,14 +356,14 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
           </label>
           <button type="button" aria-pressed={status} onClick={() => setStatus((v) => !v)} className={cn("inline-flex h-[34px] items-center gap-2 rounded-md border px-2.5 text-12.5 font-semibold", status ? "border-accent-line bg-accent-soft text-accent" : "border-line text-ink-2 hover:bg-raised")}>
             <span className="flex gap-0.5" aria-hidden>
-              <i className="h-1.5 w-1.5 rounded-full bg-accent" />
-              <i className="h-1.5 w-1.5 rounded-full bg-accent" />
-              <i className="h-1.5 w-1.5 rounded-full bg-brand" />
+              <i className="h-1.5 w-1.5 rounded-[2px] bg-accent" />
+              <i className="h-1.5 w-1.5 rounded-[2px] bg-accent" />
+              <i className="h-1.5 w-1.5 rounded-[2px] bg-brand" />
             </span>
             Status
           </button>
           <button type="button" aria-pressed={hid} onClick={() => setHid((v) => !v)} className={cn("inline-flex h-[34px] items-center gap-2 rounded-md border px-2.5 text-12.5 font-semibold", hid ? "border-accent-line bg-accent-soft text-accent" : "border-line text-ink-2 hover:bg-raised")}>
-            <EyeOff size={14} strokeWidth={1.5} /> Replaced
+            <EyeOff size={14} strokeWidth={1.6} /> Replaced
           </button>
           <Tabs
             items={[
@@ -374,10 +374,10 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
             onChange={(v) => setView(v as "step" | "cat")}
           />
           <Button size="sm" className="ml-auto h-[34px]" onClick={() => zip("Northwind documents", all.filter((f) => f.status !== "Missing" && !f.hidden).length)} disabled={total === 0}>
-            <Download size={15} strokeWidth={1.5} /> Download all (ZIP)
+            <Download size={15} strokeWidth={1.6} /> Download all (ZIP)
           </Button>
           <Button size="sm" className="h-[34px]" variant="primary" onClick={() => setUpload({ open: true, id: missing[0]?.id })}>
-            <Upload size={15} strokeWidth={1.5} /> {missing.length ? `Upload · ${missing.length} requested` : "Upload"}
+            <Upload size={15} strokeWidth={1.6} /> {missing.length ? `Upload · ${missing.length} requested` : "Upload"}
           </Button>
         </div>
 
@@ -387,7 +387,7 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
               <div className="grid justify-items-center gap-3 px-4 py-12 text-center">
                 <span className="text-14 font-semibold">No documents yet</span>
                 <Button variant="primary" size="sm" onClick={() => setUpload({ open: true })}>
-                  <Upload size={15} strokeWidth={1.5} /> Upload a document
+                  <Upload size={15} strokeWidth={1.6} /> Upload a document
                 </Button>
               </div>
             ) : rows.length === 0 ? (

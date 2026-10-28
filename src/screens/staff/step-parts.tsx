@@ -69,7 +69,7 @@ export function AboutStepPanel({ open, onOpenChange, n }: { open: boolean; onOpe
               </>
             )}
             <a href="https://www.mca.gov.in" target="_blank" rel="noreferrer" title={a.rule} className="ml-auto inline-flex items-center gap-1 font-semibold text-accent hover:underline">
-              MCA rule <ExternalLink size={13} strokeWidth={1.5} />
+              MCA rule <ExternalLink size={13} strokeWidth={1.6} />
             </a>
           </div>
         </div>

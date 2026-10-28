@@ -65,7 +65,7 @@ function RowSteps({ steps, after, portal, onAll, phase }: { steps: Step[]; after
               <span className="min-w-0 flex-1 truncate font-semibold">{s.title}</span>
               <span className="hidden font-mono text-12 text-muted sm:inline">{s.done ? fmt(s.done) : s.due ? fmt(s.due) : ""}</span>
               <Chip tone={after ? "ok" : stepTone[s.status]}>{after ? "Completed" : statusOf(s)}</Chip>
-              <ChevronRight size={16} strokeWidth={1.5} className="flex-none text-faint" />
+              <ChevronRight size={16} strokeWidth={1.6} className="flex-none text-faint" />
             </Link>
           </li>
         ))}
@@ -123,7 +123,7 @@ function useTimelineEdit(portal: string) {
           align="end"
           trigger={
             <button type="button" className="inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-sm bg-warn-soft px-2 text-12 font-semibold text-warn">
-              <i className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
+              <i className="h-1.5 w-1.5 rounded-[2px] bg-current" aria-hidden />
               <span className="hidden sm:inline">Request pending · </span>COI {fmt(pending.phases[3].start)}
             </button>
           }

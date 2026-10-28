@@ -114,7 +114,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
               </button>
             ))}
             <span className="ml-auto inline-flex items-center gap-1.5 text-12.5 text-muted">
-              <i className={cn("h-1.5 w-1.5 rounded-full", dirty ? "bg-warn-mid" : "bg-ok-mid")} aria-hidden />
+              <i className={cn("h-1.5 w-1.5 rounded-[2px]", dirty ? "bg-warn-mid" : "bg-ok-mid")} aria-hidden />
               {dirty ? "Unsaved changes" : "Saved"}
             </span>
           </div>
@@ -152,7 +152,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
                 <li key={t} className="relative flex items-center gap-2.5 text-13">
                   <span
                     className={cn(
-                      "grid h-[21px] w-[21px] flex-none place-items-center rounded-full text-[10px] font-bold",
+                      "grid h-[21px] w-[21px] flex-none place-items-center rounded-sm text-[10px] font-bold",
                       i < stage ? "bg-ok text-white" : i === stage ? "bg-navy text-white ring-2 ring-navy ring-offset-2 ring-offset-surface" : "border border-dashed border-faint bg-surface text-faint",
                     )}
                   >
@@ -170,7 +170,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
             {stage === 3 && (
               <>
                 <Button variant="primary" className="mt-4 w-full" onClick={() => fileRef.current?.click()}>
-                  <Upload size={16} strokeWidth={1.5} /> Upload signed copy
+                  <Upload size={16} strokeWidth={1.6} /> Upload signed copy
                 </Button>
                 <input
                   ref={fileRef}

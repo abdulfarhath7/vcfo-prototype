@@ -2,6 +2,7 @@ import { cn } from "@/lib/cn";
 
 const palette = [
   "bg-accent-soft text-accent",
+  "bg-info-soft text-info",
   "bg-violet-soft text-violet",
   "bg-teal-soft text-teal",
   "bg-warn-soft text-warn",
@@ -23,12 +24,13 @@ export function initials(name: string) {
     .join("");
 }
 
+/** R-44: people avatars are circles, the only circle. Companies use 6 px rounded squares. */
 export function Avatar({ name, size = 30, className, onNavy }: { name: string; size?: 24 | 30 | 36 | 44; className?: string; onNavy?: boolean }) {
   const idx = [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % palette.length;
   return (
     <span
       className={cn(
-        "inline-grid flex-none place-items-center rounded-md font-bold",
+        "inline-grid flex-none place-items-center rounded-full font-medium",
         size === 24 ? "text-[10px]" : size === 30 ? "text-11.5" : "text-12.5",
         onNavy ? "bg-navy-on text-white" : palette[idx],
         className,

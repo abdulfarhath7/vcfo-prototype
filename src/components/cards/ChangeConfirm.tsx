@@ -43,7 +43,7 @@ export function ChangeConfirm({ question, confirm, before, after, onConfirm, onC
         <div className="flex min-w-0 flex-wrap items-center gap-2 text-12.5">
           <span className="text-muted">Now</span>
           <span className="min-w-0 break-words rounded-sm border border-line bg-surface px-2 py-0.5 font-mono text-12">{before || "-"}</span>
-          <ArrowRight size={14} strokeWidth={1.5} className="flex-none text-faint" aria-hidden />
+          <ArrowRight size={14} strokeWidth={1.6} className="flex-none text-faint" aria-hidden />
           <span className="text-muted">After</span>
           <span className="min-w-0 break-words rounded-sm border border-line bg-surface px-2 py-0.5 font-mono text-12">{after || "-"}</span>
         </div>

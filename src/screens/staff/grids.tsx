@@ -53,7 +53,7 @@ const holderDot: Record<StaffClient["pendingWith"], string> = { Client: "bg-warn
 
 export function HolderDot({ c }: { c: StaffClient }) {
   const label = c.pendingWith === "Client" ? "Waiting on the client" : c.pendingWith === "MCA" ? "With MCA" : "SBC step";
-  return <i className={cn("inline-block h-2.5 w-2.5 flex-none rounded-full", holderDot[c.pendingWith])} title={label} aria-label={label} />;
+  return <i className={cn("inline-block h-2.5 w-2.5 flex-none rounded-[2px]", holderDot[c.pendingWith])} title={label} aria-label={label} />;
 }
 
 /** Client identity tile: initials in the client colour (R-35). */
@@ -87,9 +87,9 @@ function Legend() {
       {sw("bg-btn", "Current step")}
       {sw("bg-bad-mid", "Stuck")}
       {sw("bg-line-soft", "Not started")}
-      {sw("rounded-full bg-accent", "SBC step")}
-      {sw("rounded-full bg-warn-mid", "Waiting on the client")}
-      {sw("rounded-full bg-violet", "With MCA")}
+      {sw("rounded-md bg-accent", "SBC step")}
+      {sw("rounded-md bg-warn-mid", "Waiting on the client")}
+      {sw("rounded-md bg-violet", "With MCA")}
     </span>
   );
 }
@@ -255,7 +255,7 @@ function ClientsGridFrame({ portal, title, rows, filters, pageSize, meta, cols }
                     {c.stage === "incorporating" ? "Incorporating" : "Compliance"} · {portal === "lead" ? `Next ${fmt(c.next)}` : `${leadOf(c, s)} · Next ${fmt(c.next)}`}
                   </span>
                 </span>
-                <ChevronRight size={16} strokeWidth={1.5} className="mt-1 flex-none text-faint" aria-hidden />
+                <ChevronRight size={16} strokeWidth={1.6} className="mt-1 flex-none text-faint" aria-hidden />
               </ListRow>
             ))
           )}

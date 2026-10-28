@@ -31,7 +31,7 @@ function RecentRow({ id, pct, note, base }: { id: string; pct: number; note: str
   return (
     <ListRow href={`${base}/${b.id}`}>
       <span className={cn("grid h-9 w-9 flex-none place-items-center rounded-md", toneTile[catTone(b.cat)])}>
-        <BookOpen size={16} strokeWidth={1.5} />
+        <BookOpen size={16} strokeWidth={1.6} />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">{b.title}</span>
@@ -122,8 +122,8 @@ function Book({ b, href }: { b: LibBook; href: string }) {
       <span className="absolute -right-[5px] bottom-[5px] top-[5px] w-[5px] rounded-r-[2px] border-y border-r border-line bg-raised" aria-hidden />
       <span className="absolute left-[11px] right-0 top-0 h-[5px] rounded-tr-[6px] bg-brand" aria-hidden />
       {b.updated && <span className="absolute right-2 top-0 h-[22px] w-[14px] bg-accent [clip-path:polygon(0_0,100%_0,100%_100%,50%_74%,0_100%)]" title="Updated" aria-label="Updated" />}
-      <span className="grid h-7 w-7 place-items-center rounded-full bg-white/[.18]">
-        <Icon size={14} strokeWidth={1.5} />
+      <span className="grid h-7 w-7 place-items-center rounded-md bg-white/[.18]">
+        <Icon size={14} strokeWidth={1.6} />
       </span>
       <span className="line-clamp-2 text-13 font-bold leading-[1.32] [overflow-wrap:break-word] group-hover:line-clamp-6">{b.title}</span>
       <span className="mt-auto truncate text-11 font-bold uppercase tracking-[.04em] text-white/80">{COVER_LABEL[b.cat]}</span>
@@ -167,11 +167,11 @@ export function LibraryScreen({ portal }: { portal: Portal; title?: string }) {
           <Link href={`${base}/b8`}>Monthly status brief</Link>
         </Button>
         <Button onClick={() => toast.show("Downloaded Northwind-status-brief-Sep-2026.pdf")}>
-          <Download size={15} strokeWidth={1.5} /> PDF brief
+          <Download size={15} strokeWidth={1.6} /> PDF brief
         </Button>
       </div>
       <label className="flex h-10 items-center gap-2 rounded-md border border-line bg-surface px-3">
-        <Search size={15} strokeWidth={1.5} className="text-muted" />
+        <Search size={15} strokeWidth={1.6} className="text-muted" />
         <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search books" aria-label="Search books" className="h-full min-w-0 flex-1 bg-transparent text-13.5 outline-none placeholder:text-faint" />
       </label>
 
@@ -248,11 +248,11 @@ function ReaderTimeline({ steps }: { steps: NonNullable<ReturnType<typeof reader
           <li className="grid w-[30%] max-w-[180px] flex-none justify-items-center gap-1 text-center">
             <span
               className={cn(
-                "grid h-10 w-10 place-items-center rounded-full text-13 font-semibold",
+                "grid h-10 w-10 place-items-center rounded-md text-13 font-semibold",
                 t.state === "done" ? "bg-ok-soft text-ok" : t.state === "now" ? "border border-line bg-surface text-ink" : "border-2 border-dashed border-accent bg-surface text-accent",
               )}
             >
-              {t.state === "done" ? <Check size={16} strokeWidth={1.5} /> : i + 1}
+              {t.state === "done" ? <Check size={16} strokeWidth={1.6} /> : i + 1}
             </span>
             <span className="text-13 font-semibold leading-snug">{t.label}</span>
             <span className="font-mono text-11.5 text-muted">{t.when}</span>
@@ -294,7 +294,7 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
               <Button asChild size="sm" variant="onNavy">
                 <a href={r.official.href} target="_blank" rel="noreferrer">
                   Official link · {r.official.label}
-                  <ExternalLink size={13} strokeWidth={1.5} aria-hidden />
+                  <ExternalLink size={13} strokeWidth={1.6} aria-hidden />
                   <span className="sr-only"> (opens in a new tab)</span>
                 </a>
               </Button>
@@ -313,8 +313,8 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
           {depth === "2" && r.facts && <KeyValue cols={3} rows={r.facts} />}
           {r.why && (
             <div className="flex gap-3 rounded-lg border border-warn-mid bg-warn-soft px-4 py-4 md:px-5">
-              <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-brand text-white">
-                <Star size={14} strokeWidth={1.5} />
+              <span className="grid h-7 w-7 flex-none place-items-center rounded-md bg-brand text-white">
+                <Star size={14} strokeWidth={1.6} />
               </span>
               <div className="min-w-0">
                 <h2 className="text-13.5 font-bold text-warn">Why it matters to Northwind</h2>
@@ -337,7 +337,7 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
           <div className="flex flex-wrap items-center gap-2 border-t border-line-soft pt-4">
             {saved ? (
               <span className="inline-flex h-9 items-center gap-2 rounded-md bg-ok-soft px-3.5 text-13.5 font-semibold text-ok">
-                <BookmarkCheck size={16} strokeWidth={1.5} /> Saved to library
+                <BookmarkCheck size={16} strokeWidth={1.6} /> Saved to library
               </span>
             ) : (
               <Button
@@ -347,11 +347,11 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
                   toast.show("Saved to library", () => setSaved(false));
                 }}
               >
-                <Bookmark size={15} strokeWidth={1.5} /> Save to library
+                <Bookmark size={15} strokeWidth={1.6} /> Save to library
               </Button>
             )}
             <Button onClick={() => toast.show(`Downloaded ${book.title}.pdf`)}>
-              <Download size={15} strokeWidth={1.5} /> PDF brief
+              <Download size={15} strokeWidth={1.6} /> PDF brief
             </Button>
             <Button onClick={openAsk}>Ask a follow-up</Button>
             <span className="flex-1" />
@@ -365,7 +365,7 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
                   toast.show("Removed from library", () => setSaved(true));
                 }}
               >
-                <Trash2 size={15} strokeWidth={1.5} />
+                <Trash2 size={15} strokeWidth={1.6} />
               </Button>
             )}
           </div>
@@ -400,7 +400,7 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
               return (
                 <ListRow key={b.id} href={`${base}/${b.id}`}>
                   <span className={cn("grid h-7 w-7 flex-none place-items-center rounded-md", toneTile[catTone(b.cat)])}>
-                    <Icon size={14} strokeWidth={1.5} />
+                    <Icon size={14} strokeWidth={1.6} />
                   </span>
                   <span className="min-w-0 flex-1 truncate font-semibold">{b.title}</span>
                 </ListRow>

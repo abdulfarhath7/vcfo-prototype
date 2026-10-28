@@ -47,7 +47,7 @@ export function SignInScreen() {
 
       <div className="si-top">
         <Link href="/" className="si-back">
-          <ArrowLeft size={16} strokeWidth={1.5} />
+          <ArrowLeft size={16} strokeWidth={1.6} />
           Back to site
         </Link>
         <span className="hint lp-mono" style={{ color: "var(--navy-faint)" }}>

@@ -46,10 +46,10 @@ function AnnDetail({ list, index, onIndex, onClose, portal }: { list: Ann[]; ind
       footer={
         <>
           <Button size="iconSm" variant="ghost" aria-label="Previous announcement" disabled={index === 0} onClick={() => onIndex(index - 1)}>
-            <ChevronLeft size={16} strokeWidth={1.5} />
+            <ChevronLeft size={16} strokeWidth={1.6} />
           </Button>
           <Button size="iconSm" variant="ghost" aria-label="Next announcement" disabled={index === list.length - 1} onClick={() => onIndex(index + 1)}>
-            <ChevronRight size={16} strokeWidth={1.5} />
+            <ChevronRight size={16} strokeWidth={1.6} />
           </Button>
           <span className="mr-auto font-mono text-12 text-muted">
             {index + 1} / {list.length}
@@ -72,7 +72,7 @@ function AnnDetail({ list, index, onIndex, onClose, portal }: { list: Ann[]; ind
             <span className="min-w-0 flex-1 text-13 text-muted">Official feed</span>
             <Button asChild size="sm">
               <a href={`https://${a.host}`} target="_blank" rel="noreferrer">
-                {a.host} <ExternalLink size={14} strokeWidth={1.5} />
+                {a.host} <ExternalLink size={14} strokeWidth={1.6} />
               </a>
             </Button>
           </>
@@ -87,12 +87,12 @@ function AnnDetail({ list, index, onIndex, onClose, portal }: { list: Ann[]; ind
             </span>
             {a.by.phone && (
               <a href={WHATSAPP(a.by.phone)} className="grid h-[30px] w-[30px] place-items-center rounded-md bg-ok-soft text-ok" aria-label={`WhatsApp ${a.by.name}`} title="WhatsApp">
-                <MessageCircle size={15} strokeWidth={1.5} />
+                <MessageCircle size={15} strokeWidth={1.6} />
               </a>
             )}
             {a.by.email && (
               <a href={`mailto:${a.by.email}`} className="grid h-[30px] w-[30px] place-items-center rounded-md border border-line text-ink-2 hover:bg-raised" aria-label={`Email ${a.by.name}`} title="Email">
-                <Mail size={15} strokeWidth={1.5} />
+                <Mail size={15} strokeWidth={1.6} />
               </a>
             )}
           </>
@@ -126,10 +126,10 @@ function PortalsCard() {
             <div key={r.name} className="flex min-h-[45px] items-center gap-2 border-b border-line-soft py-1.5 text-13.5 last:border-b-0">
               <span className="min-w-0 flex-1 truncate font-semibold">{r.name}</span>
               <a href={`https://${r.host}`} target="_blank" rel="noreferrer" className={act} aria-label={`Open portal for ${r.name}`} title="Portal">
-                <ArrowUpRight size={15} strokeWidth={1.5} />
+                <ArrowUpRight size={15} strokeWidth={1.6} />
               </a>
               <a href={`https://${r.host}`} target="_blank" rel="noreferrer" className={act} aria-label={`Read circular for ${r.name}`} title="Circular">
-                <FileText size={15} strokeWidth={1.5} />
+                <FileText size={15} strokeWidth={1.6} />
               </a>
             </div>
           ))}
@@ -218,7 +218,7 @@ export function AnnouncementsScreen({ portal }: { portal: Portal }) {
                     <span className={cn("mt-1.5 block truncate text-14", u ? "font-bold" : "font-semibold")}>{a.title}</span>
                   </span>
                   {a.host && <Tag className="hidden border border-line sm:inline-flex">{a.host}</Tag>}
-                  <span className={cn("h-2 w-2 flex-none rounded-full", u ? "bg-accent" : "bg-transparent")} role={u ? "img" : undefined} aria-label={u ? "Unread" : undefined} />
+                  <span className={cn("h-2 w-2 flex-none rounded-[2px]", u ? "bg-accent" : "bg-transparent")} role={u ? "img" : undefined} aria-label={u ? "Unread" : undefined} />
                 </ListRow>
               );
             })

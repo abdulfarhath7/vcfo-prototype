@@ -24,7 +24,7 @@ export function CopyButton({ value, label, className }: { value: string; label?:
       aria-label={done ? "Copied" : `Copy ${label ?? value}`}
       className={cn("grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink", done && "text-ok", className)}
     >
-      {done ? <Check size={15} strokeWidth={1.5} /> : <Copy size={15} strokeWidth={1.5} />}
+      {done ? <Check size={15} strokeWidth={1.6} /> : <Copy size={15} strokeWidth={1.6} />}
     </button>
   );
 }

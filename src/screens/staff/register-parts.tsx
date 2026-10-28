@@ -146,10 +146,10 @@ export function GroupedGrid<T>({
                   <tr key={`g-${e.g.id}`} className="[&>td]:!bg-navy-tint">
                     <td colSpan={columns.length} className="!h-9 !p-0">
                       <button type="button" aria-expanded={e.open} onClick={() => setClosed({ ...closed, [e.g.id]: e.open })} className="flex h-9 w-full items-center gap-2 px-3 text-left text-13 font-semibold">
-                        <i className={cn("h-1.5 w-1.5 flex-none rounded-full", e.g.dot)} aria-hidden />
+                        <i className={cn("h-1.5 w-1.5 flex-none rounded-[2px]", e.g.dot)} aria-hidden />
                         {e.g.label}
                         <span className="font-mono text-12 font-semibold text-muted">{e.g.rows.length}</span>
-                        <ChevronDown size={16} strokeWidth={1.5} className={cn("ml-auto text-muted transition-transform", !e.open && "-rotate-90")} aria-hidden />
+                        <ChevronDown size={16} strokeWidth={1.6} className={cn("ml-auto text-muted transition-transform", !e.open && "-rotate-90")} aria-hidden />
                       </button>
                     </td>
                   </tr>
@@ -190,7 +190,7 @@ export function GroupedGrid<T>({
         {pages > 1 && (
           <nav className="ml-auto flex items-center gap-1" aria-label="Pages">
             <button type="button" onClick={() => setPage(Math.max(1, cur - 1))} disabled={cur === 1} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-raised disabled:opacity-40" aria-label="Previous page">
-              <ChevronLeft size={14} strokeWidth={1.5} />
+              <ChevronLeft size={14} strokeWidth={1.6} />
             </button>
             {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
               <button key={p} type="button" onClick={() => setPage(p)} aria-current={p === cur ? "page" : undefined} className={cn("h-7 min-w-7 rounded-sm px-1.5 font-semibold", p === cur ? "bg-btn text-white" : "hover:bg-raised")}>
@@ -198,7 +198,7 @@ export function GroupedGrid<T>({
               </button>
             ))}
             <button type="button" onClick={() => setPage(Math.min(pages, cur + 1))} disabled={cur === pages} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-raised disabled:opacity-40" aria-label="Next page">
-              <ChevronRight size={14} strokeWidth={1.5} />
+              <ChevronRight size={14} strokeWidth={1.6} />
             </button>
           </nav>
         )}
@@ -216,7 +216,7 @@ export function FlowCard({ title, steps }: { title: string; steps: Array<{ label
       <div className="flex items-stretch">
         {steps.map((s, i) => (
           <React.Fragment key={s.label}>
-            {i > 0 && <ChevronRight size={10} strokeWidth={1.5} className="flex-none self-center text-faint" aria-hidden />}
+            {i > 0 && <ChevronRight size={10} strokeWidth={1.6} className="flex-none self-center text-faint" aria-hidden />}
             <div className="grid min-w-0 flex-1 place-items-center content-center rounded-md bg-raised px-0.5 py-2.5 text-center">
               <b className="font-mono text-13 font-semibold">{s.value}</b>
               <span className="text-11 leading-tight text-muted [overflow-wrap:anywhere]">{s.label}</span>

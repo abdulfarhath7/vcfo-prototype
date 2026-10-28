@@ -101,7 +101,7 @@ export function DrillModal({ spec, onClose }: { spec: DrillSpec | null; onClose:
                 <Chip tone={w.tone} fixed className="hidden sm:inline-flex">
                   {w.label}
                 </Chip>
-                <ChevronRight size={16} strokeWidth={1.5} className="flex-none text-faint" />
+                <ChevronRight size={16} strokeWidth={1.6} className="flex-none text-faint" />
               </ListRow>
             );
           }
@@ -190,10 +190,10 @@ export function StatusBrief({ open, onOpenChange, incorporated, notify }: { open
               notify("Status brief copied");
             }}
           >
-            <Copy size={16} strokeWidth={1.5} /> Copy brief
+            <Copy size={16} strokeWidth={1.6} /> Copy brief
           </Button>
           <Button variant="primary" onClick={() => notify("Download started · status-brief-oct-2026.pdf")}>
-            <Download size={16} strokeWidth={1.5} /> Download PDF
+            <Download size={16} strokeWidth={1.6} /> Download PDF
           </Button>
         </>
       }
@@ -311,7 +311,7 @@ export function WhoHoldsCard({ phase }: { phase: 1 | 2 | 3 }) {
               <Chip tone={s.status === "Upcoming" ? "idle" : w.tone} fixed>
                 {s.status === "Upcoming" ? "Not started" : w.label}
               </Chip>
-              <ChevronRight size={16} strokeWidth={1.5} className="flex-none text-faint" />
+              <ChevronRight size={16} strokeWidth={1.6} className="flex-none text-faint" />
             </ListRow>
           );
         })
@@ -338,7 +338,7 @@ function MiniStepper({ subs }: { subs: Array<{ label: string; state: "done" | "n
           {i > 0 && <span className={cn("absolute right-1/2 top-[5px] h-0.5 w-full", x.state === "todo" ? "bg-white/[.16]" : "bg-ok-mid")} aria-hidden />}
           <span
             className={cn(
-              "relative h-3 w-3 rounded-full",
+              "relative h-3 w-3 rounded-[2px]",
               x.state === "done" ? "bg-ok-mid" : x.state === "now" ? "bg-warn-mid shadow-[0_0_0_3px_var(--navy-on)]" : "bg-navy-faint",
             )}
             aria-hidden
@@ -356,7 +356,7 @@ function SubDots({ subs }: { subs: Array<{ state: "done" | "now" | "todo" }> }) 
   return (
     <span className="mt-1 flex gap-1" aria-hidden>
       {subs.slice(0, 6).map((x, i) => (
-        <i key={i} className={cn("h-1.5 w-1.5 rounded-full", x.state === "done" ? "bg-ok-mid" : x.state === "now" ? "bg-accent" : "shadow-[inset_0_0_0_1px_var(--line)]")} />
+        <i key={i} className={cn("h-1.5 w-1.5 rounded-[2px]", x.state === "done" ? "bg-ok-mid" : x.state === "now" ? "bg-accent" : "shadow-[inset_0_0_0_1px_var(--line)]")} />
       ))}
     </span>
   );
@@ -483,7 +483,7 @@ export function StepTeamCard({ step, notify }: { step: Step; notify: Notify }) {
             <span className="block truncate text-12.5 text-muted">{role}</span>
           </span>
           <Button size="iconSm" variant="ghost" aria-label={`Message ${p.name}`} onClick={() => setTo(p.name)}>
-            <MessageSquare size={16} strokeWidth={1.5} />
+            <MessageSquare size={16} strokeWidth={1.6} />
           </Button>
         </ListRow>
       ))}
@@ -503,7 +503,7 @@ export function PortalButton({ form, step, notify }: { form: string; step: Step;
       aria-label={`Open ${form} on the ${portalFor(step)}`}
     >
       {form}
-      <ExternalLink size={12} strokeWidth={1.5} />
+      <ExternalLink size={12} strokeWidth={1.6} />
     </button>
   );
 }
@@ -515,18 +515,18 @@ export function PortalProof({ step, notify, forms }: { step: Step; notify: Notif
   return (
     <span className="flex items-center gap-1.5">
       <Button size="iconSm" variant="ghost" aria-label={`Open ${forms[0] ?? "the filing"} on the ${portalFor(step)}`} onClick={() => notify(`Opens ${forms[0] ?? "the filing"} on the ${portalFor(step)} in a new tab`)}>
-        <ExternalLink size={15} strokeWidth={1.5} />
+        <ExternalLink size={15} strokeWidth={1.6} />
       </Button>
       {step.status === "Completed" &&
         (proof ? (
           <Button asChild size="sm" variant="ghost">
             <Link href={`/client/documents/view/${proof}`} aria-label={`Proof of step ${step.n}`}>
-              <Paperclip size={14} strokeWidth={1.5} /> Proof
+              <Paperclip size={14} strokeWidth={1.6} /> Proof
             </Link>
           </Button>
         ) : (
           <Button size="sm" variant="ghost" onClick={() => notify(`Proof · step ${step.n} · ${step.title}`)} aria-label={`Proof of step ${step.n}`}>
-            <Paperclip size={14} strokeWidth={1.5} /> Proof
+            <Paperclip size={14} strokeWidth={1.6} /> Proof
           </Button>
         ))}
     </span>
@@ -541,7 +541,7 @@ export function Pager({ prev, next }: { prev?: { href: string; label: string }; 
       {prev ? (
         <Button asChild className="min-w-0 max-w-full">
           <Link href={prev.href}>
-            <ChevronRight size={16} strokeWidth={1.5} className="rotate-180" />
+            <ChevronRight size={16} strokeWidth={1.6} className="rotate-180" />
             <span className="truncate">{prev.label}</span>
           </Link>
         </Button>
@@ -552,7 +552,7 @@ export function Pager({ prev, next }: { prev?: { href: string; label: string }; 
         <Button asChild className="min-w-0 max-w-full">
           <Link href={next.href}>
             <span className="truncate">{next.label}</span>
-            <ChevronRight size={16} strokeWidth={1.5} />
+            <ChevronRight size={16} strokeWidth={1.6} />
           </Link>
         </Button>
       )}
@@ -593,7 +593,7 @@ export function DropZone({ label, hint, chip, onFile, accept = ".pdf,.jpg,.jpeg,
         type="button"
         aria-label={`Upload ${label}`}
         onClick={() => ref.current?.click()}
-        className={cn("grid h-10 w-10 flex-none place-items-center rounded-full text-surface", warn ? "bg-warn hover:bg-warn-mid" : "bg-navy text-white hover:bg-navy-2")}
+        className={cn("grid h-10 w-10 flex-none place-items-center rounded-md text-surface", warn ? "bg-warn hover:bg-warn-mid" : "bg-navy text-white hover:bg-navy-2")}
       >
         {warn ? <Upload size={16} strokeWidth={1.8} /> : <RefreshCw size={16} strokeWidth={1.8} />}
       </button>

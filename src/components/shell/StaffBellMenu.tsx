@@ -28,7 +28,7 @@ const FOOT = "text-12.5 font-semibold text-accent hover:underline";
 function Count({ n }: { n: number }) {
   if (!n) return null;
   return (
-    <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-bad px-1 text-[10px] font-bold text-white" aria-hidden>
+    <span className="absolute right-[5px] top-[5px] grid h-4 min-w-4 place-items-center rounded-sm bg-bad-mid px-1 text-[10.5px] font-medium text-white ring-2 ring-surface" aria-hidden>
       {n}
     </span>
   );
@@ -51,7 +51,7 @@ export function StaffNotificationsBell({ portal }: { portal: StaffPortal }) {
       width={380}
       trigger={
         <button type="button" className={BTN} aria-label={`Notifications, ${unread} new`} title="Notifications">
-          <Bell size={16} strokeWidth={1.5} />
+          <Bell size={16} strokeWidth={1.6} />
           <Count n={unread} />
         </button>
       }
@@ -134,7 +134,7 @@ export function StaffAnnouncementsBell({ portal }: { portal: StaffPortal | "supe
       width={360}
       trigger={
         <button type="button" className={BTN} aria-label="Announcements" title="Announcements">
-          <Megaphone size={16} strokeWidth={1.5} />
+          <Megaphone size={16} strokeWidth={1.6} />
         </button>
       }
       title={

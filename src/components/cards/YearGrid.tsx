@@ -78,7 +78,7 @@ export function YearGrid({ months, marks, legend, onPick, today = TODAY }: { mon
                 if (!c) return null;
                 return (
                   <span key={l.tone} className="inline-flex items-center gap-1" title={l.label}>
-                    <i className={cn("h-[7px] w-[7px] rounded-full", barFill[l.tone])} aria-hidden />
+                    <i className={cn("h-[7px] w-[7px] rounded-md", barFill[l.tone])} aria-hidden />
                     {c}
                   </span>
                 );

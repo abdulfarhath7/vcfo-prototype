@@ -22,16 +22,16 @@ export function Contact({ p }: { p: Pick<Person, "name" | "phone" | "email"> }) 
   return (
     <span className="flex gap-2">
       <a href={WHATSAPP(p.phone)} className={cn(btn, "border-transparent bg-ok-soft text-ok")} aria-label={`WhatsApp ${p.name}`} title="WhatsApp">
-        <MessageCircle size={15} strokeWidth={1.5} />
+        <MessageCircle size={15} strokeWidth={1.6} />
       </a>
       <a href={`tel:${p.phone}`} className={btn} aria-label={`Call ${p.name}`} title="Call">
-        <Phone size={15} strokeWidth={1.5} />
+        <Phone size={15} strokeWidth={1.6} />
       </a>
       <a href={`mailto:${p.email}`} className={btn} aria-label={`Email ${p.name}`} title="Email">
-        <Mail size={15} strokeWidth={1.5} />
+        <Mail size={15} strokeWidth={1.6} />
       </a>
       <a href="#" className={btn} aria-label={`Teams ${p.name}`} title="Teams">
-        <Video size={15} strokeWidth={1.5} />
+        <Video size={15} strokeWidth={1.6} />
       </a>
     </span>
   );
@@ -46,7 +46,7 @@ function SignInLink() {
     <div className="grid gap-1.5">
       <span className="text-12.5 font-semibold text-muted">Sign-in</span>
       <div className="flex items-center gap-3 rounded-md border border-line px-3 py-2">
-        <Link2 size={16} strokeWidth={1.5} className="flex-none text-accent" aria-hidden />
+        <Link2 size={16} strokeWidth={1.6} className="flex-none text-accent" aria-hidden />
         <span className="min-w-0 flex-1">
           <span className="block text-13.5 font-semibold">Set-password link by email</span>
           <span className="block text-12 text-muted">Expires in 7 days</span>
@@ -266,10 +266,10 @@ export function TeamSection() {
               m.kind === "invited" ? (
                 <span className="flex gap-2">
                   <Button size="iconSm" variant="ghost" aria-label={`Resend invite to ${m.email}`} title="Resend invite" onClick={() => toast.show(`Invite sent again to ${m.email}`)}>
-                    <RefreshCw size={15} strokeWidth={1.5} />
+                    <RefreshCw size={15} strokeWidth={1.6} />
                   </Button>
                   <Button size="iconSm" variant="ghost" aria-label={`Cancel invite to ${m.email}`} title="Cancel invite" onClick={() => remove(m, `Invite to ${m.name} cancelled`)}>
-                    <X size={15} strokeWidth={1.5} />
+                    <X size={15} strokeWidth={1.6} />
                   </Button>
                 </span>
               ) : m.you ? (
@@ -278,7 +278,7 @@ export function TeamSection() {
                 </Button>
               ) : (
                 <Button size="iconSm" variant="ghost" aria-label={`Substitute ${m.name}`} title="Substitute" onClick={() => setSeat(m)}>
-                  <UserRoundCog size={15} strokeWidth={1.5} />
+                  <UserRoundCog size={15} strokeWidth={1.6} />
                 </Button>
               ),
           },

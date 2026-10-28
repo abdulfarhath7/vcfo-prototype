@@ -54,7 +54,7 @@ export function TaskDrawer({ open, onClose, title, eyebrow, status, facts, notes
             {status && <div className="mt-2">{status}</div>}
           </div>
           <Button variant="ghost" size="iconSm" onClick={onClose} aria-label="Close">
-            <X size={16} strokeWidth={1.5} />
+            <X size={16} strokeWidth={1.6} />
           </Button>
         </header>
         <div className="flex-1 overflow-y-auto">

@@ -107,7 +107,7 @@ export function PhaseRows({ phases, openId, className, onAbout }: { phases: Phas
                         <td className="text-faint">
                           {s.href && (
                             <Link href={s.href} aria-label={`Open step ${s.n}`}>
-                              <ChevronRight size={16} strokeWidth={1.5} />
+                              <ChevronRight size={16} strokeWidth={1.6} />
                             </Link>
                           )}
                         </td>

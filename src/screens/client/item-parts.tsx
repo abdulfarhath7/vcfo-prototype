@@ -242,7 +242,7 @@ export function SideThread({
                   </span>
                 ) : (
                   <span
-                    className="h-2 w-2 rounded-full border border-line"
+                    className="h-2 w-2 rounded-[2px] border border-line"
                     aria-hidden
                   />
                 )}
@@ -342,7 +342,7 @@ export function FromClientCard({
                 aria-label={`Download ${x.name}`}
                 onClick={() => toast.show(`Downloaded ${x.name}`)}
               >
-                <Download size={16} strokeWidth={1.5} />
+                <Download size={16} strokeWidth={1.6} />
               </Button>
             ) : null}
           </div>

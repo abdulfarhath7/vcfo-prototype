@@ -259,7 +259,7 @@ export function WhatNextCard({ onDrill, className }: { onDrill: OpenDrill; class
             {n.when}
           </Chip>
           <a href={n.portal} target="_blank" rel="noreferrer" className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label={`Open the ${n.area} portal`}>
-            <ExternalLink size={15} strokeWidth={1.5} />
+            <ExternalLink size={15} strokeWidth={1.6} />
           </a>
         </ListRow>
       ))}
@@ -343,7 +343,7 @@ export function PostIncCard({ onDrill, className }: { onDrill: OpenDrill; classN
       <ListRow onClick={() => onDrill(POST_DRILL, 2)}>
         <Chip tone="ok">{POST_DONE.length} completed</Chip>
         <span className="min-w-0 flex-1 truncate text-12.5 text-muted">{POST_DONE.map((p) => p.title).join(" · ")}</span>
-        <ChevronRight size={16} strokeWidth={1.5} className="flex-none text-faint" />
+        <ChevronRight size={16} strokeWidth={1.6} className="flex-none text-faint" />
       </ListRow>
     </SectionCard>
   );
@@ -381,12 +381,12 @@ export function HomeRegsCard({ className }: { className?: string }) {
               <span className="flex items-center justify-end gap-1">
                 {r.proof === true && (
                   <Link href="/client/documents/view/d2" className="inline-flex h-[26px] items-center gap-1 rounded-sm px-1.5 text-12 font-semibold text-accent hover:bg-raised" aria-label={`Open proof for ${r.name}`}>
-                    <Paperclip size={13} strokeWidth={1.5} /> Proof
+                    <Paperclip size={13} strokeWidth={1.6} /> Proof
                   </Link>
                 )}
                 {r.proof === false && <Chip tone="warn">Proof pending</Chip>}
                 <a href={r.portal} target="_blank" rel="noreferrer" className="grid h-[26px] w-[26px] place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink" aria-label={`Open the ${r.authority} portal`}>
-                  <ExternalLink size={14} strokeWidth={1.5} />
+                  <ExternalLink size={14} strokeWidth={1.6} />
                 </a>
               </span>
             ),
@@ -447,18 +447,18 @@ function IdRow({ id, onReveal, until, onHide }: { id: (typeof COMPANY_IDS)[numbe
       {id.masked && open && <Chip tone="ok">{mmss(left)}</Chip>}
       {id.masked && !open ? (
         <button type="button" onClick={onReveal} className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label={`Show ${id.label}`}>
-          <Eye size={15} strokeWidth={1.5} />
+          <Eye size={15} strokeWidth={1.6} />
         </button>
       ) : (
         <CopyButton value={id.value} label={id.label} />
       )}
       {id.masked && open && (
         <button type="button" onClick={onHide} className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label={`Hide ${id.label}`}>
-          <EyeOff size={15} strokeWidth={1.5} />
+          <EyeOff size={15} strokeWidth={1.6} />
         </button>
       )}
       <a href={id.portal} target="_blank" rel="noreferrer" className="hidden h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink sm:grid" aria-label={`Open the ${id.label} portal`}>
-        <ExternalLink size={15} strokeWidth={1.5} />
+        <ExternalLink size={15} strokeWidth={1.6} />
       </a>
     </ListRow>
   );
@@ -476,7 +476,7 @@ export function IdsCard({ className }: { className?: string }) {
       className={className}
       right={
         <Link href="/client/documents/view/d2" className="inline-flex items-center gap-1 text-13 font-semibold text-accent hover:underline">
-          <Download size={14} strokeWidth={1.5} /> COI
+          <Download size={14} strokeWidth={1.6} /> COI
         </Link>
       }
     >

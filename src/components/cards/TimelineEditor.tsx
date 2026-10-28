@@ -225,7 +225,7 @@ export function TimelineEditor({ open, onOpenChange, phases, start, end, mode, o
               setHist((h) => h.slice(0, -1));
             }}
           >
-            <Undo2 size={14} strokeWidth={1.5} /> Undo
+            <Undo2 size={14} strokeWidth={1.6} /> Undo
           </Button>
           <Button
             size="sm"
@@ -235,7 +235,7 @@ export function TimelineEditor({ open, onOpenChange, phases, start, end, mode, o
               setPh(base);
             }}
           >
-            <RotateCcw size={14} strokeWidth={1.5} /> Reset
+            <RotateCcw size={14} strokeWidth={1.6} /> Reset
           </Button>
         </span>
       </div>
@@ -263,7 +263,7 @@ export function TimelineEditor({ open, onOpenChange, phases, start, end, mode, o
             return (
               <React.Fragment key={meta.id}>
                 <div className="flex h-[52px] items-center gap-1.5 border-t border-line-soft pr-2 text-12.5 font-semibold">
-                  {meta.done && <Lock size={13} strokeWidth={1.5} className="flex-none text-muted" aria-label="Done, locked" />}
+                  {meta.done && <Lock size={13} strokeWidth={1.6} className="flex-none text-muted" aria-label="Done, locked" />}
                   <span className="min-w-0 truncate">{meta.name}</span>
                 </div>
                 <div className="relative h-[52px] border-t border-line-soft">

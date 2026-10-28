@@ -27,7 +27,7 @@
     background: var(--accent-soft);
   }
   .mono {
-    @apply font-mono;
+    @apply font-mono font-medium;
   }
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -40,27 +40,40 @@
 }
 
 @layer components {
-  /* e-Filing grid (R-07): navy head, line on every cell, zebra rows */
+  /* R-07 (Stripe T1): clean rows. 36 px head in small caps, 44 px rows, one hairline between rows. */
   .grid-table {
-    @apply w-full border-collapse text-13.5;
+    @apply w-full border-collapse text-14;
   }
   .grid-table th {
-    @apply bg-navy text-white text-12.5 font-semibold text-left px-3 h-10 border border-navy-line whitespace-nowrap;
+    @apply h-9 whitespace-nowrap border-b-1.5 border-line px-2.5 text-left text-11.5 font-medium uppercase tracking-[.07em] text-muted;
   }
   .grid-table td {
-    @apply px-3 h-11 border border-line align-middle;
-  }
-  .grid-table tbody tr:nth-child(even) td {
-    @apply bg-raised;
+    @apply h-11 border-b border-line-soft px-2.5 align-middle text-ink-2;
   }
   .grid-table tbody tr:hover td {
-    @apply bg-navy-tint;
+    @apply bg-hover;
   }
   .grid-table td.num,
   .grid-table th.num {
-    @apply text-right font-mono;
+    @apply text-right;
   }
   .grid-table tr.late td {
     color: var(--bad);
+  }
+  /* R-17: home card colour wash. The only gradient in the product. */
+  .bg-wash {
+    background: var(--wash);
+  }
+  /* R-46: regulator spectrum ribbon */
+  .spectrum {
+    background: linear-gradient(
+      90deg,
+      var(--reg-mca) 0 16.667%,
+      var(--reg-gst) 0 33.333%,
+      var(--reg-it) 0 50%,
+      var(--reg-payroll) 0 66.667%,
+      var(--reg-fema) 0 83.333%,
+      var(--reg-labour) 0
+    );
   }
 }

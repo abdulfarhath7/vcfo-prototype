@@ -45,7 +45,7 @@ function Facts({ e }: { e: AuditRow }) {
               <div className="text-12 text-muted">Before</div>
               <div className="truncate text-13.5 font-medium text-ink-2 line-through decoration-faint">{before.v}</div>
             </div>
-            <ArrowRight size={16} strokeWidth={1.5} className="text-faint" aria-hidden />
+            <ArrowRight size={16} strokeWidth={1.6} className="text-faint" aria-hidden />
             <div className="min-w-0 rounded-md border border-accent-line bg-accent-soft px-3 py-2">
               <div className="text-12 text-muted">After</div>
               <div className="truncate text-13.5 font-semibold">{after.v}</div>
@@ -149,7 +149,7 @@ export function AuditScreen({ portal }: { portal: Portal }) {
         filters={
           <>
             <label className="relative inline-flex">
-              <Search size={14} strokeWidth={1.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint" aria-hidden />
+              <Search size={14} strokeWidth={1.6} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint" aria-hidden />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -170,7 +170,7 @@ export function AuditScreen({ portal }: { portal: Portal }) {
               ]}
             />
             <Button size="sm" onClick={() => exportCsv(rows)}>
-              <Download size={15} strokeWidth={1.5} /> Export
+              <Download size={15} strokeWidth={1.6} /> Export
             </Button>
           </>
         }

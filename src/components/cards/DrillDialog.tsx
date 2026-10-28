@@ -66,7 +66,7 @@ export function DrillDialog({ spec, active = 0, open, onOpenChange }: { spec: Dr
                 <Chip tone={r.tone} className="sm:hidden">
                   {r.status}
                 </Chip>
-                {r.href && <ChevronRight size={16} strokeWidth={1.5} className="flex-none text-faint" />}
+                {r.href && <ChevronRight size={16} strokeWidth={1.6} className="flex-none text-faint" />}
               </>
             );
             const cls = "flex items-center gap-3 border-t border-line-soft px-4 py-3 text-13.5 first:border-t-0 md:px-5";

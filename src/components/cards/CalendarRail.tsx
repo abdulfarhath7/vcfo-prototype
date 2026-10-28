@@ -95,7 +95,7 @@ export function NextDeadlineCard({ next, onOpen, onRemind, onTile, reminded }: {
     <div className={cn(card, "overflow-hidden")}>
       <div className="px-4 pb-3.5 pt-4">
         <div className="flex items-center gap-1.5 text-11 font-bold text-ink">
-          <i className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+          <i className="h-1.5 w-1.5 rounded-[2px] bg-brand" aria-hidden />
           Next deadline
         </div>
         <div className="mt-2.5 flex items-center gap-3.5">
@@ -122,7 +122,7 @@ export function NextDeadlineCard({ next, onOpen, onRemind, onTile, reminded }: {
         </div>
         <div className="mt-3.5 flex gap-2">
           <Button variant="primary" size="sm" className="flex-1" onClick={onOpen}>
-            Open filing <ArrowRight size={13} strokeWidth={1.5} />
+            Open filing <ArrowRight size={13} strokeWidth={1.6} />
           </Button>
           {reminded ? (
             <Chip tone="ok" className="h-[30px]">
@@ -137,10 +137,10 @@ export function NextDeadlineCard({ next, onOpen, onRemind, onTile, reminded }: {
       </div>
       {next.late && (
         <button type="button" onClick={next.late.onClick} className="flex w-full items-center gap-2 border-t border-line-soft px-4 py-2.5 text-left text-12.5 hover:bg-raised">
-          <i className="h-2 w-2 flex-none rounded-full bg-bad-mid" aria-hidden />
+          <i className="h-2 w-2 flex-none rounded-[2px] bg-bad-mid" aria-hidden />
           <b className="truncate font-bold">{next.late.name}</b>
           <span className="flex-none font-bold text-bad">{next.late.text}</span>
-          <ChevronRight size={14} strokeWidth={1.5} className="ml-auto flex-none text-muted" />
+          <ChevronRight size={14} strokeWidth={1.6} className="ml-auto flex-none text-muted" />
         </button>
       )}
     </div>

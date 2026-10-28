@@ -175,7 +175,7 @@ function Email({ portal }: { portal: StaffPortal }) {
                 setDialog(true);
               }}
             >
-              <Plus size={16} strokeWidth={1.5} /> Create
+              <Plus size={16} strokeWidth={1.6} /> Create
             </Button>
           }
         >

@@ -22,7 +22,7 @@ export function AssistSteps({ steps, className }: { steps: AssistStepRow[]; clas
         <li key={i} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 md:px-5">
           <span
             className={cn(
-              "grid h-5 w-5 flex-none place-items-center rounded-full",
+              "grid h-5 w-5 flex-none place-items-center rounded-sm",
               s.state === "done" && "bg-ok-soft text-ok",
               s.state === "run" && "bg-accent-soft text-accent",
               s.state === "wait" && "shadow-[inset_0_0_0_1.5px_var(--line)]",
@@ -38,7 +38,7 @@ export function AssistSteps({ steps, className }: { steps: AssistStepRow[]; clas
           </span>
           {s.shot && (
             <span className="inline-flex h-[22px] flex-none items-center gap-1 rounded-sm bg-raised px-2 font-mono text-11 text-muted" title="Screenshot of this page">
-              <ImageIcon size={12} strokeWidth={1.5} aria-hidden />
+              <ImageIcon size={12} strokeWidth={1.6} aria-hidden />
               {s.shot}
             </span>
           )}

@@ -13,8 +13,8 @@ export function Select({ options, className, size = "sm", ...rest }: SelectProps
     <span className={cn("relative inline-flex", className)}>
       <select
         className={cn(
-          "appearance-none rounded-md border border-line bg-surface pl-2.5 pr-7 font-semibold text-ink-2 outline-none focus-visible:ring-2 focus-visible:ring-accent-line",
-          size === "sm" ? "h-[30px] text-12.5" : "h-9 text-13.5",
+          "appearance-none rounded-md border-1.5 border-line-2 bg-surface pl-2.5 pr-7 font-medium text-ink outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-focus",
+          size === "sm" ? "h-[30px] text-13" : "h-10 text-14",
         )}
         {...rest}
       >
@@ -24,7 +24,7 @@ export function Select({ options, className, size = "sm", ...rest }: SelectProps
           </option>
         ))}
       </select>
-      <ChevronDown size={14} strokeWidth={1.5} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted" aria-hidden />
+      <ChevronDown size={14} strokeWidth={1.6} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted" aria-hidden />
     </span>
   );
 }
@@ -34,7 +34,7 @@ export function SelectOnNavy({ options, className, ...rest }: Omit<SelectProps, 
   return (
     <span className={cn("relative inline-flex", className)}>
       <select
-        className="h-[28px] appearance-none rounded-sm border border-white/[.18] bg-white/[.08] pl-2.5 pr-7 text-12.5 font-semibold text-white outline-none [&>option]:text-ink"
+        className="h-[28px] appearance-none rounded-md border border-white/[.18] bg-white/[.08] pl-2.5 pr-7 text-12.5 font-semibold text-white outline-none [&>option]:text-ink"
         {...rest}
       >
         {options.map((o) => (
@@ -43,7 +43,7 @@ export function SelectOnNavy({ options, className, ...rest }: Omit<SelectProps, 
           </option>
         ))}
       </select>
-      <ChevronDown size={14} strokeWidth={1.5} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-navy-ink" aria-hidden />
+      <ChevronDown size={14} strokeWidth={1.6} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-navy-ink" aria-hidden />
     </span>
   );
 }

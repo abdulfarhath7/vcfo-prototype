@@ -25,7 +25,7 @@ export function ProgressList({ items, className }: { items: ProgressItem[]; clas
             <span className="flex items-center gap-2">
               <span className="min-w-0 flex-1 truncate text-13.5 font-semibold">{it.name}</span>
               <span className="text-12.5 text-muted">{it.pct}%</span>
-              {it.href && <ChevronRight size={16} strokeWidth={1.5} className="text-faint" />}
+              {it.href && <ChevronRight size={16} strokeWidth={1.6} className="text-faint" />}
             </span>
             {it.sub && <span className="block truncate text-12.5 text-muted">{it.sub}</span>}
             <Bar pct={it.pct} tone={it.tone} className="mt-2" />

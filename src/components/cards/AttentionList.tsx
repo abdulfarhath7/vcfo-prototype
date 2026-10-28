@@ -52,7 +52,7 @@ export function AttentionList({ rows, className }: { rows: AttentionRow[]; class
           <>
             {r.alert ? (
               <span className="grid h-11 w-11 flex-none place-items-center rounded border border-bad bg-surface text-bad" aria-hidden>
-                <AlertCircle size={16} strokeWidth={1.5} />
+                <AlertCircle size={16} strokeWidth={1.6} />
               </span>
             ) : (
               <DateTile date={r.date} tint={r.tint} />

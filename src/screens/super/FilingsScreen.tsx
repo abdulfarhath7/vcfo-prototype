@@ -89,10 +89,10 @@ export function FilingsScreen() {
         f.proof === "file" ? (
           <span className="inline-flex items-center gap-1.5">
             <Button size="sm" variant="outline" onClick={() => toast.show(`Proof · ${f.name} · ${f.period}`)}>
-              <FileCheck2 size={14} strokeWidth={1.5} /> Proof
+              <FileCheck2 size={14} strokeWidth={1.6} /> Proof
             </Button>
             <Button size="iconSm" variant="outline" aria-label="Download proof" onClick={() => toast.show(`Downloaded ${f.name} proof`)}>
-              <Download size={14} strokeWidth={1.5} />
+              <Download size={14} strokeWidth={1.6} />
             </Button>
           </span>
         ) : f.proof === "pending" ? (
@@ -110,21 +110,21 @@ export function FilingsScreen() {
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1 rounded-md border border-line bg-surface px-1 py-0.5">
           <Button size="iconSm" variant="ghost" aria-label="Previous year" onClick={() => toast.show("FY 2025-26 is closed")}>
-            <ChevronLeft size={16} strokeWidth={1.5} />
+            <ChevronLeft size={16} strokeWidth={1.6} />
           </Button>
           <b className="px-1 font-mono text-13 font-semibold">FY 2026-27</b>
           <Button size="iconSm" variant="ghost" aria-label="Next year" onClick={() => toast.show("FY 2027-28 opens on 1 Apr 2027")}>
-            <ChevronRight size={16} strokeWidth={1.5} />
+            <ChevronRight size={16} strokeWidth={1.6} />
           </Button>
         </span>
         <span className="ml-auto flex flex-wrap items-center gap-2">
           <Tabs items={PERIODS.map((p) => ({ key: p, label: p }))} value={period} onChange={setPeriod} />
           <Button size="sm" variant="outline" onClick={() => toast.show("Exported SBC-filings-FY-2026-27.xlsx")}>
-            <Download size={14} strokeWidth={1.5} /> Export
+            <Download size={14} strokeWidth={1.6} /> Export
           </Button>
           <Button size="sm" variant="outline" asChild>
             <Link href="/super/practice/compliances">
-              <Calendar size={14} strokeWidth={1.5} /> Calendar
+              <Calendar size={14} strokeWidth={1.6} /> Calendar
             </Link>
           </Button>
         </span>
@@ -194,10 +194,10 @@ export function FilingsScreen() {
         filters={
           <>
             <Button size="iconSm" variant="ghost" aria-label="Previous period" onClick={() => toast.show("Jul to Aug 2026")}>
-              <ChevronLeft size={16} strokeWidth={1.5} />
+              <ChevronLeft size={16} strokeWidth={1.6} />
             </Button>
             <Button size="iconSm" variant="ghost" aria-label="Next period" onClick={() => toast.show("Nov to Dec 2026")}>
-              <ChevronRight size={16} strokeWidth={1.5} />
+              <ChevronRight size={16} strokeWidth={1.6} />
             </Button>
             <Button size="sm" variant="outline" onClick={() => setFull((v) => !v)}>
               {full ? "Sep to Oct" : "Full year"}
