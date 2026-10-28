@@ -38,7 +38,7 @@ export function toneFor(status: string): ChipTone {
 const SIX: Array<[RegExp, string]> = [
   [/^(due this week|due today|due tomorrow|due soon|due)$/i, "Due soon"],
   [/^(with client|waiting on client|waiting on the client|waiting|pending with client)$/i, "Waiting"],
-  [/^(in progress|running|working)$/i, "In progress"],
+  [/^(in progress)$/i, "In progress"],
   [/^(overdue|late)$/i, "Overdue"],
   [/^(done|complete|completed)$/i, "Done"],
   [/^(not started)$/i, "Not started"],
@@ -122,7 +122,7 @@ export function regOf(area: string): Regulator | undefined {
 export function AreaPill({ area, reg, className }: { area: string; reg?: Regulator; className?: string }) {
   const r = reg ?? regOf(area);
   return (
-    <span className={cn("inline-flex h-6 w-[104px] flex-none items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-md border-1.5 border-line bg-surface px-2 text-12 font-medium text-ink-2", className)}>
+    <span className={cn("inline-flex h-6 w-[104px] flex-none items-center gap-1 overflow-hidden whitespace-nowrap rounded-md border-1.5 border-line bg-surface px-[7px] text-12 font-medium text-ink-2", className)}>
       <i className={cn("h-2 w-2 flex-none rounded-[2px]", r ? REG_SWATCH[r] : "bg-idle-mid")} aria-hidden />
       <span className="min-w-0 truncate">{area}</span>
     </span>

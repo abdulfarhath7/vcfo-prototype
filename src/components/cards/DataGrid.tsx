@@ -44,7 +44,7 @@ export interface DataGridProps<T> {
   selectedKey?: string;
 }
 
-/** R-07: e-Filing grid. Navy head, white text, a line on every cell, zebra rows, page numbers under the table. */
+/** R-07 (T1): clean rows. 36 px small-caps head, 44 px rows with one hairline, page numbers under the table. */
 export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon, pageSize = 10, rowHref, rowClass, rowLate, empty = "No rows", className, footer, inset, onRowClick, selectedKey }: DataGridProps<T>) {
   const router = useRouter();
   const [page, setPage] = React.useState(1);

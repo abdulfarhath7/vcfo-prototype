@@ -47,7 +47,7 @@ export function TileGrid({ groups, className }: { groups: TileGroup[]; className
                   </span>
                   <span className="flex min-w-0 flex-wrap items-center gap-2">
                     {t.tag && <Tag tone={t.tag.tone}>{t.tag.label}</Tag>}
-                    <Chip tone={t.chip.tone}>{t.chip.label}</Chip>
+                    <Chip tone={t.chip.tone} fixed>{t.chip.label}</Chip>
                   </span>
                   <span className={cn("block truncate text-12.5", t.late ? "font-semibold text-bad" : "text-muted")}>{t.date ?? "-"}</span>
                 </>

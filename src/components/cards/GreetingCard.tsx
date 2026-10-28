@@ -33,9 +33,9 @@ export function NumberStrip({ items, className, onWash }: { items: StatItem[]; c
         const inner = (
           <>
             <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <span className="flex items-center gap-1.5 whitespace-nowrap text-13 font-medium text-ink-2">
-                <s.Icon size={15} strokeWidth={1.6} className="flex-none text-muted" aria-hidden />
-                <span className="truncate">{s.label}</span>
+              <span className="flex items-start gap-1.5 text-13 font-medium leading-[18px] text-ink-2">
+                <s.Icon size={15} strokeWidth={1.6} className="mt-px flex-none text-muted" aria-hidden />
+                <span className="min-w-0">{s.label}</span>
               </span>
               <b className={cn("text-26 font-medium tabular-nums", s.bad ? "text-bad" : s.good ? "text-ok" : "text-ink")}>
                 {s.value}

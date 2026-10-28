@@ -1,4 +1,3 @@
-import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { StepMark } from "@/components/ui/StepMark";
 import { fmt } from "@/lib/dates";
@@ -25,18 +24,7 @@ export function Thread({ steps, className }: { steps: ThreadStep[]; className?: 
         return (
           <li key={s.id} className={cn("relative grid grid-cols-[20px_minmax(0,1fr)] gap-x-3 pb-4 last:pb-0", s.state === "upcoming" && "opacity-50")}>
             {!last && <span className="absolute left-[9px] top-5 h-[calc(100%-20px)] border-l border-line" aria-hidden />}
-            <StepMark state={s.state === "done" ? "done" : s.state === "current" ? "now" : "next"} size={20} /><span
-              className={cn(
-                "grid h-5 w-5 place-items-center rounded-sm",
-                s.state === "done" && "bg-ok-soft text-ok",
-                s.state === "current" && "bg-accent-soft text-accent shadow-[inset_0_0_0_2px_var(--accent)]",
-                s.state === "upcoming" && "shadow-[inset_0_0_0_1.5px_var(--line)]",
-              )}
-              aria-hidden
-            >
-              {s.state === "done" && <Check size={12} strokeWidth={2.4} />}
-              {s.state === "current" && <span className="h-1.5 w-1.5 rounded-[2px] bg-accent" />}
-            </span>
+            <StepMark state={s.state === "done" ? "done" : s.state === "current" ? "now" : "next"} size={20} />
             <div className="min-w-0 pt-px">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className={cn("text-13.5", s.state === "current" ? "font-semibold" : "font-medium")}>{s.title}</span>

@@ -137,7 +137,7 @@ export function MonthNav({ value, onChange, now }: { value: string; onChange: (k
                   type="button"
                   data-on={y === year ? "" : undefined}
                   onClick={() => pick(monthKey(y, month))}
-                  className={cn("h-[42px] rounded-md font-mono text-13.5", y === year ? "bg-btn text-white" : "hover:bg-raised", y !== year && y === nowP.year && "shadow-[inset_0_0_0_1px_var(--navy)]")}
+                  className={cn("h-[42px] rounded-md text-13.5", y === year ? "bg-btn text-white" : "hover:bg-raised", y !== year && y === nowP.year && "shadow-[inset_0_0_0_1px_var(--navy)]")}
                 >
                   {y}
                 </button>
@@ -188,7 +188,7 @@ export function CalendarBar({
       <span className={cn(view !== "month" && "invisible")}>
         <MonthNav value={month} onChange={onMonth} now={now} />
       </span>
-      <span className="inline-flex h-8 flex-none items-center rounded-md bg-warn-soft px-2 font-mono text-11 font-semibold text-warn">{fy}</span>
+      <span className="inline-flex h-8 flex-none items-center rounded-md bg-warn-soft px-2 text-12 font-medium text-warn">{fy}</span>
       <Tabs items={areas} value={area} onChange={onArea} className="min-w-0 xl:flex-shrink [&_button]:px-2 xl:[&_button]:px-[7px]" />
       <span className="ml-auto flex flex-none items-center gap-1.5">
         <Tabs

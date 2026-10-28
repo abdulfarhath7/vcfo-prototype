@@ -1,8 +1,7 @@
 "use client";
 import * as React from "react";
-import { CircleAlert, CircleCheck, Circle, Clock } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { Chip } from "@/components/ui/Chip";
+import { Chip, regOf, type Regulator } from "@/components/ui/Chip";
 import { PopoverCard } from "@/components/ui/PopoverCard";
 
 // Old compliance calendar (reference/old-screens/s/comp/index.html monthGrid, v6 grid lines).
@@ -49,27 +48,29 @@ export const CAL_STROKE: Record<CalStatus, string> = {
 };
 
 const CHIP_TONE = { Filed: "ok", "Due soon": "warn", Overdue: "bad", Upcoming: "idle" } as const;
-const CHIP_ICON = { Filed: CircleCheck, "Due soon": Clock, Overdue: CircleAlert, Upcoming: Circle };
 
 /** Status chip with its icon (old chip(): filled glyph and label). */
 export function CalStatusChip({ status, className }: { status: CalStatus; className?: string }) {
-  const Icon = CHIP_ICON[status];
   return (
-    <Chip tone={CHIP_TONE[status]} dot={false} className={cn("gap-1 px-1.5 text-11.5", className)}>
-      <Icon size={12} strokeWidth={2} aria-hidden />
+    <Chip tone={CHIP_TONE[status]} fixed className={className}>
       {status}
     </Chip>
   );
 }
 
-/** Mono area tag (old .area: IT, GST, PAY, FEMA, MCA). */
+/** Short area tag for tight spots (IT, GST, PAY, FEMA, MCA): the R-43 swatch and the short word. */
 export function AreaShort({ children, title }: { children: React.ReactNode; title?: string }) {
+  const word = typeof children === "string" ? children : "";
+  const r = regOf(word === "PAY" ? "Payroll" : word === "IT" ? "Income tax" : title ?? word);
   return (
-    <span title={title} className="inline-flex h-5 flex-none items-center rounded-sm border border-line bg-navy-tint px-1.5 font-mono text-11 font-semibold text-ink-2">
+    <span title={title} className="inline-flex h-5 flex-none items-center gap-1 rounded-sm border-1.5 border-line bg-surface px-1.5 text-11 font-medium text-ink-2">
+      <i className={cn("h-1.5 w-1.5 flex-none rounded-[2px]", r ? REG_DOT[r] : "bg-idle-mid")} aria-hidden />
       {children}
     </span>
   );
 }
+
+const REG_DOT: Record<Regulator, string> = { mca: "bg-reg-mca", gst: "bg-reg-gst", it: "bg-reg-it", payroll: "bg-reg-payroll", fema: "bg-reg-fema", labour: "bg-reg-labour" };
 
 /** 44 px date tile tinted by status: day number over the weekday. */
 export function CalDateTile({ date, status, className }: { date: Date; status: CalStatus; className?: string }) {
