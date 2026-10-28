@@ -13,8 +13,10 @@ export interface Column<T> {
   label: React.ReactNode;
   width?: number | string;
   align?: "left" | "right" | "center";
-  /** Identifier column: IBM Plex Mono (R-28). */
+  /** Identifier column: Roboto Mono (R-28). */
   mono?: boolean;
+  /** Hide this column below 768 px, so the table fits a phone. */
+  hideOnPhone?: boolean;
   render?: (row: T, index: number) => React.ReactNode;
   className?: string;
 }
@@ -70,7 +72,7 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
           <thead>
             <tr>
               {columns.map((c) => (
-                <th key={c.key} style={{ width: c.width }} className={cn(c.align === "right" && "text-right", c.align === "center" && "text-center", c.className)}>
+                <th key={c.key} style={{ width: c.width }} className={cn(c.align === "right" && "text-right", c.align === "center" && "text-center", c.hideOnPhone && "max-md:hidden", c.className)}>
                   {c.label}
                 </th>
               ))}
@@ -109,7 +111,7 @@ export function DataGrid<T>({ columns, rows, rowKey, title, meta, filters, icon,
                     const v = c.render ? c.render(r, (cur - 1) * pageSize + i) : String((r as Record<string, unknown>)[c.key] ?? "");
                     const cell = href && ci === 0 ? <Link href={href} className="-mx-2.5 -my-2.5 block px-2.5 py-2.5 font-medium text-ink hover:underline">{v}</Link> : v;
                     return (
-                      <td key={c.key} className={cn(c.mono && "font-mono text-13", c.align === "right" && "text-right", c.align === "center" && "text-center", c.className)}>
+                      <td key={c.key} className={cn(c.mono && "font-mono text-13", c.align === "right" && "text-right", c.align === "center" && "text-center", c.hideOnPhone && "max-md:hidden", c.className)}>
                         {cell}
                       </td>
                     );

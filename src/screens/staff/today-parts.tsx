@@ -948,8 +948,9 @@ export function TaskStatusCard({ portal, scope, title = "Task status", tasks }: 
   return (
     <SectionCard title={title}>
       <Donut
-        size={96}
+        size={120}
         total={all.length}
+        unit="tasks"
         segments={STATUS_ORDER.map((x) => ({
           label: x.label,
           value: all.filter((t) => t.status === x.s).length,

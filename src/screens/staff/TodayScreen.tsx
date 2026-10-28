@@ -116,12 +116,14 @@ function TeamTasks({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
       key: "owner",
       label: "Lead",
       width: 128,
+      hideOnPhone: true,
       render: (t) => <LeadCell name={t.owner} />,
     },
     {
       key: "area",
       label: "Area",
       width: 128,
+      hideOnPhone: true,
       render: (t) => <AreaPill area={t.area} />,
     },
     {

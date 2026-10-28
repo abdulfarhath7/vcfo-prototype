@@ -16,7 +16,7 @@ const stroke: Record<Segment["tone"], string> = {
 };
 
 /** R-25 (C1): donut in status colours, total in the centre, legend beside. */
-export function Donut({ segments, total, title, size = 84, className }: { segments: Segment[]; total: React.ReactNode; title?: string; size?: 72 | 84 | 96; className?: string }) {
+export function Donut({ segments, total, unit, title, size = 84, className }: { segments: Segment[]; total: React.ReactNode; /** Small word under the total: "tasks". */ unit?: string; title?: string; size?: 72 | 84 | 96 | 120; className?: string }) {
   const data = segments.filter((s) => s.value > 0);
   return (
     <div className={cn("flex items-center gap-4", className)}>
@@ -30,7 +30,10 @@ export function Donut({ segments, total, title, size = 84, className }: { segmen
             </Pie>
           </PieChart>
         </ResponsiveContainer>
-        <b className="absolute inset-0 grid place-items-center text-22 font-medium leading-none">{total}</b>
+        <span className="absolute inset-0 flex flex-col items-center justify-center">
+          <b className={cn("font-medium leading-none", size === 120 ? "text-26" : "text-22")}>{total}</b>
+          {unit && <span className="mt-1 text-12 text-muted">{unit}</span>}
+        </span>
       </div>
       <div className="min-w-0">
         {title && <h3 className="mb-1.5 text-13 font-medium text-muted">{title}</h3>}
