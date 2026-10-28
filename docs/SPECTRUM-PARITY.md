@@ -14,7 +14,7 @@ Source: the Spectrum canvas (https://claude.ai/artifact/Mthtcsro8KnEd5xHyJ9pTi),
 | A-03 | One radius | 6 px; 4 px marks; 3 px bars | Matches | ✓ | None |
 | A-04 | Edges | 1.5 px on cards and controls | Matches | ✓ | None |
 | A-05 | Regulator ribbon | 3 px, six colours, top of every screen | Shown | ✓ | None |
-| A-06 | Six status words | Not started, In progress, Waiting, Due soon, Overdue, Done | "Filed" (176 uses), "Upcoming" (166), "Pending" (52), "Stuck", "Failed", "Missing", "Working", "Proof pending", "At risk", "Sent back" also show in status chips | ◐ | Map each status chip to the six words. "Filed" becomes Done. "Upcoming" becomes Not started. "Pending" becomes Waiting. "Stuck" and "At risk" become Overdue or Due soon. Keep other words only as a second, grey note next to the chip (for example "Sent back"). Developer service health may keep "Working / Needs attention / Failed", because it is not a task status. |
+| A-06 | Six status words | Not started, In progress, Waiting, Due soon, Overdue, Done | "Filed" (176 uses), "Upcoming" (166), "Pending" (52), "Stuck", "Failed", "Missing", "Working", "Proof pending", "At risk", "Sent back" also show in status chips | ✓ | Done: `Chip` maps every synonym to the six words. Filed → Done, Upcoming → Not started, Pending → Waiting. Words with extra meaning (Sent back, Stuck, At risk) show as a grey note after the chip. Developer service health keeps its own words (`raw`). |
 
 ## B. Components
 

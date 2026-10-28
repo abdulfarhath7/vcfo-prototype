@@ -27,39 +27,50 @@ const dots: Record<ChipTone, string> = {
 export function toneFor(status: string): ChipTone {
   const s = status.toLowerCase();
   if (/(done|complete|filed|approved|granted|active|paid|closed|resolved|\bok\b|healthy|connected|live|verified)/.test(s)) return "ok";
-  if (/(overdue|late|fail|error|rejected|blocked|stuck|critical|down|expired|sent back)/.test(s)) return "bad";
+  if (/(overdue|late|fail|error|rejected|blocked|stuck|critical|down|expired|sent back|missing)/.test(s)) return "bad";
   if (/(waiting|pending|with client|with sbc|with mca|hold|needs|asked|sent)/.test(s)) return "teal";
-  if (/(due|soon|warn|degraded|expir)/.test(s)) return "warn";
+  if (/(due|soon|warn|degraded|expir|risk)/.test(s)) return "warn";
   if (/(progress|current|running|filing|review|started|working|processing|open|mca)/.test(s)) return "prog";
   return "idle";
 }
 
-/** R-13: six words only. Long status variants collapse to the six; other words (Filed, Approved) stay. */
-const SIX: Array<[RegExp, string]> = [
-  [/^(due this week|due today|due tomorrow|due soon|due)$/i, "Due soon"],
-  [/^(with client|waiting on client|waiting on the client|waiting|pending with client)$/i, "Waiting"],
-  [/^(in progress)$/i, "In progress"],
+/**
+ * R-13 (A-06): six words only. A synonym collapses to one of the six. A word that carries extra meaning
+ * ("Sent back", "Stuck") collapses too, and the original word shows as a grey note after the chip.
+ */
+const SIX: Array<[RegExp, string, boolean?]> = [
+  [/^(done|complete|completed|filed|approved|granted|paid|registered|closed|resolved|verified|acknowledged|signed)$/i, "Done"],
+  [/^(not started|upcoming|planned|scheduled|not asked|not due)$/i, "Not started"],
+  [/^(waiting|with client|waiting on client|waiting on the client|pending|pending with client|asked|sent|on hold)$/i, "Waiting"],
+  [/^(proof pending|needs input|needs re-auth)$/i, "Waiting", true],
+  [/^(due|due soon|due this week|due today|due tomorrow)$/i, "Due soon"],
+  [/^(at risk)$/i, "Due soon", true],
   [/^(overdue|late)$/i, "Overdue"],
-  [/^(done|complete|completed)$/i, "Done"],
-  [/^(not started)$/i, "Not started"],
+  [/^(stuck|sent back|rejected|expired|failed|missing)$/i, "Overdue", true],
+  [/^(in progress|in review|under review|review|processing|filing|drafting)$/i, "In progress"],
 ];
-export function statusWord(s: string) {
-  const hit = SIX.find(([re]) => re.test(s.trim()));
-  return hit ? hit[1] : s;
+export function statusWord(s: string): { word: string; note?: string } {
+  const t = s.trim();
+  const hit = SIX.find(([re]) => re.test(t));
+  if (!hit) return { word: s };
+  return { word: hit[1], note: hit[2] ? t : undefined };
 }
 
 export interface ChipProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: ChipTone;
   /** R-13: exactly 104 px, so status columns line up. Without it the chip is at least 104 px. */
   fixed?: boolean;
+  /** Keep the word as given (developer service health is not a task status). */
+  raw?: boolean;
   dot?: boolean;
 }
 
 /** R-13: status chip. 24 px high, 6 px corners, 104 px wide, 7 px square dot, 12 px weight 500. */
-export function Chip({ tone, fixed, dot = true, className, children, ...rest }: ChipProps) {
+export function Chip({ tone, fixed, raw, dot = true, className, children, ...rest }: ChipProps) {
   const t = tone ?? (typeof children === "string" ? toneFor(children) : "idle");
-  const word = typeof children === "string" ? statusWord(children) : children;
-  return (
+  const sw = typeof children === "string" && !raw ? statusWord(children) : undefined;
+  const word = sw ? sw.word : children;
+  const chip = (
     <span
       title={typeof children === "string" && word !== children ? children : undefined}
       className={cn(
@@ -72,6 +83,13 @@ export function Chip({ tone, fixed, dot = true, className, children, ...rest }: 
     >
       {dot && <i className={cn("h-[7px] w-[7px] flex-none rounded-[2px]", dots[t])} aria-hidden />}
       <span className="min-w-0 truncate">{word}</span>
+    </span>
+  );
+  if (!sw?.note) return chip;
+  return (
+    <span className="inline-flex max-w-full flex-none items-center gap-1.5">
+      {chip}
+      <span className="truncate text-12 text-muted">{sw.note}</span>
     </span>
   );
 }

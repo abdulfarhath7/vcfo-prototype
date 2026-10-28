@@ -263,7 +263,7 @@ export function LogLines({ lines }: { lines: Array<{ at: Date; level: "info" | "
  */
 export function StatusChip({ tone, children, wide, loose }: { tone?: ChipTone; children: string; wide?: boolean; loose?: boolean }) {
   return (
-    <Chip fixed={!loose} tone={tone ?? (children === "Working" ? "ok" : undefined)} className={wide && !loose ? "w-[124px]" : undefined}>
+    <Chip raw fixed={!loose} tone={tone ?? (children === "Working" ? "ok" : undefined)} className={wide && !loose ? "w-[124px]" : undefined}>
       {children === "Working" ? <>{children}</> : children}
     </Chip>
   );
