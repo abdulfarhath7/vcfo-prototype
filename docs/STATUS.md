@@ -98,14 +98,14 @@ Not finished when the session stopped:
 2. After that, run the full sweep (`node $R/sweep.cjs $R/routes.txt`) and the checks again.
 
 Open after this round:
-1. Drag-to-plan in Work and the Leads calendar is not built. The old calendars let you drag a block to change its start and end.
-2. Larkspur's old data is inconsistent: 2 of 5 Phase 1 steps done, but the step code is "Step 2".
+1. Done (C-0096): drag-to-plan in Work and the Leads calendar.
+2. Done (C-0097): Larkspur's phase counts match "Step 2".
 3. The Northwind Documents tab says 18 (D-15). The head button says 6/11 and the Documents card lists 6 files.
-4. Super admin Practice pages use their own client data in `src/data/super.ts`. Its phase counts for Monsoon, Saffron and Coral still disagree with their step codes.
+4. Done (C-0097): `src/data/super.ts` phase counts match the step codes.
 5. Knowledge bank shelves are not links. Only the GST shelf has files. Only search reaches the reader.
 6. Profile › Appearance: Density and Text size save but do not change the page.
 7. Staff Profile has no Team section. R-42 names only the client. Owner to confirm.
-8. `SBC_CONTACTS` in `src/data/updates-team.ts` has no user since D-12. Remove it.
+8. Done (C-0097): `SBC_CONTACTS` is removed.
 9. Board resolution "Send to client" is a `mailto:` link.
 
 ## Next refactors
@@ -114,3 +114,8 @@ Open after this round:
 - Give `DataGrid` a row-expand slot, so Leads and Connections stop using a panel below the grid.
 - Merge the two assign dialogs: `AssignClientDialog` in `today-parts.tsx` and `AssignDialog` in `record-parts.tsx`.
 - Widen `StaffPortal` to include super, then drop the super copies of StepScreen and BoardResolutionScreen.
+
+## 29 Oct 2026
+
+- C-0043 is ✓: the client portal and public pages click-through is done (C-0094, C-0095).
+- The VCFO Spectrum restyle is on branch `design/spectrum`, waiting for the owner's review. See `docs/HANDOFF.md`.

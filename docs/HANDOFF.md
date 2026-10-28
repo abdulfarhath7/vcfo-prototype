@@ -1,29 +1,26 @@
-# Handoff: 28 Oct 2026, late evening
+# Handoff: 29 Oct 2026
 
-The owner closed the laptop. Continue from here. Read this file, then `docs/STATUS.md` ("Gaps and click-through round").
+Read this file, then `docs/STATUS.md`.
 
 ## State
 
-- Repair round 2 is done (C-0072 to C-0084).
-- Owner decisions are done (D-12 to D-16). The decision page is https://claude.ai/artifact/4xJTErL4HDwCZvj3xnitf5.
-- Gaps and the click-through are done for staff, super admin and developer (C-0085 to C-0093). C-0044, C-0045 and C-0046 are ✓.
-- Nothing is committed. The owner commits.
+- `main` holds repair rounds 1 and 2, decisions D-12 to D-16, and the click-through fixes. C-0043 to C-0046 are ✓. The last row is C-0097.
+- Branch `design/spectrum` holds the VCFO Spectrum restyle (C-0098 to C-0110) and the v6 landing with the comparison section (C-0111, C-0112). The owner merges it after review. Do not merge it yourself.
+- GitHub: https://github.com/abdulfarhath7/vcfo-prototype (public). Default branch `main`.
+- The Spectrum worktree is `~/.cache/vcfo/spectrum` (branch `design/spectrum`). It has its own `node_modules` hard links. Run it with `npx next dev -p 3200`.
 
 ## Next steps
 
-1. Run `npx tsc --noEmit`, `npx eslint src app` and `npx vitest run`.
-2. Rerun the client portal and public pages click-through (C-0043). The agent was still running when the session stopped. It may have left half-done edits in `src/screens/client/`, `src/screens/shared/` or `src/screens/public/`. Check `git diff` on those folders first.
-3. Run the route sweep: `node $R/sweep.cjs $R/routes.txt`. `$R` is `~/Documents/reference/vcfo-prototype/repair-2026-10-28`.
-4. Set C-0043 to ✓ when the client click-through is clean. Add rows from C-0094.
-5. Then work through "Open after this round" in `docs/STATUS.md`. Item 1 (drag-to-plan) is the largest.
+1. Wait for the owner's review of `design/spectrum`. Apply the review fixes on that branch.
+2. Open items in `docs/STATUS.md` ("Open after this round").
 
 ## How to check
 
 - Dev server: `npm run dev -- --port 3100`. Never pipe it into `head`.
-- Screenshot: `node $R/shot.cjs <route> <out.png> [width] [light|dark] [before|after]`.
-- Old screens (the target): `$R/old/old-<key>.png`. `$R/pairs.json` maps each key to a route.
+- Screenshot: `node $R/shot.cjs <route> <out.png> [width] [light|dark] [before|after]`. `$R` is `~/Documents/reference/vcfo-prototype/repair-2026-10-28`.
+- Route sweep: `node $R/sweep.cjs $R/routes.txt` (90 routes, 390 light and 1440 dark).
 
 ## Do not
 
-- Do not commit. The owner commits.
 - Do not edit `reference/` or the real tool.
+- Do not commit unless the owner asks.
