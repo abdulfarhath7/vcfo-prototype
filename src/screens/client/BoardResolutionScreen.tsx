@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Check, Download, Eye, Maximize2, Minus, Plus } from "lucide-react";
+import { Download, Eye, Maximize2, Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TODAY, d, fmt } from "@/lib/dates";
 import { STEPS, stepHref } from "@/data/incorporation";
@@ -9,10 +9,11 @@ import { NORTHWIND } from "@/data/people";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { StepMark } from "@/components/ui/StepMark";
 import { FileBadge } from "@/components/ui/FileBadge";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow } from "@/components/cards/SectionCard";
-import { NavyHead, DoneMark } from "./navy-head";
+import { PageHead, Dot } from "./navy-head";
 import { DropZone, type Notify } from "./inc-parts";
 
 const draft = STEPS[1];
@@ -31,34 +32,22 @@ function CompanyStamp() {
   );
 }
 
-/** Stages of the resolution. The last one is the large "Received by SBC" tile (old board.html .trk). */
-function BoardTrack({ stages, received }: { stages: Array<{ label: string; sub?: string; done: boolean }>; received?: { sub: string } }) {
+/** Stages of the resolution as an ST5 track (R-22): done stages are green squares with a tick, joined by a green line. */
+function BoardTrack({ stages }: { stages: Array<{ label: string; sub?: string; done: boolean }> }) {
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-md border-1.5 border-line bg-surface px-4 py-3.5 md:flex-row md:items-center md:gap-0 md:px-5" aria-label="Progress">
-      {stages.map((st) => (
-        <React.Fragment key={st.label}>
-          <div className={cn("flex min-w-0 items-center gap-2.5 md:flex-none md:flex-col md:gap-1 md:text-center", !st.done && "opacity-60")}>
-            <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-md", st.done ? "bg-ok text-surface" : "shadow-[inset_0_0_0_1.5px_var(--line)]")} aria-hidden>
-              {st.done && <Check size={13} strokeWidth={2.6} />}
-            </span>
+    <section className="rounded-md border-1.5 border-line bg-surface px-4 py-4 md:px-5" aria-label="Progress">
+      <ol className="flex flex-col gap-3 md:flex-row md:items-start md:gap-0">
+        {stages.map((st, i) => (
+          <li key={st.label} className="relative flex min-w-0 flex-1 items-center gap-2.5 md:flex-col md:items-start md:gap-2">
+            {i < stages.length - 1 && <span className={cn("absolute left-[30px] right-3 top-[10px] hidden h-[1.5px] md:block", st.done && stages[i + 1].done ? "bg-ok-mid" : "bg-line")} aria-hidden />}
+            <StepMark state={st.done ? "done" : "next"} label={st.done ? "Done" : "Not started"} className="relative z-[1]" />
             <span className="min-w-0">
-              <b className="block truncate text-13 font-semibold">{st.label}</b>
-              {st.sub && <span className="block truncate text-12 text-muted">{st.sub}</span>}
+              <b className="block truncate text-14 font-medium">{st.label}</b>
+              {st.sub && <span className="block truncate text-12.5 text-muted">{st.sub}</span>}
             </span>
-          </div>
-          <span className={cn("mx-4 hidden h-0.5 min-w-6 flex-1 md:block", st.done ? "bg-ok" : "bg-line")} aria-hidden />
-        </React.Fragment>
-      ))}
-      <div className={cn("flex min-w-0 items-center gap-3 rounded-lg px-4 py-3 md:min-w-[200px]", received ? "bg-ok text-surface" : "border border-line bg-raised text-muted")}>
-        <span className={cn("grid h-8 w-8 flex-none place-items-center rounded-md border", received ? "border-current" : "border-line")} aria-hidden>
-          <Check size={16} strokeWidth={2.2} />
-        </span>
-        <span className="min-w-0">
-          <span className="block font-mono text-11.5 font-semibold opacity-80">{received ? "Received" : "Next"}</span>
-          <b className="block truncate text-16 font-semibold">Received by SBC</b>
-          {received && <span className="block truncate text-12.5 opacity-90">{received.sub}</span>}
-        </span>
-      </div>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
@@ -67,17 +56,17 @@ function BoardTrack({ stages, received }: { stages: Array<{ label: string; sub?:
 function Resolution({ signer, signedOn }: { signer?: string; signedOn?: Date }) {
   return (
     <article className="mx-auto max-w-[720px] bg-surface px-5 py-6 text-13.5 leading-relaxed text-ink-2 md:px-8 md:py-8">
-      <h2 className="text-center text-13 font-semibold uppercase tracking-wide text-ink">
+      <h2 className="text-center text-13 font-medium uppercase tracking-wide text-ink">
         Certified true copy of the resolution passed by the Board of Directors of Northwind Inc. on 24 September 2026
       </h2>
       <p className="mt-5">The Board considered the proposal to set up a wholly owned subsidiary in India for software development and IT services.</p>
-      <h3 className="mt-5 text-12.5 font-semibold uppercase tracking-wide text-ink">Resolved that</h3>
+      <h3 className="mt-5 text-12.5 font-medium uppercase tracking-wide text-ink">Resolved that</h3>
       <p className="mt-1.5">
-        the Company incorporate a private limited company in India under the Companies Act, 2013, with the proposed name <b className="font-semibold text-ink">{NORTHWIND.name}</b>, and an authorised capital of ₹10,00,000 divided into 1,00,000 equity
+        the Company incorporate a private limited company in India under the Companies Act, 2013, with the proposed name <b className="font-medium text-ink">{NORTHWIND.name}</b>, and an authorised capital of ₹10,00,000 divided into 1,00,000 equity
         shares of ₹10 each.
       </p>
       <p className="mt-3">The Company subscribe to 9,999 equity shares of the proposed company. Mr J. Carter hold 1 equity share as nominee of the Company.</p>
-      <h3 className="mt-5 text-12.5 font-semibold uppercase tracking-wide text-ink">Resolved further that</h3>
+      <h3 className="mt-5 text-12.5 font-medium uppercase tracking-wide text-ink">Resolved further that</h3>
       <p className="mt-1.5">Mr Rohan Kumar, Director, be authorised to sign the application for reservation of name, the SPICe+ forms, the memorandum and articles of association, and every other document for the incorporation.</p>
       <p className="mt-3">SBC LLP, Chartered Accountants, be appointed to file the forms with the Registrar of Companies and to act for the Company before the Ministry of Corporate Affairs.</p>
       <p className="mt-3">Any Director of the Company be authorised to certify a copy of this resolution as true.</p>
@@ -91,7 +80,7 @@ function Resolution({ signer, signedOn }: { signer?: string; signedOn?: Date }) 
           ) : (
             <div className="mt-8 w-[200px] border-b border-line" aria-label="Not signed yet" />
           )}
-          <div className={cn("mt-1.5 text-13 font-semibold", signer ? "text-ink" : "text-faint")}>{signer ?? "-"}</div>
+          <div className={cn("mt-1.5 text-13 font-medium", signer ? "text-ink" : "text-faint")}>{signer ?? "-"}</div>
           <div className="text-12 text-muted">Director, Northwind Inc.</div>
         </div>
         <div className="flex items-end gap-5">
@@ -124,15 +113,12 @@ function FilesCard({ files, notify, onReplace }: { files: BoardFile[]; notify: N
       {files.map((f) => (
         <ListRow key={f.id}>
           <FileBadge type={f.type} />
-          <span className="min-w-0 flex-1">
-            <b className="block truncate font-semibold">{f.name}</b>
-            <span className="block truncate font-mono text-12 text-muted">
-              {f.file} · {f.meta}
+          <span className="min-w-0 flex-1" title={f.file}>
+            <b className="block truncate font-medium">{f.name}</b>
+            <span className="block truncate text-12.5 text-muted">
+              <span className="text-ok">{f.status}</span> · {f.meta}
             </span>
           </span>
-          <Chip tone="ok" className="hidden sm:inline-flex">
-            {f.status}
-          </Chip>
           {f.viewId ? (
             <Button asChild size="iconSm" variant="ghost" aria-label={`Preview ${f.file}`}>
               <Link href={`/client/documents/view/${f.viewId}`}>
@@ -179,29 +165,31 @@ export function BoardResolutionScreen() {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <NavyHead
+      <PageHead
         label="Board resolution"
-        eyebrow="Phase 1 · Name Application · steps 2-3"
         title="Board resolution"
-        sub={
+        chips={<Chip tone="ok">Done</Chip>}
+        meta={
           <>
-            <span className="inline-flex h-[22px] items-center rounded-sm bg-ok px-2 font-semibold text-surface">Signed copy received · {fmt(signedOn)}</span>
-            <span className="inline-flex h-[22px] items-center rounded-sm bg-white/[.12] px-2 font-semibold text-white">Certified true copy</span>
+            <span>Phase 1 · Name Application · steps 2-3</span>
+            <Dot />
+            <span>Signed copy received · {fmt(signedOn)}</span>
+            <Dot />
+            <span>Certified true copy</span>
           </>
         }
         links={[
           { href: stepHref("client", 2), label: `2 · ${draft.title}`, dir: "next" },
           { href: stepHref("client", 3), label: `3 · ${signedStep.title}`, dir: "next" },
         ]}
-        mark={<DoneMark label={`Done · received ${fmt(signedOn)}`} />}
       />
       <BoardTrack
         stages={[
           { label: "Drafted", sub: `SBC · ${fmt(DRAFTED)}`, done: true },
           { label: "Released", sub: fmt(RELEASED), done: true },
           { label: "Signed", sub: `Northwind · ${fmt(signedOn)}`, done: true },
+          { label: "Received by SBC", sub: `Bharath · ${fmt(signedOn)}`, done: true },
         ]}
-        received={{ sub: `Bharath · ${fmt(signedOn)}` }}
       />
       <Cols>
         <Col>
@@ -234,12 +222,6 @@ export function BoardResolutionScreen() {
         </Col>
         <Col>
           <FilesCard files={files} notify={toast.show} onReplace={replace} />
-          <SectionCard title="What happens with it">
-            <p className="text-13.5 text-ink-2">Northwind’s parent board authorised the India subsidiary. SBC drafted it, J. Carter signed it, and it went with the name application in step 4.</p>
-            <Button asChild size="sm" className="mt-3">
-              <Link href={stepHref("client", 3)}>Open step 3</Link>
-            </Button>
-          </SectionCard>
         </Col>
       </Cols>
       {toast.node}

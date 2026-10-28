@@ -5,26 +5,26 @@ import { Calendar, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { cn } from "@/lib/cn";
 import { daysFrom, fmt } from "@/lib/dates";
-import { AREAS, AREA_TONE, FILINGS, FILING_STATUSES, FILING_STATUS_BAR, FILING_STATUS_TONE, isLate, type Area, type Filing, type FilingStatus } from "@/data/compliance";
+import { AREAS, FILINGS, FILING_STATUSES, FILING_STATUS_BAR, FILING_STATUS_TONE, isLate, type Area, type Filing, type FilingStatus } from "@/data/compliance";
 import { filingAssist, filingProofs } from "@/data/compliance-detail";
 import { Row } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag } from "@/components/ui/Chip";
+import { AreaPill, Chip } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { ComplianceDrill, FilingPanel, PortalLink, type DrillRow } from "./comp-parts";
+import { ComplianceDrill, FilterChip, FilingPanel, PortalLink, type DrillRow } from "./comp-parts";
 
 const MONTHS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
 const FILL: Record<FilingStatus, string> = {
   Filed: "var(--ok-mid)",
-  "In progress": "var(--accent)",
+  "In progress": "var(--accent-mid)",
   "Due soon": "var(--warn-mid)",
   Overdue: "var(--bad-mid)",
-  Upcoming: "var(--faint)",
+  Upcoming: "var(--idle-mid)",
 };
 const BAR_AREAS: Area[] = ["GST", "Income tax", "MCA", "Payroll"];
 
@@ -39,9 +39,9 @@ const TILE_TONE: Record<FilingStatus, string> = {
 
 function FilingTile({ f }: { f: Filing }) {
   return (
-    <span className={cn("grid h-[42px] w-[38px] place-content-center rounded text-center leading-none", TILE_TONE[f.status])} aria-label={`Due ${fmt(f.due)}`}>
-      <b className="text-[15px] font-semibold">{f.due.getDate()}</b>
-      <span className="mt-0.5 text-[10.5px] font-semibold uppercase tracking-wider opacity-80">{MONTH_SHORT[f.due.getMonth()]}</span>
+    <span className={cn("grid h-9 w-9 place-content-center rounded-md text-center leading-none", TILE_TONE[f.status])} aria-label={`Due ${fmt(f.due)}`}>
+      <b className="text-14 font-medium">{f.due.getDate()}</b>
+      <span className="mt-0.5 text-11 font-medium">{MONTH_SHORT[f.due.getMonth()]}</span>
     </span>
   );
 }
@@ -66,11 +66,11 @@ function PeriodSwitch({ fy, value, onChange }: { fy: string; value: number; onCh
   const full = value < 0;
   const cur = full ? DEFAULT_WINDOW : value;
   return (
-    <span className="inline-flex h-[30px] items-center rounded-md border border-line bg-surface">
+    <span className="inline-flex h-[30px] items-center overflow-hidden rounded-md border-1.5 border-line-2 bg-surface">
       <button type="button" className="grid h-7 w-7 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink disabled:opacity-40" aria-label="Previous period" disabled={!full && cur === 0} onClick={() => onChange(full ? DEFAULT_WINDOW - 1 : cur - 1)}>
         <ChevronLeft size={15} strokeWidth={1.6} />
       </button>
-      <b className="whitespace-nowrap px-1 text-center text-13 font-semibold" aria-live="polite">
+      <b className="whitespace-nowrap px-1 text-center text-13 font-medium" aria-live="polite">
         {full ? `FY ${fy}` : windowOf(fy, cur).label}
       </b>
       <button type="button" className="grid h-7 w-7 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink disabled:opacity-40" aria-label="Next period" disabled={!full && cur === WINDOWS - 1} onClick={() => onChange(full ? DEFAULT_WINDOW + 1 : cur + 1)}>
@@ -80,7 +80,7 @@ function PeriodSwitch({ fy, value, onChange }: { fy: string; value: number; onCh
         type="button"
         aria-pressed={full}
         onClick={() => onChange(full ? DEFAULT_WINDOW : -1)}
-        className={cn("h-full whitespace-nowrap rounded-r-md border-l border-line px-2.5 text-12.5 font-semibold", full ? "bg-btn text-white" : "text-ink-2 hover:bg-raised")}
+        className={cn("h-full whitespace-nowrap border-l-1.5 border-line-2 px-2.5 text-13 font-medium", full ? "bg-accent-soft text-accent" : "text-ink-2 hover:bg-hover")}
       >
         Full year
       </button>
@@ -119,8 +119,8 @@ function MonthChart({ rows, onDrill }: { rows: Filing[]; onDrill: (title: string
             <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "var(--faint)", fontSize: 11.5 }} />
             <Tooltip
               cursor={{ fill: "var(--raised)" }}
-              contentStyle={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 8, fontSize: 12.5, color: "var(--ink)" }}
-              labelStyle={{ color: "var(--ink)", fontWeight: 600 }}
+              contentStyle={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 6, fontSize: 12.5, color: "var(--ink)" }}
+              labelStyle={{ color: "var(--ink)", fontWeight: 500 }}
             />
             {FILING_STATUSES.map((s) => (
               <Bar key={s} dataKey={s} stackId="a" fill={FILL[s]} isAnimationActive={false} maxBarSize={28} />
@@ -157,13 +157,13 @@ function AreaCard({ rows, onDrill }: { rows: Filing[]; onDrill: (title: string, 
 function FiledCell({ f }: { f: Filing }) {
   if (f.filed) {
     const late = daysFrom(f.filed, f.due);
-    return <span className={cn("font-semibold", late > 0 && "text-bad")}>{fmt(f.filed)}</span>;
+    return <span className={cn("whitespace-nowrap", late > 0 && "font-medium text-bad")}>{fmt(f.filed)}</span>;
   }
   if (f.status === "Overdue") {
     const n = -daysFrom(f.due);
-    return <span className="font-semibold text-bad">{n === 1 ? "1 day late" : `${n} days late`}</span>;
+    return <span className="whitespace-nowrap font-medium text-bad">{n === 1 ? "1 day late" : `${n} days late`}</span>;
   }
-  return <span className="text-muted">Not filed yet</span>;
+  return <span className="whitespace-nowrap text-muted">Not filed yet</span>;
 }
 
 /** The screen's toast, for the Download button inside a grid cell. */
@@ -173,12 +173,10 @@ function ProofCell({ f }: { f: Filing }) {
   const notify = React.useContext(NotifyCtx);
   if (f.status !== "Filed") return <span className="text-faint">-</span>;
   const files = filingProofs(f);
-  if (files.length === 0) return <Chip tone="warn">Proof pending</Chip>;
+  if (files.length === 0) return <Chip tone="warn" fixed>Proof pending</Chip>;
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <Chip tone="ok" dot={false}>
-        {files.length === 1 ? "1 file" : `${files.length} files`}
-      </Chip>
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+      <span className="text-13 text-ink-2">{files.length === 1 ? "1 file" : `${files.length} files`}</span>
       <Button
         size="iconSm"
         variant="ghost"
@@ -195,24 +193,24 @@ function ProofCell({ f }: { f: Filing }) {
 }
 
 const columns: Column<Filing>[] = [
-  { key: "due", label: "Due", width: 64, render: (f) => <FilingTile f={f} /> },
-  { key: "area", label: "Area", width: 104, render: (f) => <Tag tone={AREA_TONE[f.area]}>{f.area}</Tag> },
+  { key: "due", label: "Due", width: 56, render: (f) => <FilingTile f={f} /> },
+  { key: "area", label: "Area", width: 124, render: (f) => <AreaPill area={f.area} /> },
   {
     key: "form",
     label: "Filing",
     render: (f) => (
-      <span className="flex min-w-[150px] items-center gap-1">
+      <span className="flex items-center gap-1 whitespace-nowrap">
         <span className="min-w-0">
-          <span className="block font-semibold">{f.form}</span>
-          <span className="block text-12 text-muted">{f.period}</span>
+          <span className="block font-medium leading-tight">{f.form}</span>
+          <span className="block text-12.5 leading-tight text-muted">{f.period}</span>
         </span>
         <PortalLink area={f.area} name={f.form} />
       </span>
     ),
   },
   { key: "frequency", label: "Frequency", width: 104, render: (f) => <span className="text-muted">{f.frequency}</span> },
-  { key: "filed", label: "Filed on", width: 110, render: (f) => <FiledCell f={f} /> },
-  { key: "status", label: "Status", width: 132, render: (f) => <Chip tone={FILING_STATUS_TONE[f.status]} fixed>{f.status}</Chip> },
+  { key: "filed", label: "Filed on", width: 116, render: (f) => <FiledCell f={f} /> },
+  { key: "status", label: "Status", width: 124, render: (f) => <Chip tone={FILING_STATUS_TONE[f.status]} fixed>{f.status}</Chip> },
   {
     key: "assist",
     label: "VCFO Assist",
@@ -222,8 +220,8 @@ const columns: Column<Filing>[] = [
       return <Chip tone={a.tone}>{a.label}</Chip>;
     },
   },
-  { key: "arn", label: "Reference", mono: true, width: 180, render: (f) => f.arn ?? "-" },
-  { key: "proof", label: "Proof", width: 120, align: "right", render: (f) => <ProofCell f={f} /> },
+  { key: "arn", label: "Reference", width: 190, render: (f) => (f.arn ? <span className="whitespace-nowrap font-mono text-12.5">{f.arn}</span> : <span className="text-faint">-</span>) },
+  { key: "proof", label: "Proof", width: 128, align: "right", render: (f) => <ProofCell f={f} /> },
 ];
 
 /** Monthly, Quarterly (with half-yearly), Annual (with event-based). */
@@ -239,8 +237,8 @@ export function FilingsScreen() {
   const [period, setPeriod] = React.useState("all");
   const [fy, setFy] = React.useState("2026-27");
   const [win, setWin] = React.useState(DEFAULT_WINDOW);
-  const [area, setArea] = React.useState("all");
-  const [status, setStatus] = React.useState("all");
+  const [area, setArea] = React.useState<string | null>(null);
+  const [status, setStatus] = React.useState<string | null>(null);
   const [pick, setPick] = React.useState<Filing | null>(null);
   const [drill, setDrill] = React.useState<{ title: string; rows: DrillRow[] } | null>(null);
 
@@ -256,7 +254,7 @@ export function FilingsScreen() {
   const fyRows = FILINGS.filter((f) => f.fy === fy);
   const w = win < 0 ? null : windowOf(fy, win);
   const winRows = w ? fyRows.filter((f) => f.due >= w.start && f.due <= w.end) : fyRows;
-  const rows = winRows.filter((f) => inPeriod(f, period) && (area === "all" || f.area === area) && (status === "all" || f.status === status));
+  const rows = winRows.filter((f) => inPeriod(f, period) && (!area || f.area === area) && (!status || f.status === status));
   const count = (p: string) => winRows.filter((f) => inPeriod(f, p)).length;
   const onDrill = (title: string, list: Filing[]) => setDrill({ title, rows: list.map(toDrill) });
 
@@ -278,13 +276,13 @@ export function FilingsScreen() {
           pageSize={10}
           empty="None"
           footer={
-            (area !== "all" || status !== "all") && (
+            (area || status) && (
               <button
                 type="button"
-                className="font-semibold text-accent hover:underline"
+                className="font-medium text-accent hover:underline"
                 onClick={() => {
-                  setArea("all");
-                  setStatus("all");
+                  setArea(null);
+                  setStatus(null);
                 }}
               >
                 Clear filters
@@ -295,8 +293,8 @@ export function FilingsScreen() {
             <>
               <PeriodSwitch fy={fy} value={win} onChange={setWin} />
               <Tabs items={["all", "Monthly", "Quarterly", "Annual"].map((p) => ({ key: p, label: p === "all" ? "All" : p, count: count(p) }))} value={period} onChange={setPeriod} />
-              <Select aria-label="Area" value={area} onChange={(e) => setArea(e.target.value)} options={[{ value: "all", label: "All areas" }, ...AREAS.map((a) => ({ value: a, label: a }))]} />
-              <Select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)} options={[{ value: "all", label: "Any status" }, ...FILING_STATUSES.map((s) => ({ value: s, label: s }))]} />
+              <FilterChip label="Area" value={area} onChange={setArea} options={AREAS.map((a) => ({ value: a, label: a }))} />
+              <FilterChip label="Status" value={status} onChange={setStatus} options={FILING_STATUSES.map((s) => ({ value: s, label: s }))} />
               <Select
                 aria-label="Financial year"
                 value={fy}
@@ -306,14 +304,15 @@ export function FilingsScreen() {
                   { value: "2025-26", label: "FY 2025-26" },
                 ]}
               />
-              <Button size="sm" onClick={() => toast.show(`Filings FY ${fy}.xlsx downloaded`)}>
-                <Download size={16} strokeWidth={1.6} /> Export
+              <Button size="iconSm" variant="secondary" aria-label={`Export filings FY ${fy}`} title="Export" onClick={() => toast.show(`Filings FY ${fy}.xlsx downloaded`)}>
+                <Download size={16} strokeWidth={1.6} />
               </Button>
-              <Button asChild size="sm">
+              <Button asChild size="iconSm" variant="secondary" aria-label="Open the calendar" title="Calendar">
                 <Link href="/client/calendar">
-                  <Calendar size={16} strokeWidth={1.6} /> Calendar
+                  <Calendar size={16} strokeWidth={1.6} />
                 </Link>
               </Button>
+
             </>
           }
         />

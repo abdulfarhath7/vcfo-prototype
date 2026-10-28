@@ -1,33 +1,28 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { ChevronRight, Copy, Download, ExternalLink, MessageSquare, Paperclip, RefreshCw, Upload } from "lucide-react";
+import { ChevronRight, ExternalLink, ListChecks, Paperclip, RefreshCw, Upload } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { TODAY, fmt, fmtYear, urgency } from "@/lib/dates";
-import { PHASES, STEPS, COI_EXPECTED, stepsOf, doneCount, stepTone, stepHref, phaseHref, type Step } from "@/data/incorporation";
-import { SUB_STEPS, STEP_PROOF, portalFor, NEED_ACTION, type IncNeed, type IncNeedKind, type StatSeg } from "@/data/incorporation-detail";
-import { SBC } from "@/data/people";
+import { TODAY, fmt } from "@/lib/dates";
+import { PHASES, STEPS, COI_EXPECTED, doneCount, stepTone, stepHref, type Step } from "@/data/incorporation";
+import { SUB_STEPS, STEP_PROOF, portalFor, type StatSeg } from "@/data/incorporation-detail";
 import { Button } from "@/components/ui/Button";
 import { Chip, OwnerChip, type ChipTone } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
-import { Bar } from "@/components/ui/Bar";
-import { Avatar } from "@/components/ui/Avatar";
-import { Checkbox } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
-import { SidePanel, PanelSection } from "@/components/ui/SidePanel";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { StatusCircle } from "@/components/cards/GanttTimeline";
-import { IconTile } from "@/components/ui/IconTile";
-import { iconFor } from "@/components/icons";
+import { StepMark } from "@/components/ui/StepMark";
+import { StepRow, stepsInState } from "./st5";
 
 export type Notify = (text: string, onUndo?: () => void) => void;
 
 const ownerLabel = (s: Step) => (s.owner === "client" ? "Northwind" : undefined);
 
-/** Status word for a step: SBC work in progress reads "With SBC". */
+/** Status word for a step, in the six words of R-13 (the owner column says who holds it). */
 export function stepWord(s: Step): { label: string; tone: ChipTone } {
-  if (s.status === "In progress" && s.owner !== "client") return { label: "With SBC", tone: "prog" };
+  if (s.status === "Upcoming") return { label: "Not started", tone: "idle" };
   return { label: s.status, tone: stepTone[s.status] };
 }
 
@@ -92,10 +87,11 @@ export function DrillModal({ spec, onClose }: { spec: DrillSpec | null; onClose:
               <ListRow key={it} href={stepHref("client", s.n)}>
                 <StatusCircle status={circle(s)} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">
-                    {s.n} · {s.title}
+                  <span className="flex min-w-0 items-baseline gap-2">
+                    <span className="flex-none font-mono text-12 text-muted">Step {s.n}</span>
+                    <span className="truncate font-medium">{s.title}</span>
                   </span>
-                  <span className={cn("block text-12.5", dt.late ? "font-semibold text-bad" : "text-muted")}>{dt.text}</span>
+                  <span className={cn("block text-12.5", dt.late ? "font-medium text-bad" : "text-muted")}>{dt.text}</span>
                 </span>
                 <OwnerChip owner={s.owner} label={ownerLabel(s)} className="hidden sm:inline-flex" />
                 <Chip tone={w.tone} fixed className="hidden sm:inline-flex">
@@ -107,7 +103,7 @@ export function DrillModal({ spec, onClose }: { spec: DrillSpec | null; onClose:
           }
           return (
             <ListRow key={it}>
-              <span className="min-w-0 flex-1 truncate font-semibold">{it}</span>
+              <span className="min-w-0 flex-1 truncate font-medium">{it}</span>
               <span className="flex-none text-12.5 text-muted">{spec.docFrom}</span>
             </ListRow>
           );
@@ -133,291 +129,45 @@ export function statusGroups(list: Step[]): StatSeg[] {
 
 export function StatCard({ title, segs, onOpen, unit }: { title: string; segs: StatSeg[]; onOpen: () => void; unit: string }) {
   const total = segs.reduce((a, s) => a + s.items.length, 0);
-  const tile = iconFor(title);
   return (
-    <SectionCard title={title} bare flush>
-      {/* Own head: the tile and the title stay on one line in a quarter-width card (old donut cards). */}
-      <div className="flex min-h-head items-center gap-2.5 border-b border-line-soft px-4 md:px-5">
-        <IconTile Icon={tile.Icon} tone={tile.tone} />
-        <h2 className="min-w-0 truncate text-13.5 font-semibold">{title}</h2>
-      </div>
-      <button type="button" onClick={onOpen} className="block w-full px-4 py-4 text-left hover:bg-raised md:px-5" aria-label={`${title} · ${total} ${unit}`}>
+    <SectionCard title={title} flush>
+      <button type="button" onClick={onOpen} className="block w-full px-4 py-4 text-left hover:bg-hover md:px-5" aria-label={`${title} · ${total} ${unit}`}>
         <StackedBar total={total} segments={segs.map((s) => ({ label: s.label, value: s.items.length, tone: s.tone }))} />
       </button>
     </SectionCard>
   );
 }
 
-/* ---------- Monthly status brief ---------- */
+/* ---------- Journey: the steps of a phase in ST5 (R-22); the focus step shows its sub-steps ---------- */
 
-export function StatusBrief({ open, onOpenChange, incorporated, notify }: { open: boolean; onOpenChange: (v: boolean) => void; incorporated: boolean; notify: Notify }) {
-  const spice = STEPS.filter((s) => s.phase <= 2);
-  const spiceDone = incorporated ? spice.length : spice.filter((s) => s.status === "Completed").length;
-  const pct = Math.round((spiceDone / spice.length) * 100);
-  const days = Math.round((COI_EXPECTED.getTime() - TODAY.getTime()) / 86400000);
-  const waiting = STEPS.filter((s) => s.owner === "client" && (s.status === "Waiting" || s.status === "Sent back" || (s.status === "In progress" && !!s.due && s.due < TODAY)));
-  const going = STEPS.filter((s) => s.status === "In progress" && !waiting.includes(s));
-  const text = [`Incorporation status brief · Northwind Technologies India Pvt Ltd · ${fmtYear(TODAY)}`, ...PHASES.map((p) => `Phase ${p.n} · ${p.short}: ${doneCount(p.n)} of ${stepsOf(p.n).length} done`)].join("\n");
-  const row = (s: Step) => {
-    const dt = stepDate(s);
-    return (
-      <ListRow key={s.n} href={stepHref("client", s.n)}>
-        <StatusCircle status={circle(s)} />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold">
-            {s.n} · {s.title}
-          </span>
-          <span className={cn("block text-12.5", dt.late ? "font-semibold text-bad" : "text-muted")}>{dt.text}</span>
-        </span>
-        <OwnerChip owner={s.owner} label={ownerLabel(s)} />
-      </ListRow>
-    );
-  };
+/** Sub-steps of the focus step: small ST5 marks with labels under them (was the navy railHero stepper). */
+function SubSteps({ subs }: { subs: Array<{ label: string; state: "done" | "now" | "todo" }> }) {
   return (
-    <SidePanel
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Monthly status brief"
-      eyebrow={`Northwind Technologies India Pvt Ltd · as of ${fmtYear(TODAY)}`}
-      width={480}
-      footer={
-        <>
-          <Button
-            onClick={() => {
-              try {
-                navigator.clipboard?.writeText(text).catch(() => {});
-              } catch {}
-              notify("Status brief copied");
-            }}
-          >
-            <Copy size={16} strokeWidth={1.6} /> Copy brief
-          </Button>
-          <Button variant="primary" onClick={() => notify("Download started · status-brief-oct-2026.pdf")}>
-            <Download size={16} strokeWidth={1.6} /> Download PDF
-          </Button>
-        </>
-      }
-    >
-      <PanelSection>
-        <p className="text-13.5">
-          {incorporated ? (
-            <>
-              Incorporated on <b className="font-semibold">{fmtYear(COI_EXPECTED)}</b>. SPICe+ is <b className="font-semibold">100%</b> done.
-            </>
-          ) : (
-            <>
-              <b className="font-semibold">{days} days</b> to the expected COI ({fmt(COI_EXPECTED)}). SPICe+ is <b className="font-semibold">{pct}%</b> done: {spiceDone} of {spice.length} steps.
-            </>
-          )}
-        </p>
-      </PanelSection>
-      <PanelSection title="Phases" flush>
-        {PHASES.map((p) => {
-          const n = stepsOf(p.n).length;
-          const dn = doneCount(p.n);
-          return (
-            <ListRow key={p.id} href={phaseHref("client", p.n)}>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold">
-                  Phase {p.n} · {p.short}
-                </span>
-                <span className="block text-12.5 text-muted">
-                  {dn} of {n} · {p.status === "Done" ? "done" : "ends"} {fmt(p.end)}
-                </span>
-                <Bar pct={(dn / n) * 100} tone={dn === n ? "ok" : "accent"} className="mt-1.5 max-w-[200px]" />
-              </span>
-              <Chip tone={p.status === "Done" ? "ok" : p.status === "In progress" ? "prog" : "idle"}>{p.status}</Chip>
-            </ListRow>
-          );
-        })}
-      </PanelSection>
-      <PanelSection title="Waiting on Northwind" flush>
-        {waiting.length ? waiting.map(row) : <Empty />}
-      </PanelSection>
-      <PanelSection title="In progress" flush>
-        {going.length ? going.map(row) : <Empty />}
-      </PanelSection>
-    </SidePanel>
-  );
-}
-
-/* ---------- Needs from Northwind (refresh "req" rows) ---------- */
-
-export function IncNeedsCard({ rows, notify }: { rows: IncNeed[]; notify: Notify }) {
-  const [tab, setTab] = React.useState<IncNeedKind>("upload");
-  const [ticked, setTicked] = React.useState<Record<string, boolean>>({});
-  const kinds: IncNeedKind[] = ["upload", "fill", "correct", "sign"];
-  const label: Record<IncNeedKind, string> = { upload: "Upload", fill: "Fill", correct: "Correct", sign: "Sign" };
-  const shown = rows.filter((r) => r.kind === tab);
-  return (
-    <SectionCard
-      title="Needs from Northwind"
-      flush
-      right={<Tabs items={kinds.map((k) => ({ key: k, label: label[k], count: rows.filter((r) => r.kind === k && !ticked[r.id]).length }))} value={tab} onChange={(k) => setTab(k as IncNeedKind)} />}
-    >
-      {shown.length === 0 ? (
-        <Empty />
-      ) : (
-        shown.map((r) => {
-          const u = urgency(r.due);
-          const on = !!ticked[r.id];
-          return (
-            <ListRow key={r.id}>
-              <Checkbox
-                checked={on}
-                label={`Mark ${r.title} as done`}
-                onChange={(v) => {
-                  setTicked((t) => ({ ...t, [r.id]: v }));
-                  if (v) notify(`${r.title} marked as done`, () => setTicked((t) => ({ ...t, [r.id]: false })));
-                }}
-              />
-              <span className={cn("min-w-0 flex-1 truncate font-semibold", on && "text-muted line-through")}>{r.title}</span>
-              <Chip tone={on ? "ok" : u === "bad" ? "bad" : u === "warn" ? "warn" : "idle"}>{on ? "Done" : u === "bad" ? "Overdue" : fmt(r.due)}</Chip>
-              <Button asChild size="sm" variant={u === "bad" && !on ? "primary" : "outline"}>
-                <Link href={stepHref("client", r.step)}>{NEED_ACTION[r.kind]}</Link>
-              </Button>
-            </ListRow>
-          );
-        })
-      )}
-    </SectionCard>
-  );
-}
-
-/* ---------- Who holds it now (refresh "hl" rows) ---------- */
-
-export function WhoHoldsCard({ phase }: { phase: 1 | 2 | 3 }) {
-  const list = stepsOf(phase);
-  const owners = [
-    { key: "client", label: "Northwind" },
-    { key: "sbc", label: "SBC" },
-    { key: "mca", label: "MCA" },
-  ] as const;
-  const open = (o: string) => list.filter((s) => s.owner === o && s.status !== "Completed").length;
-  const [tab, setTab] = React.useState<string>("client");
-  const rows = list.filter((s) => s.owner === tab);
-  return (
-    <SectionCard title="Who holds it now" flush right={<Tabs items={owners.map((o) => ({ key: o.key, label: o.label, count: open(o.key) }))} value={tab} onChange={setTab} />}>
-      {rows.length === 0 ? (
-        <Empty />
-      ) : (
-        rows.map((s) => {
-          const w = stepWord(s);
-          return (
-            <ListRow key={s.n} href={stepHref("client", s.n)}>
-              <span className="w-[52px] flex-none text-12.5 text-faint">Step {s.n}</span>
-              <span className="min-w-0 flex-1 truncate font-semibold">{s.title}</span>
-              <OwnerChip owner={s.owner} label={ownerLabel(s)} className="hidden sm:inline-flex" />
-              <Chip tone={s.status === "Upcoming" ? "idle" : w.tone} fixed>
-                {s.status === "Upcoming" ? "Not started" : w.label}
-              </Chip>
-              <ChevronRight size={16} strokeWidth={1.6} className="flex-none text-faint" />
-            </ListRow>
-          );
-        })
-      )}
-    </SectionCard>
-  );
-}
-
-/* ---------- Journey: the steps of a phase, the focus step shows its sub-steps ---------- */
-
-function journeySub(s: Step) {
-  if (s.status === "Completed") return s.done ? `Done · ${fmt(s.done)}` : "Done";
-  if (s.status === "Upcoming") return "Opens later";
-  if (s.owner === "client") return `${s.status === "Waiting" ? "Waiting on Northwind" : "In progress"} · due ${s.due ? fmt(s.due) : "-"}`;
-  return `With SBC · due ${s.due ? fmt(s.due) : "-"}`;
-}
-
-/** Mini stepper of the dark current-step card: dots on a line, labels under them (old railHero). */
-function MiniStepper({ subs }: { subs: Array<{ label: string; state: "done" | "now" | "todo" }> }) {
-  return (
-    <ol className="mt-3 grid" style={{ gridTemplateColumns: `repeat(${subs.length}, minmax(0, 1fr))` }} aria-label="Sub-steps">
-      {subs.map((x, i) => (
-        <li key={x.label} className="relative grid justify-items-center gap-1.5 text-center">
-          {i > 0 && <span className={cn("absolute right-1/2 top-[5px] h-0.5 w-full", x.state === "todo" ? "bg-white/[.16]" : "bg-ok-mid")} aria-hidden />}
-          <span
-            className={cn(
-              "relative h-3 w-3 rounded-[2px]",
-              x.state === "done" ? "bg-ok-mid" : x.state === "now" ? "bg-warn-mid shadow-[0_0_0_3px_var(--navy-on)]" : "bg-navy-faint",
-            )}
-            aria-hidden
-          />
-          <span className={cn("block w-full truncate px-0.5 text-11.5", x.state === "now" ? "font-semibold text-white" : "text-navy-ink")}>{x.label}</span>
-          <span className="sr-only">{x.state === "done" ? "done" : x.state === "now" ? "now" : "to do"}</span>
+    <ol className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${subs.length}, minmax(0, 1fr))` }} aria-label="Sub-steps">
+      {subs.map((x) => (
+        <li key={x.label} className="grid min-w-0 justify-items-start gap-1">
+          <StepMark state={x.state === "todo" ? "next" : x.state} size={18} label={x.state === "done" ? "done" : x.state === "now" ? "now" : "to do"} />
+          <span className={cn("block w-full truncate text-11.5", x.state === "now" ? "font-medium text-ink" : "text-muted")}>{x.label}</span>
         </li>
       ))}
     </ol>
   );
 }
 
-/** Small progress dots under a step that has sub-steps (old dots()). */
-function SubDots({ subs }: { subs: Array<{ state: "done" | "now" | "todo" }> }) {
-  return (
-    <span className="mt-1 flex gap-1" aria-hidden>
-      {subs.slice(0, 6).map((x, i) => (
-        <i key={i} className={cn("h-1.5 w-1.5 rounded-[2px]", x.state === "done" ? "bg-ok-mid" : x.state === "now" ? "bg-accent" : "shadow-[inset_0_0_0_1px_var(--line)]")} />
-      ))}
-    </span>
-  );
-}
-
 export function JourneyCard({ phase, focus }: { phase: 1 | 2 | 3; focus: number }) {
-  const list = stepsOf(phase);
+  const all = stepsInState(false);
+  const list = all.filter((s) => s.phase === phase);
   const p = PHASES[phase - 1];
   return (
-    <SectionCard title={`${p.short} · journey`} icon={{ Icon: ChevronRight, tone: "blue" }} meta={`${doneCount(phase)} / ${list.length}`} flush>
-      <ol>
-        {list.map((s) => {
+    <SectionCard title={`${p.short} · journey`} icon={{ Icon: ListChecks, tone: "blue" }} meta={`${doneCount(phase)} / ${list.length}`}>
+      <ol className="flex flex-col">
+        {list.map((s, i) => {
           const subs = SUB_STEPS[s.n];
           const isFocus = s.n === focus;
-          const dt = stepDate(s);
-          if (isFocus)
-            return (
-              <li key={s.n} className="border-t border-line-soft px-3 py-2.5 first:border-t-0 md:px-4">
-                <Link href={stepHref("client", s.n)} aria-current="step" className="block rounded-md border border-navy bg-navy px-3.5 py-3 text-white hover:bg-navy-2">
-                  <span className="flex items-start gap-2.5">
-                    <StatusCircle status={circle(s)} className="mt-0.5 bg-white/[.12] text-white" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-mono text-11.5 font-semibold text-brand">
-                        {s.status === "Completed" ? "Done" : "Now"} · step {s.n}
-                      </span>
-                      <b className="block text-14 font-semibold leading-snug">{s.title}</b>
-                      <span className={cn("block text-12", dt.late ? "font-semibold text-bad-mid" : "text-navy-ink")}>{journeySub(s)}</span>
-                    </span>
-                  </span>
-                  {subs && <MiniStepper subs={subs} />}
-                </Link>
-              </li>
-            );
-          return (
-            <li key={s.n} className="border-t border-line-soft first:border-t-0">
-              <Link href={stepHref("client", s.n)} className="flex items-start gap-3 px-4 py-2.5 hover:bg-raised md:px-5">
-                <StatusCircle status={circle(s)} className="mt-0.5" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-13 font-semibold">{`${s.n} · ${s.title}`}</span>
-                  <span className={cn("block truncate text-12", dt.late ? "font-semibold text-bad" : "text-muted")}>{journeySub(s)}</span>
-                  {subs && s.status !== "Completed" && s.status !== "Upcoming" && <SubDots subs={subs} />}
-                </span>
-                <OwnerChip owner={s.owner} label={ownerLabel(s)} className="mt-0.5 hidden sm:inline-flex" />
-              </Link>
-            </li>
-          );
+          return <StepRow key={s.n} s={s} prev={all[s.n - 2]} today={TODAY} after={false} lastRow={i === list.length - 1} focus={isFocus} compact below={isFocus && subs ? <SubSteps subs={subs} /> : undefined} />;
         })}
       </ol>
     </SectionCard>
-  );
-}
-
-/* ---------- Holder block (refresh "hold" card) ---------- */
-
-export function HolderBlock({ owner, title, sub, action }: { owner: Step["owner"]; title: React.ReactNode; sub?: React.ReactNode; action?: React.ReactNode }) {
-  return (
-    <div className={cn("grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-md border border-line border-l-[3px] px-4 py-3", owner === "client" ? "border-l-warn-mid" : owner === "mca" ? "border-l-violet" : "border-l-accent")}>
-      <div className="flex min-w-0 items-center gap-2 text-13.5 font-semibold">{title}</div>
-      {action && <div className="row-span-2">{action}</div>}
-      {sub && <div className="min-w-0 text-12.5 text-muted">{sub}</div>}
-    </div>
   );
 }
 
@@ -452,43 +202,16 @@ export function MessageModal({ to, about, open, onOpenChange, notify, title = "M
       }
     >
       <label className="grid gap-1.5">
-        <span className="text-12.5 font-semibold text-muted">Message</span>
+        <span className="text-13 font-medium text-ink-2">Message</span>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={5}
-          className="w-full rounded-md border border-line bg-surface px-3 py-2 text-13.5 text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-accent-line"
+          className="w-full rounded-md border-1.5 border-line-2 bg-surface px-3 py-2 text-14 text-ink outline-none placeholder:text-faint focus-visible:border-primary focus-visible:shadow-[0_0_0_4px_var(--accent-soft)]"
           placeholder={`Write to ${to}`}
         />
       </label>
     </Modal>
-  );
-}
-
-/* ---------- SBC team on a step ---------- */
-
-export function StepTeamCard({ step, notify }: { step: Step; notify: Notify }) {
-  const [to, setTo] = React.useState<string | null>(null);
-  const people = [
-    { p: SBC.find((x) => x.id === "bharath")!, role: step.owner === "client" ? "Project lead · reviews Northwind's answers" : "Project lead · does this step" },
-    { p: SBC.find((x) => x.id === "pranay")!, role: "Manager · approves" },
-  ];
-  return (
-    <SectionCard title="SBC team on this step" flush>
-      {people.map(({ p, role }) => (
-        <ListRow key={p.id}>
-          <Avatar name={p.ini ?? p.name} />
-          <span className="min-w-0 flex-1">
-            <span className="block font-semibold">{p.name}</span>
-            <span className="block truncate text-12.5 text-muted">{role}</span>
-          </span>
-          <Button size="iconSm" variant="ghost" aria-label={`Message ${p.name}`} onClick={() => setTo(p.name)}>
-            <MessageSquare size={16} strokeWidth={1.6} />
-          </Button>
-        </ListRow>
-      ))}
-      <MessageModal to={to ?? ""} about={`Step ${step.n} · ${step.title}`} open={!!to} onOpenChange={(v) => !v && setTo(null)} notify={notify} />
-    </SectionCard>
   );
 }
 
@@ -499,7 +222,7 @@ export function PortalButton({ form, step, notify }: { form: string; step: Step;
     <button
       type="button"
       onClick={() => notify(`Opens ${form} on the ${portalFor(step)} in a new tab`)}
-      className="inline-flex h-[22px] items-center gap-1 rounded-sm bg-violet-soft px-2 text-11.5 font-semibold text-violet hover:brightness-95"
+      className="inline-flex h-6 items-center gap-1.5 rounded-md border-1.5 border-line bg-surface px-2 font-mono text-12 font-medium text-ink-2 hover:bg-hover"
       aria-label={`Open ${form} on the ${portalFor(step)}`}
     >
       {form}
@@ -584,24 +307,23 @@ export function DropZone({ label, hint, chip, onFile, accept = ".pdf,.jpg,.jpeg,
         if (f) onFile(f.name);
       }}
       className={cn(
-        "flex items-center gap-3 rounded-md border border-dashed px-4 py-3.5",
-        warn ? "border-warn-mid bg-warn-soft" : "border-accent-line bg-accent-soft",
-        over && (warn ? "border-solid border-warn" : "border-solid border-accent"),
+        "flex items-center gap-3 rounded-md border-1.5 border-dashed border-line-2 bg-surface px-4 py-3.5",
+        over && "border-primary bg-accent-soft",
       )}
     >
       <button
         type="button"
         aria-label={`Upload ${label}`}
         onClick={() => ref.current?.click()}
-        className={cn("grid h-10 w-10 flex-none place-items-center rounded-md text-surface", warn ? "bg-warn hover:bg-warn-mid" : "bg-navy text-white hover:bg-navy-2")}
+        className={cn("grid h-10 w-10 flex-none place-items-center rounded-md", warn ? "bg-warn-soft text-warn hover:bg-warn-soft/70" : "bg-accent-soft text-accent hover:bg-accent-soft/70")}
       >
         {warn ? <Upload size={16} strokeWidth={1.8} /> : <RefreshCw size={16} strokeWidth={1.8} />}
       </button>
       <span className="min-w-0 flex-1">
-        <b className="block truncate text-13.5 font-semibold">{label}</b>
-        <span className={cn("block text-12.5", warn ? "text-warn" : "text-accent")}>
+        <b className="block truncate text-14 font-medium">{label}</b>
+        <span className="block text-12.5 text-muted">
           Drop a file here or{" "}
-          <button type="button" className="font-semibold underline underline-offset-2" onClick={() => ref.current?.click()}>
+          <button type="button" className="font-medium text-accent hover:underline" onClick={() => ref.current?.click()}>
             browse
           </button>
         </span>

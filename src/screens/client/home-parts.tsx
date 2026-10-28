@@ -1,10 +1,10 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { ChevronRight, Download, ExternalLink, Eye, EyeOff, Paperclip } from "lucide-react";
+import { ChevronRight, Download, ExternalLink, Eye, EyeOff, FileText, Paperclip } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt } from "@/lib/dates";
-import { STEPS, PHASES, stepsOf, doneCount, stepTone, stepHref, phaseHref, type Step } from "@/data/incorporation";
+import { STEPS, stepTone, stepHref, type Step } from "@/data/incorporation";
 import {
   AFTER_TODAY,
   AREA_ROWS,
@@ -15,28 +15,24 @@ import {
   HOLDS,
   HOME_REGS,
   NEED_ACTION,
-  NEED_TABS,
   POST_DONE,
   POST_DRILL,
   POST_OPEN,
   WHAT_NEXT,
   type HomeReg,
   type Need,
-  type NeedKind,
   type RegCat,
 } from "@/data/client-home-extra";
 import { Button } from "@/components/ui/Button";
-import { Chip, OwnerChip, type ChipTone } from "@/components/ui/Chip";
+import { AreaPill, Chip, OwnerChip, type ChipTone } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { Bar } from "@/components/ui/Bar";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
-import { Checkbox } from "@/components/ui/Input";
 import { DateTile } from "@/components/cards/AttentionList";
 import { DataGrid } from "@/components/cards/DataGrid";
 import { StackedBar } from "@/components/cards/StackedBar";
-import { PhaseRows, type Phase } from "@/components/cards/PhaseRows";
 import { UploadDialog } from "@/components/cards/UploadDialog";
 import { RevealGate, useCountdown, mmss } from "@/components/cards/RevealGate";
 import type { DrillSpec } from "@/components/cards/DrillDialog";
@@ -81,100 +77,79 @@ export function nextDrill(): DrillSpec {
   };
 }
 
-/* ---------- Who holds it now (v7c_current) ---------- */
+/* ---------- Who holds it now (v7c_current; board ClientHome: one bar per holder) ---------- */
 
 export function HoldsCard({ onDrill, className }: { onDrill: OpenDrill; className?: string }) {
-  const [tab, setTab] = React.useState<string>("client");
-  const cur = HOLDS.find((h) => h.key === tab) ?? HOLDS[0];
-  const around = STEPS.filter((s) => s.n >= 6 && s.n <= 11);
-  const drillTab = (status: string, owner: string) => (status === "Completed" ? 1 : status === "Upcoming" ? 4 : owner === "client" ? 2 : 3);
+  const max = Math.max(1, ...HOLDS.map((h) => h.rows.length));
+  const fill: Record<string, string> = { client: "bg-teal-mid", sbc: "bg-accent-mid", mca: "bg-violet-mid" };
+  const drillTab: Record<string, number> = { client: 2, sbc: 3, mca: 0 };
   return (
-    <SectionCard title="Who holds it now" flush className={className} right={<Tabs items={HOLDS.map((h) => ({ key: h.key, label: h.label, count: h.rows.length }))} value={tab} onChange={setTab} />}>
-      {cur.rows.length === 0 ? (
-        <Empty />
-      ) : (
-        cur.rows.map((h) => (
-          <ListRow key={h.step} className="flex-wrap sm:flex-nowrap">
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-semibold">{h.title}</span>
-              <span className="block truncate text-12.5 text-muted">{h.meta}</span>
+    <SectionCard title="Who holds it now" className={className} bodyClassName="grid gap-4 px-4 py-4 md:px-5">
+      {HOLDS.map((h) => {
+        const n = h.rows.length;
+        const meta = n === 0 ? "" : n === 1 ? h.rows[0].title : `${n} items`;
+        return (
+          <button key={h.key} type="button" onClick={() => onDrill(stepsDrill(), drillTab[h.key])} className="-mx-2 grid gap-2 rounded-md px-2 py-1 text-left hover:bg-hover" aria-label={`${h.label} · ${n} · open the step list`}>
+            <span className="flex items-baseline gap-3">
+              <span className="flex-none text-14 font-medium">{h.label}</span>
+              <span className="ml-auto min-w-0 truncate text-12.5 text-muted">{meta}</span>
+              <b className="w-5 flex-none text-right text-14 font-medium">{n}</b>
             </span>
-            <button type="button" onClick={() => onDrill(stepsDrill(), drillTab(h.status, cur.key))} aria-label={`${h.status} · open the step list`}>
-              <Chip tone={h.tone}>{h.status}</Chip>
-            </button>
-            <Button asChild size="sm" variant={h.main ? "primary" : "outline"}>
-              <Link href={stepHref("client", h.step)}>{h.action}</Link>
-            </Button>
-          </ListRow>
-        ))
-      )}
-      <h3 className="border-t border-line-soft px-4 pb-1 pt-3 text-12 font-semibold text-muted md:px-5">Steps around Northwind</h3>
-      <ul>
-        {around.map((s) => (
-          <li key={s.n} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13 first:border-t-0 md:px-5">
-            <span className="w-14 flex-none font-mono text-12 text-muted">Step {s.n}</span>
-            <Link href={stepHref("client", s.n)} className="min-w-0 flex-1 truncate font-semibold hover:underline">
-              {s.title}
-            </Link>
-            <OwnerChip owner={s.owner} label={s.owner === "client" ? "Northwind" : undefined} className="hidden sm:inline-flex" />
-            <button type="button" onClick={() => onDrill(stepsDrill(), drillTab(s.status, s.owner))} aria-label={`${s.status} · open the step list`}>
-              <Chip tone={stepTone[s.status]}>{s.status === "Upcoming" ? "Not started" : s.status}</Chip>
-            </button>
-          </li>
-        ))}
-      </ul>
+            <span className="block h-1.5 overflow-hidden rounded-bar bg-raised" aria-hidden>
+              <i className={cn("block h-full rounded-bar", fill[h.key])} style={{ width: `${(n / max) * 100}%` }} />
+            </span>
+          </button>
+        );
+      })}
     </SectionCard>
   );
 }
 
-/* ---------- Needs from Northwind: Upload, Fill, Correct, Sign ---------- */
+/* ---------- Needs from Northwind (board ClientHome): file tile, title, sub with the due word, one action ---------- */
 
 export function NeedsCard({ rows, className }: { rows: Need[]; className?: string }) {
-  const first = NEED_TABS.find((t) => rows.some((r) => r.kind === t.key))?.key ?? "upload";
-  const [tab, setTab] = React.useState<NeedKind>(first);
   const [done, setDone] = React.useState<string[]>([]);
   const [up, setUp] = React.useState<Need | null>(null);
   const toast = useUndoToast();
   const open = rows.filter((r) => !done.includes(r.id));
-  const shown = open.filter((r) => r.kind === tab);
+  const shown = [...open].sort((a, b) => a.due.getTime() - b.due.getTime());
   const uploads = open.filter((r) => r.kind === "upload" || r.kind === "correct");
+  // R-12: one main button per card: the most urgent row.
+  const main = shown.find((r) => r.tint === "bad")?.id;
   return (
     <SectionCard
       id="needs"
       title="Needs from Northwind"
+      meta={<span className="rounded-sm bg-raised px-[7px] py-px text-12 font-medium text-ink-2">{open.length}</span>}
       flush
       className={className}
-      right={<Tabs items={NEED_TABS.map((t) => ({ key: t.key, label: t.label, count: open.filter((r) => r.kind === t.key).length }))} value={tab} onChange={(k) => setTab(k as NeedKind)} />}
     >
       {shown.length === 0 ? (
         <Empty />
       ) : (
         shown.map((r) => {
-          // Old v7c_needs rows: checkbox, title, due chip, one outline action.
           const late = r.tint === "bad";
           const action = NEED_ACTION[r.kind];
+          const variant = r.id === main ? "primary" : "secondary";
           return (
             <ListRow key={r.id}>
-              <Checkbox
-                checked={false}
-                label={`Mark done · ${r.title}`}
-                onChange={() => {
-                  setDone((d) => [...d, r.id]);
-                  toast.show(`Done · ${r.title}`, () => setDone((d) => d.filter((x) => x !== r.id)));
-                }}
-              />
-              <Link href={r.href} className="min-w-0 flex-1 truncate font-semibold hover:underline">
-                {r.title}
-              </Link>
-              <Chip tone={late ? "bad" : "warn"} fixed className="hidden sm:inline-flex">
-                {late ? "Overdue" : fmt(r.due)}
-              </Chip>
+              <span className="grid h-8 w-8 flex-none place-items-center rounded-md bg-raised text-muted" aria-hidden>
+                <FileText size={16} strokeWidth={1.6} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <Link href={r.href} className="block truncate font-medium hover:underline">
+                  {r.title}
+                </Link>
+                <span className="block truncate text-12.5 text-muted">
+                  <span className={late ? "text-bad" : r.tint === "warn" ? "text-warn" : "text-accent"}>{late ? r.when : `Due ${fmt(r.due)}`}</span> · {r.sub}
+                </span>
+              </span>
               {r.kind === "upload" || r.kind === "correct" ? (
-                <Button size="sm" variant="outline" className="w-[84px]" onClick={() => setUp(r)}>
+                <Button size="sm" variant={variant} className="w-[72px]" onClick={() => setUp(r)}>
                   {action}
                 </Button>
               ) : (
-                <Button asChild size="sm" variant="outline" className="w-[84px]">
+                <Button asChild size="sm" variant={variant} className="w-[72px]">
                   <Link href={r.href}>{action}</Link>
                 </Button>
               )}
@@ -225,17 +200,16 @@ export function WhatNextCard({ onDrill, className }: { onDrill: OpenDrill; class
       }
     >
       {lead && (
-        <ListRow className="bg-bad-soft">
+        <ListRow className="bg-hover">
           <DateTile date={lead.date} tint="bad" />
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-semibold">
+            <span className="block truncate font-medium">
               {lead.title} · {lead.period}
             </span>
-            <span className="block truncate text-12.5 text-muted">Waiting on Northwind · TDS challan details · asked by Pranay</span>
+            <span className="block truncate text-12.5 text-muted">
+              <span className="text-bad">{lead.when}</span> · Waiting on Northwind · TDS challan details · asked by Pranay
+            </span>
           </span>
-          <Chip tone="bad" className="hidden sm:inline-flex">
-            {lead.when}
-          </Chip>
           <Button asChild size="sm" variant="primary">
             <Link href="/client/obligations">Fill details</Link>
           </Button>
@@ -246,7 +220,7 @@ export function WhatNextCard({ onDrill, className }: { onDrill: OpenDrill; class
           <button type="button" onClick={() => onDrill(nextDrill(), n.days <= 15 ? 2 : 3)} className="flex min-w-0 flex-1 items-center gap-3 text-left" aria-label={`${n.title} · open the list`}>
             <DateTile date={n.date} tint={n.tint} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-semibold">
+              <span className="block truncate font-medium">
                 {n.title} · {n.period}
               </span>
               <span className="block truncate text-12.5 text-muted">
@@ -254,11 +228,10 @@ export function WhatNextCard({ onDrill, className }: { onDrill: OpenDrill; class
               </span>
             </span>
           </button>
-          <OwnerChip owner={n.owner} label={n.owner === "client" ? "Northwind" : undefined} className="hidden md:inline-flex" />
-          <Chip tone={n.tint === "warn" ? "warn" : "prog"} className="hidden sm:inline-flex">
+          <Chip tone={n.tint === "warn" ? "warn" : "prog"} fixed className="hidden sm:inline-flex">
             {n.when}
           </Chip>
-          <a href={n.portal} target="_blank" rel="noreferrer" className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label={`Open the ${n.area} portal`}>
+          <a href={n.portal} target="_blank" rel="noreferrer" className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-hover hover:text-ink" aria-label={`Open the ${n.area} portal`}>
             <ExternalLink size={15} strokeWidth={1.6} />
           </a>
         </ListRow>
@@ -299,16 +272,16 @@ export function AreaCard({ onDrill, className }: { onDrill: OpenDrill; className
         rowKey={(r) => r.id}
         onRowClick={(r) => drill(r)}
         columns={[
-          { key: "name", label: "Area", render: (r) => <span className="font-semibold">{r.name}</span> },
-          { key: "total", label: "Total", align: "right", width: 64, mono: true },
-          { key: "filed", label: "Filed", align: "right", width: 64, mono: true },
-          { key: "due", label: "Due soon", align: "right", width: 84, mono: true },
-          { key: "overdue", label: "Overdue", align: "right", width: 78, mono: true, render: (r) => <span className={cn(r.overdue > 0 && "font-semibold text-bad")}>{r.overdue}</span> },
+          { key: "name", label: "Area", render: (r) => <span className="font-medium">{r.name}</span> },
+          { key: "total", label: "Total", align: "right", width: 64 },
+          { key: "filed", label: "Filed", align: "right", width: 64 },
+          { key: "due", label: "Due soon", align: "right", width: 92 },
+          { key: "overdue", label: "Overdue", align: "right", width: 88, render: (r) => <span className={cn(r.overdue > 0 && "font-medium text-bad")}>{r.overdue}</span> },
           { key: "mix", label: "Mix", width: 120, render: (r) => <Bar pct={r.total ? Math.round(((r.filed + r.due) / r.total) * 100) : 0} tone={r.overdue ? "bad" : r.due ? "warn" : "ok"} /> },
           { key: "status", label: "Status", width: 124, render: (r) => <Chip fixed>{status(r)}</Chip> },
         ]}
         footer={
-          <span className="font-mono">
+          <span>
             Total {total.t} · filed {total.f} · due soon {total.d} · overdue {total.o}
           </span>
         }
@@ -326,13 +299,13 @@ export function PostIncCard({ onDrill, className }: { onDrill: OpenDrill; classN
         <ListRow key={p.id} onClick={() => onDrill(POST_DRILL, 1)} className="items-start">
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-2">
-              <span className="min-w-0 flex-1 truncate font-semibold">{p.title}</span>
-              <span className="hidden font-mono text-12 text-muted sm:inline">{p.due}</span>
+              <span className="min-w-0 flex-1 truncate font-medium">{p.title}</span>
+              <span className="hidden text-12.5 text-muted sm:inline">{p.due}</span>
             </span>
             <span className="block truncate text-12.5 text-muted">{p.rule}</span>
             <span className="mt-2 flex items-center gap-3">
               <Bar pct={(p.day / p.of) * 100} tone={p.owner === "client" ? "warn" : "accent"} className="flex-1" />
-              <span className="w-24 flex-none text-right font-mono text-12 text-muted">
+              <span className="w-24 flex-none text-right text-12.5 text-muted">
                 day {p.day} of {p.of}
               </span>
             </span>
@@ -367,11 +340,11 @@ export function HomeRegsCard({ className }: { className?: string }) {
         rowKey={(r) => r.id}
         pageSize={8}
         columns={[
-          { key: "name", label: "Registration", render: (r) => <span className="font-semibold">{r.name}</span> },
-          { key: "cat", label: "Category", width: 92 },
+          { key: "name", label: "Registration", render: (r) => <span className="font-medium">{r.name}</span> },
+          { key: "cat", label: "Category", width: 124, render: (r) => <AreaPill area={r.cat} /> },
           { key: "authority", label: "Authority", width: 150, render: (r) => <span className="text-muted">{r.authority}</span> },
           { key: "number", label: "Number", mono: true, render: (r) => r.number ?? <span className="text-faint">-</span> },
-          { key: "date", label: "Date", width: 130, render: (r) => <span className="whitespace-nowrap font-mono text-12.5">{r.date}</span> },
+          { key: "date", label: "Date", width: 130, render: (r) => <span className="whitespace-nowrap">{r.date}</span> },
           { key: "status", label: "Status", width: 124, render: (r) => <Chip tone={regTone(r.status)} fixed>{r.status}</Chip> },
           {
             key: "act",
@@ -380,12 +353,12 @@ export function HomeRegsCard({ className }: { className?: string }) {
             render: (r) => (
               <span className="flex items-center justify-end gap-1">
                 {r.proof === true && (
-                  <Link href="/client/documents/view/d2" className="inline-flex h-[26px] items-center gap-1 rounded-sm px-1.5 text-12 font-semibold text-accent hover:bg-raised" aria-label={`Open proof for ${r.name}`}>
+                  <Link href="/client/documents/view/d2" className="inline-flex h-[26px] items-center gap-1 rounded-md px-1.5 text-12.5 font-medium text-accent hover:bg-hover" aria-label={`Open proof for ${r.name}`}>
                     <Paperclip size={13} strokeWidth={1.6} /> Proof
                   </Link>
                 )}
                 {r.proof === false && <Chip tone="warn">Proof pending</Chip>}
-                <a href={r.portal} target="_blank" rel="noreferrer" className="grid h-[26px] w-[26px] place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink" aria-label={`Open the ${r.authority} portal`}>
+                <a href={r.portal} target="_blank" rel="noreferrer" className="grid h-[26px] w-[26px] place-items-center rounded-md text-muted hover:bg-hover hover:text-ink" aria-label={`Open the ${r.authority} portal`}>
                   <ExternalLink size={14} strokeWidth={1.6} />
                 </a>
               </span>
@@ -422,7 +395,7 @@ export function CompStatusCard({ onDrill, className }: { onDrill: OpenDrill; cla
       <StackedBar title="This FY" total={total} segments={segs} format={pct} />
       <div className="mt-3 flex flex-wrap gap-1.5">
         {segs.map((s, i) => (
-          <button key={s.label} type="button" onClick={() => onDrill(COMP_DRILL, i)} className="rounded-sm border border-line px-2 py-0.5 text-12 font-semibold text-ink-2 hover:bg-raised">
+          <button key={s.label} type="button" onClick={() => onDrill(COMP_DRILL, i)} className="inline-flex h-7 items-center rounded-md border-1.5 border-line-2 px-2.5 text-12.5 font-medium text-ink-2 hover:bg-hover">
             {s.label}
           </button>
         ))}
@@ -441,23 +414,23 @@ function IdRow({ id, onReveal, until, onHide }: { id: (typeof COMPANY_IDS)[numbe
   }, [until, left, onHide]);
   return (
     <ListRow>
-      <span className="w-14 flex-none text-12.5 font-semibold text-muted">{id.label}</span>
+      <span className="w-14 flex-none text-12.5 font-medium text-muted">{id.label}</span>
       <span className={cn("min-w-0 flex-1 truncate font-mono text-13", id.masked && open && "text-ok")}>{open ? id.value : id.masked}</span>
       {id.masked && !open && <Chip tone="idle" dot={false}>Private</Chip>}
       {id.masked && open && <Chip tone="ok">{mmss(left)}</Chip>}
       {id.masked && !open ? (
-        <button type="button" onClick={onReveal} className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label={`Show ${id.label}`}>
+        <button type="button" onClick={onReveal} className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-hover hover:text-ink" aria-label={`Show ${id.label}`}>
           <Eye size={15} strokeWidth={1.6} />
         </button>
       ) : (
         <CopyButton value={id.value} label={id.label} />
       )}
       {id.masked && open && (
-        <button type="button" onClick={onHide} className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label={`Hide ${id.label}`}>
+        <button type="button" onClick={onHide} className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-hover hover:text-ink" aria-label={`Hide ${id.label}`}>
           <EyeOff size={15} strokeWidth={1.6} />
         </button>
       )}
-      <a href={id.portal} target="_blank" rel="noreferrer" className="hidden h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-raised hover:text-ink sm:grid" aria-label={`Open the ${id.label} portal`}>
+      <a href={id.portal} target="_blank" rel="noreferrer" className="hidden h-[30px] w-[30px] flex-none place-items-center rounded-md text-muted hover:bg-hover hover:text-ink sm:grid" aria-label={`Open the ${id.label} portal`}>
         <ExternalLink size={15} strokeWidth={1.6} />
       </a>
     </ListRow>
@@ -475,7 +448,7 @@ export function IdsCard({ className }: { className?: string }) {
       flush
       className={className}
       right={
-        <Link href="/client/documents/view/d2" className="inline-flex items-center gap-1 text-13 font-semibold text-accent hover:underline">
+        <Link href="/client/documents/view/d2" className="inline-flex items-center gap-1 text-13 font-medium text-accent hover:underline">
           <Download size={14} strokeWidth={1.6} /> COI
         </Link>
       }
@@ -498,7 +471,7 @@ export function IdsCard({ className }: { className?: string }) {
       ))}
       {DINS.map((x) => (
         <ListRow key={x.din}>
-          <span className="w-14 flex-none text-12.5 font-semibold text-muted">DIN</span>
+          <span className="w-14 flex-none text-12.5 font-medium text-muted">DIN</span>
           <span className="min-w-0 flex-1 truncate">
             <span className="font-mono text-13">{x.din}</span>
             <span className="ml-2 text-12.5 text-muted">{x.name}</span>
@@ -522,25 +495,3 @@ export function IdsCard({ className }: { className?: string }) {
     </SectionCard>
   );
 }
-
-/* ---------- Steps card in both states ---------- */
-
-const POST_DONE_STEPS = [15, 16, 17, 18, 21, 24, 25];
-
-export function HomeStepsCard({ after, className }: { after: boolean; className?: string }) {
-  const phases: Phase[] = PHASES.map((p) => {
-    const steps = stepsOf(p.n).map((s) => {
-      const status = !after ? s.status : p.n < 3 || POST_DONE_STEPS.includes(s.n) ? "Completed" : "In progress";
-      return { n: s.n, title: s.title, owner: s.owner, ownerLabel: s.owner === "client" ? "Northwind" : undefined, status, tone: stepTone[status], time: s.time, href: stepHref("client", s.n) };
-    });
-    const done = after ? steps.filter((s) => s.status === "Completed").length : doneCount(p.n);
-    const status = after ? (p.n < 3 ? "Done" : "In progress") : p.status;
-    return { id: p.id, name: p.name, done, total: steps.length, status, tone: status === "Done" ? "ok" : status === "In progress" ? "prog" : "idle", href: phaseHref("client", p.n), steps };
-  });
-  return (
-    <SectionCard title="Steps" flush className={className} right={<Link href="/client/incorporation" className="whitespace-nowrap text-13 font-semibold text-accent hover:underline">Open incorporation ›</Link>}>
-      <PhaseRows phases={phases} openId={after ? "phase-3" : "phase-2"} />
-    </SectionCard>
-  );
-}
-

@@ -1,16 +1,19 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { CalendarPlus, Check, Download, ExternalLink, Eye, Search, Upload, X } from "lucide-react";
+import * as M from "@radix-ui/react-dropdown-menu";
+import { CalendarPlus, Check, Download, ExternalLink, Eye, Plus, Search, Upload, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TODAY, fmt, fmtYear, daysFrom } from "@/lib/dates";
-import { AREA_TONE, FILINGS, FILING_STATUS_TONE, obligation, obHref, type Area, type Filing, type FilingStatus } from "@/data/compliance";
+import { FILINGS, FILING_STATUS_TONE, obligation, obHref, type Area, type Filing, type FilingStatus } from "@/data/compliance";
 import { portalOf, type YearEvent } from "@/data/compliance-year";
 import { ackRows, filingAssist, filingProofs, filingTrack, type TrackStep } from "@/data/compliance-detail";
 import { SBC } from "@/data/people";
 import { useClientState } from "@/components/shell/ClientState";
 import { Button } from "@/components/ui/Button";
-import { Chip, OwnerChip, Tag } from "@/components/ui/Chip";
+import { AreaPill, Chip } from "@/components/ui/Chip";
+import { StepMark } from "@/components/ui/StepMark";
+import { inputClass } from "@/components/ui/Input";
 import { FileBadge } from "@/components/ui/FileBadge";
 import { Tabs } from "@/components/ui/Tabs";
 import { Avatar } from "@/components/ui/Avatar";
@@ -20,7 +23,7 @@ import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { AssistSteps } from "@/components/cards/AssistSteps";
-import { TileGrid, type Tile } from "@/components/cards/TileGrid";
+import type { Tile } from "@/components/cards/TileGrid";
 import { Chevron } from "@/components/ui/Chevron";
 
 /** Before incorporation the client has no registrations or filings yet (old Register.dc.html: "After the certificate"). */
@@ -58,27 +61,18 @@ export function eventFiling(e: YearEvent): Filing {
   return { id: e.id, form: e.name, period: e.period, due: e.date, filed, status: e.status, docs: 0, area: e.kind, frequency: e.frequency, fy: "2026-27", obligationId: e.obligationId };
 }
 
-/** Horizontal step track: done green ticks, the current step in blue, upcoming faded (R-22, R-23). */
+/** Horizontal step track with ST5 marks (R-22): done green tick, the live step a ring, upcoming a dashed square. */
 export function FilingTrack({ steps }: { steps: TrackStep[] }) {
   return (
     <ol className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4">
       {steps.map((s, i) => (
-        <li key={i} className={cn("grid min-w-0 grid-cols-[20px_minmax(0,1fr)] gap-x-2", s.state === "upcoming" && "opacity-55")}>
-          <span
-            className={cn(
-              "mt-px grid h-5 w-5 place-items-center rounded-sm",
-              s.state === "done" && "bg-ok-soft text-ok",
-              s.state === "current" && "bg-accent-soft text-accent shadow-[inset_0_0_0_2px_var(--accent)]",
-              s.state === "upcoming" && "shadow-[inset_0_0_0_1.5px_var(--line)]",
-            )}
-            aria-hidden
-          >
-            {s.state === "done" && <Check size={12} strokeWidth={2.4} />}
-            {s.state === "current" && <span className="h-1.5 w-1.5 rounded-[2px] bg-accent" />}
-          </span>
+        <li key={i} className="grid min-w-0 grid-cols-[20px_minmax(0,1fr)] gap-x-2">
+          <StepMark state={s.state === "done" ? "done" : s.state === "current" ? "now" : "next"} size={20} label={s.state === "done" ? "Done" : s.state === "current" ? "Now" : "Upcoming"} />
           <span className="min-w-0">
-            <span className={cn("block truncate text-13", s.state === "current" ? "font-semibold" : "font-medium")}>{s.label}</span>
-            <span className="block truncate text-12 text-muted">{s.state !== "upcoming" && s.date ? fmt(s.date) : s.owner ? <OwnerChip owner={s.owner} label={s.owner === "client" ? "Northwind" : undefined} className="mt-1 h-5 w-auto px-2 text-11.5" /> : null}</span>
+            <span className={cn("block truncate text-13 font-medium", s.state === "upcoming" && "text-muted")}>{s.label}</span>
+            <span className="block truncate text-12 text-muted">
+              {s.state !== "upcoming" && s.date ? fmt(s.date) : s.owner ? <span className={s.owner === "client" ? "text-warn" : "text-info"}>{s.owner === "client" ? "With Northwind" : "With SBC"}</span> : null}
+            </span>
           </span>
         </li>
       ))}
@@ -120,10 +114,10 @@ export function ProofList({ f, onPreview, onDownload }: { f: Filing; onPreview: 
   return (
     <ul>
       {files.map((x, i) => (
-        <li key={x.id} className={cn("flex items-center gap-3 border-t border-line-soft px-5 py-2.5 first:border-t-0", i === 0 && "bg-accent-soft/50")}>
+        <li key={x.id} className={cn("flex items-center gap-3 border-t border-line-soft px-5 py-2.5 first:border-t-0", i === 0 && "bg-hover")}>
           <FileBadge type="PDF" />
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-mono text-12.5 font-medium">{x.name}</span>
+            <span className="block truncate text-13 font-medium">{x.name}</span>
             <span className="block text-12 text-muted">
               {x.size} · {fmt(x.date)}
             </span>
@@ -146,10 +140,10 @@ export function AssistBlock({ f }: { f: Filing }) {
   return (
     <div>
       <div className="flex items-center gap-2 px-5 pt-4">
-        <h3 className="text-12 font-semibold text-muted">VCFO Assist</h3>
+        <h3 className="text-12.5 font-medium text-muted">VCFO Assist</h3>
         <Chip tone={a.tone}>{a.label}</Chip>
         {f.status === "Filed" && (
-          <Link href="/client/audit" className="ml-auto text-12.5 font-semibold text-accent hover:underline">
+          <Link href="/client/audit" className="ml-auto text-12.5 font-medium text-accent hover:underline">
             View replay
           </Link>
         )}
@@ -182,11 +176,11 @@ function FilingChips({ f }: { f: Filing }) {
   const early = f.filed ? daysFrom(f.due, f.filed) : 0;
   return (
     <>
-      <Tag tone={AREA_TONE[f.area]}>{f.area}</Tag>
+      <AreaPill area={f.area} />
       <Chip tone={FILING_STATUS_TONE[f.status]}>{f.status}</Chip>
       {f.filed && early > 0 && <Chip tone="ok">{early === 1 ? "1 day early" : `${early} days early`}</Chip>}
       {f.filed && early < 0 && <Chip tone="bad">{-early === 1 ? "1 day late" : `${-early} days late`}</Chip>}
-      {!f.filed && <span className={cn("text-12.5", f.status === "Overdue" ? "font-semibold text-bad" : "text-muted")}>Due {fmt(f.due)}</span>}
+      {!f.filed && <span className={cn("text-12.5", f.status === "Overdue" ? "font-medium text-bad" : "text-muted")}>Due {fmt(f.due)}</span>}
     </>
   );
 }
@@ -272,31 +266,33 @@ export function AckPreview({ filing: f, open, onOpenChange, onDownload }: { fili
       onOpenChange={onOpenChange}
       size="md"
       eyebrow={`${f.form} · ${f.period}${f.filed ? ` · filed ${fmt(f.filed)}` : ""}`}
-      title={<span className="font-mono text-14">{f.form} acknowledgement.pdf</span>}
+      title={`${f.form} acknowledgement.pdf`}
       footer={
         <Button variant="primary" onClick={() => onDownload?.(`${f.form} acknowledgement.pdf`)}>
           <Download size={16} strokeWidth={1.6} /> Download
         </Button>
       }
     >
-      <article className="mx-auto max-w-[460px] rounded-md border border-line bg-surface px-5 py-6 md:px-8">
-        <header className="border-b-2 border-ink pb-3 text-center">
-          <div className="text-12 font-bold tracking-widest">{f.area === "GST" ? "GOODS AND SERVICES TAX" : f.area === "MCA" ? "MINISTRY OF CORPORATE AFFAIRS" : f.area === "Income tax" ? "INCOME TAX DEPARTMENT" : f.area === "Payroll" ? "EMPLOYEES' PROVIDENT FUND ORGANISATION" : "RESERVE BANK OF INDIA"}</div>
-          <div className="mt-1.5 text-16 font-semibold">Acknowledgement</div>
+      <article className="mx-auto max-w-[460px] rounded-md border-1.5 border-line bg-surface px-5 py-6 md:px-8">
+        <header className="border-b-1.5 border-line pb-3 text-center">
+          <div className="text-12 font-medium uppercase tracking-[.07em] text-muted">{f.area === "GST" ? "GOODS AND SERVICES TAX" : f.area === "MCA" ? "MINISTRY OF CORPORATE AFFAIRS" : f.area === "Income tax" ? "INCOME TAX DEPARTMENT" : f.area === "Payroll" ? "EMPLOYEES' PROVIDENT FUND ORGANISATION" : "RESERVE BANK OF INDIA"}</div>
+          <div className="mt-1.5 text-16 font-medium">Acknowledgement</div>
           <div className="mt-0.5 text-12 text-muted">Form {f.form}</div>
         </header>
-        <table className="mt-4 w-full text-13">
+        <table className="grid-table mt-2 text-13">
           <tbody>
             {ackRows(f).map(([k, v]) => (
-              <tr key={k} className="border-t border-line-soft first:border-t-0">
-                <td className="w-[46%] py-2 text-muted">{k}</td>
-                <td className={cn("py-2 font-semibold", /Reference|GSTIN|TAN|CIN|PAN|code/.test(k) && "font-mono text-12.5")}>{v}</td>
+              <tr key={k}>
+                <td className="w-[46%] pl-0 text-muted">{k}</td>
+                <td className={cn("pr-0 font-medium text-ink", /Reference|GSTIN|TAN|CIN|PAN|ARN|SRN|code/.test(k) && "font-mono text-12.5")}>{v}</td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className="mt-6 flex justify-end">
-          <span className="grid h-20 w-20 -rotate-12 place-items-center rounded-full border-[3px] border-ok text-12 font-bold text-ok">FILED</span>
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-md border-1.5 border-ok-mid px-3 text-12 font-medium uppercase tracking-[.07em] text-ok">
+            <Check size={14} strokeWidth={2} aria-hidden /> Filed
+          </span>
         </div>
       </article>
     </Modal>
@@ -329,16 +325,16 @@ const drillColumns: Column<DrillRow>[] = [
     key: "name",
     label: "Filing",
     render: (r) => (
-      <span className="inline-flex items-center gap-1 font-semibold">
+      <span className="inline-flex items-center gap-1 whitespace-nowrap font-medium text-ink">
         {r.name}
         <PortalLink area={r.area} name={r.name} />
       </span>
     ),
   },
   { key: "period", label: "Period", width: 120 },
-  { key: "area", label: "Area", width: 104, render: (r) => <Tag tone={AREA_TONE[r.area]}>{r.area}</Tag> },
-  { key: "due", label: "Due / filed", width: 110, render: (r) => (r.filed ? `Filed ${fmt(r.filed)}` : fmt(r.due)) },
-  { key: "status", label: "Status", width: 132, render: (r) => <Chip tone={FILING_STATUS_TONE[r.status]} fixed>{r.status}</Chip> },
+  { key: "area", label: "Area", width: 124, render: (r) => <AreaPill area={r.area} /> },
+  { key: "due", label: "Due / filed", width: 110, render: (r) => <span className="whitespace-nowrap">{r.filed ? `Filed ${fmt(r.filed)}` : fmt(r.due)}</span> },
+  { key: "status", label: "Status", width: 124, render: (r) => <Chip tone={FILING_STATUS_TONE[r.status]} fixed>{r.status}</Chip> },
 ];
 
 /** Dialog with status tabs and an e-Filing grid of the rows behind a number or a chart. */
@@ -424,19 +420,19 @@ export function UploadModal({ open, onOpenChange, requested, onDone }: { open: b
           setOver(false);
           add(e.dataTransfer.files);
         }}
-        className={cn("grid w-full place-items-center gap-1 rounded-md border border-dashed border-line px-4 py-8 text-13 text-muted hover:bg-raised", over && "border-accent bg-accent-soft")}
+        className={cn("grid w-full place-items-center gap-1 rounded-md border-1.5 border-dashed border-line-2 px-4 py-8 text-13 text-muted hover:bg-hover", over && "border-accent-line bg-accent-soft")}
       >
         <Upload size={20} strokeWidth={1.6} aria-hidden />
         <span>
-          Drop the files here or <b className="text-accent">browse</b>
+          Drop the files here or <b className="font-medium text-accent">browse</b>
         </span>
       </button>
       <input ref={input} type="file" multiple className="hidden" onChange={(e) => add(e.target.files)} />
       {files.length > 0 && (
-        <ul className="mt-3 rounded-md border border-line">
+        <ul className="mt-3 rounded-md border-1.5 border-line">
           {files.map((f, i) => (
             <li key={`${f.name}-${i}`} className="flex items-center gap-3 border-t border-line-soft px-3 py-2 text-13 first:border-t-0">
-              <span className="min-w-0 flex-1 truncate font-mono text-12.5">{f.name}</span>
+              <span className="min-w-0 flex-1 truncate">{f.name}</span>
               <span className="text-12 text-muted">{Math.max(1, Math.round(f.size / 1024))} KB</span>
               <button type="button" className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-raised" aria-label={`Remove ${f.name}`} onClick={() => setFiles((x) => x.filter((_, j) => j !== i))}>
                 <X size={14} strokeWidth={1.6} />
@@ -478,7 +474,7 @@ export function PeopleStack({ people }: { people: Array<{ name: string; role: st
   return (
     <span className="flex items-center -space-x-1.5" aria-label="People on it">
       {people.map((p) => (
-        <span key={`${p.role}-${p.name}`} title={`${p.name} · ${p.role}`} className="rounded-md ring-2 ring-surface">
+        <span key={`${p.role}-${p.name}`} title={`${p.name} · ${p.role}`} className="rounded-full ring-2 ring-surface">
           <Avatar name={p.name} size={30} />
         </span>
       ))}
@@ -520,9 +516,10 @@ export function AboutCard({ about, whyTitle, why }: { about: string; whyTitle: s
   return (
     <SectionCard title="About" icon={{ Icon: Eye, tone: "teal" }}>
       <p className="text-13.5 text-ink-2">{about}</p>
-      <h3 className="mt-3 text-12 font-semibold text-muted">{whyTitle}</h3>
+      <h3 className="mt-3 text-12.5 font-medium text-muted">{whyTitle}</h3>
       <p className="mt-0.5 text-13.5 text-ink-2">{why}</p>
-      <Link href="/client/library" className="mt-3 inline-block text-13 font-semibold text-accent hover:underline">
+      <Link href="/client/library" className="mt-3 inline-block text-13 font-medium text-accent hover:underline">
+
         Read the SBC SOP
       </Link>
     </SectionCard>
@@ -570,17 +567,54 @@ export function RegisterTiles({ sections, query, onClear }: { sections: TileSect
               type="button"
               onClick={() => setClosed((c) => ({ ...c, [s.id]: !c[s.id] }))}
               aria-expanded={open}
-              className="flex w-full items-center gap-2 bg-raised px-4 py-1.5 text-left text-11.5 font-semibold text-faint hover:text-ink md:px-5"
+              className="flex w-full items-center gap-2 bg-raised px-4 py-1.5 text-left text-11.5 font-medium uppercase tracking-[.07em] text-muted hover:text-ink md:px-5"
             >
               <Chevron open={open} className="h-3.5 w-3.5" />
               {s.label}
-              <span>{s.tiles.length}</span>
+              <span className="text-faint">{s.tiles.length}</span>
             </button>
-            {open && <TileGrid groups={[{ tiles: s.tiles }]} className={cn(s.muted && "[&_li]:opacity-60")} />}
+            {open && <RegisterGrid tiles={s.tiles} muted={s.muted} />}
           </div>
         );
       })}
     </div>
+  );
+}
+
+/** Tiles of one register group (R-13, R-43): name, a 104 px area pill and a 104 px status chip, then the date. */
+function RegisterGrid({ tiles, muted }: { tiles: Tile[]; muted?: boolean }) {
+  return (
+    <ul className={cn("grid grid-cols-1 gap-3 px-4 py-4 sm:grid-cols-2 md:px-5 2xl:grid-cols-3", muted && "[&_li]:opacity-60")}>
+      {tiles.map((t) => {
+        const inner = (
+          <>
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-14 font-medium">{t.name}</span>
+              {t.href && <Chevron />}
+            </span>
+            <span className="flex min-w-0 flex-wrap items-center gap-2">
+              {t.tag && <AreaPill area={t.tag.label} />}
+              <Chip tone={t.chip.tone} fixed>
+                {t.chip.label}
+              </Chip>
+            </span>
+            <span className={cn("block truncate text-12.5", t.late ? "font-medium text-bad" : "text-muted")}>{t.date ?? "-"}</span>
+          </>
+        );
+        const cls = cn("grid min-w-0 gap-2 rounded-md border-1.5 border-line bg-surface px-3.5 py-3", t.href && "hover:bg-hover");
+        return (
+          <li key={t.id} className="min-w-0">
+            {t.href ? (
+              <Link href={t.href} className={cls}>
+                {inner}
+              </Link>
+            ) : (
+              <div className={cls}>{inner}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -611,8 +645,49 @@ export function HeadSearch({ value, onChange, onEnter, label }: { value: string;
         }}
         placeholder="Search"
         aria-label={label}
-        className="h-[30px] w-[150px] rounded-md border border-line bg-surface pl-8 pr-2 text-12.5 outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-accent-line"
+        className={cn(inputClass, "h-[30px] w-[160px] pl-8 pr-2 text-13")}
       />
     </span>
   );
 }
+
+/**
+ * R-10 filter chip for a card head. Set: soft blurple fill with the value and an ×. Not set: a dashed "+ Area" chip that opens a menu.
+ */
+export function FilterChip({ label, value, options, onChange }: { label: string; value: string | null; options: Array<{ value: string; label: string }>; onChange: (v: string | null) => void }) {
+  const cur = options.find((o) => o.value === value);
+  const chip = "inline-flex h-[30px] items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-13 font-medium";
+  return (
+    <M.Root modal={false}>
+      {cur ? (
+        <span className={cn(chip, "border-1.5 border-accent-line bg-accent-soft pr-1 text-accent")}>
+          <M.Trigger asChild>
+            <button type="button" className="outline-none" aria-label={`${label}: ${cur.label}. Change`}>
+              {cur.label}
+            </button>
+          </M.Trigger>
+          <button type="button" onClick={() => onChange(null)} className="grid h-5 w-5 place-items-center rounded-sm hover:bg-surface" aria-label={`Clear ${label}`}>
+            <X size={13} strokeWidth={1.8} />
+          </button>
+        </span>
+      ) : (
+        <M.Trigger asChild>
+          <button type="button" className={cn(chip, "border-1.5 border-dashed border-line-2 text-ink-2 hover:bg-hover hover:text-ink")}>
+            <Plus size={14} strokeWidth={1.8} aria-hidden /> {label}
+          </button>
+        </M.Trigger>
+      )}
+      <M.Portal>
+        <M.Content align="start" sideOffset={4} collisionPadding={12} className="z-50 min-w-[180px] overflow-hidden rounded-md border border-line bg-surface p-1 text-14 text-ink shadow-float">
+          {options.map((o) => (
+            <M.Item key={o.value} onSelect={() => onChange(o.value)} className="flex h-[34px] cursor-pointer select-none items-center gap-3 rounded-sm px-2.5 outline-none data-[highlighted]:bg-hover">
+              <span className="min-w-0 flex-1 truncate">{o.label}</span>
+              {o.value === value && <Check size={14} strokeWidth={1.8} className="text-accent" />}
+            </M.Item>
+          ))}
+        </M.Content>
+      </M.Portal>
+    </M.Root>
+  );
+}
+

@@ -163,7 +163,7 @@ export function ObligationsScreen() {
             waiting.map((o) => (
               <ListRow key={o.id}>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">{o.name}</span>
+                  <span className="block truncate font-medium">{o.name}</span>
                   <span className="block truncate text-12.5 text-muted">
                     {o.needs[0]}
                   </span>

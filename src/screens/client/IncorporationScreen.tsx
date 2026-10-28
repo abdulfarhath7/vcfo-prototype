@@ -4,17 +4,20 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { daysFrom, fmt } from "@/lib/dates";
 import { NORTHWIND } from "@/data/people";
-import { PHASES, STEPS, COI_EXPECTED, stepsOf, doneCount } from "@/data/incorporation";
-import { WEEK_RANGE, DOCS_FROM_CLIENT, DOCS_BY_SBC, whoSegments, planSegments } from "@/data/incorporation-detail";
+import { STEPS, COI_EXPECTED } from "@/data/incorporation";
+import { WEEK_RANGE, DOCS_FROM_CLIENT, DOCS_BY_SBC, whoSegments, planSegments, type StatSeg } from "@/data/incorporation-detail";
 import { useClientState } from "@/components/shell/ClientState";
-import { Row } from "@/components/shell/Page";
+import { Row, Col } from "@/components/shell/Page";
+import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { barFill } from "@/components/ui/Bar";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { WeekList, type WeekRow } from "@/components/cards/WeekList";
 import { IncPhaseTimelineCard } from "./inc-timeline";
-import { DrillModal, StatCard, statusGroups, type DrillSpec } from "./inc-parts";
+import { DrillModal, statusGroups, type DrillSpec } from "./inc-parts";
+import { PageHead, Dot } from "./navy-head";
+import { St5Card } from "./st5";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 /** CIN after the certificate (sample). */
@@ -35,79 +38,87 @@ const WEEK_AFTER: WeekRow[] = [
   { id: "x4", when: "Sat 10 Oct", owner: "sbc", text: "Auditor appointment (ADT-1)", href: "/client/incorporation/step/21" },
 ];
 
-/** Navy COI card (old coiTile): days to the expected COI, the "At risk" chip and one phase split bar. */
-function CoiCard({ incorporated, onDrill }: { incorporated: boolean; onDrill: (d: DrillSpec) => void }) {
-  const counts = PHASES.map((p) => {
-    const total = stepsOf(p.n).length;
-    const done = incorporated && p.n < 3 ? total : doneCount(p.n);
-    return { p, total, done, cur: incorporated ? p.n === 3 : p.status === "In progress" };
-  });
-  const done = counts.reduce((a, c) => a + c.done, 0);
+/** Plain head (R-02): days to the COI or the incorporation date, the company, the step count, the "At risk" chip. Was the navy COI card. */
+function IncHead({ incorporated, onDrill }: { incorporated: boolean; onDrill: (d: DrillSpec) => void }) {
+  const done = incorporated ? 21 : STEPS.filter((s) => s.status === "Completed").length;
   const total = STEPS.length;
   // Old coiTile: "At risk" names the first step that waits on Northwind.
   const risk = STEPS.find((s) => s.owner === "client" && s.status === "Waiting");
-  const spice = STEPS.filter((s) => s.phase <= 2);
-  const drillSpice = () =>
-    onDrill({ title: "SPICe+ progress", sub: `Phases 1 and 2 · ${spice.filter((s) => s.status === "Completed").length} of ${spice.length} steps done`, groups: statusGroups(spice), link: { text: "Open Phase 2", href: "/client/incorporation/phase/2" } });
   const drillAll = () => onDrill({ title: `All ${total} steps`, sub: `${done} done · ${total - done} to go`, groups: statusGroups(STEPS) });
   return (
-    <section className="grid min-w-0 grid-cols-1 gap-4 overflow-hidden rounded-lg border border-navy bg-navy px-5 py-5 text-white md:px-6" aria-label="Certificate of Incorporation">
-      <div className="flex flex-wrap items-start gap-3">
-        <button type="button" onClick={drillSpice} className="min-w-0 rounded-md text-left hover:bg-white/[.06]" aria-label={incorporated ? `Incorporated ${fmt(COI_EXPECTED)}` : `${daysFrom(COI_EXPECTED)} days to COI`}>
-          {incorporated ? (
-            <>
-              <div className="text-[28px] font-bold leading-none tracking-tight">Incorporated {fmt(COI_EXPECTED)}</div>
-              <div className="mt-2 truncate font-mono text-13 text-navy-ink">{NORTHWIND_CIN}</div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-baseline gap-2 whitespace-nowrap">
-                <b className="text-44 font-bold tracking-tight">{daysFrom(COI_EXPECTED)}</b>
-                <span className="text-14 font-semibold text-navy-ink">days to COI</span>
-              </div>
-              <div className="mt-1.5 text-13 text-navy-ink">
-                {NORTHWIND.name} · expected {DAYS[COI_EXPECTED.getDay()]} {fmt(COI_EXPECTED)}
-              </div>
-            </>
-          )}
-        </button>
-        {!incorporated && risk && (
-            <Link href={`/client/incorporation/step/${risk.n}`} className="ml-auto">
-              <Chip tone="warn" className="bg-white/[.12] text-warn-mid">
-                At risk · step {risk.n}
-              </Chip>
+    <PageHead
+      label="Certificate of Incorporation"
+      title={incorporated ? `Incorporated ${fmt(COI_EXPECTED)}` : `${daysFrom(COI_EXPECTED)} days to COI`}
+      meta={
+        incorporated ? (
+          <>
+            <span className="font-mono text-13 text-ink-2">{NORTHWIND_CIN}</span>
+            <Dot />
+            <span>CIN, PAN and TAN issued</span>
+          </>
+        ) : (
+          <>
+            <span>{NORTHWIND.name}</span>
+            <Dot />
+            <span>
+              expected {DAYS[COI_EXPECTED.getDay()]} {fmt(COI_EXPECTED)}
+            </span>
+            <Dot />
+            <button type="button" onClick={drillAll} className="text-accent hover:underline">
+              {done} / {total} steps · {Math.round((done / total) * 100)}%
+            </button>
+          </>
+        )
+      }
+      actions={
+        incorporated ? (
+          <Button asChild variant="secondary">
+            <Link href="/client/documents">Open certificate</Link>
+          </Button>
+        ) : (
+          risk && (
+            <Link href={`/client/incorporation/step/${risk.n}`} aria-label={`At risk · step ${risk.n}`}>
+              <Chip tone="warn">At risk · step {risk.n}</Chip>
             </Link>
-          )}
-      </div>
-      {incorporated && (
-        <div className="-mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-12.5 text-navy-faint">
-          <span>CIN, PAN and TAN issued</span>
-          <Link href="/client/documents" className="font-semibold text-white hover:underline">
-            Open certificate
-          </Link>
-        </div>
-      )}
-      <div className="min-w-0">
-        <div className="mb-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-13">
-          <button type="button" onClick={drillAll} className="font-semibold hover:underline">
-            {done} / {total} steps
-          </button>
-          <span className="text-navy-faint">{Math.round((done / total) * 100)}%</span>
-        </div>
-        <button type="button" onClick={drillAll} className="flex w-full gap-1 text-left" aria-label="All steps by status">
-          {counts.map((c) => (
-            <div key={c.p.id} className="min-w-0" style={{ flex: c.total }}>
-              <span className="block h-2 overflow-hidden rounded-bar bg-white/[.12]" aria-hidden>
-                <i className={cn("block h-full rounded-bar", c.done === c.total ? barFill.ok : barFill.accent)} style={{ width: `${(c.done / c.total) * 100}%` }} />
-              </span>
-              <small className={cn("mt-1.5 block truncate text-11.5", c.cur ? "font-semibold text-navy-ink" : "text-navy-faint")}>
-                {c.p.short} · {c.done}/{c.total}
-              </small>
-            </div>
-          ))}
-        </button>
-      </div>
-    </section>
+          )
+        )
+      }
+    />
+  );
+}
+
+/** R-25 (C2): one card, one stacked bar per question, in status colours. Replaces the four donut cards. */
+function SplitCard({ rows, onDrill }: { rows: Array<{ title: string; unit: string; segs: StatSeg[]; spec: (active?: number) => DrillSpec }>; onDrill: (d: DrillSpec) => void }) {
+  return (
+    <SectionCard title="Incorporation status" bodyClassName="grid gap-5 px-4 py-4 sm:grid-cols-2 sm:gap-x-8 md:px-5">
+      {rows.map((r) => {
+        const total = r.segs.reduce((a, s) => a + s.items.length, 0);
+        return (
+          <div key={r.title} className="grid min-w-0 gap-2">
+            <button type="button" onClick={() => onDrill(r.spec())} className="flex items-baseline gap-2 text-left hover:underline" aria-label={`${r.title} · ${total} ${r.unit}`}>
+              <span className="min-w-0 truncate text-13 font-medium text-ink-2">{r.title}</span>
+              <b className="ml-auto text-14 font-medium">{total}</b>
+            </button>
+            <span className="flex h-2 w-full gap-0.5 overflow-hidden rounded-bar" aria-hidden>
+              {r.segs
+                .filter((s) => s.items.length > 0)
+                .map((s) => (
+                  <i key={s.label} className={cn("block h-full rounded-[2px]", barFill[s.tone])} style={{ width: `${(s.items.length / (total || 1)) * 100}%` }} />
+                ))}
+            </span>
+            <span className="flex flex-wrap gap-x-3 gap-y-1">
+              {r.segs.map((s, i) => (
+                <button key={s.label} type="button" onClick={() => onDrill(r.spec(i))} className="inline-flex items-center gap-1.5 text-12.5 text-muted hover:text-ink">
+                  <i className={cn("h-2 w-2 flex-none rounded-[2px]", barFill[s.tone])} aria-hidden />
+                  {s.label}
+                  <b className="font-medium text-ink">{s.items.length}</b>
+                </button>
+              ))}
+            </span>
+          </div>
+        );
+      })}
+    </SectionCard>
   );
 }
 
@@ -117,21 +128,27 @@ export function IncorporationScreen() {
   const [drill, setDrill] = React.useState<DrillSpec | null>(null);
   const who = whoSegments();
   const plan = planSegments();
+  const count = (g: StatSeg[]) => g.reduce((a, x) => a + x.items.length, 0);
+  const split = [
+    { title: "Documents from Northwind", unit: "documents", segs: DOCS_FROM_CLIENT, spec: (active?: number): DrillSpec => ({ title: "Documents from Northwind", sub: `${count(DOCS_FROM_CLIENT)} documents`, groups: DOCS_FROM_CLIENT, active, docFrom: "From Northwind", link: { text: "Open documents", href: "/client/documents" } }) },
+    { title: "Documents SBC prepares", unit: "documents", segs: DOCS_BY_SBC, spec: (active?: number): DrillSpec => ({ title: "Documents SBC prepares", sub: `${count(DOCS_BY_SBC)} documents`, groups: DOCS_BY_SBC, active, docFrom: "Prepared by SBC", link: { text: "Open documents", href: "/client/documents" } }) },
+    { title: "Who is working on what", unit: "steps", segs: who, spec: (active?: number): DrillSpec => ({ title: "Who is working on what", sub: `${count(who)} open steps`, groups: who, active }) },
+    { title: "On plan or overdue", unit: "steps", segs: plan, spec: (active?: number): DrillSpec => ({ title: "On plan or overdue", sub: `${count(plan)} active steps`, groups: plan, active }) },
+  ];
+  const cur = incorporated ? 3 : 2;
   return (
     <div className="grid grid-cols-1 gap-5">
+      <IncHead incorporated={incorporated} onDrill={setDrill} />
       <Row>
-        <CoiCard incorporated={incorporated} onDrill={setDrill} />
-        <SectionCard title="This week" meta={WEEK_RANGE} flush>
-          <WeekList rows={incorporated ? WEEK_AFTER : WEEK} />
-        </SectionCard>
+        <St5Card after={incorporated} link={{ href: `/client/incorporation/phase/${cur}`, label: `Open phase ${cur}` }} />
+        <Col>
+          <SectionCard title="This week" meta={WEEK_RANGE} flush>
+            <WeekList rows={incorporated ? WEEK_AFTER : WEEK} />
+          </SectionCard>
+          <SplitCard rows={split} onDrill={setDrill} />
+        </Col>
       </Row>
       <IncPhaseTimelineCard after={incorporated} />
-      <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Documents from Northwind" unit="documents" segs={DOCS_FROM_CLIENT} onOpen={() => setDrill({ title: "Documents from Northwind", sub: `${DOCS_FROM_CLIENT.reduce((a, g) => a + g.items.length, 0)} documents`, groups: DOCS_FROM_CLIENT, docFrom: "From Northwind", link: { text: "Open documents", href: "/client/documents" } })} />
-        <StatCard title="Documents SBC prepares" unit="documents" segs={DOCS_BY_SBC} onOpen={() => setDrill({ title: "Documents SBC prepares", sub: `${DOCS_BY_SBC.reduce((a, g) => a + g.items.length, 0)} documents`, groups: DOCS_BY_SBC, docFrom: "Prepared by SBC", link: { text: "Open documents", href: "/client/documents" } })} />
-        <StatCard title="Who is working on what" unit="steps" segs={who} onOpen={() => setDrill({ title: "Who is working on what", sub: `${who.reduce((a, g) => a + g.items.length, 0)} open steps`, groups: who })} />
-        <StatCard title="On plan or overdue" unit="steps" segs={plan} onOpen={() => setDrill({ title: "On plan or overdue", sub: `${plan.reduce((a, g) => a + g.items.length, 0)} active steps`, groups: plan })} />
-      </div>
       <DrillModal spec={drill} onClose={() => setDrill(null)} />
       {toast.node}
     </div>

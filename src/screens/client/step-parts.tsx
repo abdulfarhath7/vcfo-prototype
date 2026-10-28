@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Check, Clock, Download, Eye, MessageSquare, PenLine, RefreshCw, TrendingUp, User } from "lucide-react";
+import { Check, Download, Eye, ListChecks, MessageSquare, PenLine, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TODAY, fmt, fmtYear } from "@/lib/dates";
 import { STEPS, stepHref, type Step } from "@/data/incorporation";
@@ -10,6 +10,7 @@ import { DOC_STATUS_TONE, type ItemDoc } from "@/data/registrations";
 import { FILES } from "@/data/shared";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { StepMark } from "@/components/ui/StepMark";
 import { Bar } from "@/components/ui/Bar";
 import { FileBadge } from "@/components/ui/FileBadge";
 import { Checkbox, Input } from "@/components/ui/Input";
@@ -41,7 +42,7 @@ function statusLine(s: Step): { circle: "done" | "current" | "planned"; title: s
 
 /* ---------- Answers: status, explainer, pre-fill note, label and value rows ---------- */
 
-export function AnswersCard({ step, about, rows, notify, onChange, onMessage }: { step: Step; about: string; rows: AnswerRow[]; notify: Notify; onChange: () => void; onMessage: () => void }) {
+export function AnswersCard({ step, about, rows, notify, onChange, onMessage, approval }: { step: Step; about: string; rows: AnswerRow[]; notify: Notify; onChange: () => void; onMessage: () => void; approval?: React.ReactNode }) {
   const k = stepKind(step);
   const st = statusLine(step);
   const editable = k === "prog";
@@ -52,7 +53,7 @@ export function AnswersCard({ step, about, rows, notify, onChange, onMessage }: 
       <div className="flex items-start gap-3 border-b border-line-soft px-4 py-3 md:px-5">
         <StatusCircle status={st.circle} className="mt-0.5" />
         <span className="min-w-0 flex-1">
-          <b className={cn("block text-13.5 font-semibold", st.bad && "text-bad")}>{st.title}</b>
+          <b className={cn("block text-14 font-medium", st.bad && "text-bad")}>{st.title}</b>
           <span className="block text-12.5 text-muted">{st.sub}</span>
         </span>
       </div>
@@ -74,9 +75,9 @@ export function AnswersCard({ step, about, rows, notify, onChange, onMessage }: 
               </dt>
               <dd className="min-w-0 text-13.5 font-medium">
                 {editable && !r.fileId ? (
-                  <Input value={v} onChange={(e) => setVals((x) => ({ ...x, [r.k]: e.target.value }))} aria-label={r.k} className="h-[30px]" />
+                  <Input value={v} onChange={(e) => setVals((x) => ({ ...x, [r.k]: e.target.value }))} aria-label={r.k} />
                 ) : r.fileId ? (
-                  <Link href={`/client/documents/view/${r.fileId}`} className="font-mono text-13 text-accent hover:underline">
+                  <Link href={`/client/documents/view/${r.fileId}`} className="text-accent hover:underline">
                     {r.v}
                   </Link>
                 ) : r.v.startsWith("Provided") ? (
@@ -91,6 +92,7 @@ export function AnswersCard({ step, about, rows, notify, onChange, onMessage }: 
           );
         })}
       </dl>
+      {k === "you" && approval}
       {k !== "you" && (
       <footer className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
         {k === "done" && (
@@ -134,7 +136,7 @@ export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify, due,
           return (
             <div key={x.id} className="grid gap-2 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5">
               <div className="flex min-w-0 items-center gap-2 text-12.5 text-muted">
-                <StatusCircle status="current" className="h-4 w-4 bg-warn-soft text-warn" />
+                <StepMark state="now" tone="warn" size={18} />
                 <span className="truncate">
                   {x.note ?? x.name} · requested by {by}
                 </span>
@@ -160,9 +162,9 @@ export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify, due,
           <ListRow key={x.id}>
             <FileBadge type={x.type} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-semibold">{x.name}</span>
+              <span className="block truncate font-medium">{x.name}</span>
               <span className="block truncate text-12.5 text-muted">
-                {up ? <span className="font-mono">{up}</span> : (x.fromLabel ?? (x.from === "client" ? "Northwind" : "SBC"))}
+                {up ? <span>{up}</span> : (x.fromLabel ?? (x.from === "client" ? "Northwind" : "SBC"))}
                 {(up || x.date) && (
                   <>
                     <span className="mx-1.5 text-faint">·</span>
@@ -177,7 +179,7 @@ export function StepDocsCard({ docs, canUpload, uploaded, onUpload, notify, due,
                 )}
               </span>
             </span>
-            <Chip tone={up ? "prog" : DOC_STATUS_TONE[x.status]} className="hidden sm:inline-flex">
+            <Chip tone={up ? "prog" : DOC_STATUS_TONE[x.status]} fixed className="hidden sm:inline-flex">
               {status}
             </Chip>
             {file ? (
@@ -233,17 +235,17 @@ export function StepNeedsCard({
         <Empty />
       ) : (
         items.map((i) => (
-          <label key={i.id} className="flex cursor-pointer items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 hover:bg-raised md:px-5">
+          <label key={i.id} className="flex cursor-pointer items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 hover:bg-hover md:px-5">
             <Checkbox checked={!!on[i.id]} onChange={(v) => setOn(i.id, v)} label={i.label} />
             <span className={cn("min-w-0 flex-1", on[i.id] && "text-muted line-through")}>{i.label}</span>
-            <span className={cn("flex-none text-12.5", i.due < TODAY && !on[i.id] ? "font-semibold text-bad" : "text-muted")}>{fmt(i.due)}</span>
+            <span className={cn("flex-none text-12.5", i.due < TODAY && !on[i.id] ? "font-medium text-bad" : "text-muted")}>{fmt(i.due)}</span>
           </label>
         ))
       )}
       {!waiting && (
         <div className="grid gap-3 border-t border-line-soft px-4 py-3 md:px-5">
           <div className="flex items-center gap-3 text-12.5 text-muted">
-            <span className="flex-none font-semibold text-ink">Answers to submit</span>
+            <span className="flex-none font-medium text-ink">Answers to submit</span>
             <Bar pct={Math.max(pct, 6)} tone={left ? "warn" : "ok"} className="flex-1" />
           </div>
           <div className="flex flex-wrap justify-end gap-2">
@@ -271,47 +273,39 @@ export function StepNeedsCard({
   );
 }
 
-/**
- * Approval bar at the foot of a step that waits on Northwind (old actBar).
- * It sticks to the foot of the window, above the prototype controls and the Ask VCFO button.
- * The offsets clear them: 68 px on desktop, 132 px on phones (they sit higher there).
- */
+/** Approval row at the foot of the Answers card of a step that waits on Northwind (old actBar). Not sticky: nothing floats (R-02). */
 export function ApprovalBar({ pct, blocked, notify, onChange }: { pct: number; blocked?: string; notify: Notify; onChange: () => void }) {
   const [sent, setSent] = React.useState(false);
   return (
-    <div className="sticky bottom-[132px] z-20 rounded-md border-1.5 border-line bg-surface px-4 py-3 md:bottom-[68px] md:px-5" role="region" aria-label="Approval">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-md", sent ? "bg-ok-soft text-ok" : "bg-warn text-surface")} aria-hidden>
-            {sent ? <Check size={13} strokeWidth={2.4} /> : <User size={13} strokeWidth={2} />}
+    <div className="flex flex-col gap-3 border-t border-line-soft px-4 py-3 sm:flex-row sm:items-center md:px-5" role="region" aria-label="Approval">
+      <div className="flex min-w-0 flex-1 items-center gap-2.5">
+        <StepMark state={sent ? "done" : "now"} tone="teal" label={sent ? "Approved" : "Waiting"} />
+        <span className="min-w-0">
+          <b className="block truncate text-14 font-medium">{sent ? "Approved by Northwind" : "Awaiting Northwind’s approval"}</b>
+          <span className="mt-1 block h-1.5 w-[200px] max-w-full overflow-hidden rounded-bar bg-raised" aria-hidden>
+            <i className={cn("block h-full rounded-bar", sent ? "bg-ok-mid" : "bg-accent-mid")} style={{ width: `${sent ? 100 : Math.max(pct, 6)}%` }} />
           </span>
-          <span className="min-w-0">
-            <b className="block truncate text-13.5 font-semibold">{sent ? "Approved by Northwind" : "Awaiting Northwind’s approval"}</b>
-            <span className="mt-1 block h-1 w-[200px] max-w-full overflow-hidden rounded-bar bg-line-soft" aria-hidden>
-              <i className={cn("block h-full rounded-bar", sent ? "bg-ok-mid" : "bg-accent")} style={{ width: `${sent ? 100 : Math.max(pct, 6)}%` }} />
-            </span>
-          </span>
-        </div>
-        <div className="flex flex-none gap-2">
-          <Button onClick={onChange} className="max-sm:flex-1">
-            <MessageSquare size={16} strokeWidth={1.6} /> Request a change
-          </Button>
-          <Button
-            variant="primary"
-            disabled={sent}
-            className="max-sm:flex-1"
-            onClick={() => {
-              if (blocked) {
-                notify(`Upload the ${blocked} first`);
-                return;
-              }
-              setSent(true);
-              notify("Approved and submitted · Bharath files it next", () => setSent(false));
-            }}
-          >
-            <Check size={16} strokeWidth={1.6} /> {sent ? "Approved" : "Approve"}
-          </Button>
-        </div>
+        </span>
+      </div>
+      <div className="flex flex-none gap-2">
+        <Button onClick={onChange} className="max-sm:flex-1">
+          <MessageSquare size={16} strokeWidth={1.6} /> Request a change
+        </Button>
+        <Button
+          variant="primary"
+          disabled={sent}
+          className="max-sm:flex-1"
+          onClick={() => {
+            if (blocked) {
+              notify(`Upload the ${blocked} first`);
+              return;
+            }
+            setSent(true);
+            notify("Approved and submitted · Bharath files it next", () => setSent(false));
+          }}
+        >
+          <Check size={16} strokeWidth={1.6} /> {sent ? "Approved" : "Approve"}
+        </Button>
       </div>
     </div>
   );
@@ -323,64 +317,41 @@ const PHASE_LABEL = ["SPICe+ Part A", "SPICe+ Part B", "Post-incorporation"] as 
 const ownerTone = { client: "text-warn", sbc: "text-accent", mca: "text-violet" } as const;
 const ownerName = { client: "Northwind", sbc: "SBC", mca: "MCA" } as const;
 
-function RailIcon({ step, index }: { step: Step; index: number }) {
+/** ST5 mark of a step in the rail (R-22): done tick, live ring in the status colour, upcoming dashed. */
+function RailMark({ step }: { step: Step }) {
   const k = stepKind(step);
-  const base = "grid h-6 w-6 flex-none place-items-center rounded-md";
-  if (k === "done")
-    return (
-      <span className={cn(base, "bg-ok text-surface")} role="img" aria-label="Done">
-        <Check size={13} strokeWidth={2.6} />
-      </span>
-    );
-  if (k === "you")
-    return (
-      <span className={cn(base, "bg-warn text-surface")} role="img" aria-label="Waiting on Northwind">
-        <User size={13} strokeWidth={2.2} />
-      </span>
-    );
-  if (k === "prog")
-    return (
-      <span className={cn(base, "bg-btn text-white")} role="img" aria-label="In progress">
-        <Clock size={13} strokeWidth={2.2} />
-      </span>
-    );
-  if (k === "with")
-    return (
-      <span className={cn(base, "bg-accent text-surface")} role="img" aria-label={`With ${step.owner === "mca" ? "MCA" : "SBC"}`}>
-        <TrendingUp size={13} strokeWidth={2.2} />
-      </span>
-    );
-  return (
-    <span className={cn(base, "font-mono text-11 text-muted shadow-[inset_0_0_0_1.5px_var(--line)]")} role="img" aria-label="Upcoming">
-      {index}
-    </span>
-  );
+  if (k === "done") return <StepMark state="done" label="Done" />;
+  if (k === "up") return <StepMark state="next" label="Not started" />;
+  const late = !!step.due && step.due < TODAY;
+  return <StepMark state="now" tone={late ? "bad" : k === "you" ? "teal" : "prog"} label={k === "you" ? "Waiting on Northwind" : k === "with" ? `With ${ownerName[step.owner]}` : "In progress"} />;
 }
 
 export function PhaseStepsRail({ step }: { step: Step }) {
   const list = STEPS.filter((x) => x.phase === step.phase);
   return (
-    <aside className="min-w-0 rounded-md border-1.5 border-line bg-surface px-3 py-4 md:px-4" aria-label={`${PHASE_LABEL[step.phase - 1]} steps`}>
-      <h2 className="px-2 text-11.5 font-semibold text-muted">{PHASE_LABEL[step.phase - 1]}</h2>
-      <ol className="mt-3 grid gap-0.5">
+    <SectionCard title={PHASE_LABEL[step.phase - 1]} icon={{ Icon: ListChecks, tone: "blue" }} meta={`${list.filter((x) => x.status === "Completed").length} / ${list.length}`} bodyClassName="px-4 py-3 md:px-5">
+      <ol className="flex flex-col">
         {list.map((x, i) => {
           const cur = x.n === step.n;
           return (
             <li key={x.n} className="relative">
-              {i < list.length - 1 && <span className={cn("absolute left-[19px] top-8 h-[calc(100%-20px)] w-px md:left-[19px]", stepKind(x) === "done" ? "bg-ok-mid" : "bg-line")} aria-hidden />}
+              {i < list.length - 1 && <span className={cn("absolute bottom-[-6px] left-[20.25px] top-[30px] w-[1.5px]", stepKind(x) === "done" ? "bg-ok-mid" : "bg-line")} aria-hidden />}
               <Link
                 href={stepHref("client", x.n)}
                 aria-current={cur ? "page" : undefined}
-                className={cn("relative flex min-h-[44px] items-center gap-3 rounded-md px-2 py-1.5 text-13.5 hover:bg-raised", cur && "bg-raised font-semibold shadow-[inset_0_0_0_1px_var(--line)]")}
+                className={cn("relative -mx-2.5 flex min-h-[40px] items-center gap-3 rounded-md px-2.5 py-1.5 hover:bg-hover", cur && "bg-hover")}
               >
-                <RailIcon step={x} index={i + 1} />
-                <span className="min-w-0 flex-1 leading-snug">{x.title}</span>
-                <User size={14} strokeWidth={1.6} className={cn("flex-none", ownerTone[x.owner])} aria-label={`Owner · ${ownerName[x.owner]}`} />
+                <RailMark step={x} />
+                <span className="flex min-w-0 flex-1 items-baseline gap-2">
+                  <span className="flex-none font-mono text-12 text-muted">Step {x.n}</span>
+                  <span className={cn("truncate text-14", cur && "font-medium")}>{x.title}</span>
+                </span>
+                <span className={cn("hidden flex-none text-12 font-medium sm:inline", ownerTone[x.owner])}>{ownerName[x.owner]}</span>
               </Link>
             </li>
           );
         })}
       </ol>
-    </aside>
+    </SectionCard>
   );
 }

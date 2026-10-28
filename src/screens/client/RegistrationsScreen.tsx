@@ -93,7 +93,7 @@ export function RegistrationsScreen() {
             waiting.map((r) => (
               <ListRow key={r.id}>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">{r.name}</span>
+                  <span className="block truncate font-medium">{r.name}</span>
                   <span className="block truncate text-12.5 text-muted">{r.docs.filter((x) => x.status === "Asked").map((x) => x.name).join(", ") || r.authority}</span>
                 </span>
                 <Button asChild size="sm">

@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff, History, KeyRound, Lock, Paperclip, Pencil, Plus } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, History, Lock, Paperclip, Pencil, Plus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt } from "@/lib/dates";
 import { COMPANY_IDS } from "@/data/client-home-extra";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip, toneFor } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { Select } from "@/components/ui/Select";
+import { inputClass } from "@/components/ui/Input";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { SidePanel } from "@/components/ui/SidePanel";
 import { useUndoToast } from "@/components/ui/UndoToast";
@@ -121,6 +122,8 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
     }
   };
 
+  // R-28: identifier rows of the KYC sheet (DIN, PAN) use mono like identifier columns.
+  const monoAt = (r: number, c: number) => !!sheet.cols[c]?.mono || (c !== sheet.lab && /^(DIN|PAN|CIN|GSTIN|TAN)$/.test(sheet.rows[r][sheet.lab] ?? ""));
   const snoOf = (r: number) => sheet.rows.slice(0, r + 1).filter((row) => row.some(Boolean)).length;
 
   const cell = (r: number, c: number) => {
@@ -133,12 +136,12 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
       const rowKey = `row:${tab}|${r}`;
       return (
         <span className="flex items-center gap-1">
-          <span className="w-5 font-mono text-12 text-muted">{snoOf(r)}</span>
+          <span className="w-5 text-13 text-muted">{snoOf(r)}</span>
           {showRow && (
             <button
               type="button"
               onClick={() => (live(rowKey) ? setRev((x) => Object.fromEntries(Object.entries(x).filter(([k]) => k !== rowKey))) : setGate({ kind: "row", key: rowKey, label: `${sheet.label} · ${rowName(sheet, r)}` }))}
-              className={cn("grid h-6 w-6 place-items-center rounded-sm hover:bg-raised", live(rowKey) ? "text-ok" : "text-faint")}
+              className={cn("grid h-6 w-6 place-items-center rounded-sm hover:bg-ghost", live(rowKey) ? "text-ok" : "text-faint")}
               aria-label={`${live(rowKey) ? "Lock" : "Preview"} row ${snoOf(r)} · ${rowName(sheet, r)}`}
             >
               {live(rowKey) ? <EyeOff size={13} strokeWidth={1.6} /> : <Eye size={13} strokeWidth={1.6} />}
@@ -157,18 +160,19 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
             onChange={(e) => setCell(r, c, e.target.value)}
             aria-label={`${col.name} · ${rowName(sheet, r)}`}
             title={sheet.auto?.[`${r}|${c}`] ? `Filled from ${AUTO_SOURCE[sheet.auto[`${r}|${c}`]]}` : undefined}
-            className={cn("h-8 w-full min-w-[120px] rounded-sm border border-line bg-surface px-2 text-12.5 outline-none focus-visible:ring-2 focus-visible:ring-accent-line", col.mono && "font-mono")}
+            className={cn(inputClass, "h-8 min-w-[120px] px-2 text-13", col.mono && "font-mono")}
           />
         );
     }
     if (!v) return <span className="text-faint">-</span>;
-    if (v === "Pending COI" || v === "Not registered yet") return <Chip tone="idle">{v}</Chip>;
-    if (col.kind === "status") return <Chip tone={v === "Not applicable" ? "idle" : toneFor(v)} fixed>{v}</Chip>;
+    if (v === "Pending COI" || v === "Not registered yet") return <span className="whitespace-nowrap text-muted">{v}</span>;
+    if (col.kind === "status") return <Chip tone={v === "Not applicable" ? "idle" : toneFor(v)} fixed={v !== "Not applicable"}>{v}</Chip>;
+
     if (col.kind === "cert")
       return v === "Proof pending" ? (
-        <Chip tone="warn">Proof pending</Chip>
+        <Chip tone="warn" fixed>Proof pending</Chip>
       ) : (
-        <Link href="/client/documents/view/d2" className="inline-flex items-center gap-1 whitespace-nowrap font-mono text-12 font-semibold text-accent hover:underline">
+        <Link href="/client/documents/view/d2" className="inline-flex items-center gap-1 whitespace-nowrap text-13 font-medium text-accent hover:underline">
           <Paperclip size={12} strokeWidth={1.6} /> {v}
         </Link>
       );
@@ -179,15 +183,15 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
       if (!open)
         return (
           <span className="flex items-center gap-2">
-            <span className="font-mono tracking-wider text-muted">••••••</span>
-            <button type="button" onClick={() => setGate({ kind: "cell", key: k, label: `${sheet.label} · ${rowName(sheet, r)} · ${col.name}` })} className="inline-flex h-6 items-center gap-1 rounded-sm border border-line px-1.5 text-11.5 font-semibold text-ink-2 hover:bg-raised" aria-label={`Reveal ${rowName(sheet, r)} · ${col.name}`}>
+            <span className="tracking-wider text-muted">••••••</span>
+            <button type="button" onClick={() => setGate({ kind: "cell", key: k, label: `${sheet.label} · ${rowName(sheet, r)} · ${col.name}` })} className="inline-flex h-6 items-center gap-1 rounded-md border-1.5 border-line-2 px-1.5 text-12 font-medium text-ink-2 hover:bg-hover" aria-label={`Reveal ${rowName(sheet, r)} · ${col.name}`}>
               <Lock size={12} strokeWidth={1.6} /> Reveal
             </button>
           </span>
         );
       return (
         <span className="flex items-center gap-1">
-          <span className={cn("truncate", col.mono && "font-mono text-12.5")}>{v}</span>
+          <span className={cn("truncate", monoAt(r, c) && "font-mono text-13")}>{v}</span>
           <CopyButton value={v} label={`${rowName(sheet, r)} · ${col.name}`} className="h-6 w-6" />
           {live(k) && !previewing && <Chip tone="ok">{mmss(Math.ceil((rev[k] - now) / 1000))}</Chip>}
         </span>
@@ -195,38 +199,37 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
     }
     return (
       <span className="grid justify-items-start gap-0.5">
-        <span className={cn(c === sheet.lab ? "font-semibold" : "", col.mono && "font-mono text-12.5", "whitespace-nowrap")}>{v}</span>
+        <span className={cn(c === sheet.lab ? "font-medium text-ink" : "", monoAt(r, c) && "font-mono text-13", "whitespace-nowrap")}>{v}</span>
         {auto && <AutoTag source={auto} />}
       </span>
     );
   };
 
   const sheetTabs = book.map((s) => ({ key: s.id, label: s.label, count: s.rows.filter((r) => r.some(Boolean)).length }));
-  const modeButtons = (scope: "page" | "sheet") => (
+  // R-12: one set of Preview and Edit buttons, on the sheet card. The page-level copies are gone.
+  const modeButtons = () => (
     <>
       {session && <Chip tone={session.mode === "edit" ? "warn" : "ok"}>{`${session.mode === "edit" ? "Edit" : "Preview"} · ${mmss(sessLeft)}`}</Chip>}
       {!session && (
-        <Button size="sm" onClick={() => setGate({ kind: "preview", key: "page", label: scope === "page" ? "all sheets" : sheet.label })}>
-          <Eye size={14} strokeWidth={1.6} /> {scope === "page" ? "Preview" : "Preview sheet"}
+        <Button size="sm" onClick={() => setGate({ kind: "preview", key: "page", label: "all sheets" })}>
+          <Eye size={14} strokeWidth={1.6} /> Preview
         </Button>
       )}
-      {editing && scope === "sheet" && sheet.add && (
+      {editing && sheet.add && (
         <Button size="sm" onClick={addRow}>
           <Plus size={14} strokeWidth={1.6} /> {sheet.add === "director" ? "Add director" : "Add row"}
         </Button>
       )}
       {editing ? (
-        scope === "sheet" && (
-          <Button size="sm" variant="primary" onClick={save}>
-            Save
-          </Button>
-        )
+        <Button size="sm" variant="primary" onClick={save}>
+          Save
+        </Button>
       ) : (
-        <Button size="sm" variant="primary" onClick={() => setGate({ kind: "edit", key: "page", label: scope === "page" ? "all sheets" : sheet.label })}>
-          <Pencil size={14} strokeWidth={1.6} /> {scope === "page" ? "Edit" : "Edit sheet"}
+        <Button size="sm" variant="primary" onClick={() => setGate({ kind: "edit", key: "page", label: "all sheets" })}>
+          <Pencil size={14} strokeWidth={1.6} /> Edit
         </Button>
       )}
-      {session && scope === "page" && (
+      {session && (
         <Button size="sm" onClick={lock}>
           <Lock size={14} strokeWidth={1.6} /> Lock
         </Button>
@@ -237,10 +240,7 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
   return (
     <>
       <div className="flex flex-wrap items-center gap-2.5" role="toolbar" aria-label="Credentials">
-        <span className="grid h-8 w-8 flex-none place-items-center rounded-md bg-accent-soft text-accent">
-          <KeyRound size={16} strokeWidth={1.6} />
-        </span>
-        <h1 className="text-13 font-extrabold uppercase tracking-[.07em]">Credentials</h1>
+        <h1 className="sr-only">Credentials</h1>
         <Tabs
           items={[
             { key: "before", label: "Before COI" },
@@ -254,15 +254,13 @@ function Workbook({ after, onStage }: { after: boolean; onStage: (v: boolean) =>
         <Button size="sm" onClick={() => setShowLog(true)}>
           <History size={14} strokeWidth={1.6} /> Access log
         </Button>
-        {modeButtons("page")}
       </div>
       <IdTiles after={after} rev={rev} now={now} previewing={previewing} onReveal={(key, label) => setGate({ kind: "id", key, label })} onTab={setTab} directors={book.find((s) => s.id === "kyc")!.cols.length - 1} />
-      <section aria-label={sheet.label} className="min-w-0 rounded-md border-1.5 border-line bg-surface p-3 md:p-4">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <Tabs items={sheetTabs} value={tab} onChange={(k) => setTab(k as Sheet["id"])} size="md" className="hidden lg:inline-flex" />
+      <section aria-label={sheet.label} className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 pt-2 max-lg:py-3 md:px-5">
+          <Tabs variant="underline" items={sheetTabs} value={tab} onChange={(k) => setTab(k as Sheet["id"])} className="hidden min-w-0 flex-1 border-b-0 lg:flex" />
           <Select aria-label="Sheet" size="md" value={tab} onChange={(e) => setTab(e.target.value as Sheet["id"])} options={sheetTabs.map((t) => ({ value: t.key, label: `${t.label} (${t.count})` }))} className="lg:hidden" />
-          <span className="flex-1" />
-          {modeButtons("sheet")}
+          <span className="flex flex-1 flex-wrap items-center justify-end gap-2 lg:flex-none">{modeButtons()}</span>
         </div>
         <SheetGrid
           sheet={sheet}
@@ -306,35 +304,18 @@ function AutoTag({ source }: { source: string }) {
   );
 }
 
-const colLetter = (i: number) => {
-  let s = "";
-  let n = i;
-  do {
-    s = String.fromCharCode(65 + (n % 26)) + s;
-    n = Math.floor(n / 26) - 1;
-  } while (n >= 0);
-  return s;
-};
-
-/** v7p_credentials sheet: a spreadsheet with column letters over the column names and a numbered row gutter with an edit pencil. */
+/** Credentials sheet as a T1 table (R-07): 36 px head, 44 px rows, hairlines only. The first column holds the row number and an edit pencil. */
 function SheetGrid({ sheet, cell, editing, onEditRow }: { sheet: Sheet; cell: (r: number, c: number) => React.ReactNode; editing: boolean; onEditRow: (r: number) => void }) {
-  const th = "border-b border-r border-line bg-raised px-2.5 text-left font-semibold text-muted";
   return (
-    <div className="overflow-x-auto rounded-md border border-line">
-      <table className="w-full border-collapse text-13">
+    <div className="overflow-x-auto border-t border-line-soft">
+      <table className="grid-table text-13.5">
         <thead>
-          <tr className="h-[22px] text-11.5">
-            <th className={cn(th, "w-[84px] min-w-[84px]")} aria-hidden />
-            {sheet.cols.map((_, c) => (
-              <th key={c} className={cn(th, "text-center font-medium text-faint last:border-r-0")} aria-hidden>
-                {colLetter(c)}
-              </th>
-            ))}
-          </tr>
-          <tr className="h-[30px] text-12">
-            <th className={cn(th, "text-center")}>#</th>
+          <tr>
+            <th className="w-[52px] min-w-[52px] pl-4 md:pl-5">
+              <span className="sr-only">Edit</span>
+            </th>
             {sheet.cols.map((col, c) => (
-              <th key={c} scope="col" className={cn(th, "whitespace-nowrap last:border-r-0", c === sheet.lab && "min-w-[190px]", col.kind === "status" && "w-[132px]")}>
+              <th key={c} scope="col" className={cn(c === sheet.lab && "min-w-[190px]", col.kind === "status" && "w-[124px]", c === sheet.cols.length - 1 && "pr-4 md:pr-5")}>
                 {col.name}
               </th>
             ))}
@@ -343,27 +324,30 @@ function SheetGrid({ sheet, cell, editing, onEditRow }: { sheet: Sheet; cell: (r
         <tbody>
           {sheet.rows.length === 0 && (
             <tr>
-              <td colSpan={sheet.cols.length + 1} className="px-3 py-4 text-13 text-faint">
+              <td colSpan={sheet.cols.length + 1} className="px-4 text-13 text-faint md:px-5">
                 None
               </td>
             </tr>
           )}
           {sheet.rows.map((row, r) => {
             const spacer = !row.some(Boolean) && !editing;
+            if (spacer)
+              return (
+                <tr key={r} aria-hidden>
+                  <td colSpan={sheet.cols.length + 1} className="!h-2 bg-raised p-0" />
+                </tr>
+              );
             return (
-              <tr key={r} className={cn("border-b border-line-soft last:border-b-0", spacer ? "h-6" : "h-[46px]")}>
-                <td className="border-r border-line bg-raised px-2.5 text-12 text-muted">
-                  <span className="flex items-center justify-between gap-1">
-                    <span className="font-mono">{r + 1}</span>
-                    {!spacer && !editing && (
-                      <button type="button" onClick={() => onEditRow(r)} className="grid h-6 w-6 place-items-center rounded-sm text-faint hover:bg-surface hover:text-ink" aria-label={`Edit row ${r + 1}`}>
-                        <Pencil size={13} strokeWidth={1.6} />
-                      </button>
-                    )}
-                  </span>
+              <tr key={r}>
+                <td className="pl-3 text-13 text-muted md:pl-4">
+                  {!editing && (
+                    <button type="button" onClick={() => onEditRow(r)} className="grid h-6 w-6 place-items-center rounded-sm text-faint hover:bg-ghost hover:text-ink" aria-label={`Edit row ${r + 1}`}>
+                      <Pencil size={13} strokeWidth={1.6} />
+                    </button>
+                  )}
                 </td>
                 {sheet.cols.map((_, c) => (
-                  <td key={c} className={cn("border-r border-line-soft px-2.5 py-1.5 align-middle last:border-r-0", c === sheet.lab && "font-semibold")}>
+                  <td key={c} className={cn("py-1.5", c === sheet.lab && "font-medium text-ink", c === sheet.cols.length - 1 && "pr-4 md:pr-5")}>
                     {cell(r, c)}
                   </td>
                 ))}
@@ -393,20 +377,20 @@ function IdTiles({
   onTab: (t: Sheet["id"]) => void;
   directors: number;
 }) {
-  // Tinted ID tiles, as in the old screen: CIN blue, PAN and TAN teal, GSTIN green, registrations and DSC amber.
-  const TINT: Record<string, string> = { cin: "bg-accent-soft text-accent", pan: "bg-teal-soft text-teal", tan: "bg-teal-soft text-teal", gstin: "bg-ok-soft text-ok", reg: "bg-warn-soft text-warn", dsc: "bg-warn-soft text-warn" };
+  // Calm white ID tiles (R-02, R-18): a 13 px label, the value, one small action. The old tinted tiles are gone.
   const tile = (key: string, label: string, body: React.ReactNode, act?: React.ReactNode) => (
-    <article key={key} className={cn("flex min-h-[60px] min-w-0 flex-col justify-center gap-1 rounded-md px-3 py-2.5", TINT[key])}>
-      <span className="flex items-center gap-2">
-        <span className="text-11 font-bold uppercase tracking-[.08em]">{label}</span>
+    <article key={key} className="flex min-h-[72px] min-w-0 flex-col justify-center gap-1 rounded-md border-1.5 border-line bg-surface px-3.5 py-2.5">
+      <span className="flex min-h-6 items-center gap-2">
+        <span className="truncate text-13 font-medium text-muted">{label}</span>
         <span className="ml-auto flex items-center">{act}</span>
       </span>
       <span className="min-w-0 text-ink">{body}</span>
     </article>
   );
-  const pend = <span className="text-12.5 text-ink-2">Pending COI</span>;
+  const pend = <span className="text-14 text-faint">Pending COI</span>;
   return (
-    <section aria-label="Company identifiers" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+    <section aria-label="Company identifiers" className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-[minmax(0,1.5fr)_repeat(5,minmax(0,1fr))]">
+
       {COMPANY_IDS.map((id) => {
         if (!after) return tile(id.key, id.label, pend);
         const k = `id:${id.key}`;
@@ -414,11 +398,11 @@ function IdTiles({
         return tile(
           id.key,
           id.label,
-          <span className="truncate font-mono text-13.5 font-semibold">{open ? id.value : id.masked}</span>,
+          <span className="block truncate font-mono text-14 font-medium">{open ? id.value : id.masked}</span>,
           open ? (
             <CopyButton value={id.value} label={id.label} className="h-6 w-6" />
           ) : (
-            <button type="button" onClick={() => onReveal(k, `Company · ${id.label}`)} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink" aria-label={`Reveal ${id.label}`}>
+            <button type="button" onClick={() => onReveal(k, `Company · ${id.label}`)} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-ghost hover:text-ink" aria-label={`Reveal ${id.label}`}>
               <Eye size={14} strokeWidth={1.6} />
             </button>
           ),
@@ -427,9 +411,9 @@ function IdTiles({
       {tile(
         "reg",
         "Registrations",
-        after ? <span className="truncate text-13.5 font-semibold">PF · ESI · PT</span> : pend,
+        after ? <span className="block truncate text-14 font-medium">PF · ESI · PT</span> : pend,
         after ? (
-          <button type="button" onClick={() => onTab("reg")} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink" aria-label="Open the registrations sheet">
+          <button type="button" onClick={() => onTab("reg")} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-ghost hover:text-ink" aria-label="Open the registrations sheet">
             <ArrowRight size={14} strokeWidth={1.6} />
           </button>
         ) : undefined,
@@ -437,9 +421,9 @@ function IdTiles({
       {tile(
         "dsc",
         "DSC holders",
-        after ? <span className="truncate text-13.5 font-semibold">{directors} holders</span> : pend,
+        after ? <span className="block truncate text-14 font-medium">{directors} holders</span> : pend,
         after ? (
-          <button type="button" onClick={() => onTab("kyc")} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink" aria-label="Open the directors KYC sheet">
+          <button type="button" onClick={() => onTab("kyc")} className="grid h-6 w-6 place-items-center rounded-sm text-muted hover:bg-ghost hover:text-ink" aria-label="Open the directors KYC sheet">
             <ArrowRight size={14} strokeWidth={1.6} />
           </button>
         ) : undefined,

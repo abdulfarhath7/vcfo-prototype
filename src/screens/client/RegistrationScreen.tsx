@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
 import { fmt } from "@/lib/dates";
-import { REG_STATUS_TONE, registration } from "@/data/registrations";
+import { REGULATOR_LABEL, REG_STATUS_TONE, registration } from "@/data/registrations";
+import { AreaPill, Chip } from "@/components/ui/Chip";
 import { obligation, obHref } from "@/data/compliance";
 import { regFields } from "@/data/compliance-detail";
 import { AFTER_COI, REG_NEXT_BEFORE, regBefore } from "@/data/client-before-coi";
@@ -21,21 +22,12 @@ import {
   ItemBand,
   SbcFieldsCard,
   SideThread,
-  StepRing,
   TextCard,
-  type RingTone,
+  isIdentifier,
 } from "./item-parts";
 
-const toRows = (pairs: Array<[string, string]>, mono = false): FactRow[] =>
-  pairs.map(([k, v]) => ({ k, v, mono }));
-
-const TONE_TEXT: Record<string, string> = {
-  ok: "text-ok",
-  warn: "text-warn",
-  bad: "text-bad",
-  prog: "text-accent",
-  idle: "text-muted",
-};
+const toRows = (pairs: Array<[string, string]>): FactRow[] =>
+  pairs.map(([k, v]) => ({ k, v, mono: isIdentifier(k, v) }));
 
 /** Client registration page, as the old Item.dc.html: deadline band, two-sided thread, from the client, filled by SBC. */
 export function RegistrationScreen({ id }: { id: string }) {
@@ -56,12 +48,6 @@ export function RegistrationScreen({ id }: { id: string }) {
     toast.show(
       `${n} ${n === 1 ? "file" : "files"} uploaded · SBC reviews them next`,
     );
-  const ring: RingTone =
-    r.status === "Granted"
-      ? "ok"
-      : r.status === "Waiting on client"
-        ? "warn"
-        : "accent";
 
   const action =
     r.status === "Waiting on client" ? (
@@ -89,14 +75,18 @@ export function RegistrationScreen({ id }: { id: string }) {
   return (
     <div className="grid grid-cols-1 gap-5">
       <ItemBand
-        ring={<StepRing done={done} total={r.steps.length} tone={ring} />}
         title={r.name}
+        chips={
+          <>
+            <Chip tone={REG_STATUS_TONE[r.status]} fixed>
+              {r.status}
+            </Chip>
+            <AreaPill area={REGULATOR_LABEL[r.regulator]} />
+          </>
+        }
         sub={
           <>
-            <span className="underline decoration-dotted underline-offset-2">
-              {r.form}
-            </span>{" "}
-            · {r.authority} · {r.team}
+            <span className="font-mono text-13">{r.form}</span> · {r.authority} · {r.team}
           </>
         }
         facts={[
@@ -107,14 +97,6 @@ export function RegistrationScreen({ id }: { id: string }) {
               <span className="font-mono text-13">{r.idValue}</span>
             ) : (
               "-"
-            ),
-          },
-          {
-            k: "Status",
-            v: (
-              <span className={TONE_TEXT[REG_STATUS_TONE[r.status]]}>
-                {r.status}
-              </span>
             ),
           },
         ]}
@@ -135,6 +117,7 @@ export function RegistrationScreen({ id }: { id: string }) {
             <SectionCard
               title="Steps"
               meta={`${done} of ${r.steps.length} done`}
+              bodyClassName="py-1.5"
             >
               <SideThread
                 steps={r.steps}
@@ -155,7 +138,8 @@ export function RegistrationScreen({ id }: { id: string }) {
               onSubmit={() => toast.show("Details sent to SBC")}
             />
           </div>
-          <SbcFieldsCard rows={toRows(fields.sbc, true)} />
+          <SbcFieldsCard rows={toRows(fields.sbc)} />
+
         </Col>
         <Col>
           <TextCard title="About" sop>
@@ -175,7 +159,7 @@ export function RegistrationScreen({ id }: { id: string }) {
               ) : (
                 starts.map((o) => (
                   <ListRow key={o.id} href={obHref("client", o.id)}>
-                    <span className="min-w-0 flex-1 truncate font-semibold">
+                    <span className="min-w-0 flex-1 truncate font-medium">
                       {o.name}
                     </span>
                     <span className="flex-none text-12.5 text-muted">

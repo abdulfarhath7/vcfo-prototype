@@ -21,8 +21,8 @@ import { ComplianceDrill, EventDialog, PortalLink, eventFiling, type DrillRow } 
 const LONG_DOW = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const LONG_MON = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const AREA_FULL: Record<string, string> = { MCA: "Ministry of Corporate Affairs", GST: "Goods and Services Tax", "Income tax": "Income tax", Payroll: "Payroll · PF, ESI, PT", FEMA: "FEMA · RBI and STPI" };
-/** cal-views.js STC: upcoming is navy in the Year and Timeline views. */
-const STC: Record<CalStatus, BarTone> = { Overdue: "bad", "Due soon": "warn", Filed: "ok", Upcoming: "navy" };
+/** Status colours in the Year and Timeline views (R-25): upcoming is grey, not navy. */
+const STC: Record<CalStatus, BarTone> = { Overdue: "bad", "Due soon": "warn", Filed: "ok", Upcoming: "idle" };
 const st = (e: YearEvent) => e.status as CalStatus;
 const addDays = (date: Date, n: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
 const inMonth = (e: { date: Date }, key: string) => {
@@ -38,11 +38,11 @@ function DayRow({ e, onOpen }: { e: YearEvent; onOpen: () => void }) {
     <ListRow onClick={onOpen} className="gap-2 px-4 py-2.5 md:px-4">
       <AreaShort title={AREA_FULL[e.kind]}>{AREA_SHORT[e.kind]}</AreaShort>
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1 text-12.5 font-bold">
+        <span className="flex items-center gap-1 text-13 font-medium">
           <span className="truncate">{e.name}</span>
           <PortalLink area={e.kind} name={e.name} />
         </span>
-        <span className="block truncate text-11.5 text-muted">{e.period}</span>
+        <span className="block truncate text-12 text-muted">{e.period}</span>
       </span>
       {proof}
       <CalStatusChip status={st(e)} />
@@ -55,10 +55,10 @@ function DayHead({ day, list }: { day: Date; list: CalItem[] }) {
     <span className="flex items-center gap-2.5">
       <CalDateTile date={day} status={worstStatus(list)} className="h-11 w-10" />
       <span className="min-w-0">
-        <b className="block text-14">
+        <b className="block text-14 font-medium">
           {LONG_DOW[day.getDay()]} {day.getDate()} {LONG_MON[day.getMonth()]}
         </b>
-        <span className="block text-11.5 font-bold text-muted">{list.length === 1 ? "1 filing" : `${list.length} filings`}</span>
+        <span className="block text-12 text-muted">{list.length === 1 ? "1 filing" : `${list.length} filings`}</span>
       </span>
     </span>
   );
@@ -146,8 +146,9 @@ export function CalendarScreen() {
           { v: `${fyFiled}%`, l: "FY filed", c: "text-ok" },
         ].map((x, i) => (
           <div key={x.l} className={cn("px-3 py-2.5", i > 0 && "border-l border-line-soft")}>
-            <div className={cn("text-[20px] font-semibold leading-tight", x.c)}>{x.v}</div>
-            <div className="truncate text-11.5 font-semibold text-muted">{x.l}</div>
+            <div className="truncate text-12.5 font-medium text-muted">{x.l}</div>
+            <div className={cn("mt-0.5 text-22 font-medium leading-tight", x.c)}>{x.v}</div>
+
           </div>
         ))}
       </div>

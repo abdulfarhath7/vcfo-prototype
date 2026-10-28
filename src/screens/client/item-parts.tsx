@@ -7,9 +7,10 @@ import { TODAY, fmt } from "@/lib/dates";
 import { DOC_STATUS_TONE, type ItemDoc } from "@/data/registrations";
 import type { ThreadStep } from "@/components/cards/Thread";
 import type { FactRow } from "@/components/cards/EditableFacts";
-import { SectionCard } from "@/components/cards/SectionCard";
+import { SectionCard, Empty } from "@/components/cards/SectionCard";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { StepMark } from "@/components/ui/StepMark";
 import { Input } from "@/components/ui/Input";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { UploadModal } from "./comp-parts";
@@ -18,63 +19,9 @@ import { UploadModal } from "./comp-parts";
 
 const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export type RingTone = "ok" | "warn" | "bad" | "accent";
-
-const RING: Record<RingTone, string> = {
-  ok: "text-ok",
-  warn: "text-warn",
-  bad: "text-bad",
-  accent: "text-accent",
-};
-
-/** Progress ring of the deadline band: "0/6", or a tick when done. */
-export function StepRing({
-  done,
-  total,
-  tone,
-}: {
-  done: number;
-  total: number;
-  tone: RingTone;
-}) {
-  const c = 2 * Math.PI * 22;
-  const frac = total ? done / total : 0;
-  return (
-    <span
-      className="relative grid h-[52px] w-[52px] flex-none place-items-center"
-      title={`${done} of ${total} steps done`}
-    >
-      <svg
-        viewBox="0 0 52 52"
-        className="absolute inset-0 h-full w-full -rotate-90"
-        aria-hidden
-      >
-        <circle
-          cx="26"
-          cy="26"
-          r="22"
-          fill="none"
-          strokeWidth="4"
-          className="stroke-current text-line-soft"
-        />
-        {frac > 0 && (
-          <circle
-            cx="26"
-            cy="26"
-            r="22"
-            fill="none"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeDasharray={`${frac * c} ${c}`}
-            className={cn("stroke-current", RING[tone])}
-          />
-        )}
-      </svg>
-      <b className="text-12.5 font-semibold">
-        {done === total && total > 0 ? "✓" : `${done}/${total}`}
-      </b>
-    </span>
-  );
+/** R-28: Roboto Mono only for identifiers. A row is an identifier when its label names one and its value looks like one. */
+export function isIdentifier(k: string, v: string) {
+  return /(TRN|ARN|SRN|GSTIN|CIN|PAN|TAN|DIN|LEI|UIN|\bID\b|number|code$|Challan|Reference)/i.test(k) && /\d/.test(v) && /^[A-Z0-9][A-Z0-9-]{5,}$/i.test(v.trim());
 }
 
 export interface BandFact {
@@ -83,176 +30,109 @@ export interface BandFact {
   tone?: "bad";
 }
 
-/** Deadline band (old it-band): ring, name, form line, three facts, people and the one main action. */
+/**
+ * Plain record head (R-02): 28 px title, a muted meta line, the status chips, key facts in one row. People and the one main action on the right.
+ * Replaces the old deadline band and its progress ring.
+ */
 export function ItemBand({
-  ring,
   title,
   sub,
+  chips,
   facts,
   people,
   action,
 }: {
-  ring: React.ReactNode;
   title: string;
   sub: React.ReactNode;
+  chips?: React.ReactNode;
   facts: BandFact[];
   people?: React.ReactNode;
   action?: React.ReactNode;
 }) {
   return (
-    <SectionCard
-      title={title}
-      bare
-      bodyClassName="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-4 md:px-5"
-    >
-      <div className="flex min-w-0 flex-[1_1_260px] items-center gap-3.5">
-        {ring}
-        <div className="min-w-0">
-          <h1 className="truncate text-[19px] font-semibold leading-tight tracking-tight">
-            {title}
-          </h1>
-          <p className="mt-0.5 truncate text-12.5 text-muted">{sub}</p>
+    <header className="flex min-w-0 flex-wrap items-start gap-x-6 gap-y-4" aria-label={title}>
+      <div className="min-w-0 flex-[1_1_320px]">
+        <h1 className="text-24 font-medium leading-tight tracking-[-0.01em] md:text-28">{title}</h1>
+        <p className="mt-1 text-14 text-muted">{sub}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+          {chips}
+          <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-13.5">
+            {facts.map((f) => (
+              <div key={f.k} className="flex items-baseline gap-1.5">
+                <dt className="text-muted">{f.k}</dt>
+                <dd className={cn("font-medium text-ink", f.tone === "bad" && "text-bad")}>{f.v}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </div>
-      <dl className="flex flex-wrap gap-y-2">
-        {facts.map((f) => (
-          <div
-            key={f.k}
-            className="min-w-[120px] border-l border-line-soft px-4"
-          >
-            <dt className="text-12 text-muted">{f.k}</dt>
-            <dd
-              className={cn(
-                "text-13.5 font-semibold",
-                f.tone === "bad" && "text-bad",
-              )}
-            >
-              {f.v}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <div className="ml-auto flex items-center gap-3">
+      <div className="flex flex-none items-center gap-3">
         {people}
         {action}
       </div>
-    </SectionCard>
+    </header>
   );
 }
 
 /**
- * Two-sided thread (old th): the authority on the left, SBC on the right, dates on the spine.
- * Done steps show dates. The next step has a "Today" mark. Later steps are faded, without dates (C-0021).
+ * Steps of a record as ST5 (R-22): done steps a green square with a tick and their date, the live step a ring with a halo on a tinted row,
+ * later steps a dashed square without dates (C-0021). Who acts (the authority or SBC) shows on each step.
  */
 export function SideThread({
   steps,
   authority,
-  authLabel,
   client = "Northwind",
   nextSub,
 }: {
   steps: ThreadStep[];
   authority: string;
-  authLabel: string;
+  /** Kept for the callers; the side label is now part of each step line. */
+  authLabel?: string;
   client?: string;
   nextSub?: string;
 }) {
   const next = steps.findIndex((s) => s.state !== "done");
-  const isAuth = (s: ThreadStep) =>
-    s.owner === undefined &&
-    (s.state === "upcoming" ||
-      s.by === authority ||
-      !!s.by?.startsWith("With "));
+  const isAuth = (s: ThreadStep) => s.owner === undefined && (s.state === "upcoming" || s.by === authority || !!s.by?.startsWith("With "));
   return (
-    <div className="overflow-x-auto">
-      <div className="grid min-w-[340px] grid-cols-[minmax(0,1fr)_68px_minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_76px_minmax(0,1fr)] gap-y-2">
-        <div className="border-b-2 border-line pb-1.5 text-12.5 font-semibold text-muted">
-          {authLabel}
-        </div>
-        <div />
-        <div className="border-b-2 border-accent pb-1.5 text-12.5 font-semibold text-muted">
-          SBC, for {client}
-        </div>
-        {steps.map((s, i) => {
-          const auth = isAuth(s);
-          const now = i === next;
-          const later = next >= 0 && i > next;
-          const title = now
-            ? s.owner === "client"
-              ? `Waiting on ${client}`
-              : `Next: ${s.title}`
-            : s.title;
-          const sub = now
-            ? s.owner === "client"
-              ? (s.note ?? s.by)
-              : (nextSub ?? s.by)
-            : later
-              ? undefined
-              : s.by;
-          const card = (
-            <div
-              className={cn(
-                "min-w-0 rounded-md px-3 py-2",
-                now
-                  ? s.owner === "client"
-                    ? "border border-dashed border-warn bg-warn-soft"
-                    : "border border-dashed border-accent-line"
-                  : "",
-                now &&
-                  (auth
-                    ? "border-r-2 border-r-accent"
-                    : "border-l-2 border-l-accent"),
-                later && "opacity-55",
-              )}
-            >
-              <b
-                className={cn(
-                  "block truncate text-13",
-                  now ? "font-semibold" : "font-medium",
-                )}
-              >
-                {title}
-              </b>
-              {sub && (
-                <small className="block truncate text-12 text-muted">
-                  {sub}
+    <ol className="-mx-4 md:-mx-5">
+      {steps.map((s, i) => {
+        const now = i === next;
+        const later = next >= 0 && i > next;
+        const done = s.state === "done";
+        const waitClient = now && s.owner === "client";
+        const holder = waitClient ? client : isAuth(s) ? authority : "SBC";
+        const sub = now ? (waitClient ? (s.note ?? s.by) : (nextSub ?? s.by)) : later ? undefined : s.by;
+        const last = i === steps.length - 1;
+        return (
+          <li key={s.id} className={cn("relative grid grid-cols-[22px_minmax(0,1fr)_auto] items-start gap-x-3 px-4 py-2.5 md:px-5", now && "bg-hover")}>
+            {!last && <span className={cn("absolute left-[26px] top-[34px] h-[calc(100%-24px)] w-[1.5px] md:left-[30px]", done ? "bg-ok-mid" : "bg-line")} aria-hidden />}
+            <StepMark state={done ? "done" : now ? "now" : "next"} tone={waitClient ? "teal" : "prog"} label={done ? "Done" : now ? "Now" : "Upcoming"} className="relative" />
+            <span className="min-w-0">
+              <b className={cn("block truncate text-14 font-medium", later && "font-normal text-muted")}>{s.title}</b>
+              {now ? (
+                <small className={cn("block truncate text-12.5", waitClient ? "text-teal" : "text-accent")}>
+                  With {holder}
+                  {sub && <span className="text-muted"> · {sub}</span>}
                 </small>
+              ) : (
+                sub && <small className="block truncate text-12.5 text-muted">{sub}</small>
               )}
-            </div>
-          );
-          return (
-            <React.Fragment key={s.id}>
-              <div className={cn("min-w-0", auth && "text-right")}>
-                {auth ? card : null}
-              </div>
-              <div className="grid place-items-center">
-                {s.state === "done" && s.date ? (
-                  <span className="grid w-[64px] justify-items-center rounded-md border border-line-soft py-1 text-center leading-tight">
-                    <i className="text-11 not-italic text-muted">
-                      {WD[s.date.getDay()]}
-                    </i>
-                    <b className="text-12.5 font-semibold">{fmt(s.date)}</b>
-                  </span>
-                ) : now ? (
-                  <span className="grid w-[64px] justify-items-center rounded-md border border-accent-line bg-accent-soft py-1 text-center leading-tight">
-                    <i className="text-11 not-italic text-muted">
-                      {WD[TODAY.getDay()]}
-                    </i>
-                    <b className="text-12.5 font-semibold text-accent">Today</b>
-                  </span>
-                ) : (
-                  <span
-                    className="h-2 w-2 rounded-[2px] border border-line"
-                    aria-hidden
-                  />
-                )}
-              </div>
-              <div className="min-w-0">{auth ? null : card}</div>
-            </React.Fragment>
-          );
-        })}
-      </div>
-    </div>
+            </span>
+            <span className="pt-0.5 text-right text-12.5 text-muted">
+              {done && s.date ? (
+                <>
+                  {WD[s.date.getDay()]} {fmt(s.date)}
+                </>
+              ) : now ? (
+                <span className="font-medium text-accent">
+                  {WD[TODAY.getDay()]} · Today
+                </span>
+              ) : null}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -310,15 +190,15 @@ export function FromClientCard({
         return (
           <div
             key={x.id}
-            className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 first:border-t-0 md:px-5"
+            className="flex min-h-[52px] items-center gap-3 border-t border-line-soft px-4 py-2 first:border-t-0 md:px-5"
           >
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-13 font-semibold">
+              <span className="block truncate text-14 font-medium">
                 {x.name}
               </span>
               <span
                 className={cn(
-                  "block truncate text-12 text-muted",
+                  "block truncate text-12.5 text-muted",
                   x.status === "Sent back" && "text-bad",
                 )}
               >
@@ -327,24 +207,27 @@ export function FromClientCard({
             </span>
             <Chip
               tone={DOC_STATUS_TONE[x.status]}
+              fixed
               className="hidden sm:inline-flex"
             >
               {x.status}
             </Chip>
-            {ask ? (
-              <Button size="sm" onClick={() => setUpload(true)}>
-                Upload
-              </Button>
-            ) : x.status === "Accepted" ? (
-              <Button
-                size="iconSm"
-                variant="ghost"
-                aria-label={`Download ${x.name}`}
-                onClick={() => toast.show(`Downloaded ${x.name}`)}
-              >
-                <Download size={16} strokeWidth={1.6} />
-              </Button>
-            ) : null}
+            <span className="flex w-[76px] flex-none justify-end">
+              {ask ? (
+                <Button size="sm" onClick={() => setUpload(true)}>
+                  Upload
+                </Button>
+              ) : x.status === "Accepted" ? (
+                <Button
+                  size="iconSm"
+                  variant="ghost"
+                  aria-label={`Download ${x.name}`}
+                  onClick={() => toast.show(`Downloaded ${x.name}`)}
+                >
+                  <Download size={16} strokeWidth={1.6} />
+                </Button>
+              ) : null}
+            </span>
           </div>
         );
       })}
@@ -360,7 +243,7 @@ export function FromClientCard({
             key={r.k}
             className="grid min-w-0 gap-1 border-t border-line-soft px-4 py-2.5 sm:grid-cols-[190px_minmax(0,1fr)] sm:items-center sm:gap-4 md:px-5"
           >
-            <span className="text-12.5 text-muted">{r.k}</span>
+            <span className="text-13 text-muted">{r.k}</span>
             {editable ? (
               <Input
                 value={draft[i] ?? ""}
@@ -370,13 +253,13 @@ export function FromClientCard({
                     d.map((v, j) => (j === i ? e.target.value : v)),
                   );
                 }}
-                className={cn("h-[34px]", r.mono && "font-mono text-13")}
+                className={cn(r.mono && "font-mono")}
               />
             ) : (
               <b
                 className={cn(
-                  "min-w-0 break-words text-13.5 font-medium",
-                  r.mono && "font-mono text-13",
+                  "min-w-0 break-words text-14 font-medium",
+                  r.mono && "font-mono text-13.5",
                   r.v === "-" && "text-faint",
                 )}
               >
@@ -386,10 +269,9 @@ export function FromClientCard({
           </label>
         ))}
         {editable && rows.length > 0 && (
-          <div className="flex justify-end border-t border-line-soft bg-raised px-4 py-2.5 md:px-5">
+          <div className="flex justify-end border-t border-line-soft px-4 py-3 md:px-5">
             <Button
               type="submit"
-              size="sm"
               variant={sent ? "soft" : "primary"}
               disabled={sent}
             >
@@ -414,18 +296,18 @@ export function SbcFieldsCard({ rows }: { rows: FactRow[] }) {
   return (
     <SectionCard title="Filled by SBC" meta="Read only" flush>
       {rows.length === 0 ? (
-        <p className="px-4 py-3 text-13 text-faint md:px-5">None</p>
+        <Empty />
       ) : (
         rows.map((r) => (
           <div
             key={r.k}
-            className="grid grid-cols-[150px_minmax(0,1fr)] gap-4 border-t border-line-soft px-4 py-2 first:border-t-0 sm:grid-cols-[190px_minmax(0,1fr)] md:px-5"
+            className="grid min-h-[44px] grid-cols-[150px_minmax(0,1fr)] items-center gap-4 border-t border-line-soft px-4 py-2 first:border-t-0 sm:grid-cols-[190px_minmax(0,1fr)] md:px-5"
           >
-            <span className="text-12.5 text-muted">{r.k}</span>
+            <span className="text-13 text-muted">{r.k}</span>
             <span
               className={cn(
-                "min-w-0 break-words text-13",
-                r.mono && "font-mono",
+                "min-w-0 break-words text-14 font-medium",
+                r.mono && "font-mono text-13.5",
                 r.v === "-" && "text-faint",
               )}
             >
@@ -457,7 +339,8 @@ export function TextCard({
             {" "}
             <Link
               href="/client/library"
-              className="font-semibold text-accent hover:underline"
+              className="font-medium text-accent hover:underline"
+
             >
               Read the SBC SOP
             </Link>

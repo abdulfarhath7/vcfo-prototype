@@ -20,7 +20,7 @@ import {
 } from "@/data/client-before-coi";
 import { CLIENT_PEOPLE } from "@/data/people";
 import { Cols, Col } from "@/components/shell/Page";
-import { Chip, type ChipTone } from "@/components/ui/Chip";
+import { AreaPill, Chip, type ChipTone } from "@/components/ui/Chip";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
@@ -37,21 +37,12 @@ import {
   ItemBand,
   SbcFieldsCard,
   SideThread,
-  StepRing,
   TextCard,
-  type RingTone,
+  isIdentifier,
 } from "./item-parts";
 
-const toRows = (pairs: Array<[string, string]>, mono = false): FactRow[] =>
-  pairs.map(([k, v]) => ({ k, v, mono }));
-
-const TONE_TEXT: Record<string, string> = {
-  ok: "text-ok",
-  warn: "text-warn",
-  bad: "text-bad",
-  prog: "text-accent",
-  idle: "text-muted",
-};
+const toRows = (pairs: Array<[string, string]>): FactRow[] =>
+  pairs.map(([k, v]) => ({ k, v, mono: isIdentifier(k, v) }));
 
 const LONG: Record<string, string> = {
   Jan: "January",
@@ -88,7 +79,7 @@ const pastColumns: Column<PastRow>[] = [
     key: "period",
     label: "Period",
     render: (r) => (
-      <span className="whitespace-nowrap font-semibold">{r.period}</span>
+      <span className="whitespace-nowrap font-medium text-ink">{r.period}</span>
     ),
   },
   {
@@ -97,11 +88,11 @@ const pastColumns: Column<PastRow>[] = [
     width: 120,
     render: (r) => <span className="whitespace-nowrap">{r.filed}</span>,
   },
-  { key: "ref", label: "Reference", mono: true, render: (r) => r.ref },
+  { key: "ref", label: "Reference", render: (r) => (r.ref === "-" ? <span className="text-faint">-</span> : <span className="font-mono text-13">{r.ref}</span>) },
   {
     key: "status",
     label: "Status",
-    width: 132,
+    width: 124,
     render: (r) => (
       <Chip tone={r.tone} fixed>
         {r.status}
@@ -160,13 +151,6 @@ export function ObligationScreen({ id }: { id: string }) {
     toast.show(
       `${n} ${n === 1 ? "file" : "files"} uploaded · SBC reviews them next`,
     );
-  const ring: RingTone = filed
-    ? "ok"
-    : late
-      ? "bad"
-      : o.status === "Waiting on client"
-        ? "warn"
-        : "accent";
 
   const action =
     o.owner === "client" && !filed ? (
@@ -188,14 +172,18 @@ export function ObligationScreen({ id }: { id: string }) {
   return (
     <div className="grid grid-cols-1 gap-5">
       <ItemBand
-        ring={<StepRing done={done} total={o.steps.length} tone={ring} />}
         title={o.name}
+        chips={
+          <>
+            <Chip tone={OB_STATUS_TONE[o.status]} fixed>
+              {o.status}
+            </Chip>
+            <AreaPill area={o.area} />
+          </>
+        }
         sub={
           <>
-            <span className="underline decoration-dotted underline-offset-2">
-              {o.law}
-            </span>{" "}
-            · {o.frequency} ·{" "}
+            {o.law} · {o.frequency} ·{" "}
             {reg ? (
               <Link
                 href={regHref("client", reg.id)}
@@ -214,15 +202,7 @@ export function ObligationScreen({ id }: { id: string }) {
             v: before ? AFTER_COI : o.filed ? fmt(o.filed) : fmt(o.due),
             tone: late ? "bad" : undefined,
           },
-          { k: "Frequency", v: o.frequency },
-          {
-            k: "Status",
-            v: (
-              <span className={TONE_TEXT[OB_STATUS_TONE[o.status]]}>
-                {o.status}
-              </span>
-            ),
-          },
+          { k: "Steps", v: `${done} of ${o.steps.length}` },
         ]}
         people={
           <PeopleStack
@@ -237,7 +217,7 @@ export function ObligationScreen({ id }: { id: string }) {
       />
       <Cols>
         <Col>
-          <SectionCard title="This period" meta={longPeriod(o.period)}>
+          <SectionCard title="This period" meta={longPeriod(o.period)} bodyClassName="py-1.5">
             <SideThread
               steps={o.steps}
               authority={o.law}
@@ -261,9 +241,9 @@ export function ObligationScreen({ id }: { id: string }) {
               before
                 ? fields.sbc.map(([k]): [string, string] => [k, "-"])
                 : fields.sbc,
-              true,
-            ).map((r) => (r.k === "Period" ? { ...r, mono: false } : r))}
+            )}
           />
+
           <DataGrid
             title="Past periods"
             columns={pastColumns}

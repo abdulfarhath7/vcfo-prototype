@@ -60,11 +60,13 @@ function RowSteps({ steps, after, portal, onAll, phase }: { steps: Step[]; after
       <ul>
         {steps.map((s) => (
           <li key={s.n}>
-            <Link href={stepHref(portal, s.n)} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13 first:border-t-0 hover:bg-surface md:px-5 md:pl-12">
-              <span className="w-6 flex-none font-mono text-12 text-faint">{s.n}</span>
-              <span className="min-w-0 flex-1 truncate font-semibold">{s.title}</span>
-              <span className="hidden font-mono text-12 text-muted sm:inline">{s.done ? fmt(s.done) : s.due ? fmt(s.due) : ""}</span>
-              <Chip tone={after ? "ok" : stepTone[s.status]}>{after ? "Completed" : statusOf(s)}</Chip>
+            <Link href={stepHref(portal, s.n)} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13 first:border-t-0 hover:bg-hover md:px-5 md:pl-12">
+              <span className="w-14 flex-none font-mono text-12 text-muted">Step {s.n}</span>
+              <span className="min-w-0 flex-1 truncate font-medium">{s.title}</span>
+              <span className="hidden text-12.5 text-muted sm:inline">{s.done ? fmt(s.done) : s.due ? fmt(s.due) : ""}</span>
+              <Chip tone={after ? "ok" : stepTone[s.status]} fixed>
+                {after ? "Completed" : s.status === "Upcoming" ? "Not started" : statusOf(s)}
+              </Chip>
               <ChevronRight size={16} strokeWidth={1.6} className="flex-none text-faint" />
             </Link>
           </li>
@@ -122,7 +124,7 @@ function useTimelineEdit(portal: string) {
           title="Change request"
           align="end"
           trigger={
-            <button type="button" className="inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-sm bg-warn-soft px-2 text-12 font-semibold text-warn">
+            <button type="button" className="inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-md bg-warn-soft px-2 text-12 font-medium text-warn">
               <i className="h-1.5 w-1.5 rounded-[2px] bg-current" aria-hidden />
               <span className="hidden sm:inline">Request pending · </span>COI {fmt(pending.phases[3].start)}
             </button>
@@ -140,7 +142,7 @@ function useTimelineEdit(portal: string) {
             </div>
             <div>
               <dt className="text-12 text-muted">COI</dt>
-              <dd className="font-mono text-12.5">
+              <dd className="text-13">
                 {fmt(coi.start)} → {fmt(pending.phases[3].start)}
               </dd>
             </div>
@@ -197,8 +199,8 @@ export function TimelineCardFull({ after = false, portal = "client", className }
   const drill = useDrill();
   const [p1, p2, mca, coi] = tl.saved;
   const today = after ? d(2026, 11, 8) : TODAY;
-  const narrow = useNarrow();
-  const axis = weekAxis(d(2026, 9, 12), after ? addDays(today, 1) : addDays(coi.start, 7), narrow);
+  // Every second week: the home card is narrow at 1440 too.
+  const axis = weekAxis(d(2026, 9, 12), after ? addDays(today, 1) : addDays(coi.start, 7), true);
   const openAll = (tab: number) => drill.open(timelineDrill(after, portal), tab);
   const detail = (steps: Step[], tab: number, phase?: 1 | 2) => <RowSteps steps={steps} after={after} portal={portal} phase={phase} onAll={() => openAll(tab)} />;
   const p2Steps = STEPS.filter((s) => s.phase === 2 && s.n <= 12);
@@ -208,7 +210,8 @@ export function TimelineCardFull({ after = false, portal = "client", className }
     { id: "p1", name: "Phase 1 · Name Application", status: "done", bars: [{ from: p1.start, to: p1.end, kind: "done" }], note: { text: `Done ${fmt(p1.end)}` }, detail: detail(stepsOf(1), 0, 1) },
     after
       ? { id: "p2", name: "Phase 2 · Incorporation", status: "done", bars: [{ from: p2.start, to: p2.end, kind: "done" }], note: { text: `Filed ${fmt(p2.end)}` }, detail: detail(p2Steps, 1, 2) }
-      : { id: "p2", name: "Phase 2 · Incorporation", status: "current", bars: [{ from: p2.start, to: p2.end, kind: "cur" }], note: { text: "22%" }, detail: detail(p2Steps, 1, 2) },
+      : // R-21: the current phase is solid up to today, hatched for the rest.
+        { id: "p2", name: "Phase 2 · Incorporation", status: "current", bars: today > p2.start && today < p2.end ? [{ from: p2.start, to: today, kind: "cur" }, { from: today, to: p2.end, kind: "rest" }] : [{ from: p2.start, to: p2.end, kind: "cur" }], note: { text: "22%" }, detail: detail(p2Steps, 1, 2) },
     { id: "mca", name: "MCA review", status: after ? "done" : "planned", bars: [{ from: mca.start, to: mca.end, kind: after ? "done" : "plan" }], detail: detail(mcaSteps, 2) },
     { id: "coi", name: "COI", status: after ? "done" : "planned", bars: [], milestone: coi.start, note: { text: fmt(coi.start) }, detail: detail(STEPS.filter((s) => s.n === 14), 3) },
   ];
@@ -221,7 +224,7 @@ export function TimelineCardFull({ after = false, portal = "client", className }
       flush
       right={after ? <Chip tone="ok">Completed</Chip> : tl.right}
     >
-      <GanttTimeline start={axis.start} end={axis.end} ticks={axis.ticks} rows={rows} today={today} />
+      <GanttTimeline start={axis.start} end={axis.end} ticks={axis.ticks} rows={rows} today={today} wideNames />
       {!after && tl.nodes}
       {drill.node}
     </SectionCard>
@@ -252,39 +255,40 @@ function PhaseLineRow({ line, x, todayX, open, onToggle }: { line: PhaseLine; x:
   const labelLeft = b > 75;
   return (
     <div
-      className="grid h-row cursor-pointer grid-cols-[200px_minmax(0,1fr)] items-center px-4 hover:bg-raised md:grid-cols-[230px_minmax(0,1fr)] md:px-5"
+      className="grid h-row cursor-pointer grid-cols-[200px_minmax(0,1fr)] items-center px-4 hover:bg-hover md:grid-cols-[230px_minmax(0,1fr)] md:px-5"
       onClick={onToggle}
       role="button"
       aria-expanded={open}
       aria-label={`${line.name} · ${line.done} of ${line.total} steps`}
     >
-      <div className="flex min-w-0 items-center gap-2 text-13.5 font-semibold">
+      <div className="flex min-w-0 items-center gap-2 text-14 font-medium">
         <Chevron open={open} />
         <StatusCircle status={line.status} />
         <span className="min-w-0 truncate">{line.name}</span>
       </div>
       <div className="relative h-full">
-        <span className="absolute top-1/2 flex h-4 -translate-y-1/2 overflow-hidden rounded-[6px]" style={{ left: `${a}%`, width: `${Math.max(b - a, 1.5)}%` }}>
+        <span className="absolute top-1/2 flex h-[14px] -translate-y-1/2 overflow-hidden rounded-bar" style={{ left: `${a}%`, width: `${Math.max(b - a, 1.5)}%` }}>
           {line.status === "done" ? (
             <>
               <i className="h-full bg-ok-mid" style={{ width: `${((planEnd - a) / (b - a)) * 100}%` }} />
               {lateDays > 0 && <i className="h-full flex-1 bg-bad-mid" aria-label={`${lateDays} days late`} />}
             </>
           ) : line.status === "current" ? (
-            <span className="flex h-full w-full rounded-[6px] border border-accent-line bg-accent-soft">
-              <i className="h-full rounded-l-[5px] bg-accent" style={{ width: `${pct}%` }} />
-            </span>
+            <>
+              <i className="h-full bg-primary" style={{ width: `${Math.max(pct, 4)}%` }} />
+              <i className="hatch h-full flex-1" />
+            </>
           ) : (
-            <i className="h-full w-full bg-idle-soft" />
+            <i className="h-full w-full rounded-bar bg-raised shadow-[inset_0_0_0_1px_var(--line)]" />
           )}
         </span>
         {line.coi && <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[2px] bg-brand" style={{ left: `${b}%` }} aria-label={`COI ${fmt(line.plan[1])}`} />}
         <span className={cn("absolute top-1/2 flex -translate-y-1/2 items-baseline gap-1.5 whitespace-nowrap text-12.5 text-muted")} style={labelLeft ? { right: `calc(${100 - a}% + 12px)` } : { left: `calc(${b}% + 14px)` }}>
-          <b className="text-16 font-semibold text-ink">{pct}%</b>
+          <b className="text-14 font-medium text-ink">{pct}%</b>
           <span>
             {line.done} / {line.total} steps
           </span>
-          {lateDays > 0 && <span className="font-semibold text-bad">{lateDays} days late</span>}
+          {lateDays > 0 && <span className="font-medium text-bad">{lateDays} days late</span>}
         </span>
         <span className="absolute inset-y-0 border-l-[1.5px] border-brand" style={{ left: `${todayX}%` }} aria-hidden />
       </div>
@@ -322,7 +326,7 @@ export function IncPhaseTimelineCard({ after = false, className }: { after?: boo
             <span />
             <div className="relative h-full">
               {ticks.map((t) => (
-                <span key={t.getTime()} className="absolute bottom-0 -translate-x-1/2 whitespace-nowrap font-mono" style={{ left: `${frac(t)}%` }}>
+                <span key={t.getTime()} className="absolute bottom-0 -translate-x-1/2 whitespace-nowrap" style={{ left: `${frac(t)}%` }}>
                   {fmt(t)}
                 </span>
               ))}
@@ -342,7 +346,7 @@ export function IncPhaseTimelineCard({ after = false, className }: { after?: boo
             <span />
             <div className="relative h-full">
               <span className="absolute inset-y-0 border-l-[1.5px] border-brand" style={{ left: `${frac(today)}%` }} aria-hidden />
-              <span className="absolute bottom-1 -translate-x-1/2 rounded-sm bg-brand px-1.5 py-px text-[10.5px] font-bold text-white" style={{ left: `${frac(today)}%` }}>
+              <span className="absolute bottom-1 -translate-x-1/2 rounded-sm bg-brand px-1.5 py-px text-11 font-medium text-white" style={{ left: `${frac(today)}%` }}>
                 Today
               </span>
             </div>

@@ -2,7 +2,7 @@
 import * as React from "react";
 import { Chip } from "@/components/ui/Chip";
 import { AlertTriangle, Award, Building2, CalendarCheck, FileText, IdCard, ShieldCheck, Upload, User } from "lucide-react";
-import { TODAY, fmt } from "@/lib/dates";
+import { TODAY, daysFrom, fmt } from "@/lib/dates";
 import { NORTHWIND } from "@/data/people";
 import { COI_EXPECTED } from "@/data/incorporation";
 import { ALERTS_30, SBC_DOING, DOCS, ACTIVITY } from "@/data/client-home";
@@ -24,10 +24,12 @@ import {
   POST_OPEN,
   REG_DRILL,
   HOME_REGS,
+  HOLDS,
 } from "@/data/client-home-extra";
 import { useClientState } from "@/components/shell/ClientState";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
+import { Avatar } from "@/components/ui/Avatar";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { GreetingCard, type StatItem } from "@/components/cards/GreetingCard";
@@ -39,15 +41,20 @@ import { ActivityList, type ActivityRow } from "@/components/cards/ActivityList"
 import { UploadDialog } from "@/components/cards/UploadDialog";
 import { useDrill, type DrillSpec } from "@/components/cards/DrillDialog";
 import { IncTimelineCard } from "./parts";
-import { AreaCard, CompStatusCard, HoldsCard, HomeRegsCard, HomeStepsCard, IdsCard, NeedsCard, PostIncCard, WhatNextCard, stepsDrill } from "./home-parts";
+import { AreaCard, CompStatusCard, HoldsCard, HomeRegsCard, IdsCard, NeedsCard, PostIncCard, WhatNextCard, stepsDrill } from "./home-parts";
+import { St5Card } from "./st5";
 
 /*
  * Client home (v7_before, v7_after, mobile.html).
- * Kept out: the "Your next action" bar v7c_today (R-38), the bot figure (R-04), info icons and their pop-overs (R-06).
+ * Spectrum board ClientHome: H3 home card, ST5 incorporation card, needs, who holds it, timeline.
+ * Kept out: the "Your next action" bar v7c_today and the board (R-38), the bot figure (R-04), info icons and their pop-overs (R-06).
  * Phone (390 px): the columns dissolve (max-lg:contents) and `order` sets the mobile.html card order.
  */
 
 const DAY = 86400000;
+/** Tile sub lines, read from the sample data: the step with SBC and the overdue request. */
+const SBC_STEP = HOLDS.find((h) => h.key === "sbc")?.rows[0];
+const LATE_NEED = NEEDS_BEFORE.find((n) => n.tint === "bad");
 
 function AlertsCard({ rows, today, className }: { rows: AttentionRow[]; today: Date; className?: string }) {
   const [tab, setTab] = React.useState("15");
@@ -144,10 +151,10 @@ export function HomeScreen() {
 
   const statsBefore: StatItem[] = [
     { label: "Waiting on Northwind", value: 4, Icon: User, tone: "amber", href: "#dd-you" },
-    { label: "With SBC", value: 1, Icon: Building2, tone: "blue", href: "#dd-sbc" },
-    { label: "Overdue", value: 1, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
+    { label: "With SBC", value: 1, sub: SBC_STEP?.title, Icon: Building2, tone: "blue", href: "#dd-sbc" },
+    { label: "Overdue", value: 1, sub: LATE_NEED?.title, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
     { label: "Documents in", value: "4/6", bar: 67, Icon: FileText, tone: "teal", href: "#dd-docs" },
-    { label: "Expected COI", value: fmt(COI_EXPECTED), Icon: Award, tone: "green", href: "/client/incorporation" },
+    { label: "Expected COI", value: fmt(COI_EXPECTED), sub: `in ${daysFrom(COI_EXPECTED)} days`, Icon: Award, tone: "green", href: "/client/incorporation" },
   ];
   const statsAfter: StatItem[] = [
     { label: "Waiting on Northwind", value: NEEDS_AFTER.length, Icon: User, tone: "amber", href: "#dd-needs" },
@@ -199,9 +206,14 @@ export function HomeScreen() {
           }
           tag={<Chip tone={after ? "ok" : "prog"}>{after ? "Incorporated" : "Incorporating"}</Chip>}
           sub={
-            <>
-              Project lead · <b className="font-medium text-ink">{NORTHWIND.lead}</b> · {progress}
-            </>
+            <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
+              <Avatar name={NORTHWIND.lead} size={24} />
+              <span>
+                <b className="font-medium text-ink">{NORTHWIND.lead}</b>, project lead
+              </span>
+              <span aria-hidden>·</span>
+              {progress}
+            </span>
           }
           actions={
             <>
@@ -219,43 +231,41 @@ export function HomeScreen() {
 
       {after ? (
         <>
-          <IncTimelineCard after className="max-lg:order-9" />
-          <HomeStepsCard after className="max-lg:order-[13]" />
           <Cols className="max-lg:contents">
+            <Col className="max-lg:contents">
+              <St5Card after today={AFTER_TODAY} link={{ href: "/client/incorporation", label: "All steps" }} className="max-lg:order-3" />
+              <IncTimelineCard after className="max-lg:order-[9]" />
+              <AreaCard onDrill={open} className="max-lg:order-[8]" />
+              <PostIncCard onDrill={open} className="max-lg:order-6" />
+              <DocsCard docs={AFTER_DOCS} today={AFTER_TODAY} className="max-lg:order-[11]" />
+              <ActivityCard rows={AFTER_ACTIVITY} className="max-lg:order-[13]" />
+            </Col>
             <Col className="max-lg:contents">
               <NeedsCard rows={NEEDS_AFTER} className="max-lg:order-1" />
               <WhatNextCard onDrill={open} className="max-lg:order-2" />
-              <AreaCard onDrill={open} className="max-lg:order-[12]" />
-              <PostIncCard onDrill={open} className="max-lg:order-6" />
-              <HomeRegsCard className="max-lg:order-5" />
-            </Col>
-            <Col className="max-lg:contents">
-              <AlertsCard rows={AFTER_ALERTS_NOV} today={AFTER_TODAY} className="max-lg:order-[11]" />
-              <SbcCard items={AFTER_SBC} className="max-lg:order-7" />
-              <CompStatusCard onDrill={open} className="max-lg:order-3" />
-              <IdsCard className="max-lg:order-4" />
-              <DocsCard docs={AFTER_DOCS} today={AFTER_TODAY} className="max-lg:order-[10]" />
-              <ActivityCard rows={AFTER_ACTIVITY} className="max-lg:order-[10]" />
+              <CompStatusCard onDrill={open} className="max-lg:order-4" />
+              <IdsCard className="max-lg:order-5" />
+              <AlertsCard rows={AFTER_ALERTS_NOV} today={AFTER_TODAY} className="max-lg:order-[10]" />
+              <SbcCard items={AFTER_SBC} className="max-lg:order-[12]" />
             </Col>
           </Cols>
+          <HomeRegsCard className="max-lg:order-7" />
         </>
       ) : (
-        <>
-          <IncTimelineCard className="max-lg:order-3" />
-          <HomeStepsCard after={false} className="max-lg:order-[9]" />
-          <Cols className="max-lg:contents">
-            <Col className="max-lg:contents">
-              <NeedsCard rows={NEEDS_BEFORE} className="max-lg:order-1" />
-              <DocsCard docs={DOCS} today={TODAY} className="max-lg:order-6" />
-              <ActivityCard rows={ACTIVITY} className="max-lg:order-7" />
-            </Col>
-            <Col className="max-lg:contents">
-              <AlertsCard rows={ALERTS_30} today={TODAY} className="max-lg:order-4" />
-              <HoldsCard onDrill={open} className="max-lg:order-2" />
-              <SbcCard items={SBC_DOING} className="max-lg:order-5" />
-            </Col>
-          </Cols>
-        </>
+        <Cols className="max-lg:contents">
+          <Col className="max-lg:contents">
+            <St5Card after={false} link={{ href: "/client/incorporation", label: "All steps" }} className="max-lg:order-2" />
+            <IncTimelineCard className="max-lg:order-5" />
+            <DocsCard docs={DOCS} today={TODAY} className="max-lg:order-6" />
+            <ActivityCard rows={ACTIVITY} className="max-lg:order-8" />
+          </Col>
+          <Col className="max-lg:contents">
+            <NeedsCard rows={NEEDS_BEFORE} className="max-lg:order-1" />
+            <HoldsCard onDrill={open} className="max-lg:order-3" />
+            <AlertsCard rows={ALERTS_30} today={TODAY} className="max-lg:order-4" />
+            <SbcCard items={SBC_DOING} className="max-lg:order-7" />
+          </Col>
+        </Cols>
       )}
 
       <UploadDialog
