@@ -6,65 +6,74 @@ Language: ASD-STE100 Simplified Technical English. One instruction per sentence.
 
 Sources: the owner's feedback (26 and 27 Oct 2026), `reference/design-book-v1.5.html`, the Portal refresh files in `reference/refresh/`, `reference/REFRESH-DIFF.md`.
 
+VCFO Spectrum (28 Oct 2026): the owner picked a new design system. The canvas is https://claude.ai/artifact/Mthtcsro8KnEd5xHyJ9pTi. Where a 28 Oct rule and an older rule disagree, the 28 Oct rule wins. `src/styles/tokens.css` holds every value.
+
 ## Tokens
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| canvas | #F3F5F9 | #111821 | Page background |
-| surface | #FFFFFF | #18202B | Cards |
-| raised | #F5F6F8 | #1F2935 | Tab tracks, hover rows |
-| line | #E3E6EB | #2C3745 | Card borders, grid lines |
-| line-soft | #EEF0F3 | #263140 | Hairlines between rows |
-| ink | #16212F | #E6EAF0 | Text |
-| ink-2 | #3F4A59 | #C3CCD8 | Secondary text |
-| muted | #667180 | #9AA7B8 | Labels, hints |
-| faint | #98A1AE | #6F7C8D | Placeholders, counts |
-| navy | #15263B | #15263B | Sidebar, greeting band, main buttons, table heads, picked tab |
-| navy-2 | #1B3049 | #1B3049 | Greeting band gradient start, button hover |
-| navy-tint | #EEF2F8 | #1F2935 | Light table heads (not used for e-Filing grid) |
-| btn | #15263B / hover #1B3049 | #2B4766 / hover #335378 | Main buttons and the picked tab. Dark mode lifts navy so it shows on the slate surface. |
-| accent | #2563A8 / soft #E6EFFA | #6FA3E0 | Links, current step, "in progress" |
-| ok | #1E7F55 / soft #E2F3EA / mid #46A87A | #8FDCB4 | Done, filed |
-| warn | #A35F00 / soft #FCEFD8 / mid #E3A040 | #F2C27A | Due soon, client owns it |
-| bad | #BE3434 / soft #FBE6E6 / mid #DD6262 | #F29B9B | Overdue, failed |
-| violet | #6A4FB6 / soft #EFEAFB | #C4B2F2 | MCA, IDs |
-| teal | #0F7C86 / soft #E0F3F4 | #7FD0D6 | Calendar, GST |
-| brand | #E9792F | #E9792F | Today line, COI mark, logo only |
+| canvas | #F6F8FB | #0B0C10 | Page background |
+| surface | #FFFFFF | #13151A | Cards |
+| raised | #F1F4F8 | #0F1115 | Tracks, sunken fills |
+| hover | #F4F6FA | #1A1D23 | Hover rows, live step row |
+| line | #E3E8EF | #242830 | Card edges (1.5 px) |
+| line-2 | #CBD3DE | #323742 | Control edges: inputs, secondary buttons |
+| line-soft | #EDF1F5 | #1D2027 | Hairlines between table rows |
+| ink | #0A2540 | #F2F4F8 | Text |
+| ink-2 | #3C4F69 | #B6BECA | Secondary text |
+| muted | #5E6E85 | #8E97A5 | Labels, hints |
+| faint | #8896A8 | #6B7482 | Placeholders |
+| primary | #635BFF / hover #5249F0 | #7A72FF / hover #8C85FF | Main button, picked segment, focus |
+| accent | #4A3FE0 / soft #EFEEFF | #ABA6FF / soft rgba(122,114,255,.16) | Links, in progress |
+| navy | #0A2540 | #0B1424 | Sidebar, strong button |
+| brand | #F26B1D | #FF7A2E | Logo, today line, COI mark only |
+| danger | #D92D20 | #F04452 | Danger button |
+| ok (done) | #0B7A43 / #DFF5E7 / dot #16A34A | #5BE08E | Done |
+| accent (in progress) | #4A3FE0 / #EFEEFF / dot #635BFF | #B3AEFF | In progress |
+| teal (waiting) | #06708C / #DFF3F9 / dot #0EA5C6 | #6AD4EE | Waiting |
+| warn (due soon) | #9A4D00 / #FFF0D9 / dot #F59E0B | #FFCB5C | Due soon, client owns it |
+| bad (overdue) | #C0182F / #FFE6E9 / dot #E11D48 | #FF7F8E | Overdue |
+| idle (not started) | #4E5D73 / #EDF0F5 / dot #94A3B8 | #A9B2BF | Not started |
+| info | #0A5FC2 / #E8F1FD / edge #BFD8F7 | #7CB4F5 | SBC owner, info banner |
+| caution | #7A4100 / #FFF6E0 / edge #F5DC9C | #FFCB5C | Warning banner |
+| reg-* | MCA #2F6FEB, GST #0E9F8E, Income tax #8B5CF6, Payroll #F29D12, FEMA #E8457A, Labour #6BA815 | same | Area pills, spectrum ribbon |
+
+Sizes: corners 6 px (marks 4 px, bars 3 px). Card edge 1.5 px. Chip 24 x 104 px. Row 44 px. Button 36 px, small 30 px, large 42 px. Sidebar 248 px. Top bar 60 px.
 
 ## Rules
 
 | No. | Rule |
 |---|---|
 | R-01 | Keep every screen calm and professional. Use the income tax e-Filing portal as the model for tables and forms. |
-| R-02 | Do not use decorative lines, gradients, glows or shadows. Use neutral hairlines. |
+| R-02 | Use shadows only on things that float: menus, tooltips, toasts, dialogs, command bar. The home card (R-17) is the one exception: it uses the colour wash. Do not use other gradients or glows. |
 | R-03 | Use colour only to give information: status, lateness, owner, category tile. |
 | R-04 | Do not show a mascot or a bot figure anywhere. "Ask VCFO" is a text button. |
 | R-05 | Do not show filler text that tells the obvious, for example "Nothing is waiting on Northwind this week". |
 | R-06 | Do not put explanation text or info icons next to buttons or card titles. |
-| R-07 | Make every data table an e-Filing grid. Use a navy header with white text. Put a grid line on every cell. Use zebra rows. Put page numbers under the table. |
+| R-07 | Make tables clean rows (Stripe T1). The header is 36 px, 11.5 px capitals, weight 500, .07em spacing, muted, with a 1.5 px line under it. Rows are 44 px with a 1 px hairline. Do not use column lines, zebra rows or a navy header. Put page numbers under long tables. |
 | R-08 | Put table filters (period, year, area, export) in the table head bar. Do not put them above the page. |
 | R-09 | Do not repeat navigation. Do not show back links, page titles that repeat the sidebar, or pickers that repeat the sidebar. |
-| R-10 | Use a few compact dropdown filters. Do not use long rows of filter chips. |
-| R-11 | Make tabs small inline buttons on a quiet track. Show the picked tab in navy with white text. Do not use a sliding highlight. Tabs do not wrap. |
-| R-12 | Make the main button navy #15263B with white text. Use hover #1B3049. Height is 36 px, small is 30 px. Use one main button per card. |
-| R-13 | Show status as a soft chip with a 6 px dot. Height is 22 px. Corners are 5 px. In tables the chip is 108 px wide. |
-| R-14 | Show the owner as a 96 px soft chip with a dot. Client is amber. SBC is blue. MCA is violet. |
-| R-15 | Make a card white with a 1 px line and 10 px corners. The head is 52 px with a hairline under it. |
-| R-16 | Put a 28 px tinted icon tile before each card title. The title is 14.5 px, weight 600. The tile comes from the title (see the icon table). |
-| R-17 | Make the greeting card the same on every portal. A navy band holds the date, the name and the actions. A white number strip follows. |
-| R-18 | In the number strip, give each number a 30 px tinted icon tile. Put 12 px between the tile and the text. Put the label above the number. |
+| R-10 | Make filters rounded-rectangle chips (Q3). A set filter has a soft blurple fill and an ×. An addable filter has a dashed edge, for example "+ Lead". Show up to 4 chips, then "More filters". |
+| R-11 | Use underline tabs for views of one record (N4): a 2 px blurple underline. Use a segmented switch for filters (N5): a quiet track, the picked option blurple with white text. |
+| R-12 | Make the main button blurple #635BFF with white text and a faint top shine. Hover is #5249F0. Height is 36 px, small 30 px, large 42 px. Kinds: primary, strong (navy), secondary (white, 1.5 px edge), ghost (6% ink), soft (blurple tint), danger, link. Icon-only buttons are 6 px squares. |
+| R-13 | Show status as a chip: 24 px high, 6 px corners, 104 px wide, a 7 px square dot and the word, 12 px, weight 500. Use six words only: Not started, In progress, Waiting, Due soon, Overdue, Done. Do not put white text on a solid colour. |
+| R-14 | Show the owner as a 104 px chip like R-13. Client is amber. SBC is blue. MCA is violet. |
+| R-15 | Make a card white with a 1.5 px line #E3E8EF and 6 px corners. Keep the hairline under the head. |
+| R-16 | Put a 28 px tinted icon tile with 6 px corners before each card title. The title is 15 px, weight 500. |
+| R-17 | Make one home card on every portal home (H3). It holds the date, the greeting or company name, the actions and the number tiles. Its background is the colour wash. The tiles float on it: white 90%, 1 px white edge, a soft shadow, 6 px corners. |
+| R-18 | Make number tiles KP1. The label is 13 px, weight 500, with a 15 px icon. The number is 26 to 28 px, weight 500, tabular. A 12.5 px muted line can follow, and a 68 x 30 sparkline. An overdue number is red. A done number is green. |
 | R-19 | Make lists in a card run the full card width. Put a hairline between rows. |
 | R-20 | In attention lists, show a 44 px date tile tinted by urgency. Put the chip on the right. Tint the full urgent row soft red. Give it a small navy action. |
-| R-21 | Draw the timeline as a Gantt. Rows are 46 px. Bars are 16 px with 6 px corners. Show an orange today line and an orange COI diamond. |
-| R-22 | Give each timeline row one status circle. Done is a green tick. Current is one blue clock circle. Planned is a grey ring. |
+| R-21 | Draw the timeline as a Gantt. Bars are 14 to 16 px with 3 px corners. Keep the orange today line. In the current phase, the done part is solid and the remaining part is blurple hatch. |
+| R-22 | Show steps as ST5. A phase track has four bars sized by step count. Done is green, current is blurple with a soft ring, next is grey. In the step list, a done step is a green 22 px square with a tick. The live step is a ring with a status square and a halo. An upcoming step is a dashed square. The live step shows who holds it, the lead and the status chip. On phones and in client lists, show only the four bars. |
 | R-23 | In a thread, show done steps with their dates. Show upcoming steps faded, without dates. |
 | R-24 | Make expand toggles a plain chevron. Do not put a box around the chevron. |
-| R-25 | Show a split as one stacked bar with a legend. Use a donut only at the head of Calendar and Filings. |
+| R-25 | Use status colours only in charts: a donut with a legend (C1), stacked bars per person (C2), stacked on-time and late columns (C4). On Incorporation, use one stacked bar, not four donuts. |
 | R-26 | Colour file badges by type. PDF is red. DOCX is blue. XLSX is green. JPG and PNG are violet. ZIP is grey. |
-| R-27 | Use Lucide icons with a 1.5 stroke. Use 16 px in text and 15 px in tiles. Use plain glyphs. |
-| R-28 | Use Public Sans for the interface. Use IBM Plex Mono only for identifiers such as CIN, PAN, GSTIN, SRN, ARN and file names. |
+| R-27 | Use Lucide icons with a 1.6 stroke. Use 16 px in text and 15 px in tiles. Use plain glyphs. |
+| R-28 | Use Roboto 400, 500 and 700 for the interface. Use Roboto Mono 500 only for identifiers: CIN, PAN, GSTIN, SRN, ARN, DIN, step codes and form codes. Use tabular numbers everywhere. Use weight 700 only for display sizes and the logo. |
 | R-29 | Use sentence case. Write plain dates, for example "14 Oct". Show a late date in red. Do not write "please" or "successfully". |
-| R-30 | In dark mode, use slate surfaces from the token table. Mix chip and tile colours with the panel colour. |
+| R-30 | In dark mode, use the dark tokens. Mix chip colours into the panel colour. |
 | R-31 | Make one component for each card type. A change to a card changes it on every portal. |
 | R-32 | Sort the sidebar by priority. Daily work comes first. Then dated work, messages, documents, reports, settings. |
 | R-33 | In Compliances, order the items: Obligations, Calendar, Filings. |
@@ -77,6 +86,12 @@ Sources: the owner's feedback (26 and 27 Oct 2026), `reference/design-book-v1.5.
 | R-40 | Ask before a risky change (rotate a key, disconnect, roll back). Save a plain setting as it changes. Log both in Audit. |
 | R-41 | Use one calm motion moment per screen at most. Use no motion under reduced motion. |
 | R-42 | Put Team inside Profile as one section. Show the SBC team in a top card and the client's people in a large card. |
+| R-43 | Show an area or regulator as a pill: 24 px, 6 px corners, 1.5 px edge, white fill, 104 px wide, an 8 px square swatch and the word. The text stays ink. |
+| R-44 | Use one radius: 6 px on every box, button, chip, input, card, menu and dialog. Marks of 12 to 23 px use 4 px. Bars under 12 px use 3 px. Nothing is a pill. People avatars are circles. Companies are 6 px squares. |
+| R-45 | Make the sidebar navy #0A2540 (dark #0B1424). Rows are 34 px with 6 px corners. The active row has a soft blurple fill and lilac text. Ask VCFO is a sidebar button at the bottom with the "/" key. It is never a floating bubble. |
+| R-46 | Put a 3 px regulator spectrum ribbon across the top of every screen: six equal parts in the regulator colours. It is the only decorative line. |
+| R-47 | Make inputs 40 px with a 1.5 px edge and 6 px corners. Focus shows a blurple edge and a 4 px glow. An error shows a red edge and a message under the field. A switch is a 44 x 24 track with 6 px corners. A checkbox is 18 px with 4 px corners. |
+| R-48 | Make light menus roomy (34 px rows) and dark menus 30 px with letter shortcuts. Use a white info card for terms and a dark tip for actions. Use toasts with a status tile or Undo. Put a banner only inside the card it is about. A danger confirm asks the person to type the word. Show empty states as a dashed area with the action. Show loading as grey shapes. |
 
 ## Icon tile for each card title
 

@@ -44,9 +44,14 @@ export const SectionCard = React.forwardRef<HTMLElement, SectionCardProps>(funct
   );
 });
 
-/** Empty list body (R-05: no filler sentences). */
-export function Empty({ children = "None" }: { children?: React.ReactNode }) {
-  return <p className="px-5 py-4 text-13 text-faint">{children}</p>;
+/** Empty list body (R-05: no filler sentences; R-48 E3: a dashed area, with the action when there is one). */
+export function Empty({ children = "None", action }: { children?: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div className="m-4 flex flex-col items-center gap-2.5 rounded-md border-1.5 border-dashed border-line-2 px-4 py-6 text-center text-13 text-muted md:mx-5">
+      <span>{children}</span>
+      {action}
+    </div>
+  );
 }
 
 /** Full-width list row with a hairline between rows (R-19). */
