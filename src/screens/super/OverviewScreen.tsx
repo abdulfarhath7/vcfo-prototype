@@ -1,16 +1,18 @@
 "use client";
-import { AlertTriangle, Award, Building2, IdCard, ShieldCheck, UserCog, Users } from "lucide-react";
+import * as React from "react";
+import { AlertTriangle, Award, Building2, IdCard, ShieldCheck, UserCog, UserPlus, Users } from "lucide-react";
 import { STAFF_TODAY } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Cols, Col, Row } from "@/components/shell/Page";
 import { Avatar } from "@/components/ui/Avatar";
 import { Bar } from "@/components/ui/Bar";
+import { Button } from "@/components/ui/Button";
+import { useUndoToast } from "@/components/ui/UndoToast";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { GreetingCard, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, HeadLink, ListRow } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
-import { ActivityList } from "@/components/cards/ActivityList";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { AREA_HEALTH_TONE, AREA_ROWS, CAP, FILINGS, FIRM_CLIENTS, HEALTH_TONE, REGS, type AreaRow } from "@/data/super";
 import {
@@ -31,17 +33,18 @@ import {
   type Admin,
   type ManagerRow,
 } from "@/data/super-firm";
-import { clientHref } from "./parts";
+import { AdminFeedList, clientHref } from "./parts";
+import { AssignDialog } from "./assign";
 import { waitWord } from "@/data/status-words";
 
 // Ported from reference/old-patch/super/Main.dc.html: greeting with change against September, the three practice cards,
 // "Admins · this month", "Managers", "Top risks", clients needing attention, plus the admin activity feed from Team.
 
 const areaCols: Column<AreaRow>[] = [
-  { key: "area", label: "Area", render: (r) => <span className="font-semibold">{r.area}</span> },
+  { key: "area", label: "Area", render: (r) => <span className="font-medium">{r.area}</span> },
   { key: "active", label: "Active clients", align: "right", width: 120 },
   { key: "done", label: "Done this month", align: "right", width: 130, render: (r) => r.doneThisMonth },
-  { key: "overdue", label: "Overdue", align: "right", width: 90, render: (r) => <span className={r.overdue ? "font-semibold text-bad" : undefined}>{r.overdue}</span> },
+  { key: "overdue", label: "Overdue", align: "right", width: 90, render: (r) => <span className={r.overdue ? "font-medium text-bad" : undefined}>{r.overdue}</span> },
   { key: "health", label: "Health", width: 130, render: (r) => <Chip fixed tone={AREA_HEALTH_TONE[r.health]}>{r.health}</Chip> },
   { key: "lead", label: "Lead manager", width: 140 },
 ];
@@ -50,7 +53,7 @@ const nameCell = (name: string, sub: string) => (
   <span className="flex min-w-0 items-center gap-2.5">
     <Avatar name={name} size={24} />
     <span className="min-w-0">
-      <span className="block truncate font-semibold">{name}</span>
+      <span className="block truncate font-medium">{name}</span>
       <span className="block truncate text-12 text-muted">{sub}</span>
     </span>
   </span>
@@ -61,7 +64,7 @@ export const adminCols: Column<Admin>[] = [
   { key: "clients", label: "Clients", align: "right", width: 80, render: (a) => clientsOfAdmin(a) },
   { key: "assigned", label: "Assigned", align: "right", width: 90 },
   { key: "approvals", label: "Approvals", align: "right", width: 96 },
-  { key: "open", label: "Open esc.", align: "right", width: 90, render: (a) => <span className={cn(a.open && "font-semibold text-bad")}>{a.open}</span> },
+  { key: "open", label: "Open esc.", align: "right", width: 90, render: (a) => <span className={cn(a.open && "font-medium text-bad")}>{a.open}</span> },
   { key: "response", label: "Response", align: "right", width: 96 },
 ];
 
@@ -69,12 +72,14 @@ const managerCols: Column<ManagerRow>[] = [
   { key: "name", label: "Manager", render: (m) => nameCell(m.name, `under ${m.admin}`) },
   { key: "clients", label: "Clients", align: "right", width: 76 },
   { key: "open", label: "Open", align: "right", width: 70 },
-  { key: "late", label: "Late", align: "right", width: 64, render: (m) => <span className={cn(m.late && "font-semibold text-bad")}>{m.late}</span> },
+  { key: "late", label: "Late", align: "right", width: 64, render: (m) => <span className={cn(m.late && "font-medium text-bad")}>{m.late}</span> },
   { key: "onTime", label: "On time", align: "right", width: 80, render: (m) => `${m.onTime}%` },
   { key: "load", label: "Load", width: 110, render: (m) => <Bar pct={m.load} tone={m.load > 80 ? "bad" : m.load >= 70 ? "warn" : "accent"} className="w-20" /> },
 ];
 
 export function OverviewScreen() {
+  const [assignOpen, setAssignOpen] = React.useState(false);
+  const toast = useUndoToast();
   const incorporating = FIRM_CLIENTS.filter((c) => c.stage === "incorporating");
   const overdueFilings = FILINGS.filter((f) => f.status === "Overdue").length;
   // Old Main: filed on time over every filing due before 16 Oct (on time, late or still open).
@@ -126,7 +131,18 @@ export function OverviewScreen() {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <GreetingCard date={STAFF_TODAY} time="12:31 PM" eyebrow="Good afternoon" name="Mithilesh" stats={stats} />
+      <GreetingCard
+        date={STAFF_TODAY}
+        time="12:31 PM"
+        eyebrow="Good afternoon"
+        name="Mithilesh"
+        stats={stats}
+        actions={
+          <Button variant="primary" onClick={() => setAssignOpen(true)}>
+            <UserPlus size={16} strokeWidth={1.6} /> Assign client
+          </Button>
+        }
+      />
 
       <Row cols={3}>
         <SectionCard title="Incorporation" meta={String(incorporating.length)} icon={{ Icon: Award, tone: "violet" }} right={<HeadLink href="/super/practice/incorporation">Open ›</HeadLink>}>
@@ -137,13 +153,13 @@ export function OverviewScreen() {
                 <li key={p.key} className="grid grid-cols-[110px_1fr_24px] items-center gap-2 text-13" title={list.map((c) => c.name).join(", ") || "None"}>
                   <span className="truncate text-ink-2">{p.label}</span>
                   <Bar pct={(list.length / maxStage) * 100} tone="accent" />
-                  <b className="text-right font-semibold">{list.length}</b>
+                  <b className="text-right font-medium">{list.length}</b>
                 </li>
               );
             })}
           </ul>
           <p className="mt-3 border-t border-line-soft pt-3 text-12.5 text-muted">
-            Average <b className="font-semibold text-ink">{AVG_DAYS_TO_COI} days</b> to COI · target 30
+            Average <b className="font-medium text-ink">{AVG_DAYS_TO_COI} days</b> to COI · target 30
           </p>
         </SectionCard>
 
@@ -152,10 +168,10 @@ export function OverviewScreen() {
             {[
               { n: regDone, label: "Done", cls: "text-ok" },
               { n: regProg, label: "In progress", cls: "text-accent" },
-              { n: regWait, label: "Pending", cls: "text-warn" },
+              { n: regWait, label: "Pending", cls: "text-teal" },
             ].map((x) => (
               <div key={x.label}>
-                <b className={cn("block text-[20px] font-semibold leading-none", x.cls)}>{x.n}</b>
+                <b className={cn("block text-26 font-medium leading-none", x.cls)}>{x.n}</b>
                 <span className="text-12 text-muted">{x.label}</span>
               </div>
             ))}
@@ -169,16 +185,16 @@ export function OverviewScreen() {
                   segments={[
                     { label: "Done", value: x.d, tone: "ok" },
                     { label: "In progress", value: x.p, tone: "accent" },
-                    { label: "Pending", value: x.w, tone: "warn" },
+                    { label: "Pending", value: x.w, tone: "teal" },
                   ]}
                   className="[&_ul]:hidden"
                 />
-                <b className="text-right font-semibold">{x.open}</b>
+                <b className="text-right font-medium">{x.open}</b>
               </li>
             ))}
           </ul>
           <p className="mt-3 border-t border-line-soft pt-3 text-12.5 text-muted">
-            Most pending: <b className="font-semibold text-ink">{regWorst}</b>
+            Most pending: <b className="font-medium text-ink">{regWorst}</b>
           </p>
         </SectionCard>
 
@@ -194,7 +210,7 @@ export function OverviewScreen() {
             ]}
           />
           <p className="mt-3 border-t border-line-soft pt-3 text-12.5 text-muted">
-            Worst statute: <b className="font-semibold text-ink">{worstStatute.overdue + worstStatute.late ? worstStatute.statute : "None"}</b>
+            Worst statute: <b className="font-medium text-ink">{worstStatute.overdue + worstStatute.late ? worstStatute.statute : "None"}</b>
           </p>
         </SectionCard>
       </Row>
@@ -213,7 +229,7 @@ export function OverviewScreen() {
             {TOP_RISKS.slice(0, 5).map((r) => (
               <ListRow key={r.id} href="/super/risks">
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">
+                  <span className="block truncate font-medium">
                     {r.title}
                     {r.clientId ? ` · ${r.clientName}` : ""}
                   </span>
@@ -221,19 +237,21 @@ export function OverviewScreen() {
                     {r.owner} · {ageOf(r)}
                   </span>
                 </span>
-                <Tag tone={RISK_KIND_TONE[kindOf(r)]}>{RISK_KIND_LABEL[kindOf(r)]}</Tag>
+                <Tag tone={RISK_KIND_TONE[kindOf(r)]} className="w-[104px] flex-none">
+                  {RISK_KIND_LABEL[kindOf(r)]}
+                </Tag>
               </ListRow>
             ))}
           </SectionCard>
           <SectionCard title="What admins did" meta="This week" flush>
-            <ActivityList rows={ADMIN_FEED.slice(0, 6)} />
+            <AdminFeedList rows={ADMIN_FEED.slice(0, 6)} />
           </SectionCard>
           <SectionCard title="Team load" flush icon={{ Icon: Users, tone: "violet" }}>
             <ul>
               {MANAGER_ROWS.map((m) => (
                 <li key={m.id} className="border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5">
                   <span className="flex items-center gap-2 text-13.5">
-                    <span className="min-w-0 flex-1 truncate font-semibold">{m.name}</span>
+                    <span className="min-w-0 flex-1 truncate font-medium">{m.name}</span>
                     <span className="text-12.5 text-muted">
                       {m.clients} of {CAP}
                     </span>
@@ -248,6 +266,8 @@ export function OverviewScreen() {
           </SectionCard>
         </Col>
       </Cols>
+      <AssignDialog open={assignOpen} onOpenChange={setAssignOpen} onDone={(m) => toast.show(m)} />
+      {toast.node}
     </div>
   );
 }

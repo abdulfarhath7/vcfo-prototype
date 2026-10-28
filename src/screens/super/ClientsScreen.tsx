@@ -4,15 +4,14 @@ import { UserPlus } from "lucide-react";
 import { STAFF_TODAY, fmt, urgency } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
-import { Select } from "@/components/ui/Select";
+import { AreaPill, Chip } from "@/components/ui/Chip";
+import { Avatar } from "@/components/ui/Avatar";
 import { PhaseBar } from "@/components/ui/PhaseBar";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { AREAS, FIRM_CLIENTS, HEALTH_TONE, HEALTH_WORD, MANAGERS, stageLabel, stageTone, type FirmClient } from "@/data/super";
-import { initials } from "@/components/ui/Avatar";
+import { AREAS, FIRM_CLIENTS, HEALTH_TONE, HEALTH_WORD, MANAGERS, stageLabel, type FirmClient } from "@/data/super";
 import { ADMINS, HEALTH_ORDER, PHASE_NAMES, PHASE_TOTALS, adminOf, phasesOf, progressOf } from "@/data/super-firm";
-import { ClientTile, clientHref, opts } from "./parts";
+import { ClientTile, FilterChips, clientHref } from "./parts";
 import { AssignDialog, useAssignments } from "./assign";
 
 // Ported from reference/old-screens/s/super/Clients.dc.html: every column, the Admin, Manager and Stage filters,
@@ -36,7 +35,6 @@ export function ClientsScreen() {
     const m = managerOf(c);
     return (!admin || adminOf(m) === admin) && (!manager || m === manager) && (!stage || stageLabel(c) === stage) && (!area || c.area === area);
   }).sort((a, b) => HEALTH_ORDER[a.health] - HEALTH_ORDER[b.health] || a.name.localeCompare(b.name));
-  const any = !!(admin || manager || stage || area);
 
   const columns: Column<FirmClient>[] = [
     {
@@ -46,7 +44,7 @@ export function ClientsScreen() {
       render: (c) => (
         <span className="flex min-w-0 items-center gap-2.5">
           <ClientTile client={c} />
-          <span className="min-w-0 font-semibold leading-snug">{short(c.name)}</span>
+          <span className="min-w-0 font-medium leading-snug">{short(c.name)}</span>
         </span>
       ),
     },
@@ -55,7 +53,7 @@ export function ClientsScreen() {
       label: "Now at",
       render: (c) => (
         <span className="block min-w-[160px]">
-          <span className="line-clamp-2 font-semibold leading-snug">{c.step}</span>
+          <span className="line-clamp-2 font-medium leading-snug">{c.step}</span>
           <span className="block truncate text-12 text-muted">
             {c.code} · {c.lead}
           </span>
@@ -73,16 +71,15 @@ export function ClientsScreen() {
         </span>
       ),
     },
-    { key: "admin", label: "Admin", width: 96, render: (c) => adminOf(managerOf(c)) },
+    { key: "admin", label: "Admin", width: 110, className: "whitespace-nowrap", render: (c) => adminOf(managerOf(c)) },
     {
       key: "manager",
       label: "Manager",
-      width: 130,
+      width: 150,
+      className: "whitespace-nowrap",
       render: (c) => (
         <span className="flex items-center gap-2">
-          <span className="inline-grid h-6 w-6 flex-none place-items-center rounded-md bg-raised text-[10px] font-semibold text-ink-2" aria-hidden>
-            {initials(managerOf(c))}
-          </span>
+          <Avatar name={managerOf(c)} size={24} />
           <span className="min-w-0 leading-snug">{managerOf(c)}</span>
         </span>
       ),
@@ -92,22 +89,43 @@ export function ClientsScreen() {
       label: "Stage",
       width: 120,
       render: (c) => (
-        <Chip fixed tone={stageTone(c)}>
-          {stageLabel(c)}
-        </Chip>
+        <AreaPill area={stageLabel(c)} reg={c.stage === "incorporating" ? "mca" : undefined} className="gap-1 px-[7px]" />
       ),
     },
-    { key: "next", label: "Next", width: 64, render: (c) => <span className={cn("whitespace-nowrap", urgency(c.next, STAFF_TODAY) === "bad" && "font-semibold text-bad")}>{fmt(c.next)}</span> },
+    { key: "next", label: "Next", width: 64, render: (c) => <span className={cn("whitespace-nowrap", urgency(c.next, STAFF_TODAY) === "bad" && "font-medium text-bad")}>{fmt(c.next)}</span> },
     {
       key: "health",
       label: "Health",
-      width: 150,
-      render: (c) => <Chip tone={HEALTH_TONE[c.health]}>{HEALTH_WORD[c.health]}</Chip>,
+      width: 124,
+      render: (c) => <Chip fixed tone={HEALTH_TONE[c.health]}>{HEALTH_WORD[c.health]}</Chip>,
     },
   ];
 
   return (
-    <>
+    <div className="grid grid-cols-1 gap-3">
+      <FilterChips
+        onClear={() => {
+          setAdmin("");
+          setManager("");
+          setStage("");
+          setArea("");
+        }}
+        filters={[
+          {
+            key: "admin",
+            label: "Admin",
+            value: admin,
+            options: ADMINS.map((a) => a.name),
+            onChange: (v) => {
+              setAdmin(v);
+              setManager("");
+            },
+          },
+          { key: "manager", label: "Manager", value: manager, options: managers, onChange: setManager },
+          { key: "stage", label: "Stage", value: stage, options: ["Incorporating", "Compliance"], onChange: setStage },
+          { key: "area", label: "Area", value: area, options: AREAS, onChange: setArea },
+        ]}
+      />
       <DataGrid
         title="All clients"
         meta={`${rows.length} of ${FIRM_CLIENTS.length}`}
@@ -118,44 +136,13 @@ export function ClientsScreen() {
         pageSize={17}
         empty="No client matches these filters"
         filters={
-          <>
-            <Select
-              aria-label="Admin"
-              value={admin}
-              onChange={(e) => {
-                setAdmin(e.target.value);
-                setManager("");
-              }}
-              options={opts(
-                "All admins",
-                ADMINS.map((a) => a.name),
-              )}
-            />
-            <Select aria-label="Manager" value={manager} onChange={(e) => setManager(e.target.value)} options={opts("All managers", managers)} />
-            <Select aria-label="Stage" value={stage} onChange={(e) => setStage(e.target.value)} options={opts("All stages", ["Incorporating", "Compliance"])} />
-            <Select aria-label="Area" value={area} onChange={(e) => setArea(e.target.value)} options={opts("All areas", AREAS)} />
-            {any && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setAdmin("");
-                  setManager("");
-                  setStage("");
-                  setArea("");
-                }}
-              >
-                Clear
-              </Button>
-            )}
-            <Button size="sm" variant="primary" onClick={() => setAssignOpen(true)}>
-              <UserPlus size={14} strokeWidth={1.6} /> Assign client
-            </Button>
-          </>
+          <Button size="sm" variant="primary" onClick={() => setAssignOpen(true)}>
+            <UserPlus size={14} strokeWidth={1.6} /> Assign client
+          </Button>
         }
       />
       <AssignDialog open={assignOpen} onOpenChange={setAssignOpen} onDone={(m) => toast.show(m)} />
       {toast.node}
-    </>
+    </div>
   );
 }

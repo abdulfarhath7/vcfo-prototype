@@ -4,6 +4,7 @@ import { CalendarClock, Download, Play, X } from "lucide-react";
 import { STAFF_TODAY, d, fmt } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
+import { AreaPill } from "@/components/ui/Chip";
 import { Checkbox, Field } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
@@ -26,7 +27,7 @@ import {
   rupees,
   type ManagerRow,
 } from "@/data/super-firm";
-import { ClientName, opts } from "./parts";
+import { ClientName, FilterChips } from "./parts";
 
 // Ported from reference/old-patch/super/Reports.dc.html (the monthly partner report: month switch, Download PDF, numbers,
 // clients, managers, top risks) and reference/old-patch/super/Money.dc.html as the "Fees and late fees" report.
@@ -42,7 +43,7 @@ const fileName = (r: SavedReport, period = r.period) => `SBC-${r.name.toLowerCas
 /* ---------- Partner report ---------- */
 
 const mgrCols: Column<ManagerRow>[] = [
-  { key: "name", label: "Manager", render: (m) => <span className="font-semibold">{m.name}</span> },
+  { key: "name", label: "Manager", render: (m) => <span className="font-medium">{m.name}</span> },
   { key: "admin", label: "Admin" },
   { key: "clients", label: "Clients", align: "right", width: 80 },
   { key: "onTime", label: "On time", align: "right", width: 84, render: (m) => `${m.onTime}%` },
@@ -53,10 +54,10 @@ function PartnerReport() {
   const nums = PARTNER_NUMBERS("Oct");
   return (
     <article className="mx-auto grid w-full min-w-0 max-w-[900px] grid-cols-1 gap-6 [&>*]:min-w-0 rounded-md border-1.5 border-line bg-surface px-5 py-6 md:px-10 md:py-9">
-      <header className="flex items-start gap-4 border-b border-line pb-4">
+      <header className="flex items-start gap-4 border-b-1.5 border-line pb-4">
         <div className="min-w-0 flex-1">
           <span className="text-12.5 text-muted">SBC · monthly partner report</span>
-          <h2 className="text-[24px] font-semibold leading-tight tracking-tight">October 2026</h2>
+          <h2 className="text-28 font-medium leading-tight tracking-[-0.01em]">October 2026</h2>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/sbc-logo.webp" alt="SBC" className="block h-[34px] w-auto dark:hidden" />
@@ -64,26 +65,28 @@ function PartnerReport() {
         <img src="/brand/sbc-logo-dark.webp" alt="SBC" className="hidden h-[34px] w-auto dark:block" />
       </header>
       <section>
-        <h3 className="mb-2 text-13 font-semibold text-muted">The month in numbers</h3>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <h3 className="mb-2 text-15 font-medium text-ink">The month in numbers</h3>
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
           {nums.map((n) => (
-            <div key={n.k} className="rounded-md border border-line px-3.5 py-3">
-              <b className={cn("block text-22 font-semibold leading-tight", n.k.startsWith("Average days") && "text-warn")}>{n.v}</b>
-              <span className="text-12.5 text-muted">{n.k}</span>
+            <div key={n.k} className="flex min-w-0 flex-col gap-1.5 rounded-md border-1.5 border-line px-4 py-3.5">
+              <span className="truncate text-13 font-medium text-ink-2" title={n.k}>
+                {n.k}
+              </span>
+              <b className={cn("text-26 font-medium leading-none", n.k.startsWith("Average days") && "text-warn")}>{n.v}</b>
             </div>
           ))}
         </div>
       </section>
       <section>
-        <h3 className="mb-1 text-13 font-semibold text-muted">Clients</h3>
+        <h3 className="mb-1 text-15 font-medium text-ink">Clients</h3>
         <p className="text-13.5">{PARTNER_CLIENTS_LINE.Oct}</p>
       </section>
       <section>
-        <h3 className="mb-2 text-13 font-semibold text-muted">Managers</h3>
-        <DataGrid columns={mgrCols} rows={MANAGER_ROWS} rowKey={(m) => m.id} className="rounded-md border border-line" inset />
+        <h3 className="mb-2 text-15 font-medium text-ink">Managers</h3>
+        <DataGrid columns={mgrCols} rows={MANAGER_ROWS} rowKey={(m) => m.id} className="rounded-md border-1.5 border-line" inset />
       </section>
       <section>
-        <h3 className="mb-1 text-13 font-semibold text-muted">Top risks for November</h3>
+        <h3 className="mb-1 text-15 font-medium text-ink">Top risks for November</h3>
         <ol className="grid list-decimal gap-1.5 pl-5 text-13.5">
           {TOP_RISKS.slice(0, 4).map((r) => (
             <li key={r.id}>
@@ -105,7 +108,7 @@ type DueRow = (typeof DUES)[number];
 type LateRow = (typeof LATE_FEES)[number];
 
 const feeCols: Column<FeeRow>[] = [
-  { key: "line", label: "Service line", render: (f) => <span className="font-semibold">{f.line}</span> },
+  { key: "line", label: "Service line", render: (f) => <span className="font-medium">{f.line}</span> },
   { key: "billed", label: "Billed", align: "right", render: (f) => rupees(f.billed) },
   { key: "collected", label: "Collected", align: "right", render: (f) => rupees(f.collected) },
   { key: "pct", label: "Collected %", align: "right", width: 110, render: (f) => `${Math.round((f.collected / f.billed) * 100)}%` },
@@ -115,7 +118,7 @@ const dueCols: Column<DueRow>[] = [
   { key: "client", label: "Client", render: (x) => <ClientName client={clientById(x.clientId)!} sub={clientById(x.clientId)!.manager} /> },
   { key: "amount", label: "Outstanding", align: "right", width: 120, render: (x) => rupees(x.amount) },
   { key: "days", label: "Days", align: "right", width: 70 },
-  { key: "age", label: "Ageing", width: 130, render: (x) => <span className={cn(x.days > 60 ? "font-semibold text-bad" : x.days > 30 && "font-semibold text-warn")}>{ageBucket(x.days)}</span> },
+  { key: "age", label: "Ageing", width: 130, render: (x) => <span className={cn(x.days > 60 ? "font-medium text-bad" : x.days > 30 && "font-medium text-warn")}>{ageBucket(x.days)}</span> },
 ];
 
 const lateCols: Column<LateRow>[] = [
@@ -124,7 +127,7 @@ const lateCols: Column<LateRow>[] = [
     label: "Filing",
     render: (x) => (
       <span>
-        <span className="block font-semibold">{x.form}</span>
+        <span className="block font-medium">{x.form}</span>
         <span className="block text-12 text-muted">
           {x.statute} · due {fmt(x.due)}
         </span>
@@ -134,7 +137,7 @@ const lateCols: Column<LateRow>[] = [
   { key: "client", label: "Client", render: (x) => <ClientName client={clientById(x.clientId)!} /> },
   { key: "manager", label: "Manager", className: "whitespace-nowrap", render: (x) => clientById(x.clientId)!.manager },
   { key: "late", label: "Days late", align: "right", width: 90 },
-  { key: "soFar", label: "So far", align: "right", width: 100, render: (x) => <span className="font-semibold text-bad">{rupees(x.soFar)}</span> },
+  { key: "soFar", label: "So far", align: "right", width: 100, render: (x) => <span className="font-medium text-bad">{rupees(x.soFar)}</span> },
   { key: "perDay", label: "Per day", align: "right", width: 90, render: (x) => rupees(x.perDay) },
 ];
 
@@ -195,38 +198,41 @@ export function ReportsScreen() {
       label: "Report",
       render: (r) =>
         VIEWS.has(r.id) || r.id === "r1" ? (
-          <button type="button" onClick={() => (r.id === "r1" ? window.scrollTo({ top: 0, behavior: "smooth" }) : show(r.id))} className="text-left font-semibold text-accent hover:underline">
+          <button type="button" onClick={() => (r.id === "r1" ? window.scrollTo({ top: 0, behavior: "smooth" }) : show(r.id))} className="text-left font-medium text-accent hover:underline">
             {r.name}
           </button>
         ) : (
-          <span className="font-semibold">{r.name}</span>
+          <span className="font-medium">{r.name}</span>
         ),
     },
-    { key: "area", label: "Area", className: "whitespace-nowrap" },
+    { key: "area", label: "Area", width: 124, render: (r) => <AreaPill area={r.area} className="gap-1 px-[7px]" /> },
     { key: "period", label: "Period", className: "whitespace-nowrap" },
     { key: "lastRun", label: "Last run", width: 96, className: "whitespace-nowrap", render: (r) => (r.lastRun.getTime() === STAFF_TODAY.getTime() ? "Today" : fmt(r.lastRun)) },
     { key: "schedule", label: "Schedule", className: "whitespace-nowrap" },
     {
       key: "act",
       label: "",
-      width: 300,
+      width: 168,
+      align: "right",
       render: (r) => (
-        <span className="flex items-center gap-2">
+        <span className="flex items-center justify-end gap-1.5">
           <Button size="sm" variant="outline" onClick={() => run(r)}>
             <Play size={14} strokeWidth={1.6} /> Run
           </Button>
           <Button
-            size="sm"
-            variant="outline"
+            size="iconSm"
+            variant="ghost"
+            aria-label={`Schedule ${r.name}`}
+            title="Schedule"
             onClick={() => {
               setSched(r);
               setFreq(r.schedule);
             }}
           >
-            <CalendarClock size={14} strokeWidth={1.6} /> Schedule
+            <CalendarClock size={16} strokeWidth={1.6} />
           </Button>
-          <Button size="sm" variant="outline" onClick={() => download(r)} aria-label={`Download ${r.name}`}>
-            <Download size={14} strokeWidth={1.6} /> Download
+          <Button size="iconSm" variant="ghost" onClick={() => download(r)} aria-label={`Download ${r.name}`} title="Download">
+            <Download size={16} strokeWidth={1.6} />
           </Button>
         </span>
       ),
@@ -234,7 +240,7 @@ export function ReportsScreen() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1 gap-5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Tabs
           items={[
@@ -260,8 +266,12 @@ export function ReportsScreen() {
         selectedKey={openId ?? undefined}
         filters={
           <>
-            <Select aria-label="Period" value={period} onChange={(e) => setPeriod(e.target.value)} options={opts("All periods", REPORT_PERIODS)} />
-            <Select aria-label="Area" value={area} onChange={(e) => setArea(e.target.value)} options={opts("All areas", ["Firm", ...AREAS])} />
+            <FilterChips
+              filters={[
+                { key: "period", label: "Period", value: period, options: REPORT_PERIODS, onChange: setPeriod },
+                { key: "area", label: "Area", value: area, options: ["Firm", ...AREAS], onChange: setArea },
+              ]}
+            />
           </>
         }
       />
@@ -331,7 +341,7 @@ export function ReportsScreen() {
             />
           </Field>
           <fieldset>
-            <legend className="mb-1.5 text-12.5 font-semibold text-muted">Send to</legend>
+            <legend className="mb-1.5 text-13 font-medium text-ink-2">Send to</legend>
             <div className="grid gap-2">
               {RECIPIENTS.map((n) => (
                 <label key={n} className="flex items-center gap-2.5 text-13.5">

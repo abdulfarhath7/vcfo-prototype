@@ -2,6 +2,7 @@
 import * as React from "react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
+import { Tabs } from "@/components/ui/Tabs";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
@@ -21,7 +22,7 @@ function SeverityBars({ sev }: { sev: 1 | 2 | 3 }) {
   return (
     <span className="flex flex-none gap-0.5" aria-hidden>
       {[1, 2, 3].map((i) => (
-        <i key={i} className={cn("h-3 w-1.5 rounded-[1px]", i <= sev ? "bg-bad" : "bg-line")} />
+        <i key={i} className={cn("h-3 w-1.5 rounded-[1px]", i <= sev ? "bg-bad-mid" : "bg-line")} />
       ))}
     </span>
   );
@@ -41,7 +42,7 @@ export function RisksScreen() {
   ];
 
   const columns: Column<Risk>[] = [
-    { key: "kind", label: "Kind", width: 140, render: (r) => <Tag tone={RISK_KIND_TONE[r.kind]}>{RISK_KIND_LABEL[r.kind]}</Tag> },
+    { key: "kind", label: "Kind", width: 140, render: (r) => <Tag tone={RISK_KIND_TONE[r.kind]} className="w-[104px]">{RISK_KIND_LABEL[r.kind]}</Tag> },
     {
       key: "risk",
       label: "Risk",
@@ -51,7 +52,7 @@ export function RisksScreen() {
           <span className="flex min-w-0 items-center gap-2.5">
             <ClientTile client={c} />
             <span className="min-w-0">
-              <span className="block truncate font-semibold">{r.title}</span>
+              <span className="block truncate font-medium">{r.title}</span>
               <span className="flex items-center gap-1.5 text-12 text-muted" title={`${r.severity} severity`}>
                 <SeverityBars sev={r.sev} />
                 {c ? (
@@ -86,7 +87,7 @@ export function RisksScreen() {
       width: 110,
       render: (r) =>
         r.kind === "owner" && assigned[r.id] ? (
-          <Chip tone="ok">Manager assigned</Chip>
+          <Chip fixed tone="ok" title="Manager assigned">Assigned</Chip>
         ) : r.kind === "owner" ? (
           <Button size="sm" variant="outline" className="w-[84px]" onClick={() => setAssignFor(r)}>
             Assign
@@ -100,30 +101,16 @@ export function RisksScreen() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <div className="flex gap-2 overflow-x-auto [scrollbar-width:none]" role="tablist" aria-label="Kind">
-        {chips.map((c) => {
-          const on = c.key === kind;
-          return (
-            <button
-              key={c.key || "all"}
-              type="button"
-              role="tab"
-              aria-selected={on}
-              onClick={() => setKind(c.key)}
-              className={cn(
-                "inline-flex h-[30px] flex-none items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 text-13 font-semibold",
-                on ? "border-accent-line bg-accent-soft text-accent" : "border-line bg-surface text-ink hover:bg-raised",
-              )}
-            >
-              {c.label}
-              <span className={cn("text-12 font-semibold", on ? "text-accent" : "text-muted")}>{c.n}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <DataGrid columns={columns} rows={rows} rowKey={(r) => r.id} pageSize={10} />
+    <div className="grid grid-cols-1 gap-5">
+      <DataGrid
+        title="Risks"
+        meta={String(rows.length)}
+        columns={columns}
+        rows={rows}
+        rowKey={(r) => r.id}
+        pageSize={10}
+        filters={<Tabs items={chips.map((c) => ({ key: c.key || "all", label: c.label, count: c.n }))} value={kind || "all"} onChange={(k) => setKind(k === "all" ? "" : (k as RiskKind))} />}
+      />
 
       <AssignDialog
         open={!!assignFor}

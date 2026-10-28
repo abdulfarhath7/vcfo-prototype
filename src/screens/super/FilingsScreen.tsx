@@ -1,15 +1,16 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Calendar, ChevronLeft, ChevronRight, Download, FileCheck2 } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Download, FileCheck2, Layers } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt } from "@/lib/dates";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
+import { AreaPill, Chip } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { Donut } from "@/components/cards/Donut";
+import { SectionCard } from "@/components/cards/SectionCard";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { PortalLink } from "@/screens/client/comp-parts";
 import { SUPER_FILINGS, SUPER_FILING_AREAS, type SuperFiling, type SuperFilingStatus } from "@/data/super-filings";
@@ -37,9 +38,9 @@ function inPeriod(f: SuperFiling, p: string) {
 
 function DueTile({ f }: { f: SuperFiling }) {
   return (
-    <span className={cn("grid w-10 flex-none place-items-center rounded border py-1 leading-none", TILE[f.status])} aria-hidden>
-      <b className="text-15 font-semibold">{f.due.getDate()}</b>
-      <span className="text-[10.5px] font-semibold opacity-80">{fmt(f.due).split(" ")[1]}</span>
+    <span className={cn("grid w-10 flex-none place-items-center rounded-md border-1.5 py-1 leading-none", TILE[f.status])} aria-hidden>
+      <b className="text-15 font-medium">{f.due.getDate()}</b>
+      <span className="text-11 font-medium opacity-80">{fmt(f.due).split(" ")[1]}</span>
     </span>
   );
 }
@@ -57,13 +58,13 @@ export function FilingsScreen() {
 
   const columns: Column<SuperFiling>[] = [
     { key: "due", label: "Due", width: 64, render: (f) => <DueTile f={f} /> },
-    { key: "area", label: "Area", width: 72, render: (f) => <span className="rounded-sm border border-line bg-raised px-1.5 py-0.5 font-mono text-11.5 font-semibold text-ink-2" title={f.area}>{f.code}</span> },
+    { key: "area", label: "Area", width: 124, render: (f) => <AreaPill area={f.area} /> },
     {
       key: "name",
       label: "Filing",
       render: (f) => (
         <span className="block min-w-0">
-          <span className="flex items-center gap-1 font-semibold">
+          <span className="flex items-center gap-1 font-medium">
             {f.name}
             <PortalLink area={f.area} name={f.name} />
           </span>
@@ -77,7 +78,7 @@ export function FilingsScreen() {
       label: "Filed on",
       width: 120,
       render: (f) =>
-        typeof f.filedOn === "string" ? <span className={cn(f.status === "Overdue" ? "font-semibold text-bad" : "text-muted")}>{f.filedOn}</span> : <span className="font-semibold">{fmt(f.filedOn)}</span>,
+        typeof f.filedOn === "string" ? <span className={cn(f.status === "Overdue" ? "font-medium text-bad" : "text-muted")}>{f.filedOn}</span> : <span className="font-medium">{fmt(f.filedOn)}</span>,
     },
     { key: "status", label: "Status", width: 124, render: (f) => <Chip fixed tone={TONE[f.status]}>{f.status}</Chip> },
     {
@@ -96,7 +97,7 @@ export function FilingsScreen() {
             </Button>
           </span>
         ) : f.proof === "pending" ? (
-          <Chip tone="warn" dot={false} title="SBC will upload the challan">
+          <Chip fixed tone="warn" dot={false} title="SBC will upload the challan">
             Proof pending
           </Chip>
         ) : (
@@ -108,11 +109,11 @@ export function FilingsScreen() {
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1 rounded-md border border-line bg-surface px-1 py-0.5">
+        <span className="inline-flex h-9 items-center gap-1 rounded-md border-1.5 border-line bg-surface px-1">
           <Button size="iconSm" variant="ghost" aria-label="Previous year" onClick={() => toast.show("FY 2025-26 is closed")}>
             <ChevronLeft size={16} strokeWidth={1.6} />
           </Button>
-          <b className="px-1 text-13 font-semibold">FY 2026-27</b>
+          <b className="px-1 text-13 font-medium">FY 2026-27</b>
           <Button size="iconSm" variant="ghost" aria-label="Next year" onClick={() => toast.show("FY 2027-28 opens on 1 Apr 2027")}>
             <ChevronRight size={16} strokeWidth={1.6} />
           </Button>
@@ -131,7 +132,7 @@ export function FilingsScreen() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-        <section className="rounded-md border-1.5 border-line bg-surface px-4 py-4 md:px-5" aria-label="Filings by status">
+        <SectionCard title="Filings by status" meta={period}>
           <Donut
             size={96}
             total={
@@ -147,15 +148,14 @@ export function FilingsScreen() {
               { label: "Upcoming", value: n("Upcoming"), tone: "idle" },
             ]}
           />
-        </section>
-        <section className="rounded-md border-1.5 border-line bg-surface px-4 py-4 md:px-5" aria-label="By area">
-          <p className="mb-2.5 text-13 font-semibold">By area · Sep-Oct</p>
-          <ul className="grid gap-2">
+        </SectionCard>
+        <SectionCard title="By area · Sep-Oct" icon={{ Icon: Layers, tone: "violet" }}>
+          <ul className="grid gap-2.5">
             {SUPER_FILING_AREAS.map((a) => {
               const list = all.filter((f) => f.area === a);
               return (
                 <li key={a}>
-                  <button type="button" onClick={() => setArea(area === a ? "all" : a)} className="grid w-full grid-cols-[80px_minmax(0,1fr)_32px] items-center gap-3 text-left text-12.5 font-semibold" aria-pressed={area === a}>
+                  <button type="button" onClick={() => setArea(area === a ? "all" : a)} className="grid w-full grid-cols-[80px_minmax(0,1fr)_32px] items-center gap-3 rounded-sm text-left text-13 font-medium text-ink-2 aria-pressed:text-accent" aria-pressed={area === a}>
                     <span className="truncate">{a}</span>
                     <StackedBar
                       height={8}
@@ -167,7 +167,7 @@ export function FilingsScreen() {
                         { label: "Upcoming", value: n("Upcoming", list), tone: "idle" },
                       ]}
                     />
-                    <span className="text-right font-mono text-12 text-muted">
+                    <span className="text-right text-12.5 text-muted">
                       {n("Filed", list)}/{list.length}
                     </span>
                   </button>
@@ -175,7 +175,7 @@ export function FilingsScreen() {
               );
             })}
           </ul>
-        </section>
+        </SectionCard>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">

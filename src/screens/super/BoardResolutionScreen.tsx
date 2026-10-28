@@ -62,7 +62,7 @@ export function BoardResolutionScreen() {
               {c.short} · Step 2
             </span>
           }
-          right={<Chip tone={stage >= 2 ? "ok" : "idle"}>{stage >= 2 ? "Final" : "Draft"}</Chip>}
+          right={<Chip fixed tone={stage >= 2 ? "ok" : "idle"}>{stage >= 2 ? "Final" : "Draft"}</Chip>}
           flush
         >
           <div className="flex items-center gap-1 border-b border-line-soft px-4 py-2 md:px-5">
@@ -71,16 +71,16 @@ export function BoardResolutionScreen() {
                 <t.Icon size={15} strokeWidth={1.6} />
               </Button>
             ))}
-            {dirty && <span className="ml-2 text-12.5 text-warn">Unsaved changes</span>}
+            {dirty && <span className="ml-2 text-12.5 text-caution">Unsaved changes</span>}
           </div>
           <div className="px-4 py-5 md:px-5">
             <article
               contentEditable={stage < 2}
               suppressContentEditableWarning
               onInput={() => setDirty(true)}
-              className={cn("mx-auto grid max-w-[640px] gap-3 rounded-md border border-line bg-surface px-5 py-6 text-13.5 leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-accent-line md:px-8", marks.b && "font-semibold", marks.i && "italic", marks.u && "underline")}
+              className={cn("mx-auto grid max-w-[640px] gap-3 rounded-md border-1.5 border-line bg-surface px-5 py-6 text-13.5 leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-accent-line md:px-8", marks.b && "font-medium", marks.i && "italic", marks.u && "underline")}
             >
-              <h3 className="text-center text-13 font-semibold">{DRAFT[0]}</h3>
+              <h3 className="text-center text-13 font-medium">{DRAFT[0]}</h3>
               {DRAFT.slice(1, 5).map((p) => (
                 <p key={p}>{p}</p>
               ))}
@@ -95,7 +95,7 @@ export function BoardResolutionScreen() {
           <ListRow>
             <FileBadge type="DOCX" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-mono text-12.5 font-semibold">board-resolution-larkspur-v{stage + 2}.docx</span>
+              <span className="block truncate text-13.5 font-medium">board-resolution-larkspur-v{stage + 2}.docx</span>
               <span className="block truncate text-12.5 text-muted">52 KB · {fmt(TODAY)}</span>
             </span>
           </ListRow>
@@ -148,12 +148,12 @@ export function BoardResolutionScreen() {
           {STAGES.map((s, i) => (
             <ListRow key={s}>
               <StatusCircle status={i < stage ? "done" : i === stage ? "current" : "planned"} />
-              <span className={cn("min-w-0 flex-1 truncate", i > stage && "text-muted", i === stage && "font-semibold")}>{s}</span>
+              <span className={cn("min-w-0 flex-1 truncate", i > stage && "text-muted", i === stage && "font-medium")}>{s}</span>
               {i < stage && <span className=" text-12 text-muted">{fmt(TODAY)}</span>}
             </ListRow>
           ))}
           <div className="border-t border-line-soft px-4 py-3 text-13 md:px-5">
-            <Link href={`/super/clients/${CLIENT}/step/2`} className="font-semibold text-accent hover:underline">
+            <Link href={`/super/clients/${CLIENT}/step/2`} className="font-medium text-accent hover:underline">
               Open step ›
             </Link>
           </div>

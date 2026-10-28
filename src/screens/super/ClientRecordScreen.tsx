@@ -6,8 +6,9 @@ import { STAFF_TODAY, daysFrom, fmt } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
-import { Chip, OwnerChip, type ChipTone } from "@/components/ui/Chip";
+import { AreaPill, Chip, OwnerChip, type ChipTone } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
+import { PhaseBar } from "@/components/ui/PhaseBar";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow, Empty, HeadLink } from "@/components/cards/SectionCard";
@@ -27,9 +28,9 @@ import { FREQ_LABEL, OB_TYPES, REG_TYPES, type ObType, type RegType } from "@/da
 import { DAYS_TO_COI } from "@/data/staff-today";
 import { AboutStepPanel } from "@/screens/staff/step-parts";
 import { FILINGS, HEALTH_TONE, REGS, SERVICE_TONE, WORK_TONE, auditOf, clientById, servicesOf, stageLabel, type FirmClient, type Service, type Work } from "@/data/super";
-import { EXPECTED_COI, PHASE_TOTALS, REG_CELL, adminOf, ageBucket, codeOf, dueOf, notesOf, phasesOf, rateOf, rupees, type RegCode } from "@/data/super-firm";
+import { EXPECTED_COI, PHASE_NAMES, PHASE_TOTALS, REG_CELL, adminOf, ageBucket, codeOf, dueOf, notesOf, phasesOf, rateOf, rupees, type RegCode } from "@/data/super-firm";
 import { AssignDialog, useAssignments } from "./assign";
-import { ClientTile } from "./parts";
+import { ClientTile, PhaseTrack } from "./parts";
 import { waitWord } from "@/data/status-words";
 
 // Client record, ported from reference/old-screens/s/super/Overview.dc.html: the staff record page.
@@ -40,7 +41,7 @@ import { waitWord } from "@/data/status-words";
 
 type TabKey = "incorporation" | "registrations" | "obligations" | "documents" | "notes" | "fees" | "audit";
 
-const REG_TONE: Record<RegCode, ChipTone> = { d: "ok", p: "prog", w: "warn", n: "idle", x: "idle" };
+const REG_TONE: Record<RegCode, ChipTone> = { d: "ok", p: "prog", w: "teal", n: "idle", x: "idle" };
 
 /** Shape the firm client for the shared staff record helpers (timeline, documents). */
 function asStaff(c: FirmClient): StaffClient {
@@ -90,16 +91,16 @@ function phaseRows(c: FirmClient): Phase[] {
 }
 
 const feeCols: Column<Service>[] = [
-  { key: "name", label: "Service", render: (s) => <span className="font-semibold">{s.name}</span> },
+  { key: "name", label: "Service", render: (s) => <span className="font-medium">{s.name}</span> },
   { key: "fee", label: "Fee", align: "right", width: 140, render: (s) => `${rupees(rateOf(s.id).fee)}${rateOf(s.id).per ? ` ${rateOf(s.id).per}` : ""}` },
   { key: "billing", label: "Billing", render: (s) => (rateOf(s.id).per ? "Monthly, in advance" : s.status === "Done" ? "Billed in full" : "50% on start, 50% on completion") },
   { key: "status", label: "Status", width: 124, render: (s) => <Chip fixed tone={SERVICE_TONE[s.status]}>{s.status}</Chip> },
 ];
 
 const filingCols: Column<Work>[] = [
-  { key: "item", label: "Form", render: (w) => <span className="font-semibold">{w.item}</span> },
+  { key: "item", label: "Form", render: (w) => <span className="font-medium">{w.item}</span> },
   { key: "group", label: "Statute" },
-  { key: "due", label: "Due", width: 80, render: (w) => <span className={cn(w.status === "Overdue" && "font-semibold text-bad")}>{fmt(w.due)}</span> },
+  { key: "due", label: "Due", width: 80, render: (w) => <span className={cn(w.status === "Overdue" && "font-medium text-bad")}>{fmt(w.due)}</span> },
   { key: "owner", label: "With", width: 112, render: (w) => <OwnerChip owner={w.owner} /> },
   { key: "status", label: "Status", width: 124, render: (w) => <Chip fixed tone={WORK_TONE[w.status]}>{w.status}</Chip> },
 ];
@@ -114,13 +115,13 @@ const afterCoiChip = () => (
   </Chip>
 );
 const regTypeCols: Column<RegType>[] = [
-  { key: "name", label: "Registration", render: (r) => <span className="font-semibold">{r.name}</span> },
+  { key: "name", label: "Registration", render: (r) => <span className="font-medium">{r.name}</span> },
   { key: "auth", label: "Authority", width: 160 },
   { key: "form", label: "Form", width: 160, mono: true },
   { key: "status", label: "Status", width: 130, render: afterCoiChip },
 ];
 const obTypeCols: Column<ObType>[] = [
-  { key: "name", label: "Obligation", render: (o) => <span className="font-semibold">{o.name}</span> },
+  { key: "name", label: "Obligation", render: (o) => <span className="font-medium">{o.name}</span> },
   { key: "law", label: "Law", width: 130 },
   { key: "fr", label: "Frequency", width: 120, render: (o) => FREQ_LABEL[o.fr] },
   { key: "status", label: "Status", width: 130, render: afterCoiChip },
@@ -167,7 +168,7 @@ export function ClientRecordScreen({ id }: { id: string }) {
   const leadObs = inLead ? obligationsFor("admin", c.id) : [];
   const daysToCoi = DAYS_TO_COI[c.id] ?? (coi ? daysFrom(coi, STAFF_TODAY) : undefined);
   const healthLabel = staff.pendingWith === "Client" ? "Waiting on client" : `With ${staff.pendingWith}`;
-  const healthTone: ChipTone = staff.pendingWith === "Client" ? "warn" : staff.pendingWith === "MCA" ? "violet" : "prog";
+  const healthTone: ChipTone = staff.pendingWith === "Client" ? "teal" : staff.pendingWith === "MCA" ? "violet" : "prog";
 
   const tabs = [
     { key: "incorporation", label: "Incorporation", count: inc && cur ? `${cur}/14` : `${incDone}/25` },
@@ -180,14 +181,14 @@ export function ClientRecordScreen({ id }: { id: string }) {
   ];
 
   const regCols: Column<RegRow>[] = [
-    { key: "name", label: "Registration", render: (r) => <span className="font-semibold">{r.name}</span> },
+    { key: "name", label: "Registration", render: (r) => <span className="font-medium">{r.name}</span> },
     { key: "number", label: "Number", mono: true, render: (r) => (r.code === "d" && r.name === "GST" ? c.gstin ?? "" : "") },
     { key: "with", label: "With", width: 120, render: (r) => (r.code === "w" ? c.short : r.code === "p" ? c.lead : "") },
-    { key: "status", label: "Status", width: 150, render: (r) => <Chip fixed tone={REG_TONE[r.code]} className="w-[140px]">{REG_CELL[r.code].label}</Chip> },
+    { key: "status", label: "Status", width: 150, render: (r) => <Chip fixed tone={REG_TONE[r.code]}>{REG_CELL[r.code].label}</Chip> },
   ];
 
   const leadRegCols: Column<StaffRegistration>[] = [
-    { key: "name", label: "Registration", render: (r) => <span className="font-semibold">{r.name}</span> },
+    { key: "name", label: "Registration", render: (r) => <span className="font-medium">{r.name}</span> },
     { key: "authority", label: "Authority", width: 110 },
     { key: "form", label: "Form", width: 110, mono: true },
     { key: "idValue", label: "Number", width: 190, mono: true, render: (r) => r.idValue ?? "" },
@@ -196,23 +197,25 @@ export function ClientRecordScreen({ id }: { id: string }) {
     { key: "status", label: "Status", width: 130, render: (r) => <Chip tone={leadRegTone[r.status]} fixed>{r.status}</Chip> },
   ];
   const leadObCols: Column<StaffObligation>[] = [
-    { key: "name", label: "Obligation", render: (o) => <span className="font-semibold">{o.name}</span> },
+    { key: "name", label: "Obligation", render: (o) => <span className="font-medium">{o.name}</span> },
     { key: "form", label: "Form", width: 110, mono: true },
     { key: "area", label: "Area", width: 110 },
     { key: "frequency", label: "Frequency", width: 100 },
     { key: "period", label: "Period", width: 110 },
-    { key: "due", label: "Due", width: 80, render: (o) => <span className={o.status === "Overdue" ? "font-semibold text-bad" : undefined}>{fmt(o.due)}</span> },
+    { key: "due", label: "Due", width: 80, render: (o) => <span className={o.status === "Overdue" ? "font-medium text-bad" : undefined}>{fmt(o.due)}</span> },
     { key: "owner", label: "Owner", width: 110, render: (o) => <OwnerChip owner={o.owner} label={o.owner === "client" ? c.short : undefined} /> },
     { key: "status", label: "Status", width: 140, render: (o) => <Chip tone={leadObTone[o.status]} fixed>{o.status}</Chip> },
   ];
 
   const now = (
-    <span className="min-w-0">
-      <span className="text-12.5 text-muted">Now </span>
-      <b className="font-semibold">
-        {inLead ? staff.code : codeOf(c)} · {c.step}
-      </b>
-      <Chip tone={inLead ? healthTone : HEALTH_TONE[c.health]} className="ml-2 align-middle">
+    <span className="flex min-w-0 items-center gap-3">
+      <span className="min-w-0 flex-1">
+        <span className="block text-13 font-medium text-ink-2">Now</span>
+        <span className="block truncate text-14 font-medium text-ink">
+          <span className="text-muted">{inLead ? staff.code : codeOf(c)} ·</span> {c.step}
+        </span>
+      </span>
+      <Chip fixed tone={inLead ? healthTone : HEALTH_TONE[c.health]}>
         {inLead ? healthLabel : waitWord(c.health)}
       </Chip>
     </span>
@@ -220,59 +223,75 @@ export function ClientRecordScreen({ id }: { id: string }) {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <section className="rounded-md border-1.5 border-line bg-raised px-4 pb-3 pt-4 md:px-5" aria-label={c.name}>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <ClientTile client={c} className="h-8 w-8 text-12" />
-          <h1 className="min-w-0 truncate text-[20px] font-semibold leading-tight tracking-tight">{c.name}</h1>
-          <span className="ml-auto flex items-center gap-2">
-            <Chip tone={inc ? "warn" : "teal"}>{stageLabel(c)}</Chip>
-            <Button size="sm" variant="outline" onClick={() => setTab("documents")}>
+      <header className="flex flex-col gap-4" aria-label={c.name}>
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
+          <ClientTile client={c} className="mt-1 hidden h-9 w-9 text-12.5 sm:inline-grid" />
+          <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-1">
+            <h1 className="flex flex-wrap items-center gap-x-3 gap-y-1 text-22 font-medium tracking-[-0.01em] md:text-28">
+              <span className="min-w-0">{c.name}</span>
+              <AreaPill area={stageLabel(c)} reg={inc ? "mca" : undefined} className="gap-1 px-[7px]" />
+            </h1>
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-13.5 text-muted">
+              {contact && (
+                <>
+                  <span>{contact.name}</span>
+                  <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-1 text-accent hover:underline">
+                    <Mail size={14} strokeWidth={1.6} /> {contact.email}
+                  </a>
+                  <span aria-hidden>·</span>
+                </>
+              )}
+              <span>
+                Admin <b className="font-medium text-ink-2">{adminOf(manager)}</b>
+              </span>
+              <span aria-hidden>·</span>
+              <span>
+                Manager <b className="font-medium text-ink-2">{manager}</b>
+              </span>
+              <span aria-hidden>·</span>
+              <span>
+                Project lead <b className="font-medium text-ink-2">{c.lead}</b>
+              </span>
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => setAssignOpen(true)}>
+              <Repeat size={16} strokeWidth={1.6} /> Reassign
+            </Button>
+            <Button variant="outline" onClick={() => setTab("documents")}>
               Documents {docs.length}
             </Button>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-3 rounded-md border-1.5 border-line bg-surface px-4 py-3.5 md:px-5">
+          <span className="flex flex-col gap-1">
+            <span className="text-13 font-medium text-ink-2">{cur ? "Step" : "Now at"}</span>
+            <b className="text-22 font-medium leading-none">
+              {cur ? cur : c.code}
+              <small className="ml-1 text-13 font-normal text-muted">{cur ? `of ${cur <= 14 ? 14 : 25}` : `${ph[3]} of 23 registrations`}</small>
+            </b>
+          </span>
+          <span className="flex flex-col gap-1">
+            <span className="text-13 font-medium text-ink-2">{inc ? "Days to COI" : "Steps done"}</span>
+            <b className="text-22 font-medium leading-none">{inc && daysToCoi !== undefined ? daysToCoi : `${allDone}/48`}</b>
+          </span>
+          <span className="flex flex-col gap-1">
+            <span className="text-13 font-medium text-ink-2">With {holder}</span>
+            <b className="text-22 font-medium leading-none">{c.daysInStep} days</b>
+          </span>
+          <span className="min-w-0 flex-[1_1_280px] md:border-l md:border-line-soft md:pl-6">
+            {stepHref ? (
+              <Link href={stepHref} className="block min-w-0 hover:underline">
+                {now}
+              </Link>
+            ) : (
+              now
+            )}
           </span>
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-13 text-ink-2">
-          {contact && (
-            <span className="inline-flex min-w-0 items-center gap-1.5">
-              {contact.name} ·
-              <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-1 text-accent hover:underline">
-                <Mail size={14} strokeWidth={1.6} /> {contact.email}
-              </a>
-            </span>
-          )}
-          <span className="min-w-0">
-            Admin: <b className="font-semibold text-ink">{adminOf(manager)}</b> · Manager: <b className="font-semibold text-ink">{manager}</b> · Project lead: <b className="font-semibold text-ink">{c.lead}</b>
-          </span>
-          <Button size="sm" variant="link" onClick={() => setAssignOpen(true)}>
-            <Repeat size={14} strokeWidth={1.6} /> Reassign
-          </Button>
-        </div>
-        <div className="mt-3 flex flex-wrap items-baseline gap-x-8 gap-y-2">
-          <span>
-            <b className="text-22 font-semibold">{cur ? `Step ${cur}` : c.code}</b>
-            <span className="ml-1 text-12.5 text-muted">{cur ? `of ${cur <= 14 ? 14 : 25}` : `${ph[3]} of 23 registrations`}</span>
-          </span>
-          <span>
-            <b className="text-22 font-semibold">{inc && daysToCoi !== undefined ? daysToCoi : `${allDone}/48`}</b>
-            <span className="ml-1 text-12.5 text-muted">{inc ? "days to COI" : "steps done"}</span>
-          </span>
-          <span>
-            <b className="text-22 font-semibold">{c.daysInStep}d</b>
-            <span className="ml-1 text-12.5 text-muted">with {holder}</span>
-          </span>
-          {stepHref ? (
-            <Link href={stepHref} className="min-w-0 hover:underline">
-              {now}
-            </Link>
-          ) : (
-            now
-          )}
-        </div>
-      </section>
+      </header>
 
-      <div className="overflow-x-auto">
-        <Tabs items={tabs} value={tab} onChange={(k) => setTab(k as TabKey)} />
-      </div>
+      <Tabs variant="underline" items={tabs} value={tab} onChange={(k) => setTab(k as TabKey)} />
 
       {tab === "incorporation" && (
         <>
@@ -280,6 +299,11 @@ export function ClientRecordScreen({ id }: { id: string }) {
             <GanttTimeline start={gantt.start} end={gantt.end} ticks={gantt.ticks} rows={gantt.rows} today={STAFF_TODAY} wideNames={inc} noCount={inc} />
           </SectionCard>
           <SectionCard title="Steps" meta={`${allDone} of 48 tasks${cur ? ` · Step ${cur} of 25` : ""}`} flush right={stepHref ? <HeadLink href={stepHref}>Open current step ›</HeadLink> : undefined}>
+            <PhaseTrack done={ph} totals={PHASE_TOTALS} className="hidden border-b border-line-soft px-4 py-4 sm:flex md:px-5" />
+            <div className="flex items-center gap-3 border-b border-line-soft px-4 py-3 sm:hidden">
+              <PhaseBar done={ph} totals={PHASE_TOTALS} names={PHASE_NAMES} className="flex-1" />
+              <span className="text-12.5 text-muted">{allDone}/48</span>
+            </div>
             <PhaseRows phases={phaseRows(c)} openId={c.stepNo ? `phase-${STEPS[c.stepNo - 1].phase}` : undefined} onAbout={setAbout} />
           </SectionCard>
           <AboutStepPanel key={about ?? 0} open={about !== null} onOpenChange={(v) => !v && setAbout(null)} n={about ?? 1} />

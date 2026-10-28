@@ -1,7 +1,14 @@
+"use client";
+import * as React from "react";
 import Link from "next/link";
+import * as M from "@radix-ui/react-dropdown-menu";
+import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { barFill } from "@/components/ui/Bar";
 import type { Client } from "@/data/people";
+import { Avatar } from "@/components/ui/Avatar";
+import type { ActivityRow } from "@/components/cards/ActivityList";
+import { STAFF_TODAY, daysFrom, fmt } from "@/lib/dates";
 
 const TILE: Record<Client["tone"], string> = {
   accent: "bg-accent-soft text-accent",
@@ -20,7 +27,7 @@ const ini = (name: string) => {
 /** 26 px initials tile in the client's identity colour (old .ct). No client shows "?". */
 export function ClientTile({ client, className }: { client?: Pick<Client, "name" | "tone">; className?: string }) {
   return (
-    <span className={cn("inline-grid h-[26px] w-[26px] flex-none place-items-center rounded-md text-[10.5px] font-semibold", client ? TILE[client.tone] : "bg-raised text-muted", className)} aria-hidden>
+    <span className={cn("inline-grid h-[26px] w-[26px] flex-none place-items-center rounded-md text-[10.5px] font-medium", client ? TILE[client.tone] : "bg-raised text-muted", className)} aria-hidden>
       {client ? ini(client.name) : "?"}
     </span>
   );
@@ -32,7 +39,7 @@ export function ClientName({ client, href, sub, className }: { client: Pick<Clie
     <>
       <i className={cn("h-2 w-2 flex-none rounded-[2px]", barFill[client.tone])} aria-hidden />
       <span className="min-w-0">
-        <span className="block truncate font-semibold">{client.name}</span>
+        <span className="block truncate font-medium">{client.name}</span>
         {sub && <span className="block truncate text-12 text-muted">{sub}</span>}
       </span>
     </>
@@ -51,3 +58,138 @@ export function ClientName({ client, href, sub, className }: { client: Pick<Clie
 export const opts = (all: string, values: string[]) => [{ value: "", label: all }, ...values.map((v) => ({ value: v, label: v }))];
 
 export const clientHref = (id: string) => `/super/clients/${id}`;
+
+/* ---------- R-10 filter chips ---------- */
+
+export interface FilterDef {
+  key: string;
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}
+
+const menuCls = "z-50 min-w-[180px] max-h-[320px] overflow-y-auto rounded-md border border-line bg-surface p-1 text-14 text-ink shadow-float";
+const itemCls = "flex h-[34px] cursor-pointer select-none items-center gap-3 rounded-sm px-2.5 outline-none data-[highlighted]:bg-hover";
+
+function FilterMenu({ f, trigger }: { f: FilterDef; trigger: React.ReactNode }) {
+  return (
+    <M.Root modal={false}>
+      <M.Trigger asChild>{trigger}</M.Trigger>
+      <M.Portal>
+        <M.Content align="start" sideOffset={4} collisionPadding={12} className={menuCls}>
+          {f.options.map((o) => (
+            <M.Item key={o} onSelect={() => f.onChange(o)} className={cn(itemCls, o === f.value && "font-medium text-accent")}>
+              <span className="min-w-0 flex-1 truncate">{o}</span>
+            </M.Item>
+          ))}
+        </M.Content>
+      </M.Portal>
+    </M.Root>
+  );
+}
+
+/** R-10: set filters are soft blurple chips with an ×; unset ones are dashed "+ Label" chips. "Clear all" when any is set. */
+export function FilterChips({ filters, onClear, className }: { filters: FilterDef[]; onClear?: () => void; className?: string }) {
+  const any = filters.some((f) => f.value);
+  return (
+    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+      {filters.map((f) =>
+        f.value ? (
+          <span key={f.key} className="inline-flex h-7 items-center gap-1.5 rounded-md border-1.5 border-accent-line bg-accent-soft pl-2.5 pr-1.5 text-13 text-accent">
+            <FilterMenu
+              f={f}
+              trigger={
+                <button type="button" className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+                  <span className="text-ink-2">{f.label}</span>
+                  <b className="max-w-[140px] truncate font-medium">{f.value}</b>
+                </button>
+              }
+            />
+            <button type="button" aria-label={`Remove ${f.label} filter`} onClick={() => f.onChange("")} className="grid h-[18px] w-[18px] place-items-center rounded-sm hover:bg-surface">
+              <X size={13} strokeWidth={1.6} />
+            </button>
+          </span>
+        ) : (
+          <FilterMenu
+            key={f.key}
+            f={f}
+            trigger={
+              <button type="button" className="inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-md border-1.5 border-dashed border-line-2 px-2.5 text-13 font-medium text-ink-2 hover:bg-hover">
+                <Plus size={13} strokeWidth={1.6} />
+                {f.label}
+              </button>
+            }
+          />
+        ),
+      )}
+      {any && onClear && (
+        <button type="button" onClick={onClear} className="inline-flex h-7 items-center whitespace-nowrap rounded-md border-1.5 border-line bg-surface px-2.5 text-13 font-medium text-ink-2 hover:bg-hover">
+          Clear all
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ---------- R-22 ST5 phase track (full form) ---------- */
+
+const TRACK_NAMES = ["Name application", "Incorporation", "Post-incorporation", "Registrations"];
+const TRACK_CODES = ["Pre-1–5", "Pre-6–14", "Post-1–11", "Reg-1–23"];
+
+/** ST5 (a): four bars sized by step count. Done green, current blurple with a soft ring, next grey. Name above, count and codes below. */
+export function PhaseTrack({ done, totals, className }: { done: number[]; totals: readonly number[]; className?: string }) {
+  const cur = totals.findIndex((t, i) => (done[i] ?? 0) < t);
+  return (
+    <ol className={cn("flex gap-2", className)} aria-label="Phases">
+      {totals.map((t, i) => {
+        const n = done[i] ?? 0;
+        const state = n >= t ? "done" : i === cur ? "now" : "next";
+        return (
+          <li key={i} className="flex min-w-0 flex-col gap-[7px]" style={{ flex: `${t} 1 0` }}>
+            <span className={cn("truncate text-13 font-medium", state === "next" ? "text-muted" : "text-ink")}>{TRACK_NAMES[i]}</span>
+            <span className={cn("relative h-2.5 overflow-hidden rounded-bar bg-raised", state === "now" && "shadow-[0_0_0_1.5px_var(--accent-line)]")}>
+              <i className={cn("absolute inset-y-0 left-0 rounded-bar", state === "done" ? "bg-ok-mid" : "bg-primary")} style={{ width: n ? `max(${(n / t) * 100}%, 6px)` : 0 }} />
+            </span>
+            <span className="flex items-baseline gap-1.5 whitespace-nowrap">
+              <span className={cn("text-12 font-medium", state === "done" ? "text-ok" : state === "now" ? "text-accent" : "text-muted")}>
+                {n}/{t}
+              </span>
+              <span className={cn("hidden truncate font-mono text-11.5 sm:inline", state === "next" ? "text-faint" : "text-muted")}>{TRACK_CODES[i]}</span>
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/* ---------- Admin feed ---------- */
+
+const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+/** Old feed times: "Today 11:20", "Yesterday", "Wed 14 Oct". */
+export function when(date: Date, time?: string) {
+  const n = daysFrom(date, STAFF_TODAY);
+  if (n === 0) return `Today ${time ?? ""}`.trim();
+  if (n === -1) return "Yesterday";
+  return `${DAY[date.getDay()]} ${fmt(date)}`;
+}
+
+/** "What admins did": the person, the full sentence, and when. */
+export function AdminFeedList({ rows }: { rows: ActivityRow[] }) {
+  return (
+    <ul>
+      {rows.map((f) => (
+        <li key={f.id} className="flex items-start gap-3 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5">
+          <Avatar name={f.who ?? ""} size={24} className="mt-0.5" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-13.5 leading-snug text-ink">{f.text}</span>
+            <span className="block text-12.5 text-muted">
+              {f.who} · {when(f.date, f.time)}
+            </span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}

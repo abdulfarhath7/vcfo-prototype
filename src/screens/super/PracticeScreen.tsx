@@ -1,13 +1,12 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { AlertTriangle, Award, Building2, CalendarCheck, CheckCircle2, ChevronRight, Clock, FileCheck2, User } from "lucide-react";
+import { AlertTriangle, Award, Building2, CalendarCheck, Check, CheckCircle2, ChevronRight, Clock, FileCheck2, User } from "lucide-react";
 import { fmt } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Cols, Col } from "@/components/shell/Page";
 import { Chip, OwnerChip } from "@/components/ui/Chip";
 import { PhaseBar } from "@/components/ui/PhaseBar";
-import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { NumberStrip, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
@@ -16,7 +15,7 @@ import { StackedBar, type Segment } from "@/components/cards/StackedBar";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
 import { FIRM_CLIENTS, HEALTH_TONE, HEALTH_WORD, INC_STAGES, MANAGERS, REGS, REG_DONE, WORK, WORK_TONE, clientById, pipeLabel, type Area, type FirmClient, type Work, type WorkStatus } from "@/data/super";
 import { AVG_DAYS_TO_COI, EXPECTED_COI, INC_PIPELINE, PHASE_NAMES, PHASE_TOTALS, REG_CELL, STAGE_DAYS, phasesOf, type RegCode, type StageDays } from "@/data/super-firm";
-import { ClientName, ClientTile, clientHref, opts } from "./parts";
+import { ClientName, ClientTile, FilterChips, clientHref } from "./parts";
 import { PracticeCalendar } from "./PracticeCalendar";
 
 // Practice areas. Ported from reference/old-patch/super/Incorporation, Registrations and Compliances .dc.html
@@ -37,7 +36,7 @@ function columns(area: Area): Column<Work>[] {
     { key: "item", label: ITEM_LABEL[area], render: (w) => <span className="block max-w-[280px] truncate">{w.item}</span> },
     ...(area === "Compliances" ? [{ key: "group", label: "Statute", className: "whitespace-nowrap" } as Column<Work>] : []),
     { key: "owner", label: "With", width: 112, render: (w) => <OwnerChip owner={w.owner} /> },
-    { key: "due", label: "Due", width: 76, render: (w) => <span className={cn("whitespace-nowrap", (w.status === "Overdue" || w.status === "Stuck") && "font-semibold text-bad")}>{fmt(w.due)}</span> },
+    { key: "due", label: "Due", width: 76, render: (w) => <span className={cn("whitespace-nowrap", (w.status === "Overdue" || w.status === "Stuck") && "font-medium text-bad")}>{fmt(w.due)}</span> },
     { key: "days", label: area === "Compliances" ? "Days open" : "Days in step", align: "right", width: 104, render: (w) => (w.days === null ? <span className="text-faint">–</span> : w.days) },
     { key: "status", label: "Status", width: 124, render: (w) => <Chip fixed tone={WORK_TONE[w.status]}>{w.status}</Chip> },
   ];
@@ -79,13 +78,13 @@ function stages(area: Area, rows: Work[]): Segment[] {
     return [
       { label: "In progress", value: n("In progress"), tone: "accent" },
       { label: "Due in 7 days", value: n("Due soon"), tone: "warn" },
-      { label: "Waiting on client", value: n("With client"), tone: "violet" },
+      { label: "Waiting on client", value: n("With client"), tone: "teal" },
       { label: "Overdue", value: n("Overdue"), tone: "bad" },
     ];
   return [
     { label: "Filed", value: n("Filed"), tone: "ok" },
     { label: "In progress", value: n("In progress"), tone: "accent" },
-    { label: "Waiting on client", value: n("With client"), tone: "violet" },
+    { label: "Waiting on client", value: n("With client"), tone: "teal" },
     { label: "Due in 7 days", value: n("Due soon"), tone: "warn" },
     { label: "Overdue", value: n("Overdue"), tone: "bad" },
     { label: "Upcoming", value: n("Upcoming"), tone: "idle" },
@@ -104,10 +103,10 @@ function IncPipeline() {
         {INC_PIPELINE.map((p, i) => {
           const list = inc.filter((c) => c.pipe === p.key);
           return (
-            <li key={p.key} className="relative min-h-[150px] min-w-0 rounded-md border border-line px-3 py-3">
-              <b className="block text-[20px] font-semibold leading-none">{list.length}</b>
-              <span className="mt-1 block truncate text-12.5 text-muted">{p.label}</span>
-              <ul className="mt-2.5 grid gap-2">
+            <li key={p.key} className="relative min-h-[150px] min-w-0 rounded-md border-1.5 border-line px-4 py-3.5">
+              <span className="block truncate text-13 font-medium text-ink-2">{p.label}</span>
+              <b className="mt-1.5 block text-26 font-medium leading-none">{list.length}</b>
+              <ul className="mt-3 grid gap-2">
                 {list.map((c) => (
                   <li key={c.id}>
                     <Link href={clientHref(c.id)} className="flex min-w-0 items-center gap-2 text-13 hover:underline">
@@ -127,9 +126,9 @@ function IncPipeline() {
 }
 
 const stageDayCols: Column<StageDays>[] = [
-  { key: "stage", label: "Stage", render: (r) => <span className="font-semibold">{r.stage}</span> },
+  { key: "stage", label: "Stage", render: (r) => <span className="font-medium">{r.stage}</span> },
   { key: "target", label: "Target", align: "right", width: 84, render: (r) => `${r.target} days` },
-  { key: "avg", label: "Average", align: "right", width: 90, render: (r) => <span className={cn("font-semibold", r.avg > r.target ? "text-bad" : "text-ok")}>{r.avg} days</span> },
+  { key: "avg", label: "Average", align: "right", width: 90, render: (r) => <span className={cn("font-medium", r.avg > r.target ? "text-bad" : "text-ok")}>{r.avg} days</span> },
   { key: "slowest", label: "Slowest now", render: (r) => <span className="whitespace-nowrap">{r.slowest}</span> },
 ];
 
@@ -141,14 +140,14 @@ function ExpectedCoi() {
         <ListRow key={c.id} href={clientHref(c.id)}>
           <ClientTile client={c} />
           <span className="min-w-0 flex-1">
-            <span className="block font-semibold">{c.name.replace(/( India)? Pvt Ltd$/, "")}</span>
+            <span className="block font-medium">{c.name.replace(/( India)? Pvt Ltd$/, "")}</span>
             <span className="line-clamp-2 text-12 text-muted">
               {c.code} {c.step} · {c.manager}
             </span>
           </span>
           <PhaseBar done={phasesOf(c)} totals={PHASE_TOTALS} names={PHASE_NAMES} className="hidden w-24 flex-none sm:flex" />
-          <b className="w-14 flex-none text-right text-13 font-semibold">{fmt(EXPECTED_COI[c.id])}</b>
-          <Chip tone={HEALTH_TONE[c.health]} className="hidden flex-none sm:inline-flex">
+          <b className="w-14 flex-none text-right text-13 font-medium">{fmt(EXPECTED_COI[c.id])}</b>
+          <Chip fixed tone={HEALTH_TONE[c.health]} className="hidden flex-none sm:inline-flex">
             {HEALTH_WORD[c.health]}
           </Chip>
         </ListRow>
@@ -158,6 +157,22 @@ function ExpectedCoi() {
 }
 
 /* ---------- Registrations matrix ---------- */
+
+// Soft cells in status colours (R-13: no white text on solid colour). Pending on documents is waiting: teal.
+const CELL: Record<RegCode, string> = {
+  d: "bg-ok-soft text-ok",
+  p: "bg-accent-soft text-accent",
+  w: "bg-teal-soft text-teal",
+  n: "text-faint",
+  x: "border-1.5 border-dashed border-line",
+};
+const MARK: Record<RegCode, React.ReactNode> = {
+  d: <Check size={14} strokeWidth={2} />,
+  p: <i className="h-[7px] w-[7px] rounded-[2px] bg-accent-mid" />,
+  w: <i className="h-[7px] w-[7px] rounded-[2px] bg-teal-mid" />,
+  n: "–",
+  x: null,
+};
 
 interface MatrixRow {
   c: FirmClient;
@@ -182,7 +197,7 @@ function RegMatrix({ view }: { view: React.ReactNode }) {
         <span className="flex min-w-0 items-center gap-2.5">
           <ClientTile client={r.c} />
           <span className="min-w-0">
-            <span className="block truncate font-semibold">{r.c.name.replace(/( India)? Pvt Ltd$/, "")}</span>
+            <span className="block truncate font-medium">{r.c.name.replace(/( India)? Pvt Ltd$/, "")}</span>
             <span className="block truncate text-12 text-muted">{r.c.manager}</span>
           </span>
         </span>
@@ -207,8 +222,8 @@ function RegMatrix({ view }: { view: React.ReactNode }) {
           const code = (r.c.reg[i] ?? "n") as RegCode;
           const cell = REG_CELL[code];
           return (
-            <span title={`${t} · ${cell.label}`} aria-label={`${t}: ${cell.label}`} className={cn("grid h-7 w-full min-w-[44px] place-items-center rounded-md text-12 font-semibold", cell.cls)}>
-              {cell.mark}
+            <span title={`${t} · ${cell.label}`} aria-label={`${t}: ${cell.label}`} className={cn("grid h-6 w-full min-w-[44px] place-items-center rounded-sm text-12 font-medium", CELL[code])}>
+              {MARK[code]}
             </span>
           );
         },
@@ -227,24 +242,22 @@ function RegMatrix({ view }: { view: React.ReactNode }) {
       pageSize={17}
       filters={
         <>
-          {view}
-          <Select aria-label="Manager" value={manager} onChange={(e) => setManager(e.target.value)} options={opts("All managers", managerNames)} />
-          <Select
-            aria-label="Clients shown"
-            value={show}
-            onChange={(e) => setShow(e.target.value)}
-            options={[
-              { value: "all", label: "All clients" },
-              { value: "open", label: "Only with open work" },
+          <FilterChips
+            filters={[
+              { key: "manager", label: "Manager", value: manager, options: managerNames, onChange: setManager },
+              { key: "show", label: "Clients", value: show === "open" ? "With open work" : "", options: ["With open work"], onChange: (v) => setShow(v ? "open" : "all") },
             ]}
           />
+          {view}
         </>
       }
       footer={
         <span className="hidden flex-wrap items-center gap-x-3 gap-y-1 sm:flex">
           {(["d", "p", "w", "n", "x"] as RegCode[]).map((k) => (
             <span key={k} className="inline-flex items-center gap-1.5">
-              <span className={cn("grid h-3 w-3 place-items-center rounded-[3px]", REG_CELL[k].cls)} aria-hidden />
+              <span className={cn("grid h-3 w-3 place-items-center rounded-[3px] text-11", CELL[k])} aria-hidden>
+                {k === "n" ? "–" : null}
+              </span>
               {REG_CELL[k].label}
             </span>
           ))}
@@ -296,9 +309,13 @@ export function PracticeScreen({ area }: { area: Area }) {
       rowLate={(w) => w.status === "Overdue"}
       filters={
         <>
+          <FilterChips
+            filters={[
+              { key: "manager", label: "Manager", value: manager, options: managerNames, onChange: setManager },
+              { key: "status", label: "Status", value: status, options: statuses, onChange: setStatus },
+            ]}
+          />
           {viewTabs}
-          <Select aria-label="Manager" value={manager} onChange={(e) => setManager(e.target.value)} options={opts("All managers", managerNames)} />
-          <Select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)} options={opts("All statuses", statuses)} />
         </>
       }
     />
@@ -307,10 +324,7 @@ export function PracticeScreen({ area }: { area: Area }) {
   let main: React.ReactNode = itemsGrid;
   if (area === "Registrations" && view === "matrix") main = <RegMatrix view={viewTabs} />;
   // Old CompCal.dc.html: the client-style calendar fills the page. Its toolbar ends with "Filings", which opens the filings list.
-  if (area === "Compliances")
-    return (
-      <PracticeCalendar />
-    );
+  if (area === "Compliances") return <PracticeCalendar />;
 
   // Old Incorporation.dc.html: the pipeline across the page, then days in each stage beside the expected certificates.
   if (area === "Incorporation")
@@ -329,9 +343,7 @@ export function PracticeScreen({ area }: { area: Area }) {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <section className="overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="Summary">
-        <NumberStrip items={stats(area, all)} />
-      </section>
+      <NumberStrip items={stats(area, all)} />
       <Cols>
         <Col>{main}</Col>
         <Col>

@@ -27,12 +27,12 @@ const ROLES: Person["role"][] = ["Admin", "Manager", "Project lead"];
 
 /** Label and value rows that switch to inputs while editing. Saves on Done and logs each change. */
 function EditableKV({ rows, editing, onChange }: { rows: Array<{ k: string; v: string; mono?: boolean }>; editing: boolean; onChange: (i: number, v: string) => void }) {
-  if (!editing) return <KeyValue cols={1} wrap rows={rows} />;
+  if (!editing) return <KeyValue cols={1} wrap rows={rows.map(({ k, v }) => ({ k, v }))} />;
   return (
     <div className="grid gap-3">
       {rows.map((r, i) => (
         <Field key={r.k} label={r.k}>
-          <Input value={r.v} className={cn(r.mono && "font-mono text-13")} onChange={(e) => onChange(i, e.target.value)} />
+          <Input value={r.v} onChange={(e) => onChange(i, e.target.value)} />
         </Field>
       ))}
     </div>
@@ -42,8 +42,8 @@ function EditableKV({ rows, editing, onChange }: { rows: Array<{ k: string; v: s
 /** R-40: a risky change asks first, in place. */
 function ConfirmRow({ text, label, onConfirm, onCancel }: { text: string; label: string; onConfirm: () => void; onCancel: () => void }) {
   return (
-    <div role="alert" className="flex flex-wrap items-center gap-2 border-b border-line-soft bg-warn-soft px-4 py-2.5 text-13.5 md:px-5">
-      <span className="min-w-0 flex-1 font-semibold text-warn">{text}</span>
+    <div role="alert" className="m-3 flex flex-wrap items-center gap-2 rounded-md border-1.5 border-caution-line bg-caution-soft px-3.5 py-2.5 text-13.5 md:mx-4">
+      <span className="min-w-0 flex-1 font-medium text-caution">{text}</span>
       <Button size="sm" variant="ghost" onClick={onCancel}>
         Cancel
       </Button>
@@ -109,8 +109,8 @@ export function SettingsScreen() {
         <span className="flex min-w-0 items-center gap-2.5">
           <Avatar name={p.name} size={24} />
           <span className="min-w-0">
-            <span className="block truncate font-semibold">{p.name}</span>
-            <span className="block truncate font-mono text-12 text-muted">{p.email}</span>
+            <span className="block truncate font-medium">{p.name}</span>
+            <span className="block truncate text-12.5 text-muted">{p.email}</span>
           </span>
         </span>
       ),
@@ -122,7 +122,7 @@ export function SettingsScreen() {
 
   const holidayCols: Column<Holiday>[] = [
     { key: "date", label: "Date", width: 80, className: "whitespace-nowrap", render: (h) => fmt(h.date) },
-    { key: "name", label: "Holiday", render: (h) => <span className="font-semibold">{h.name}</span> },
+    { key: "name", label: "Holiday", render: (h) => <span className="font-medium">{h.name}</span> },
     { key: "kind", label: "Kind" },
     {
       key: "closed",
@@ -159,7 +159,7 @@ export function SettingsScreen() {
   };
 
   const permCols: Column<RolePerm>[] = [
-    { key: "role", label: "Role", render: (r) => <span className="font-semibold">{r.role}</span> },
+    { key: "role", label: "Role", render: (r) => <span className="font-medium">{r.role}</span> },
     { key: "view", label: "Can view", align: "center", width: 96, render: (r) => permCell(r, "view") },
     { key: "edit", label: "Can edit", align: "center", width: 96, render: (r) => permCell(r, "edit") },
     { key: "approve", label: "Can approve", align: "center", width: 110, render: (r) => permCell(r, "approve") },
@@ -211,12 +211,12 @@ export function SettingsScreen() {
             <div className="grid gap-4 sm:grid-cols-2">
               {profile.map((p, i) => (
                 <Field key={p.k} label={p.k}>
-                  <Input value={p.v} className={cn(p.mono && "font-mono text-13")} onChange={(e) => setProfile((all) => all.map((x, j) => (j === i ? { ...x, v: e.target.value } : x)))} />
+                  <Input value={p.v} onChange={(e) => setProfile((all) => all.map((x, j) => (j === i ? { ...x, v: e.target.value } : x)))} />
                 </Field>
               ))}
             </div>
           ) : (
-            <KeyValue rows={profile} />
+            <KeyValue rows={profile.map(({ k, v }) => ({ k, v }))} />
           )}
         </SectionCard>
 
@@ -301,7 +301,7 @@ export function SettingsScreen() {
             <div className="text-12 text-muted">Brand colours</div>
             <div className="mt-1.5 flex items-center gap-2">
               {BRAND_COLOURS.map((b) => (
-                <span key={b.name} title={b.name} aria-label={b.name} className={cn("h-6 w-6 rounded-sm border border-line", b.cls)} />
+                <span key={b.name} title={b.name} aria-label={b.name} className={cn("h-6 w-6 rounded-sm border-1.5 border-line", b.cls)} />
               ))}
             </div>
           </div>
@@ -311,7 +311,7 @@ export function SettingsScreen() {
           {rules.map((r) => (
             <ListRow key={r.id}>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold">{r.label}</span>
+                <span className="block truncate font-medium">{r.label}</span>
                 <span className="block truncate text-12.5 text-muted">{r.sub}</span>
               </span>
               <Switch
@@ -342,10 +342,12 @@ export function SettingsScreen() {
           {ints.map((i) => (
             <ListRow key={i.id}>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold">{i.name}</span>
+                <span className="block truncate font-medium">{i.name}</span>
                 <span className="block truncate text-12.5 text-muted">{i.sub}</span>
               </span>
-              <Chip tone={INTEGRATION_TONE[i.status]}>{i.status}</Chip>
+              <Chip fixed tone={INTEGRATION_TONE[i.status]} className="hidden sm:inline-flex">
+                {i.status}
+              </Chip>
               {i.status === "Connected" ? (
                 <Button size="sm" variant="ghost" onClick={() => setAskInt(i.id)}>
                   Disconnect
@@ -400,7 +402,7 @@ export function SettingsScreen() {
             <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
           </Field>
           <Field label="Work email">
-            <Input type="email" className="font-mono text-13" value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} placeholder="name@sbcllp.in" />
+            <Input type="email" value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} placeholder="name@sbcllp.in" />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Role">

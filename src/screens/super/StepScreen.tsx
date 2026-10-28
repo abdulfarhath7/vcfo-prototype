@@ -12,6 +12,7 @@ import { Chip, OwnerChip, Tag } from "@/components/ui/Chip";
 import { FileBadge, fileType } from "@/components/ui/FileBadge";
 import { Field, Input } from "@/components/ui/Input";
 import { PopoverCard } from "@/components/ui/PopoverCard";
+import { StepMark } from "@/components/ui/StepMark";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
@@ -72,6 +73,8 @@ function statusFor(c: FirmClient, n: number): StepStatus {
   return "Upcoming";
 }
 
+const markTone = (st: StepStatus) => (st === "Waiting" ? "teal" : st === "Sent back" ? "bad" : "prog") as "teal" | "bad" | "prog";
+
 function View({ id, n }: { id: string; n: number }) {
   const c = clientById(id);
   const step = STEPS.find((s) => s.n === n);
@@ -109,14 +112,14 @@ function View({ id, n }: { id: string; n: number }) {
     <ListRow key={f.id} className="flex-wrap md:flex-nowrap">
       <FileBadge type={f.file ? fileType(f.file) : "PDF"} className={f.file ? undefined : "opacity-40"} />
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-semibold">
+        <span className="block truncate font-medium">
           {f.name}
           {f.required && <span className="text-bad"> *</span>}
         </span>
-        <span className={cn("block truncate text-12.5 text-muted", f.file && "font-mono")}>{f.detail}</span>
+        <span className="block truncate text-12.5 text-muted">{f.detail}</span>
         {f.state === "Asked" && !f.file && (
-          <label className="mt-1.5 flex w-fit cursor-pointer items-center gap-1 rounded-md border border-dashed border-line px-3 py-1.5 text-12.5 text-muted hover:bg-raised">
-            Drop a file or <span className="font-semibold text-accent">browse</span>
+          <label className="mt-1.5 flex w-fit cursor-pointer items-center gap-1 rounded-md border-1.5 border-dashed border-line-2 px-3 py-1.5 text-12.5 text-muted hover:bg-hover">
+            Drop a file or <span className="font-medium text-accent">browse</span>
             <input
               type="file"
               className="sr-only"
@@ -131,7 +134,7 @@ function View({ id, n }: { id: string; n: number }) {
       <Chip fixed tone={formTone[f.state]}>
         {f.state === "Asked" ? `Asked · ${Math.max(0, Math.round((STAFF_TODAY.getTime() - f.date.getTime()) / 86400000))}d` : f.state === "Submitted" ? "Review" : f.state}
       </Chip>
-      <span className="w-12 flex-none text-12 text-muted">{fmt(f.date)}</span>
+      <span className="w-12 flex-none text-12.5 text-muted">{fmt(f.date)}</span>
       {f.state === "Asked" && (
         <Button size="sm" variant="outline" onClick={() => toast.show(`Reminder sent to ${c.contacts[0]?.name ?? c.short}: ${f.name}`)}>
           <Send size={14} strokeWidth={1.6} /> Send reminder
@@ -152,17 +155,23 @@ function View({ id, n }: { id: string; n: number }) {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <SectionCard
-        title={`Step ${step.n} · ${step.title}`}
-        icon={{ Icon: List, tone: "blue" }}
-        meta={
-          <span className="inline-flex items-center gap-1.5">
-            <i className={cn("h-2 w-2 rounded-[2px]", barFill[c.tone])} aria-hidden />
-            {c.short}
-          </span>
-        }
-        right={
-          <PopoverCard trigger={<Button size="sm" variant="ghost">What&apos;s this?</Button>} title={step.title} align="end">
+      <header className="flex flex-wrap items-start gap-x-4 gap-y-3">
+        <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-1">
+          <h1 className="text-22 font-medium tracking-[-0.01em] md:text-28">{step.title}</h1>
+          <p className="flex flex-wrap items-center gap-x-2 text-13.5 text-muted">
+            <span>Step {step.n}</span>
+            <span aria-hidden>·</span>
+            <Link href={`/super/clients/${c.id}`} className="inline-flex items-center gap-1.5 hover:underline">
+              <i className={cn("h-2 w-2 rounded-[2px]", barFill[c.tone])} aria-hidden />
+              {c.name}
+            </Link>
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Chip fixed tone={stepTone[status]}>
+            {status}
+          </Chip>
+          <PopoverCard trigger={<Button variant="outline">What&apos;s this?</Button>} title={step.title} align="end">
             <div className="px-4 py-3">
               <KeyValue
                 cols={1}
@@ -175,15 +184,15 @@ function View({ id, n }: { id: string; n: number }) {
               />
             </div>
           </PopoverCard>
-        }
-      >
+        </div>
+      </header>
+      <SectionCard title="Step details" icon={{ Icon: List, tone: "blue" }}>
         <KeyValue
           cols={3}
           rows={[
-            { k: "Status", v: <Chip tone={stepTone[status]}>{status}</Chip> },
             { k: "Owner", v: <OwnerChip owner={step.owner} label={step.owner === "client" ? c.short : undefined} /> },
             { k: "Phase", v: `Phase ${step.phase} · ${phasesOf(c)[step.phase - 1]} of ${PHASE_TOTALS[step.phase - 1]}` },
-            { k: "Window", v: <span className=" text-13">From {fmt(new Date(from))} to {fmt(new Date(to))}</span> },
+            { k: "Window", v: <span>From {fmt(new Date(from))} to {fmt(new Date(to))}</span> },
             { k: "Manager", v: c.manager },
             { k: "Project lead", v: c.lead },
           ]}
@@ -214,7 +223,7 @@ function View({ id, n }: { id: string; n: number }) {
           >
             <Copy size={14} strokeWidth={1.6} /> Copy for Assist
           </Button>
-          <Link href="/super/documents" className="ml-auto text-13 font-semibold text-accent hover:underline">
+          <Link href="/super/documents" className="ml-auto text-13 font-medium text-accent hover:underline">
             Open in document pack ›
           </Link>
         </div>
@@ -241,13 +250,13 @@ function View({ id, n }: { id: string; n: number }) {
                 <Empty />
               ) : (
                 <>
-                  <div className="border-b border-line-soft px-4 py-2 text-11.5 font-semibold text-muted md:px-5">FILED · {filed.length}</div>
+                  <div className="border-b-1.5 border-line px-4 py-2 text-11.5 font-medium uppercase tracking-[.07em] text-muted md:px-5">Filed · {filed.length}</div>
                   {filed.map(formRow)}
-                  <div className="border-y border-line-soft px-4 py-2 text-11.5 font-semibold text-muted md:px-5">TO FILE · {toFile.length}</div>
+                  <div className="border-y-1.5 border-line px-4 py-2 text-11.5 font-medium uppercase tracking-[.07em] text-muted md:px-5">To file · {toFile.length}</div>
                   {toFile.map(formRow)}
                   <div className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
                     <span className="mr-auto inline-flex items-center gap-1.5 text-12.5 text-muted">
-                      <i className="h-1.5 w-1.5 rounded-[2px] bg-ok" aria-hidden /> Draft saved
+                      <i className="h-[7px] w-[7px] rounded-[2px] bg-ok-mid" aria-hidden /> Draft saved
                     </span>
                     <Button size="sm" variant="outline" onClick={() => toast.show(`Sent to ${c.contacts[0]?.name ?? c.short} to fill`)}>
                       Request client to fill
@@ -282,10 +291,10 @@ function View({ id, n }: { id: string; n: number }) {
               const st = statusFor(c, s.n);
               const on = s.n === step.n;
               return (
-                <ListRow key={s.n} href={`/super/clients/${c.id}/step/${s.n}`} className={cn(on && "bg-accent-soft")}>
-                  <span className="w-6 flex-none font-mono text-12 text-muted">{s.n}</span>
-                  <span className={cn("min-w-0 flex-1 truncate", on && "font-semibold")}>{s.title}</span>
-                  <Chip tone={stepTone[st]}>{st}</Chip>
+                <ListRow key={s.n} href={`/super/clients/${c.id}/step/${s.n}`} className={cn(on && "bg-hover")}>
+                  <StepMark state={st === "Completed" ? "done" : on || st !== "Upcoming" ? "now" : "next"} tone={markTone(st)} size={20} label={st} />
+                  <span className="w-6 flex-none text-12.5 text-muted">{s.n}</span>
+                  <span className={cn("min-w-0 flex-1 truncate", on && "font-medium")}>{s.title}</span>
                 </ListRow>
               );
             })}
@@ -296,7 +305,7 @@ function View({ id, n }: { id: string; n: number }) {
               <Tag tone="warn">4 need inputs</Tag>
               <Tag tone="idle">1 waiting</Tag>
             </div>
-            <Link href="/super/documents" className="mt-3 inline-block text-13 font-semibold text-accent hover:underline">
+            <Link href="/super/documents" className="mt-3 inline-block text-13 font-medium text-accent hover:underline">
               Open document pack ›
             </Link>
           </SectionCard>
