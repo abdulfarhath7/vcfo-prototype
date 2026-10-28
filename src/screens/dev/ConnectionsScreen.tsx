@@ -4,15 +4,14 @@ import { STAFF_TODAY, fmt, fmtYear, daysFrom } from "@/lib/dates";
 import { CONNECTIONS, CONN_TONE, stamp, type ConnEvent, type ConnStatus, type Connection } from "@/data/dev";
 import { detailFor } from "@/data/dev-connections";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag } from "@/components/ui/Chip";
+import { Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
-import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
-import { CloseButton, PickCell, logAudit, nowToday, useRevealRef } from "./parts";
+import { CloseButton, FilterChip, PickCell, StatusChip, ident, logAudit, nowToday, useRevealRef } from "./parts";
 import { ConnSections, ConnectFlow } from "./conn-detail";
 
 interface Live extends Connection {
@@ -24,7 +23,7 @@ const isOff = (c: Live) => c.status === "Not connected";
 function expiry(c: Live) {
   if (!c.authExpires) return <span className="text-faint">None</span>;
   const n = daysFrom(c.authExpires, STAFF_TODAY);
-  return <span className={n <= 15 ? "font-semibold text-warn" : undefined}>{c.authExpires.getFullYear() === STAFF_TODAY.getFullYear() ? fmt(c.authExpires) : fmtYear(c.authExpires)}</span>;
+  return <span className={n <= 15 ? "font-medium text-warn" : undefined}>{c.authExpires.getFullYear() === STAFF_TODAY.getFullYear() ? fmt(c.authExpires) : fmtYear(c.authExpires)}</span>;
 }
 
 /** Head of the detail: summary facts, scopes, account edit, key rotation. */
@@ -38,7 +37,7 @@ function Summary({ c, rotating, setRotating, onRotate, onAccount, onClose }: { c
       flush
       right={
         <>
-          <Chip tone={c.off ? "idle" : CONN_TONE[c.status]}>{status}</Chip>
+          <StatusChip wide tone={c.off ? "idle" : CONN_TONE[c.status]}>{status}</StatusChip>
           <CloseButton onClick={onClose} />
         </>
       }
@@ -47,12 +46,12 @@ function Summary({ c, rotating, setRotating, onRotate, onAccount, onClose }: { c
         <KeyValue
           wrap
           rows={[
-            { k: "Endpoint", v: c.endpoint, mono: true },
-            { k: "Webhook URL", v: c.webhook ?? "None", mono: !!c.webhook },
+            { k: "Endpoint", v: c.endpoint, mono: ident(c.endpoint) },
+            { k: "Webhook URL", v: c.webhook ?? "None", mono: !!c.webhook && ident(c.webhook) },
             { k: "Account", v: c.account },
             { k: "Last check", v: isOff(c) ? "-" : stamp(c.lastSync) },
             { k: "Auth expires", v: expiry(c) },
-            { k: "Secret", v: c.secret ?? (c.hasKey ? "•••• •••• ••••" : "None stored. IAM role."), mono: true },
+            { k: "Secret", v: c.secret ?? (c.hasKey ? "•••• •••• ••••" : "None stored. IAM role."), mono: c.secret ? ident(c.secret) : c.hasKey },
           ]}
         />
         <div className="mt-3">
@@ -179,9 +178,9 @@ export function ConnectionsScreen() {
         </span>
       ),
     },
-    { key: "status", label: "Status", width: 124, render: (c) => <Chip fixed tone={c.off ? "idle" : CONN_TONE[c.status]}>{c.off ? "Off" : c.status}</Chip> },
+    { key: "status", label: "Status", width: 144, render: (c) => <StatusChip wide tone={c.off ? "idle" : CONN_TONE[c.status]}>{c.off ? "Off" : c.status}</StatusChip> },
     { key: "account", label: "Account", render: (c) => <span className="block min-w-[150px] text-12.5">{c.account}</span> },
-    { key: "sync", label: "Last check", mono: true, render: (c) => <span className="whitespace-nowrap">{isOff(c) ? "-" : stamp(c.lastSync)}</span> },
+    { key: "sync", label: "Last check", render: (c) => <span className="whitespace-nowrap">{isOff(c) ? "-" : stamp(c.lastSync)}</span> },
     { key: "exp", label: "Auth expires", render: (c) => <span className="whitespace-nowrap">{expiry(c)}</span> },
     {
       key: "act",
@@ -239,7 +238,7 @@ export function ConnectionsScreen() {
         empty="No services match"
         filters={
           <>
-            <Select aria-label="Kind" value={kind} onChange={(e) => setKind(e.target.value)} options={[{ value: "all", label: "All kinds" }, ...kinds.map((k) => ({ value: k, label: k }))]} />
+            <FilterChip label="Kind" value={kind} onChange={setKind} options={kinds.map((k) => ({ value: k, label: k }))} />
             <Tabs
               items={[
                 { key: "all", label: "All", count: rows.length },

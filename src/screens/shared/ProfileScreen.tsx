@@ -7,6 +7,7 @@ import { SBC, CLIENT_PEOPLE, NORTHWIND, type Person } from "@/data/people";
 import { PROFILE_EXTRA, COMPANY_FACTS, MEMBERS } from "@/data/updates-team";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { Avatar } from "@/components/ui/Avatar";
 import { Tabs } from "@/components/ui/Tabs";
 import { Input, Switch, Checkbox } from "@/components/ui/Input";
 import { useUndoToast } from "@/components/ui/UndoToast";
@@ -45,8 +46,8 @@ function FormRow({ k, hint, children }: { k: string; hint?: string; children: Re
   return (
     <div className="grid gap-2 border-t border-line-soft px-4 py-2.5 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,464px)] sm:items-center md:px-5">
       <span className="min-w-0">
-        <span className="block text-13.5 font-semibold">{k}</span>
-        {hint && <span className="block text-12 text-muted">{hint}</span>}
+        <span className="block text-14 font-medium">{k}</span>
+        {hint && <span className="block text-12.5 text-muted">{hint}</span>}
       </span>
       <span className="flex min-w-0 flex-wrap items-center gap-2">{children}</span>
     </div>
@@ -104,10 +105,10 @@ function FormSection({ portal, sec, me }: { portal: Portal; sec: SecKey; me: Per
           </FormRow>
         )}
         <FormRow k="Mobile" hint="For sign-in codes and WhatsApp">
-          {text("Mobile", about.mobile, (v) => setAbout({ ...about, mobile: v }), { mono: true })}
+          {text("Mobile", about.mobile, (v) => setAbout({ ...about, mobile: v }))}
         </FormRow>
         <FormRow k="Email" hint="Your sign-in address">
-          <span className="font-mono text-13 font-semibold">{me.email}</span>
+          <span className="text-14 text-ink">{me.email}</span>
         </FormRow>
         <FormRow k="Photo">
           <Button size="sm" onClick={() => toast.show("Photo picker opens here")}>
@@ -121,7 +122,7 @@ function FormSection({ portal, sec, me }: { portal: Portal; sec: SecKey; me: Per
       <>
         {staff ? (
           <FormRow k="Microsoft sign-in" hint="SBC accounts sign in with Microsoft 365">
-            <Chip tone="ok">Connected</Chip>
+            <Chip fixed tone="ok">Connected</Chip>
           </FormRow>
         ) : (
           <FormRow k="Password" hint={`Last changed ${changed}`}>
@@ -156,7 +157,7 @@ function FormSection({ portal, sec, me }: { portal: Portal; sec: SecKey; me: Per
           />
         </FormRow>
         <FormRow k="Devices signed in">
-          <span className="text-13.5">{signedOut ? "This laptop" : staff ? "This laptop · Chrome on Android" : "This laptop · iPhone"}</span>
+          <span className="text-14">{signedOut ? "This laptop" : staff ? "This laptop · Chrome on Android" : "This laptop · iPhone"}</span>
         </FormRow>
         <FormRow k="Sign out other devices">
           <Button
@@ -185,7 +186,7 @@ function FormSection({ portal, sec, me }: { portal: Portal; sec: SecKey; me: Per
       <>
         <FormRow k="Channels" hint="Where VCFO reaches you">
           {channels.map((c) => (
-            <label key={c} className="inline-flex h-[30px] items-center gap-2 rounded-md border border-line px-2.5 text-13">
+            <label key={c} className="inline-flex h-[30px] cursor-pointer items-center gap-2 rounded-md border-1.5 border-line-2 px-2.5 text-13">
               <Checkbox
                 checked={!!on[c]}
                 onChange={(v) => {
@@ -238,11 +239,11 @@ function FormSection({ portal, sec, me }: { portal: Portal; sec: SecKey; me: Per
     rows = (
       <>
         <FormRow k="Outlook" hint="Mail you send from VCFO goes from your mailbox">
-          <span className="font-mono text-13 font-semibold">{me.email}</span>
-          <Chip tone="ok">Connected</Chip>
+          <span className="text-14 text-ink">{me.email}</span>
+          <Chip fixed tone="ok">Connected</Chip>
         </FormRow>
         <FormRow k="Signature" hint="Added by the firm’s server-side signature tool">
-          <span className="text-13.5">From Outlook · server-side signature on</span>
+          <span className="text-14">From Outlook · server-side signature on</span>
         </FormRow>
         <FormRow k="Reconnect">
           <Button size="sm" onClick={() => toast.show("Opens Microsoft sign-in")}>
@@ -295,10 +296,10 @@ function FormSection({ portal, sec, me }: { portal: Portal; sec: SecKey; me: Per
     rows = (
       <>
         <FormRow k="Company">
-          <span className="text-13.5 font-semibold">{NORTHWIND.name}</span>
+          <span className="text-14 font-medium">{NORTHWIND.name}</span>
         </FormRow>
         <FormRow k="People who can sign in">
-          <span className="text-13.5">{people}</span>
+          <span className="text-14">{people}</span>
         </FormRow>
         <FormRow k="Add a person" hint="They get an invite by email">
           <Button size="sm" onClick={() => toast.show("Invite sent")}>
@@ -306,13 +307,13 @@ function FormSection({ portal, sec, me }: { portal: Portal; sec: SecKey; me: Per
           </Button>
         </FormRow>
         <FormRow k="Employees" hint="From the questionnaire">
-          <span className="text-13.5">{COMPANY_FACTS.employees}</span>
+          <span className="text-14">{COMPANY_FACTS.employees}</span>
         </FormRow>
         <FormRow k="State" hint="From the questionnaire">
-          <span className="text-13.5">{COMPANY_FACTS.state}</span>
+          <span className="text-14">{COMPANY_FACTS.state}</span>
         </FormRow>
         <FormRow k="Exports" hint="From the questionnaire">
-          <span className="text-13.5">{COMPANY_FACTS.exports}</span>
+          <span className="text-14">{COMPANY_FACTS.exports}</span>
         </FormRow>
         <FormRow k="Something changed?" hint="SBC updates the questionnaire and tells you what changes">
           <Button size="sm" onClick={() => toast.show("Request sent to Bharath and Pranay")}>
@@ -324,7 +325,7 @@ function FormSection({ portal, sec, me }: { portal: Portal; sec: SecKey; me: Per
   }
 
   return (
-    <SectionCard title={LABEL[sec]} meta={saved ? <Chip tone="ok">Saved</Chip> : undefined} flush>
+    <SectionCard title={LABEL[sec]} meta={saved ? <Chip fixed tone="ok">Saved</Chip> : undefined} flush>
       {rows}
       {toast.node}
     </SectionCard>
@@ -365,11 +366,9 @@ export function ProfileScreen({ portal }: { portal: Portal }) {
     <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
       <nav aria-label="Profile sections" className="rounded-md border-1.5 border-line bg-surface p-2 md:sticky md:top-5">
         <div className="flex items-center gap-2.5 border-b border-line-soft px-2 pb-3 pt-2">
-          <span className="grid h-10 w-10 flex-none place-items-center rounded-full bg-navy text-12.5 font-bold text-white dark:bg-btn" aria-hidden>
-            {me.ini ?? me.name.slice(0, 2).toUpperCase()}
-          </span>
+          <Avatar name={me.name} size={36} />
           <span className="min-w-0">
-            <b className="block truncate text-13.5 font-semibold">{me.name}</b>
+            <b className="block truncate text-14 font-medium">{me.name}</b>
             <small className="block truncate text-12 text-muted">{role}</small>
           </span>
         </div>
@@ -381,8 +380,8 @@ export function ProfileScreen({ portal }: { portal: Portal }) {
               aria-current={sec === k ? "true" : undefined}
               onClick={() => pick(k)}
               className={cn(
-                "flex h-9 flex-none items-center whitespace-nowrap rounded-md border-l-2 px-2.5 text-left text-13.5",
-                sec === k ? "border-accent bg-accent-soft font-semibold text-accent" : "border-transparent text-ink-2 hover:bg-raised",
+                "flex h-[34px] flex-none items-center whitespace-nowrap rounded-md px-2.5 text-left text-14",
+                sec === k ? "bg-accent-soft font-medium text-accent" : "text-ink-2 hover:bg-hover",
               )}
             >
               {LABEL[k]}

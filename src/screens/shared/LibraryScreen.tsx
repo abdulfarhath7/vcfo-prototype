@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { BookOpen, BookmarkCheck, Bookmark, Check, Download, ExternalLink, Flag, Globe, Landmark, ReceiptText, Search, ShieldCheck, Star, Trash2 } from "lucide-react";
+import { BookOpen, BookmarkCheck, Bookmark, Download, ExternalLink, Flag, Globe, Landmark, ReceiptText, Search, ShieldCheck, Star, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt } from "@/lib/dates";
 import { LIB_BOOKS, LIB_CATEGORIES, RECENT_READS, findBook, findDoc, readerFor, type LibBook, type LibCategory } from "@/data/docs-library";
@@ -14,6 +14,8 @@ import { FileBadge } from "@/components/ui/FileBadge";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
+import { StepMark } from "@/components/ui/StepMark";
+import { IconTile } from "@/components/ui/IconTile";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow, HeadLink, Empty } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
@@ -34,10 +36,10 @@ function RecentRow({ id, pct, note, base }: { id: string; pct: number; note: str
         <BookOpen size={16} strokeWidth={1.6} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-semibold">{b.title}</span>
+        <span className="block truncate font-medium">{b.title}</span>
         <span className="mt-1 flex items-center gap-2">
           <Bar pct={pct} tone={pct >= 100 ? "ok" : "accent"} className="max-w-[120px]" />
-          <span className="truncate text-12 text-muted">{note}</span>
+          <span className="truncate text-12.5 text-muted">{note}</span>
         </span>
       </span>
     </ListRow>
@@ -125,14 +127,14 @@ function Book({ b, href }: { b: LibBook; href: string }) {
       <span className="grid h-7 w-7 place-items-center rounded-md bg-white/[.18]">
         <Icon size={14} strokeWidth={1.6} />
       </span>
-      <span className="line-clamp-2 text-13 font-bold leading-[1.32] [overflow-wrap:break-word] group-hover:line-clamp-6">{b.title}</span>
-      <span className="mt-auto truncate text-11 font-bold uppercase tracking-[.04em] text-white/80">{COVER_LABEL[b.cat]}</span>
+      <span className="line-clamp-2 text-13 font-medium leading-[1.32] [overflow-wrap:break-word] group-hover:line-clamp-6">{b.title}</span>
+      <span className="mt-auto truncate text-11 font-medium uppercase tracking-[.07em] text-white/80">{COVER_LABEL[b.cat]}</span>
     </Link>
   );
 }
 
 /** Shelf rows: books stand on a plank under every row. The plank repeats every 212 px (172 px book + 40 px gap). */
-const PLANK_COLOR = "color-mix(in srgb, var(--line) 50%, var(--faint))";
+const PLANK_COLOR = "var(--line-2)";
 const PLANK: React.CSSProperties = {
   backgroundImage: `linear-gradient(180deg, transparent 172px, ${PLANK_COLOR} 172px, ${PLANK_COLOR} 186px, transparent 186px)`,
   backgroundSize: "100% 212px",
@@ -161,7 +163,6 @@ export function LibraryScreen({ portal }: { portal: Portal; title?: string }) {
           size="md"
           options={[{ value: "all", label: `All shelves · ${LIB_BOOKS.length}` }, ...LIB_CATEGORIES.map((c) => ({ value: c.id, label: `${c.short} · ${LIB_BOOKS.filter((b) => b.cat === c.id).length}` }))]}
         />
-        <Tag tone="prog">{LIB_BOOKS.length} books</Tag>
         <span className="flex-1" />
         <Button asChild>
           <Link href={`${base}/b8`}>Monthly status brief</Link>
@@ -170,20 +171,20 @@ export function LibraryScreen({ portal }: { portal: Portal; title?: string }) {
           <Download size={15} strokeWidth={1.6} /> PDF brief
         </Button>
       </div>
-      <label className="flex h-10 items-center gap-2 rounded-md border border-line bg-surface px-3">
+      <label className="flex h-10 items-center gap-2 rounded-md border-1.5 border-line-2 bg-surface px-3 focus-within:border-primary focus-within:ring-4 focus-within:ring-focus">
         <Search size={15} strokeWidth={1.6} className="text-muted" />
-        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search books" aria-label="Search books" className="h-full min-w-0 flex-1 bg-transparent text-13.5 outline-none placeholder:text-faint" />
+        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search books" aria-label="Search books" className="h-full min-w-0 flex-1 bg-transparent text-14 outline-none placeholder:text-faint" />
       </label>
 
       <section aria-label="Recently read" className="flex flex-wrap items-center gap-3">
-        <h2 className="basis-full text-12.5 font-semibold xl:basis-auto">Recently read</h2>
+        <h2 className="basis-full text-13 font-medium text-muted xl:basis-auto">Recently read</h2>
         {RECENT_READS.map((r) => {
           const b = findBook(r.id);
           return (
-            <div key={r.id} className="flex min-w-0 flex-[1_1_220px] items-center gap-2.5 rounded-md border border-line bg-surface py-2 pl-2 pr-3 xl:max-w-[360px]">
+            <div key={r.id} className="flex min-w-0 flex-[1_1_220px] items-center gap-2.5 rounded-md border-1.5 border-line bg-surface py-2 pl-2 pr-3 xl:max-w-[360px]">
               <span className={cn("h-[42px] w-[30px] flex-none rounded-[2px_4px_4px_2px]", COVER[b.cat])} aria-hidden />
               <span className="grid min-w-0 flex-1 gap-1.5">
-                <Link href={`${base}/${b.id}`} className="truncate text-13 font-semibold hover:underline">
+                <Link href={`${base}/${b.id}`} className="truncate text-14 font-medium hover:underline">
                   {b.title}
                 </Link>
                 <button type="button" onClick={() => setDrill(true)} title={r.note} aria-label={`${r.note}. Open the reading list`} className="block py-0.5">
@@ -197,32 +198,35 @@ export function LibraryScreen({ portal }: { portal: Portal; title?: string }) {
 
       <section aria-label="Shelves" className="rounded-md border-1.5 border-line bg-surface px-1 pb-6 pt-2 sm:px-3">
         {shelves.length === 0 && (
-          <div className="grid justify-items-center gap-3 px-4 py-10 text-center">
-            <span className="text-13.5 font-semibold">{s ? <>No book matches “{q.trim()}”</> : "No books on this shelf"}</span>
-            <Button
-              size="sm"
-              onClick={() => {
-                setQ("");
-                setCat("all");
-              }}
-            >
-              Clear search
-            </Button>
-          </div>
+          <Empty
+            action={
+              <Button
+                size="sm"
+                onClick={() => {
+                  setQ("");
+                  setCat("all");
+                }}
+              >
+                Clear search
+              </Button>
+            }
+          >
+            {s ? <>No book matches “{q.trim()}”</> : "No books on this shelf"}
+          </Empty>
         )}
         {shelves.map((g) => (
           <div key={g.c.id} className="pt-4">
             <div className="flex items-center gap-2 px-3">
               <span className={cn("h-2.5 w-2.5 flex-none rounded-[2px]", COVER[g.c.id])} aria-hidden />
-              <h2 className="text-13.5 font-semibold">{g.c.id}</h2>
-              <span className=" text-12 text-faint">{g.books.length}</span>
+              <h2 className="text-15 font-medium">{g.c.id}</h2>
+              <span className="text-13 text-muted">{g.books.length}</span>
             </div>
             <div className="mx-3 grid grid-cols-[repeat(auto-fill,128px)] items-end justify-center gap-x-[18px] gap-y-10 px-1 pt-[22px] sm:justify-start sm:px-4" style={PLANK}>
               {g.books.map((b) => (
                 <Book key={b.id} b={b} href={`${base}/${b.id}`} />
               ))}
             </div>
-            <div className="mx-3 mt-0 h-[14px] rounded-[2px]" style={{ background: PLANK_COLOR }} aria-hidden />
+            <div className="mx-3 mt-0 h-[14px] rounded-bar" style={{ background: PLANK_COLOR }} aria-hidden />
           </div>
         ))}
       </section>
@@ -238,24 +242,17 @@ const DEPTHS = [
   { key: "2", label: "More detail" },
 ];
 
-/** Three-step reading timeline: circles with solid (done) and dashed (to come) links. */
+/** Three-step reading timeline (R-22 marks): done green square with a tick, current ring, upcoming dashed square. */
 function ReaderTimeline({ steps }: { steps: NonNullable<ReturnType<typeof readerFor>["timeline"]> }) {
   return (
     <ol className="flex items-start">
       {steps.map((t, i) => (
         <React.Fragment key={t.label}>
-          {i > 0 && <li aria-hidden className={cn("mt-5 h-0 min-w-4 flex-1 border-t-2", steps[i - 1].state === "done" && t.state !== "next" ? "border-ok" : "border-dashed border-accent")} />}
-          <li className="grid w-[30%] max-w-[180px] flex-none justify-items-center gap-1 text-center">
-            <span
-              className={cn(
-                "grid h-10 w-10 place-items-center rounded-md text-13 font-semibold",
-                t.state === "done" ? "bg-ok-soft text-ok" : t.state === "now" ? "border border-line bg-surface text-ink" : "border-2 border-dashed border-accent bg-surface text-accent",
-              )}
-            >
-              {t.state === "done" ? <Check size={16} strokeWidth={1.6} /> : i + 1}
-            </span>
-            <span className="text-13 font-semibold leading-snug">{t.label}</span>
-            <span className=" text-11.5 text-muted">{t.when}</span>
+          {i > 0 && <li aria-hidden className={cn("mt-[10px] h-0 min-w-4 flex-1 border-t-2", steps[i - 1].state === "done" && t.state !== "next" ? "border-ok-mid" : "border-dashed border-line-2")} />}
+          <li className="grid w-[30%] max-w-[180px] flex-none justify-items-center gap-1.5 text-center">
+            <StepMark state={t.state === "done" ? "done" : t.state === "now" ? "now" : "next"} />
+            <span className="text-13 font-medium leading-snug">{t.label}</span>
+            <span className="text-12.5 text-muted">{t.when}</span>
           </li>
         </React.Fragment>
       ))}
@@ -263,7 +260,7 @@ function ReaderTimeline({ steps }: { steps: NonNullable<ReturnType<typeof reader
   );
 }
 
-/** lib_reader: navy head band with chips, depth picker and official link; article with a 3-step timeline and an amber "Why it matters" box. */
+/** lib_reader: plain head card (R-02) with chips, depth picker and official link; article with a 3-step timeline and an amber "Why it matters" box. */
 export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
   const book = findBook(id);
   const r = readerFor(book);
@@ -279,19 +276,19 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
   return (
     <Cols>
       <Col>
-        <section aria-label={book.title} className="rounded-lg bg-navy px-5 py-5 text-white md:px-6">
+        <section aria-label={book.title} className="rounded-md border-1.5 border-line bg-surface px-4 py-5 md:px-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex h-[22px] items-center rounded-sm border border-white/[.25] bg-white/[.08] px-2 text-11.5 font-semibold">{book.cat}</span>
+            <Tag>{book.cat}</Tag>
             <Chip tone="ok">Reviewed by SBC</Chip>
             {(saved || book.updated) && <Chip tone="prog">Updated {fmt(book.date)}</Chip>}
           </div>
-          <h1 className="mt-2.5 text-[24px] font-bold leading-tight tracking-tight md:text-[28px]">{book.title}</h1>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
+          <h1 className="mt-3 text-24 font-medium leading-tight tracking-[-0.01em] md:text-28">{book.title}</h1>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <Tabs items={DEPTHS} value={depth} onChange={setDepth} size="md" />
             <span className="flex-1" />
-            <span className="font-mono text-12 text-navy-ink">{book.minutes} min read</span>
+            <span className="text-13 text-muted">{book.minutes} min read</span>
             {r.official && (
-              <Button asChild size="sm" variant="onNavy">
+              <Button asChild size="sm">
                 <a href={r.official.href} target="_blank" rel="noreferrer">
                   Official link · {r.official.label}
                   <ExternalLink size={13} strokeWidth={1.6} aria-hidden />
@@ -303,31 +300,29 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
         </section>
 
         <SectionCard bare title="Article" bodyClassName="grid gap-5 px-4 py-5 md:px-6">
-          <p className="max-w-[72ch] text-16 font-medium leading-relaxed">{r.lines[Number(depth) as 0 | 1 | 2]}</p>
+          <p className="max-w-[72ch] text-16 leading-relaxed text-ink">{r.lines[Number(depth) as 0 | 1 | 2]}</p>
           {r.timeline && (
-            <div className="rounded-lg bg-accent-soft px-4 py-4 md:px-5">
-              <h2 className="mb-3 text-11.5 font-bold text-accent">Timeline</h2>
+            <div className="rounded-md border-1.5 border-line px-4 py-4 md:px-5">
+              <h2 className="mb-3 text-11.5 font-medium uppercase tracking-[.07em] text-muted">Timeline</h2>
               <ReaderTimeline steps={r.timeline} />
             </div>
           )}
           {depth === "2" && r.facts && <KeyValue cols={3} rows={r.facts} />}
           {r.why && (
-            <div className="flex gap-3 rounded-lg border border-warn-mid bg-warn-soft px-4 py-4 md:px-5">
-              <span className="grid h-7 w-7 flex-none place-items-center rounded-md bg-brand text-white">
-                <Star size={14} strokeWidth={1.6} />
-              </span>
+            <div className="flex gap-3 rounded-md border-1.5 border-caution-line bg-caution-soft px-4 py-4 md:px-5">
+              <IconTile Icon={Star} tone="amber" />
               <div className="min-w-0">
-                <h2 className="text-13.5 font-bold text-warn">Why it matters to Northwind</h2>
+                <h2 className="text-14 font-medium text-caution">Why it matters to Northwind</h2>
                 <p className="mt-1 max-w-[72ch] text-13.5 leading-relaxed text-ink">{r.why}</p>
               </div>
             </div>
           )}
           {r.sources && (
             <div className="px-1">
-              <h2 className="mb-2 text-11.5 font-bold text-ink-2">Sources</h2>
+              <h2 className="mb-2 text-11.5 font-medium uppercase tracking-[.07em] text-muted">Sources</h2>
               <ul className="flex flex-wrap gap-2">
                 {r.sources.map((s) => (
-                  <li key={s} className="inline-flex h-[26px] items-center rounded-sm border border-line bg-raised px-2.5 text-12 font-semibold text-ink-2">
+                  <li key={s} className="inline-flex h-6 items-center rounded-md border-1.5 border-line bg-surface px-2 text-12 font-medium text-ink-2">
                     {s}
                   </li>
                 ))}
@@ -336,7 +331,7 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
           )}
           <div className="flex flex-wrap items-center gap-2 border-t border-line-soft pt-4">
             {saved ? (
-              <span className="inline-flex h-9 items-center gap-2 rounded-md bg-ok-soft px-3.5 text-13.5 font-semibold text-ok">
+              <span className="inline-flex h-9 items-center gap-2 rounded-md bg-ok-soft px-3.5 text-14 font-medium text-ok">
                 <BookmarkCheck size={16} strokeWidth={1.6} /> Saved to library
               </span>
             ) : (
@@ -378,7 +373,7 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
             <ListRow href={r.project.step ? stepHref(r.project.step) : portal === "client" ? "/client/obligations" : `/${portal}/compliances/obligations`}>
               <DateTile date={r.project.date} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold">{r.project.title}</span>
+                <span className="block truncate font-medium">{r.project.title}</span>
                 <span className="mt-1 flex flex-wrap gap-1.5">
                   {r.project.chips.map((c, i) => (
                     <Tag key={c} tone={i === 0 ? "warn" : "idle"}>
@@ -402,7 +397,7 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
                   <span className={cn("grid h-7 w-7 flex-none place-items-center rounded-md", toneTile[catTone(b.cat)])}>
                     <Icon size={14} strokeWidth={1.6} />
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-semibold">{b.title}</span>
+                  <span className="min-w-0 flex-1 truncate font-medium">{b.title}</span>
                 </ListRow>
               );
             })}
@@ -413,8 +408,8 @@ export function ReaderScreen({ portal, id }: { portal: Portal; id: string }) {
             {docs.map((f) => (
               <ListRow key={f.id} href={`${docBase}/${f.id}`}>
                 <FileBadge type={f.type} />
-                <span className="min-w-0 flex-1 truncate font-semibold">{f.label}</span>
-                <Chip tone={docStatusTone[f.status]}>{f.status}</Chip>
+                <span className="min-w-0 flex-1 truncate font-medium">{f.label}</span>
+                <Chip fixed tone={docStatusTone[f.status]}>{f.status}</Chip>
               </ListRow>
             ))}
           </SectionCard>

@@ -3,12 +3,12 @@ import * as React from "react";
 import { Bar as RBar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { BACKUPS, BUCKETS, COSTS, COST_BUDGET, COST_MONTHS, COST_TOTAL, DATA_FACTS, DB_TABLES, EXPORTS, VOLUME, rupees, stamp, type Backup, type Bucket, type DataExport, type DbTable, type ServiceCost } from "@/data/dev";
 import { STAFF_TODAY } from "@/lib/dates";
-import { Chip, Tag } from "@/components/ui/Chip";
+import { Tag } from "@/components/ui/Chip";
 import { Bar } from "@/components/ui/Bar";
 import { Button } from "@/components/ui/Button";
 import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
 import { Cols, Col } from "@/components/shell/Page";
-import { logAudit } from "./parts";
+import { StatusChip, logAudit } from "./parts";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
@@ -20,7 +20,7 @@ function change(c: ServiceCost) {
 }
 
 const costColumns: Column<ServiceCost>[] = [
-  { key: "service", label: "Service", render: (c) => <span className="whitespace-nowrap font-semibold">{c.service}</span> },
+  { key: "service", label: "Service", render: (c) => <span className="whitespace-nowrap font-medium">{c.service}</span> },
   { key: "this", label: "This month", align: "right", render: (c) => <span className="whitespace-nowrap">{rupees(c.thisMonth)}</span> },
   { key: "budget", label: "Budget", align: "right", render: (c) => <span className="whitespace-nowrap text-muted">{rupees(c.budget)}</span> },
   {
@@ -31,7 +31,7 @@ const costColumns: Column<ServiceCost>[] = [
       return (
         <span className="flex min-w-[120px] items-center gap-2">
           <Bar pct={p} tone={p > 90 ? "warn" : "accent"} className="flex-1" />
-          <span className={`w-[36px] text-right text-12.5 ${p > 90 ? "font-semibold text-warn" : ""}`}>{`${p}%`}</span>
+          <span className={`w-[36px] text-right text-12.5 ${p > 90 ? "font-medium text-warn" : ""}`}>{`${p}%`}</span>
         </span>
       );
     },
@@ -52,22 +52,22 @@ const costColumns: Column<ServiceCost>[] = [
     width: 124,
     render: (c) => {
       const { pct } = change(c);
-      if (Math.abs(pct) < 3) return <Chip fixed tone="idle">Same</Chip>;
+      if (Math.abs(pct) < 3) return <StatusChip tone="idle">Same</StatusChip>;
       return pct > 0 ? (
-        <Chip fixed tone={pct >= 10 ? "warn" : "idle"}>{`Up ${pct}%`}</Chip>
+        <StatusChip tone={pct >= 10 ? "warn" : "idle"}>{`Up ${pct}%`}</StatusChip>
       ) : (
-        <Chip fixed tone="ok">{`Down ${Math.abs(pct)}%`}</Chip>
+        <StatusChip tone="ok">{`Down ${Math.abs(pct)}%`}</StatusChip>
       );
     },
   },
 ];
 
 const bucketColumns: Column<Bucket>[] = [
-  { key: "name", label: "Bucket", mono: true, render: (b) => <span className="whitespace-nowrap font-semibold">{b.name}</span> },
+  { key: "name", label: "Bucket", mono: true, render: (b) => <span className="whitespace-nowrap font-medium">{b.name}</span> },
   { key: "region", label: "Region", mono: true },
   { key: "size", label: "Size", align: "right" },
   { key: "objects", label: "Objects", align: "right" },
-  { key: "ver", label: "Versioning", width: 124, render: (b) => <Chip fixed tone={b.versioning === "On" ? "ok" : "idle"}>{b.versioning}</Chip> },
+  { key: "ver", label: "Versioning", width: 124, render: (b) => <StatusChip tone={b.versioning === "On" ? "ok" : "idle"}>{b.versioning}</StatusChip> },
   { key: "life", label: "Lifecycle", render: (b) => <span className="whitespace-nowrap">{b.lifecycle}</span> },
 ];
 
@@ -84,10 +84,10 @@ function CostChart() {
           <Tooltip
             cursor={{ fill: "var(--raised)" }}
             formatter={(v) => [rupees(Number(v)), "Total"]}
-            contentStyle={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 8, fontSize: 12.5, color: "var(--ink)" }}
+            contentStyle={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 6, fontSize: 12.5, color: "var(--ink)", boxShadow: "var(--shadow-float)" }}
             labelStyle={{ color: "var(--muted)" }}
           />
-          <RBar dataKey="total" fill="var(--accent)" radius={[4, 4, 0, 0]} maxBarSize={36} isAnimationActive={false} />
+          <RBar dataKey="total" fill="var(--accent-mid)" radius={[3, 3, 0, 0]} maxBarSize={36} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -95,11 +95,11 @@ function CostChart() {
 }
 
 const tableColumns: Column<DbTable>[] = [
-  { key: "name", label: "Table", mono: true, render: (t) => <span className="whitespace-nowrap font-semibold">{t.name}</span> },
+  { key: "name", label: "Table", mono: true, render: (t) => <span className="whitespace-nowrap font-medium">{t.name}</span> },
   { key: "rows", label: "Rows", align: "right", render: (t) => t.rows.toLocaleString("en-IN") },
   { key: "size", label: "Size", align: "right", render: (t) => <span className="whitespace-nowrap">{t.size}</span> },
   { key: "growth", label: "Growth", render: (t) => <span className="whitespace-nowrap text-muted">{t.growth}</span> },
-  { key: "vac", label: "Last vacuum", mono: true, render: (t) => <span className="whitespace-nowrap">{stamp(t.vacuumed)}</span> },
+  { key: "vac", label: "Last vacuum", render: (t) => <span className="whitespace-nowrap">{stamp(t.vacuumed)}</span> },
 ];
 
 const DAYS_LEFT = new Date(STAFF_TODAY.getFullYear(), STAFF_TODAY.getMonth() + 1, 0).getDate() - STAFF_TODAY.getDate();
@@ -114,11 +114,11 @@ export function DataScreen() {
   const target = BACKUPS.find((b) => b.id === restore) ?? null;
 
   const backupColumns: Column<Backup>[] = [
-    { key: "name", label: "Snapshot", mono: true, render: (b) => <span className="whitespace-nowrap font-semibold">{b.name}</span> },
-    { key: "at", label: "Taken", mono: true, render: (b) => <span className="whitespace-nowrap">{stamp(b.at)}</span> },
-    { key: "kind", label: "Kind", render: (b) => <Tag tone={b.kind === "Daily" ? "idle" : "violet"}>{b.kind}</Tag> },
+    { key: "name", label: "Snapshot", mono: true, render: (b) => <span className="whitespace-nowrap font-medium">{b.name}</span> },
+    { key: "at", label: "Taken", render: (b) => <span className="whitespace-nowrap">{stamp(b.at)}</span> },
+    { key: "kind", label: "Kind", render: (b) => <Tag tone={b.kind === "Daily" ? "idle" : "violet"} className="w-[104px]">{b.kind}</Tag> },
     { key: "size", label: "Size", align: "right", render: (b) => b.size },
-    { key: "status", label: "Status", width: 124, render: (b) => <Chip fixed tone={restored[b.id] ? "prog" : b.status === "Restore tested" ? "ok" : "idle"}>{restored[b.id] ? "Restoring" : b.status}</Chip> },
+    { key: "status", label: "Status", width: 124, render: (b) => <StatusChip wide tone={restored[b.id] ? "prog" : b.status === "Restore tested" ? "ok" : "idle"}>{restored[b.id] ? "Restoring" : b.status}</StatusChip> },
     {
       key: "act",
       label: "",
@@ -132,18 +132,18 @@ export function DataScreen() {
   ];
 
   const exportColumns: Column<DataExport>[] = [
-    { key: "name", label: "Export", render: (x) => <span className="whitespace-nowrap font-semibold">{x.name}</span> },
+    { key: "name", label: "Export", render: (x) => <span className="whitespace-nowrap font-medium">{x.name}</span> },
     { key: "fmt", label: "Format", render: (x) => <Tag>{x.format}</Tag> },
     { key: "size", label: "Size", align: "right", render: (x) => x.size },
     { key: "by", label: "Made by", render: (x) => x.by },
-    { key: "at", label: "When", mono: true, render: (x) => <span className="whitespace-nowrap">{stamp(x.at)}</span> },
+    { key: "at", label: "When", render: (x) => <span className="whitespace-nowrap">{stamp(x.at)}</span> },
     {
       key: "act",
       label: "",
       width: 1,
       render: (x) =>
         downloaded[x.id] ? (
-          <Chip tone="ok">Downloaded</Chip>
+          <StatusChip tone="ok">Downloaded</StatusChip>
         ) : (
           <Button
             size="sm"
@@ -167,7 +167,7 @@ export function DataScreen() {
             flush
             right={
               testRun ? (
-                <Chip tone="prog">Restore test running</Chip>
+                <StatusChip loose tone="prog">Restore test running</StatusChip>
               ) : (
                 <Button size="sm" onClick={() => setAskTest(true)} aria-expanded={askTest}>
                   Test a restore

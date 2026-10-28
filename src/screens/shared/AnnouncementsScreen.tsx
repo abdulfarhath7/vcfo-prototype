@@ -8,10 +8,11 @@ import { ANNS, ANN_PRANAY, ANN_TONE, OFFICIAL_PORTALS, isImportant, portalHref, 
 import { WHATSAPP } from "@/data/people";
 import { Tabs } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag } from "@/components/ui/Chip";
+import { AreaPill, Chip, Tag, type Regulator } from "@/components/ui/Chip";
 import { Avatar } from "@/components/ui/Avatar";
 import { Modal } from "@/components/ui/Modal";
-import { SectionCard, ListRow } from "@/components/cards/SectionCard";
+import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
+import { DateTile } from "@/components/cards/AttentionList";
 import { Cols, Col } from "@/components/shell/Page";
 import type { Portal } from "@/data/nav";
 
@@ -51,7 +52,7 @@ function AnnDetail({ list, index, onIndex, onClose, portal }: { list: Ann[]; ind
           <Button size="iconSm" variant="ghost" aria-label="Next announcement" disabled={index === list.length - 1} onClick={() => onIndex(index + 1)}>
             <ChevronRight size={16} strokeWidth={1.6} />
           </Button>
-          <span className="mr-auto font-mono text-12 text-muted">
+          <span className="mr-auto text-12.5 text-muted">
             {index + 1} / {list.length}
           </span>
           {href && (
@@ -80,7 +81,7 @@ function AnnDetail({ list, index, onIndex, onClose, portal }: { list: Ann[]; ind
           <>
             <Avatar name={a.by.ini} size={36} />
             <span className="min-w-0 flex-1">
-              <span className="block text-13.5 font-semibold">{a.by.name}</span>
+              <span className="block text-14 font-medium">{a.by.name}</span>
               <span className="block text-12.5 text-muted">
                 {a.by.role} · {fmt(a.date)}, {a.time}
               </span>
@@ -91,7 +92,7 @@ function AnnDetail({ list, index, onIndex, onClose, portal }: { list: Ann[]; ind
               </a>
             )}
             {a.by.email && (
-              <a href={`mailto:${a.by.email}`} className="grid h-[30px] w-[30px] place-items-center rounded-md border border-line text-ink-2 hover:bg-raised" aria-label={`Email ${a.by.name}`} title="Email">
+              <a href={`mailto:${a.by.email}`} className="grid h-[30px] w-[30px] place-items-center rounded-md border-1.5 border-line-2 bg-surface text-ink-2 hover:bg-hover" aria-label={`Email ${a.by.name}`} title="Email">
                 <Mail size={15} strokeWidth={1.6} />
               </a>
             )}
@@ -106,9 +107,9 @@ function PortalsCard() {
   const [tab, setTab] = React.useState<"setup" | "recurring">("setup");
   const groups = OFFICIAL_PORTALS[tab];
   const count = (k: "setup" | "recurring") => OFFICIAL_PORTALS[k].reduce((n, g) => n + g.rows.length, 0);
-  const act = "grid h-[34px] w-[34px] flex-none place-items-center rounded-md border border-line text-ink-2 hover:bg-raised hover:text-ink";
+  const act = "grid h-[30px] w-[30px] flex-none place-items-center rounded-md border-1.5 border-line-2 bg-surface text-ink-2 hover:bg-hover hover:text-ink";
   return (
-    <SectionCard title="Official portals" icon={{ Icon: Landmark, tone: "blue" }} bodyClassName="grid gap-1 px-4 pb-3 pt-3 md:px-5">
+    <SectionCard title="Official portals" icon={{ Icon: Landmark, tone: "blue" }} bodyClassName="grid gap-1 px-4 pb-2 pt-3 md:px-5">
       <div>
         <Tabs
           items={[
@@ -121,10 +122,10 @@ function PortalsCard() {
       </div>
       {groups.map((g) => (
         <div key={g.group}>
-          <p className="border-b border-line-soft pb-1.5 pt-2 text-11.5 font-semibold text-muted">{g.group}</p>
+          <p className="border-b-1.5 border-line pb-1.5 pt-3 text-11.5 font-medium uppercase tracking-[.07em] text-muted">{g.group}</p>
           {g.rows.map((r) => (
-            <div key={r.name} className="flex min-h-[45px] items-center gap-2 border-b border-line-soft py-1.5 text-13.5 last:border-b-0">
-              <span className="min-w-0 flex-1 truncate font-semibold">{r.name}</span>
+            <div key={r.name} className="flex min-h-11 items-center gap-2 border-b border-line-soft py-1 text-14 last:border-b-0">
+              <span className="min-w-0 flex-1 truncate">{r.name}</span>
               <a href={`https://${r.host}`} target="_blank" rel="noreferrer" className={act} aria-label={`Open portal for ${r.name}`} title="Portal">
                 <ArrowUpRight size={15} strokeWidth={1.6} />
               </a>
@@ -139,27 +140,18 @@ function PortalsCard() {
   );
 }
 
-/** Old date tile: day without a leading zero over the month, on a soft tint. */
-const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** R-43: kinds that name a regulator show the area pill. */
+const KIND_REG: Partial<Record<Ann["kind"], Regulator>> = { MCA: "mca", GST: "gst", Tax: "it", "Post-Incorp": "mca" };
 
-function AnnDate({ date, warn, upper }: { date: Date; warn: boolean; upper: boolean }) {
-  return (
-    <span className={cn("grid h-[52px] w-[50px] flex-none content-center justify-items-center rounded-md", warn ? "bg-warn-soft text-warn" : "bg-accent-soft text-ink")} aria-hidden>
-      <span className="text-[18px] font-bold leading-none">{date.getDate()}</span>
-      <span className={cn("mt-1 text-11 font-bold leading-none", upper && "uppercase tracking-wide")}>{MON[date.getMonth()]}</span>
-    </span>
-  );
-}
-
-/** Deadline, MCA and Compliance show a soft chip with a dot. Other kinds show a plain outlined tag. */
+/** R-13 / R-43: one 104 px mark per row, so the titles line up. A deadline is a status chip; other kinds are area pills. */
 function KindChip({ kind }: { kind: Ann["kind"] }) {
-  if (kind === "Deadline" || kind === "MCA" || kind === "Compliance")
+  if (kind === "Deadline")
     return (
-      <Chip tone={ANN_TONE[kind]} className="w-[120px] justify-center">
+      <Chip fixed tone={ANN_TONE[kind]}>
         {kind}
       </Chip>
     );
-  return <span className="inline-flex h-[22px] items-center rounded-sm border border-line bg-surface px-1.5 text-11.5 font-semibold text-ink-2">{kind}</span>;
+  return <AreaPill area={kind} reg={KIND_REG[kind]} />;
 }
 
 export function AnnouncementsScreen({ portal }: { portal: Portal }) {
@@ -197,28 +189,29 @@ export function AnnouncementsScreen({ portal }: { portal: Portal }) {
           }
         >
           {shown.length === 0 ? (
-            <div className="flex items-center gap-3 px-4 py-4 md:px-5">
-              <span className="flex-1 text-13 text-faint">None</span>
-              <Button size="sm" onClick={() => setTab("all")}>
-                See all
-              </Button>
-            </div>
+            <Empty
+              action={
+                <Button size="sm" onClick={() => setTab("all")}>
+                  See all
+                </Button>
+              }
+            />
           ) : (
             shown.map((a, i) => {
               const u = isUnread(a);
               return (
-                <ListRow key={a.id} onClick={() => openAt(i)} className={cn("min-h-[79px] items-center", u && "bg-accent-soft hover:bg-accent-soft")}>
-                  <AnnDate date={a.date} warn={a.kind === "Deadline"} upper={!staff} />
+                <ListRow key={a.id} onClick={() => openAt(i)} className="min-h-[72px] items-center">
+                  <DateTile date={a.date} tint={a.kind === "Deadline" ? "warn" : "idle"} />
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <KindChip kind={a.kind} />
-                      <span className="text-12 text-muted">{byLine(a)}</span>
-                      {a.host && <Tag className="border border-line sm:hidden">{a.host}</Tag>}
+                      <span className="text-12.5 text-muted">{byLine(a)}</span>
+                      {a.host && <span className="text-12.5 text-muted sm:hidden">{a.host}</span>}
                     </span>
-                    <span className={cn("mt-1.5 block truncate text-14", u ? "font-bold" : "font-semibold")}>{a.title}</span>
+                    <span className={cn("mt-1.5 block truncate text-14", u ? "font-medium text-ink" : "text-ink-2")}>{a.title}</span>
                   </span>
-                  {a.host && <Tag className="hidden border border-line sm:inline-flex">{a.host}</Tag>}
-                  <span className={cn("h-2 w-2 flex-none rounded-[2px]", u ? "bg-accent" : "bg-transparent")} role={u ? "img" : undefined} aria-label={u ? "Unread" : undefined} />
+                  {a.host && <Tag className="hidden sm:inline-flex">{a.host}</Tag>}
+                  <span className={cn("h-2 w-2 flex-none rounded-[2px]", u ? "bg-accent-mid" : "bg-transparent")} role={u ? "img" : undefined} aria-label={u ? "Unread" : undefined} />
                 </ListRow>
               );
             })

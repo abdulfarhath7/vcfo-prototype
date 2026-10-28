@@ -11,7 +11,7 @@ import { Chip, Tag } from "@/components/ui/Chip";
 import { IconTile } from "@/components/ui/IconTile";
 import { Modal } from "@/components/ui/Modal";
 import { SidePanel, PanelSection } from "@/components/ui/SidePanel";
-import { SectionCard, ListRow } from "@/components/cards/SectionCard";
+import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { Cols, Col } from "@/components/shell/Page";
@@ -67,7 +67,7 @@ function Parts({ n, portal }: { n: Notif; portal: Portal }) {
 
 function Who({ n, portal }: { n: Notif; portal: Portal }) {
   return n.person ? (
-    <Link href={portalHref(portal, "/client/profile?tab=team")!} className={cn("hover:underline", portal !== "client" && "font-semibold text-accent")}>
+    <Link href={portalHref(portal, "/client/profile?tab=team")!} className={cn("hover:underline", portal !== "client" && "font-medium text-accent")}>
       {n.who}
     </Link>
   ) : (
@@ -80,33 +80,33 @@ function NotifRow({ n, unread, onRead, onOpen, portal }: { n: Notif; unread: boo
   const t = NOTIF_TYPE[n.type];
   const ic = TYPE_ICON[n.type];
   return (
-    <div className={cn("flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 md:px-5", unread && "bg-accent-soft")}>
+    <div className="flex min-h-[60px] items-center gap-3 border-t border-line-soft px-4 py-2.5 text-14 hover:bg-hover md:px-5">
       <span title={t.tip} className="flex-none self-start sm:self-center">
         <IconTile Icon={ic.Icon} tone={ic.tone} size={30} />
       </span>
       <span className="min-w-0 flex-1">
-        <Link href={portalHref(portal, n.href)!} onClick={onRead} className={cn("block hover:underline", unread ? "font-bold" : "font-semibold")}>
+        <Link href={portalHref(portal, n.href)!} onClick={onRead} className={cn("block hover:underline", unread ? "font-medium text-ink" : "text-ink-2")}>
           {n.title}
         </Link>
         <span className="mt-0.5 block text-12.5 text-ink-2">
           <Parts n={n} portal={portal} />
         </span>
-        <span className="mt-0.5 block text-12 text-muted sm:hidden">
+        <span className="mt-0.5 block text-12.5 text-muted sm:hidden">
           <Who n={n} portal={portal} /> · {n.when}
         </span>
       </span>
-      <span className="hidden w-[120px] flex-none sm:block">
-        <Chip tone={t.tone} dot={false}>
+      <span className="hidden w-[104px] flex-none sm:block">
+        <Chip fixed tone={t.tone}>
           {t.chip}
         </Chip>
       </span>
-      <span className="hidden w-[150px] flex-none text-right text-12 text-muted sm:block">
+      <span className="hidden w-[150px] flex-none text-right text-12.5 text-muted sm:block">
         <Who n={n} portal={portal} /> · {n.when}
       </span>
       <span className="flex flex-none items-center gap-1.5">
         {unread ? (
-          <button type="button" onClick={onRead} className="grid h-5 w-5 place-items-center rounded-sm hover:bg-surface" aria-label="Unread · mark as read" title="Mark as read">
-            <span className="h-2 w-2 rounded-[2px] bg-accent" />
+          <button type="button" onClick={onRead} className="grid h-5 w-5 place-items-center rounded-sm hover:bg-ghost" aria-label="Unread · mark as read" title="Mark as read">
+            <span className="h-2 w-2 rounded-[2px] bg-accent-mid" />
           </button>
         ) : (
           <span className="w-5" />
@@ -156,16 +156,21 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
             />
           </div>
           {groups.length === 0 ? (
-            <div role="status" className="flex items-center gap-3 px-4 py-4 md:px-5">
-              <span className="flex-1 text-13 text-faint">Nothing unread</span>
-              <Button size="sm" onClick={() => setTab("all")}>
-                See all
-              </Button>
+            <div role="status">
+              <Empty
+                action={
+                  <Button size="sm" onClick={() => setTab("all")}>
+                    See all
+                  </Button>
+                }
+              >
+                Nothing unread
+              </Empty>
             </div>
           ) : (
             groups.map((g) => (
               <div key={g.label}>
-                <p className="border-t border-line-soft px-4 pb-2 pt-3 text-12 font-semibold text-ink first:border-t-0 md:px-5">{g.label}</p>
+                <p className="flex h-9 items-end border-t border-line-soft px-4 pb-2 text-11.5 font-medium uppercase tracking-[.07em] text-muted first:border-t-0 md:px-5">{g.label}</p>
                 {g.rows.map((n) => (
                   <NotifRow
                     key={n.id}
@@ -186,17 +191,17 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
       </Col>
       <Col>
         <SectionCard title="This month" flush>
-          <button type="button" onClick={() => setDrill("all")} className="block w-full px-4 pt-4 text-left hover:bg-raised md:px-5" aria-label={`Show all ${LIST.length} notifications`}>
-            <span className="text-24 font-semibold leading-none">{LIST.length}</span>
+          <button type="button" onClick={() => setDrill("all")} className="block w-full px-4 pt-4 text-left hover:bg-hover md:px-5" aria-label={`Show all ${LIST.length} notifications`}>
+            <span className="text-26 font-medium leading-none">{LIST.length}</span>
             <span className="ml-2 text-12.5 text-muted">this month</span>
           </button>
           <div className="px-4 pb-2 pt-3 md:px-5">
             <StackedBar segments={GROUPS.map((g) => ({ label: g, value: cnt(g), tone: BAR_TONE[g] }))} className="[&>ul]:hidden" />
           </div>
           {GROUPS.map((g) => (
-            <ListRow key={g} onClick={() => setDrill(g)} className="py-2 text-13">
+            <ListRow key={g} onClick={() => setDrill(g)} className="min-h-11 py-2">
               <span className="min-w-0 flex-1">{g}</span>
-              <b className=" font-semibold">{cnt(g)}</b>
+              <b className="font-medium">{cnt(g)}</b>
               <ChevronRight size={14} strokeWidth={1.6} className="text-faint" />
             </ListRow>
           ))}
@@ -205,10 +210,10 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
           <SectionCard title="Northwind gets these by" flush>
             <div className="grid gap-2 px-4 py-4 md:px-5">
               <span className="flex flex-wrap gap-2">
-                <Chip tone="prog" dot={false}>✓ Email</Chip>
-                <Chip tone="ok" dot={false}>✓ WhatsApp</Chip>
+                <Tag tone="prog">✓ Email</Tag>
+                <Tag tone="ok">✓ WhatsApp</Tag>
               </span>
-              <Link href={portalHref(portal, "/client/profile?tab=settings")!} className="text-13 font-semibold text-accent hover:underline">
+              <Link href={portalHref(portal, "/client/profile?tab=settings")!} className="text-13 font-medium text-accent hover:underline">
                 Change in Settings ›
               </Link>
             </div>
@@ -256,12 +261,12 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
             >
               <IconTile Icon={ic.Icon} tone={ic.tone} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold">{n.title}</span>
-                <span className="block truncate font-mono text-12 text-muted">
+                <span className="block truncate font-medium">{n.title}</span>
+                <span className="block truncate text-12.5 text-muted">
                   {n.who} · {n.when}
                 </span>
               </span>
-              <Chip tone={NOTIF_TYPE[n.type].tone} className="hidden sm:inline-flex">
+              <Chip fixed tone={NOTIF_TYPE[n.type].tone} className="hidden sm:inline-flex">
                 {NOTIF_TYPE[n.type].chip}
               </Chip>
             </ListRow>
@@ -295,7 +300,7 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
               <KeyValue
                 rows={[
                   { k: "From", v: detail.who },
-                  { k: "When", v: detail.when, mono: true },
+                  { k: "When", v: detail.when },
                   { k: "Area", v: NOTIF_TYPE[detail.type].group },
                 ]}
               />
@@ -305,10 +310,10 @@ export function NotificationsScreen({ portal }: { portal: Portal }) {
             </PanelSection>
             {detail.step && (
               <PanelSection title="Linked step">
-                <Link href={portalHref(portal, `/client/incorporation/step/${detail.step.n}`)!} className="flex items-center gap-3 rounded-md border border-line px-3 py-2.5 hover:bg-raised">
-                  <span className="grid h-7 w-7 flex-none place-items-center rounded-md bg-accent-soft font-mono text-12 font-semibold text-accent">{detail.step.n}</span>
-                  <span className="min-w-0 flex-1 truncate text-13.5 font-semibold">{detail.step.title}</span>
-                  <Chip>{detail.step.status}</Chip>
+                <Link href={portalHref(portal, `/client/incorporation/step/${detail.step.n}`)!} className="flex items-center gap-3 rounded-md border-1.5 border-line px-3 py-2.5 hover:bg-hover">
+                  <span className="grid h-7 w-7 flex-none place-items-center rounded-md bg-accent-soft text-12 font-medium text-accent">{detail.step.n}</span>
+                  <span className="min-w-0 flex-1 truncate text-14 font-medium">{detail.step.title}</span>
+                  <Chip fixed>{detail.step.status}</Chip>
                 </Link>
               </PanelSection>
             )}

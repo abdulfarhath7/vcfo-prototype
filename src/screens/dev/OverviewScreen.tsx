@@ -30,6 +30,7 @@ import { GreetingCard, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, HeadLink, ListRow } from "@/components/cards/SectionCard";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
 import { StackedBar, type Segment } from "@/components/cards/StackedBar";
+import { StatusChip } from "./parts";
 
 const DAY = 86400000;
 
@@ -43,7 +44,7 @@ function attentionRows(): AttentionRow[] {
     rows.push({ id: `conn-${c.id}`, date: c.status === "Offline" ? c.lastSync : (c.authExpires ?? STAFF_TODAY), title: c.name, sub: c.status === "Offline" ? `Offline since ${fmt(c.lastSync)} · 6 invoices waiting` : `Token expires ${fmt(c.authExpires ?? STAFF_TODAY)} · digests and escalations stop after that`, chip: { label: c.status, tone: CONN_TONE[c.status] }, href: `/dev/connections?c=${c.id}` });
   const waiting = CHANNEL_TEMPLATES.filter((t) => t.status === "Waiting");
   if (waiting.length)
-    rows.push({ id: "wa-tpl", date: waiting[0].since ?? STAFF_TODAY, title: `${waiting.length} WhatsApp templates wait for Meta approval`, sub: "Deadline reminders and payment links on WhatsApp are blocked", chip: { label: "Waiting", tone: "warn" }, href: "/dev/connections?c=wa" });
+    rows.push({ id: "wa-tpl", date: waiting[0].since ?? STAFF_TODAY, title: `${waiting.length} WhatsApp templates wait for Meta approval`, sub: "Deadline reminders and payment links on WhatsApp are blocked", chip: { label: "Waiting", tone: "teal" }, href: "/dev/connections?c=wa" });
   for (const k of API_KEYS.filter((x) => x.purge))
     rows.push({ id: `purge-${k.id}`, date: STAFF_TODAY, title: `${k.name} still work on production`, sub: "Purge them before real users sign in", chip: { label: "Before launch", tone: "warn" }, href: "/dev/access" });
   for (const k of API_KEYS.filter((x) => x.expires && !x.missing && x.expires.getTime() - STAFF_TODAY.getTime() < 60 * DAY && !CONNECTIONS.some((c) => c.status !== "Connected" && c.authExpires?.getTime() === x.expires?.getTime())))
@@ -58,13 +59,13 @@ const serviceColumns: Column<Service>[] = [
     label: "Service",
     render: (s) => (
       <span className="block min-w-[180px]">
-        <b className="font-semibold">{s.name}</b>
+        <b className="font-medium">{s.name}</b>
         <span className="block text-12 text-muted">{s.what}</span>
       </span>
     ),
   },
-  { key: "status", label: "Status", width: 124, render: (s) => <Chip fixed tone={SVC_TONE[s.status]}>{s.status}</Chip> },
-  { key: "up", label: "Uptime, 30 days", align: "right", render: (s) => <span className={s.uptime < 99.5 ? "font-semibold text-warn" : undefined}>{`${s.uptime}%`}</span> },
+  { key: "status", label: "Status", width: 124, render: (s) => <StatusChip wide tone={SVC_TONE[s.status]}>{s.status}</StatusChip> },
+  { key: "up", label: "Uptime, 30 days", align: "right", render: (s) => <span className={s.uptime < 99.5 ? "font-medium text-warn" : undefined}>{`${s.uptime}%`}</span> },
   { key: "p95", label: "p95", align: "right", render: (s) => <span className="whitespace-nowrap">{s.p95 ? `${s.p95.toLocaleString("en-IN")} ms` : "-"}</span> },
   { key: "note", label: "Note", render: (s) => <span className="block min-w-[200px] text-12.5 text-ink-2">{s.note}</span> },
 ];
@@ -83,15 +84,15 @@ const incidentColumns: Column<Incident>[] = [
       </span>
     ),
   },
-  { key: "status", label: "Status", width: 124, render: (i) => <Chip fixed tone={i.status === "Resolved" ? "ok" : "warn"}>{i.status}</Chip> },
+  { key: "status", label: "Status", width: 124, render: (i) => <StatusChip tone={i.status === "Resolved" ? "ok" : "warn"}>{i.status}</StatusChip> },
 ];
 
 export const envColumns: Column<Environment>[] = [
-  { key: "name", label: "Environment", render: (e) => <span className="whitespace-nowrap font-semibold">{e.name}</span> },
+  { key: "name", label: "Environment", render: (e) => <span className="whitespace-nowrap font-medium">{e.name}</span> },
   { key: "addr", label: "Address", mono: true, render: (e) => <span className="whitespace-nowrap">{e.address}</span> },
   { key: "ver", label: "Version", mono: true, render: (e) => <span className="whitespace-nowrap">{e.version}</span> },
   { key: "sha", label: "Commit", mono: true, render: (e) => <span className="whitespace-nowrap text-muted">{e.commit}</span> },
-  { key: "when", label: "Deployed", mono: true, render: (e) => <span className="whitespace-nowrap">{e.deployed ? stamp(e.deployed) : "-"}</span> },
+  { key: "when", label: "Deployed", render: (e) => <span className="whitespace-nowrap">{e.deployed ? stamp(e.deployed) : "-"}</span> },
   { key: "by", label: "By", render: (e) => e.by },
 ];
 
@@ -103,7 +104,7 @@ export function OverviewScreen() {
   const msgFailed = MESSAGES.filter((m) => m.status === "Failed").length;
   const secrets = API_KEYS.filter((k) => k.missing || k.purge || (k.expires && k.expires.getTime() - STAFF_TODAY.getTime() < 15 * DAY)).length;
 
-  // R-17: the same greeting band on every portal.
+  // R-17 (H3): the home card on the wash, with KP1 tiles.
   const stats: StatItem[] = [
     { label: "Services working", value: working, of: `/ ${SERVICES.length}`, Icon: Server, tone: "green" },
     { label: "Connections healthy", value: healthy, of: `/ ${live.length}`, Icon: Plug, tone: "blue", href: "/dev/connections" },
@@ -125,7 +126,7 @@ export function OverviewScreen() {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <GreetingCard date={STAFF_TODAY} time="12:31 PM" name="Developer console" tag={<Chip tone="ok" className="bg-white/[.12] text-white">Production 2026.10.21</Chip>} stats={stats} />
+      <GreetingCard date={STAFF_TODAY} time="12:31 PM" name="Developer console" tag={<Chip tone="ok">Production 2026.10.21</Chip>} stats={stats} />
       <DataGrid title="Services health" meta="Last 30 days" columns={serviceColumns} rows={SERVICES} rowKey={(s) => s.id} />
       <Cols>
         <Col>
@@ -136,14 +137,14 @@ export function OverviewScreen() {
           <SectionCard title="Recent deploys" flush right={<HeadLink href="/dev/deploys">Deploys ›</HeadLink>}>
             {DEPLOYS.slice(0, 5).map((d) => (
               <ListRow key={d.id} href="/dev/deploys">
-                <span className="w-[120px] flex-none truncate font-mono text-12.5 font-semibold">{d.version}</span>
-                <Tag tone={ENV_TONE[d.env]} className="hidden sm:inline-flex">
+                <span className="w-[120px] flex-none truncate font-mono text-13 font-medium">{d.version}</span>
+                <Tag tone={ENV_TONE[d.env]} className="hidden w-[104px] sm:inline-flex">
                   {d.env}
                 </Tag>
                 <span className="min-w-0 flex-1 truncate text-12.5 text-muted">
                   {stamp(d.at)} · {d.by}
                 </span>
-                <Chip tone={DEPLOY_TONE[d.status]}>{d.status}</Chip>
+                <StatusChip tone={DEPLOY_TONE[d.status]}>{d.status}</StatusChip>
               </ListRow>
             ))}
           </SectionCard>
@@ -153,19 +154,19 @@ export function OverviewScreen() {
             {conns.map((c) => (
               <ListRow key={c.id} href={`/dev/connections?c=${c.id}`}>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">{c.name}</span>
+                  <span className="block truncate font-medium">{c.name}</span>
                   <span className="block truncate text-12.5 text-muted">Last sync {stamp(c.lastSync)}</span>
                 </span>
-                <Chip tone={CONN_TONE[c.status]}>{c.status}</Chip>
+                <StatusChip wide tone={CONN_TONE[c.status]}>{c.status}</StatusChip>
               </ListRow>
             ))}
           </SectionCard>
-          <DataGrid title="Environments" columns={envColumns} rows={ENVIRONMENTS} rowKey={(e) => e.id} />
           <SectionCard title="Costs this month" meta="1 to 16 Oct">
             <StackedBar total={rupees(COST_TOTAL)} segments={segments} format={rupees} />
           </SectionCard>
         </Col>
       </Cols>
+      <DataGrid title="Environments" columns={envColumns} rows={ENVIRONMENTS} rowKey={(e) => e.id} />
     </div>
   );
 }

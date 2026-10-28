@@ -3,15 +3,15 @@ import * as React from "react";
 import { CHANNEL_TEMPLATES, CHANNEL_TONE, MESSAGES, MSG_FAILS, MSG_TONE, ROUTES, SENDERS, TEMPLATES, TPL_TONE, stamp, stampSec, type Channel, type ChannelTemplate, type Message, type Route } from "@/data/dev";
 import { fmt } from "@/lib/dates";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag } from "@/components/ui/Chip";
+import { Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { Select } from "@/components/ui/Select";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
-import { Cols, Col } from "@/components/shell/Page";
-import { ChoiceRow, CloseButton, PickCell, SettingRow, SwitchRow, logAudit, useRevealRef } from "./parts";
+import { Row } from "@/components/shell/Page";
+import { ChoiceRow, CloseButton, FilterChip, PickCell, SettingRow, StatusChip, SwitchRow, logAudit, useRevealRef } from "./parts";
 import { DomainCard } from "./conn-detail";
 
 const CHANNELS: Channel[] = ["Email", "WhatsApp", "SMS", "Teams"];
@@ -38,8 +38,8 @@ function Timeline({ m }: { m: Message }) {
     <ol className="grid grid-cols-2 gap-3 px-4 py-4 sm:grid-cols-4 md:px-5">
       {timeline(m).map((t) => (
         <li key={t.label} className={`min-w-0 ${t.at ? "" : "opacity-50"}`}>
-          <div className="flex items-center gap-2 text-13 font-semibold">
-            <i className={`h-[8px] w-[8px] flex-none rounded-md ${t.tone === "ok" ? "bg-ok-mid" : t.tone === "bad" ? "bg-bad-mid" : "border border-faint"}`} aria-hidden />
+          <div className="flex items-center gap-2 text-13 font-medium">
+            <i className={`h-2 w-2 flex-none rounded-[2px] ${t.tone === "ok" ? "bg-ok-mid" : t.tone === "bad" ? "bg-bad-mid" : "border-1.5 border-line-2"}`} aria-hidden />
             {t.label}
           </div>
           {t.at && <div className="pl-4 text-12 text-muted">{stampSec(t.at)}</div>}
@@ -91,20 +91,19 @@ export function MessagesScreen() {
     {
       key: "time",
       label: "Time",
-      mono: true,
       render: (m) => (
-        <span className="whitespace-nowrap font-mono">
+        <span className="whitespace-nowrap">
           <PickCell on={picked === m.id} onPick={() => pick(m.id)}>
             {stamp(m.at)}
           </PickCell>
         </span>
       ),
     },
-    { key: "channel", label: "Channel", render: (m) => <Tag tone={CHANNEL_TONE[m.channel]}>{m.channel}</Tag> },
+    { key: "channel", label: "Channel", render: (m) => <Tag tone={CHANNEL_TONE[m.channel]} className="w-[104px]">{m.channel}</Tag> },
     { key: "to", label: "To", render: (m) => <span className="whitespace-nowrap">{m.to}</span> },
     { key: "template", label: "Template", mono: true, render: (m) => <span className="whitespace-nowrap">{m.template}</span> },
-    { key: "status", label: "Status", width: 124, render: (m) => <Chip fixed tone={MSG_TONE[m.status]}>{m.status}</Chip> },
-    { key: "retries", label: "Retries", align: "right", render: (m) => <span className={m.retries > 0 ? "font-semibold" : "text-muted"}>{m.retries}</span> },
+    { key: "status", label: "Status", width: 124, render: (m) => <StatusChip tone={MSG_TONE[m.status]}>{m.status}</StatusChip> },
+    { key: "retries", label: "Retries", align: "right", render: (m) => <span className={m.retries > 0 ? "font-medium" : "text-muted"}>{m.retries}</span> },
   ];
 
   const routeRows = routes.filter((r) => routeCh === "all" || r.channel === routeCh);
@@ -114,26 +113,26 @@ export function MessagesScreen() {
       label: "Message",
       render: (r) => (
         <span className="block min-w-[200px]">
-          <b className="font-semibold">{r.message}</b>
+          <b className="font-medium">{r.message}</b>
           <span className="block text-12 text-muted">{r.when}</span>
         </span>
       ),
     },
-    { key: "ch", label: "Channel", render: (r) => <Tag tone={CHANNEL_TONE[r.channel]}>{r.channel}</Tag> },
-    { key: "from", label: "Sent from", mono: true, render: (r) => <span className="whitespace-nowrap">{r.from}</span> },
+    { key: "ch", label: "Channel", render: (r) => <Tag tone={CHANNEL_TONE[r.channel]} className="w-[104px]">{r.channel}</Tag> },
+    { key: "from", label: "Sent from", render: (r) => <span className="whitespace-nowrap">{r.from}</span> },
     {
       key: "tpl",
       label: "Template",
       render: (r) => (
-        <span className="flex flex-wrap items-center gap-1.5 whitespace-nowrap">
-          <span className="font-mono text-12.5">{r.template}</span>
-          {r.status !== "Approved" && <Chip tone="warn">Waiting</Chip>}
+        <span className="flex flex-col items-start gap-1 whitespace-nowrap">
+          <span className="font-mono text-13">{r.template}</span>
+          {r.status !== "Approved" && <StatusChip tone="teal">Waiting</StatusChip>}
         </span>
       ),
     },
     { key: "to", label: "To", render: (r) => <span className="block min-w-[140px] text-12.5">{r.to}</span> },
     { key: "sent", label: "7 days", align: "right", render: (r) => r.sent7d },
-    { key: "del", label: "Delivered", align: "right", render: (r) => <span className={r.sent7d && r.delivered < 98 ? "font-semibold text-warn" : undefined}>{r.sent7d ? `${r.delivered}%` : "-"}</span> },
+    { key: "del", label: "Delivered", align: "right", render: (r) => <span className={r.sent7d && r.delivered < 98 ? "font-medium text-warn" : undefined}>{r.sent7d ? `${r.delivered}%` : "-"}</span> },
     {
       key: "act",
       label: "",
@@ -141,7 +140,7 @@ export function MessagesScreen() {
       render: (r) => (
         <span className="flex items-center gap-1.5">
           {tested[r.id] ? (
-            <Chip tone="ok">Test sent</Chip>
+            <StatusChip tone="ok">Test sent</StatusChip>
           ) : (
             <Button
               size="sm"
@@ -168,11 +167,11 @@ export function MessagesScreen() {
   const tpls = CHANNEL_TEMPLATES.filter((t) => t.channel === tplCh);
   const tplCur = CHANNEL_TEMPLATES.find((t) => t.id === tplPick) ?? null;
   const tplColumns: Column<ChannelTemplate>[] = [
-    { key: "name", label: "Template", mono: true, render: (t) => <span className="whitespace-nowrap font-semibold">{t.name}</span> },
+    { key: "name", label: "Template", mono: true, render: (t) => <span className="whitespace-nowrap font-medium">{t.name}</span> },
     { key: "lang", label: "Language", render: (t) => <span className="whitespace-nowrap">{t.language}</span> },
     { key: "cat", label: "Category", render: (t) => t.category },
-    { key: "status", label: "Status", width: 124, render: (t) => <Chip fixed tone={TPL_TONE[t.status]}>{t.status === "Waiting" && t.since ? `Since ${fmt(t.since)}` : t.status}</Chip> },
-    { key: "used", label: "Last used", mono: true, render: (t) => <span className="whitespace-nowrap">{t.lastUsed ? stamp(t.lastUsed) : "-"}</span> },
+    { key: "status", label: "Status", width: 124, render: (t) => <StatusChip tone={TPL_TONE[t.status]}>{t.status === "Waiting" && t.since ? `Since ${fmt(t.since)}` : t.status}</StatusChip> },
+    { key: "used", label: "Last used", render: (t) => <span className="whitespace-nowrap">{t.lastUsed ? stamp(t.lastUsed) : "-"}</span> },
     { key: "sent", label: "Sent, 7 days", align: "right", render: (t) => t.sent7d },
     { key: "body", label: "Body", render: (t) => <span className="block max-w-[320px] truncate text-12.5 text-muted">{t.body.replace(/\n+/g, " ")}</span> },
   ];
@@ -192,7 +191,7 @@ export function MessagesScreen() {
         empty="No messages match"
         filters={
           <>
-            <Select aria-label="Channel" value={channel} onChange={(e) => setChannel(e.target.value)} options={[{ value: "all", label: "All channels" }, ...CHANNELS.map((c) => ({ value: c, label: c }))]} />
+            <FilterChip label="Channel" value={channel} onChange={setChannel} options={CHANNELS.map((c) => ({ value: c, label: c }))} />
             <Tabs
               items={[
                 { key: "all", label: "All", count: rows.length },
@@ -227,19 +226,19 @@ export function MessagesScreen() {
               <KeyValue
                 cols={3}
                 rows={[
-                  { k: "From", v: tpl.from, mono: tpl.channel !== "Teams" },
+                  { k: "From", v: tpl.from },
                   { k: "To", v: cur.to },
                   { k: "Queued", v: stamp(cur.at) },
                   { k: "Channel", v: cur.channel },
-                  { k: "Status", v: <Chip tone={MSG_TONE[cur.status]}>{cur.status}</Chip> },
+                  { k: "Status", v: <StatusChip tone={MSG_TONE[cur.status]}>{cur.status}</StatusChip> },
                   { k: "Retries", v: cur.retries },
                 ]}
               />
-              {cur.error && <p className="mt-3 text-13 font-semibold text-bad">{cur.error}</p>}
+              {cur.error && <p className="mt-3 text-13 font-medium text-bad">{cur.error}</p>}
             </div>
             <div className="border-t border-line-soft px-4 py-4 md:px-5">
-              {tpl.subject && <div className="mb-2 text-13.5 font-semibold">{tpl.subject}</div>}
-              <div className="whitespace-pre-line rounded-md border border-line bg-raised px-4 py-3 text-13.5 text-ink-2">{tpl.body}</div>
+              {tpl.subject && <div className="mb-2 text-14 font-medium">{tpl.subject}</div>}
+              <div className="whitespace-pre-line rounded-md border-1.5 border-line bg-raised px-4 py-3 text-14 text-ink-2">{tpl.body}</div>
             </div>
           </SectionCard>
         </div>
@@ -255,11 +254,11 @@ export function MessagesScreen() {
           rowKey={(r) => r.id}
           pageSize={15}
           selectedKey={editing?.id}
-          filters={<Select aria-label="Route channel" value={routeCh} onChange={(e) => setRouteCh(e.target.value)} options={[{ value: "all", label: "All channels" }, ...CHANNELS.map((c) => ({ value: c, label: c }))]} />}
+          filters={<FilterChip label="Channel" value={routeCh} onChange={setRouteCh} options={CHANNELS.map((c) => ({ value: c, label: c }))} />}
         />
         {editing && editRoute && (
           <div className="flex flex-wrap items-center gap-2.5 border-t border-line-soft bg-raised px-4 py-2.5 md:px-5">
-            <span className="min-w-0 flex-1 text-13 font-semibold">Send {editRoute.message.toLowerCase()} from</span>
+            <span className="min-w-0 flex-1 text-14 font-medium">Send {editRoute.message.toLowerCase()} from</span>
             <Select aria-label="Sent from" value={editing.from} onChange={(e) => setEditing({ ...editing, from: e.target.value })} options={SENDERS[editRoute.channel].map((s) => ({ value: s, label: s }))} />
             <Button
               size="sm"
@@ -280,50 +279,46 @@ export function MessagesScreen() {
         )}
       </SectionCard>
 
-      <Cols>
-        <Col>
-          <SectionCard
-            title="Failed in the last 24 hours"
-            meta={`${MSG_FAILS.reduce((a, f) => a + f.n, 0)} messages`}
-            flush
-            right={
-              <Button size="sm" onClick={() => setAskRetry(true)} disabled={failed === 0} aria-expanded={askRetry}>
-                Retry failed
-              </Button>
-            }
-          >
-            {MSG_FAILS.map((f) => (
-              <SettingRow key={f.id} label={f.what} hint={f.cause}>
-                <b className="font-semibold">{f.n}</b>
-              </SettingRow>
-            ))}
-            {askRetry && (
-              <ChangeConfirm
-                question={`Retry ${failed} failed messages? deadline_1d fails again until Meta approves it.`}
-                confirm="Retry"
-                before={`${failed} failed`}
-                after="Queued again"
-                onConfirm={retryAll}
-                onCancel={() => setAskRetry(false)}
-              />
-            )}
-          </SectionCard>
-          <DomainCard />
-        </Col>
-        <Col>
-          <SectionCard title="Timing and channels" flush>
-            <SettingRow label="Order" hint="Email is the record. WhatsApp and SMS follow it as reminders.">
-              <span>Email, then WhatsApp, then SMS</span>
+      <SectionCard title="Timing and channels" flush>
+        <SettingRow label="Order" hint="Email is the record. WhatsApp and SMS follow it as reminders.">
+          <span>Email, then WhatsApp, then SMS</span>
+        </SettingRow>
+        <ChoiceRow k="msg-dl" opts={["7, 3, 1", "10, 5, 1", "3, 1"]} initial={0} label="Deadline reminders" hint="Days before a filing date" />
+        <ChoiceRow k="msg-rn" opts={["60, 30, 7", "30, 7"]} initial={0} label="Renewal reminders" hint="LUT, IEC, LEI, trade licence" />
+        <ChoiceRow k="msg-dg" opts={["08:30", "09:00", "09:30"]} initial={1} label="Staff daily digest" hint="Teams and email, working days" />
+        <ChoiceRow k="wa-quiet" opts={["Off", "21:00 to 09:00", "20:00 to 10:00"]} initial={1} label="Quiet hours" hint="WhatsApp and SMS wait for the morning" />
+        <SwitchRow k="msg-report" initial={true} label="Monthly client report" hint="1st of the month, 08:00 from reports@sbcllp.in" />
+        <SwitchRow k="wa-fallback" initial={false} label="Send SMS when WhatsApp fails" hint="Same message from SBCLLP" />
+      </SectionCard>
+      <Row>
+        <SectionCard
+          title="Failed in the last 24 hours"
+          meta={`${MSG_FAILS.reduce((a, f) => a + f.n, 0)} messages`}
+          flush
+          right={
+            <Button size="sm" onClick={() => setAskRetry(true)} disabled={failed === 0} aria-expanded={askRetry}>
+              Retry failed
+            </Button>
+          }
+        >
+          {MSG_FAILS.map((f) => (
+            <SettingRow key={f.id} label={f.what} hint={f.cause}>
+              <b className="font-medium">{f.n}</b>
             </SettingRow>
-            <ChoiceRow k="msg-dl" opts={["7, 3, 1", "10, 5, 1", "3, 1"]} initial={0} label="Deadline reminders" hint="Days before a filing date" />
-            <ChoiceRow k="msg-rn" opts={["60, 30, 7", "30, 7"]} initial={0} label="Renewal reminders" hint="LUT, IEC, LEI, trade licence" />
-            <ChoiceRow k="msg-dg" opts={["08:30", "09:00", "09:30"]} initial={1} label="Staff daily digest" hint="Teams and email, working days" />
-            <ChoiceRow k="wa-quiet" opts={["Off", "21:00 to 09:00", "20:00 to 10:00"]} initial={1} label="Quiet hours" hint="WhatsApp and SMS wait for the morning" />
-            <SwitchRow k="msg-report" initial={true} label="Monthly client report" hint="1st of the month, 08:00 from reports@sbcllp.in" />
-            <SwitchRow k="wa-fallback" initial={false} label="Send SMS when WhatsApp fails" hint="Same message from SBCLLP" />
-          </SectionCard>
-        </Col>
-      </Cols>
+          ))}
+          {askRetry && (
+            <ChangeConfirm
+              question={`Retry ${failed} failed messages? deadline_1d fails again until Meta approves it.`}
+              confirm="Retry"
+              before={`${failed} failed`}
+              after="Queued again"
+              onConfirm={retryAll}
+              onCancel={() => setAskRetry(false)}
+            />
+          )}
+        </SectionCard>
+        <DomainCard />
+      </Row>
 
       <DataGrid
         title="Templates"
@@ -353,10 +348,10 @@ export function MessagesScreen() {
                 rows={[
                   { k: "Used for", v: tplCur.usedFor },
                   { k: "Channel", v: tplCur.channel },
-                  { k: "Status", v: <Chip tone={TPL_TONE[tplCur.status]}>{tplCur.status}</Chip> },
+                  { k: "Status", v: <StatusChip tone={TPL_TONE[tplCur.status]}>{tplCur.status}</StatusChip> },
                 ]}
               />
-              <div className="mt-3 whitespace-pre-line rounded-md border border-line bg-raised px-4 py-3 font-mono text-12.5 text-ink-2">{tplCur.body}</div>
+              <div className="mt-3 whitespace-pre-line rounded-md border-1.5 border-line bg-raised px-4 py-3 text-14 text-ink-2">{tplCur.body}</div>
             </div>
           </SectionCard>
         </div>

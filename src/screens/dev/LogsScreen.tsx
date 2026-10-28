@@ -2,13 +2,12 @@
 import * as React from "react";
 import { LEVEL_TONE, LOGS, LOG_SERVICES, stampSec, type LogLevel, type LogRow } from "@/data/dev";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
-import { Select } from "@/components/ui/Select";
+import { Tabs } from "@/components/ui/Tabs";
 import { Input } from "@/components/ui/Input";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
-import { ChoiceRow, CloseButton, SwitchRow, useRevealRef } from "./parts";
+import { ChoiceRow, CloseButton, FilterChip, StatusChip, SwitchRow, useRevealRef } from "./parts";
 
 const LEVELS: LogLevel[] = ["Error", "Warn", "Info"];
 
@@ -30,8 +29,8 @@ export function LogsScreen() {
   const cur = LOGS.find((r) => r.id === picked) ?? null;
 
   const columns: Column<LogRow>[] = [
-    { key: "time", label: "Time", mono: true, render: (r) => <span className="whitespace-nowrap">{stampSec(r.at)}</span> },
-    { key: "level", label: "Level", width: 124, render: (r) => <Chip fixed tone={LEVEL_TONE[r.level]}>{r.level}</Chip> },
+    { key: "time", label: "Time", render: (r) => <span className="whitespace-nowrap">{stampSec(r.at)}</span> },
+    { key: "level", label: "Level", width: 124, render: (r) => <StatusChip tone={LEVEL_TONE[r.level]}>{r.level}</StatusChip> },
     { key: "service", label: "Source", render: (r) => <span className="whitespace-nowrap">{r.service}</span> },
     { key: "message", label: "Message", render: (r) => <span className="block min-w-[260px]">{r.message}</span> },
     { key: "req", label: "Request ID", mono: true, render: (r) => <span className="whitespace-nowrap text-muted">{r.requestId}</span> },
@@ -51,14 +50,9 @@ export function LogsScreen() {
         selectedKey={picked ?? undefined}
         filters={
           <>
-            <Select
-              aria-label="Level"
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              options={[{ value: "all", label: `All levels (${LOGS.length})` }, ...LEVELS.map((l) => ({ value: l, label: `${l} (${LOGS.filter((r) => r.level === l).length})` }))]}
-            />
-            <Select aria-label="Source" value={service} onChange={(e) => setService(e.target.value)} options={[{ value: "all", label: "All sources" }, ...LOG_SERVICES.map((s) => ({ value: s, label: s }))]} />
-            <Input aria-label="Search" type="search" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} className="h-[30px] w-[160px] text-12.5" />
+            <Tabs items={[{ key: "all", label: "All", count: LOGS.length }, ...LEVELS.map((l) => ({ key: l, label: l, count: LOGS.filter((r) => r.level === l).length }))]} value={level} onChange={setLevel} />
+            <FilterChip label="Source" value={service} onChange={setService} options={LOG_SERVICES.map((s) => ({ value: s, label: s }))} />
+            <Input aria-label="Search" type="search" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} className="h-[30px] w-[160px] text-13" />
             {any && (
               <Button
                 size="sm"
@@ -82,13 +76,13 @@ export function LogsScreen() {
               <KeyValue
                 cols={3}
                 rows={[
-                  { k: "Level", v: <Chip tone={LEVEL_TONE[cur.level]}>{cur.level}</Chip> },
+                  { k: "Level", v: <StatusChip tone={LEVEL_TONE[cur.level]}>{cur.level}</StatusChip> },
                   { k: "Source", v: cur.service },
                   { k: "Request ID", v: cur.requestId, mono: true },
                 ]}
               />
-              <p className="mt-3 text-13.5 font-semibold">{cur.message}</p>
-              <p className="mt-1 text-13.5 text-ink-2">{cur.detail}</p>
+              <p className="mt-3 text-14 font-medium">{cur.message}</p>
+              <p className="mt-1 text-14 text-ink-2">{cur.detail}</p>
             </div>
           </SectionCard>
         </div>

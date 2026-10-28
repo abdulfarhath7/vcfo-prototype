@@ -2,19 +2,18 @@
 import * as React from "react";
 import { STAFF_TODAY } from "@/lib/dates";
 import { RESULT_TONE, stamp, type AuditEntry } from "@/data/dev";
-import { Chip } from "@/components/ui/Chip";
-import { Select } from "@/components/ui/Select";
+import { Button } from "@/components/ui/Button";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { useAudit } from "./parts";
+import { FilterChip, StatusChip, useAudit } from "./parts";
 
 const columns: Column<AuditEntry>[] = [
-  { key: "time", label: "Time", mono: true, render: (a) => <span className="whitespace-nowrap">{stamp(a.at)}</span> },
-  { key: "actor", label: "Actor", render: (a) => <span className="whitespace-nowrap font-semibold">{a.actor}</span> },
+  { key: "time", label: "Time", render: (a) => <span className="whitespace-nowrap">{stamp(a.at)}</span> },
+  { key: "actor", label: "Actor", render: (a) => <span className="whitespace-nowrap font-medium">{a.actor}</span> },
   { key: "action", label: "Action", render: (a) => <span className="whitespace-nowrap">{a.action}</span> },
   { key: "target", label: "Change", render: (a) => <span className="block min-w-[220px]">{a.target}</span> },
-  { key: "before", label: "Before", mono: true, render: (a) => <span className="block min-w-[90px] break-words text-muted">{a.before ?? "-"}</span> },
-  { key: "after", label: "After", mono: true, render: (a) => <span className="block min-w-[90px] break-words">{a.after ?? "-"}</span> },
-  { key: "result", label: "Result", width: 124, render: (a) => <Chip fixed tone={RESULT_TONE[a.result]}>{a.result}</Chip> },
+  { key: "before", label: "Before", render: (a) => <span className="block min-w-[90px] break-words text-muted">{a.before ?? "-"}</span> },
+  { key: "after", label: "After", render: (a) => <span className="block min-w-[90px] break-words">{a.after ?? "-"}</span> },
+  { key: "result", label: "Result", width: 124, render: (a) => <StatusChip tone={RESULT_TONE[a.result]}>{a.result}</StatusChip> },
 ];
 
 const RANGES = [
@@ -51,9 +50,21 @@ export function AuditScreen() {
       empty="No entries match"
       filters={
         <>
-          <Select aria-label="Actor" value={actor} onChange={(e) => setActor(e.target.value)} options={[{ value: "all", label: "All actors" }, ...actors.map((a) => ({ value: a, label: a }))]} />
-          <Select aria-label="Action" value={action} onChange={(e) => setAction(e.target.value)} options={[{ value: "all", label: "All actions" }, ...actions.map((a) => ({ value: a, label: a }))]} />
-          <Select aria-label="Date range" value={range} onChange={(e) => setRange(e.target.value)} options={RANGES} />
+          <FilterChip label="Actor" value={actor} onChange={setActor} options={actors.map((a) => ({ value: a, label: a }))} />
+          <FilterChip label="Action" value={action} onChange={setAction} options={actions.map((a) => ({ value: a, label: a }))} />
+          <FilterChip label="Date" value={range} onChange={setRange} options={RANGES} />
+          {(actor !== "all" || action !== "all" || range !== "all") && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setActor("all");
+                setAction("all");
+                setRange("all");
+              }}
+            >
+              Clear all
+            </Button>
+          )}
         </>
       }
     />

@@ -3,9 +3,9 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, Download, Search } from "lucide-react";
 import { TODAY, fmt, fmtLong, daysFrom } from "@/lib/dates";
-import { AUDIT_LOG, AUDIT_TYPE, portalHref, type AuditCat, type AuditRow } from "@/data/updates-team";
+import { AUDIT_LOG, portalHref, type AuditCat, type AuditRow } from "@/data/updates-team";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag, type ChipTone } from "@/components/ui/Chip";
+import { AreaPill, Chip, type ChipTone } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
@@ -41,21 +41,21 @@ function Facts({ e }: { e: AuditRow }) {
       {before && after && (
         <PanelSection title="Change">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <div className="min-w-0 rounded-md border border-line bg-raised px-3 py-2">
-              <div className="text-12 text-muted">Before</div>
+            <div className="min-w-0 rounded-md border-1.5 border-line bg-raised px-3 py-2">
+              <div className="text-12.5 text-muted">Before</div>
               <div className="truncate text-13.5 font-medium text-ink-2 line-through decoration-faint">{before.v}</div>
             </div>
             <ArrowRight size={16} strokeWidth={1.6} className="text-faint" aria-hidden />
-            <div className="min-w-0 rounded-md border border-accent-line bg-accent-soft px-3 py-2">
-              <div className="text-12 text-muted">After</div>
-              <div className="truncate text-13.5 font-semibold">{after.v}</div>
+            <div className="min-w-0 rounded-md border-1.5 border-accent-line bg-accent-soft px-3 py-2">
+              <div className="text-12.5 text-muted">After</div>
+              <div className="truncate text-13.5 font-medium">{after.v}</div>
             </div>
           </div>
         </PanelSection>
       )}
       {rest.length > 0 && (
         <PanelSection title="Details">
-          <KeyValue rows={rest.map((f) => ({ k: f.k, v: f.v, mono: /File|SRN|To/.test(f.k) }))} />
+          <KeyValue rows={rest.map((f) => ({ k: f.k, v: f.v, mono: /SRN/.test(f.k) }))} />
         </PanelSection>
       )}
     </>
@@ -98,7 +98,7 @@ export function AuditScreen({ portal }: { portal: Portal }) {
       render: (e) => (
         <button
           type="button"
-          className="font-mono text-12.5 text-accent hover:underline"
+          className="whitespace-nowrap text-13 text-accent hover:underline"
           onClick={(ev) => {
             ev.stopPropagation();
             setDay(dayKey(e.date));
@@ -114,24 +114,24 @@ export function AuditScreen({ portal }: { portal: Portal }) {
       label: "Event",
       render: (e) => (
         <span className="block min-w-[180px]">
-          <span className="block font-semibold">{e.action}</span>
+          <span className="block font-medium text-ink">{e.action}</span>
           <span className="block truncate text-12.5 text-muted">{e.target}</span>
         </span>
       ),
     },
-    { key: "cat", label: "Area", width: 120, render: (e) => <Tag tone={AUDIT_TYPE[e.type].tone}>{e.cat}</Tag> },
+    { key: "cat", label: "Area", width: 124, render: (e) => <AreaPill area={e.cat} /> },
     {
       key: "who",
       label: "Who",
       width: 150,
       render: (e) => (
         <span>
-          <span className="font-semibold">{e.who}</span>
-          <span className="block text-12 text-muted">{e.role}</span>
+          <span className="font-medium text-ink">{e.who}</span>
+          <span className="block text-12.5 text-muted">{e.role}</span>
         </span>
       ),
     },
-    { key: "result", label: "Result", width: 132, render: (e) => <Chip tone={resultTone[e.result]} fixed>{e.result}</Chip> },
+    { key: "result", label: "Result", width: 124, render: (e) => <Chip tone={resultTone[e.result]} fixed>{e.result}</Chip> },
   ];
 
   return (
@@ -155,7 +155,7 @@ export function AuditScreen({ portal }: { portal: Portal }) {
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search"
                 aria-label="Search the audit log"
-                className="h-[30px] w-[150px] rounded-md border border-line bg-surface pl-8 pr-2.5 text-12.5 text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-accent-line"
+                className="h-[30px] w-[150px] rounded-md border-1.5 border-line-2 bg-surface pl-8 pr-2.5 text-13 text-ink outline-none placeholder:text-faint focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-focus"
               />
             </label>
             <Select aria-label="Area" value={cat} onChange={(e) => setCat(e.target.value)} options={[{ value: "all", label: "All areas" }, ...CATS.map((c) => ({ value: c, label: `${c} · ${inRange.filter((e) => e.cat === c).length}` }))]} />
@@ -194,12 +194,12 @@ export function AuditScreen({ portal }: { portal: Portal }) {
         open={pick !== null}
         onOpenChange={(v) => !v && setPick(null)}
         title={pick?.action ?? ""}
-        eyebrow={pick && <span className="font-mono">{fmtLong(pick.date)} · {pick.time}</span>}
+        eyebrow={pick && <span>{fmtLong(pick.date)} · {pick.time}</span>}
         sub={
           pick && (
             <>
-              <Tag tone={AUDIT_TYPE[pick.type].tone}>{pick.cat}</Tag>
-              <Chip tone={resultTone[pick.result]}>{pick.result}</Chip>
+              <AreaPill area={pick.cat} />
+              <Chip fixed tone={resultTone[pick.result]}>{pick.result}</Chip>
             </>
           )
         }
@@ -246,16 +246,14 @@ export function AuditScreen({ portal }: { portal: Portal }) {
               setPick(e);
             }}
           >
-            <span className="w-12 flex-none font-mono text-12.5 text-muted">{e.time}</span>
+            <span className="w-12 flex-none text-13 text-muted">{e.time}</span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-semibold">{e.action}</span>
+              <span className="block truncate font-medium">{e.action}</span>
               <span className="block truncate text-12.5 text-muted">
                 {e.target} · {e.who}
               </span>
             </span>
-            <Tag tone={AUDIT_TYPE[e.type].tone} className="hidden sm:inline-flex">
-              {e.cat}
-            </Tag>
+            <AreaPill area={e.cat} className="hidden sm:inline-flex" />
           </ListRow>
         ))}
       </Modal>

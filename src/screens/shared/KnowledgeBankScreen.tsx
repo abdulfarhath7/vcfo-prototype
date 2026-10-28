@@ -1,12 +1,12 @@
 "use client";
 import * as React from "react";
-import { Search } from "lucide-react";
+import { Search, Upload } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt, STAFF_TODAY } from "@/lib/dates";
 import { KB_DRAFT, KB_FILES, KB_OPEN_SHELF, KB_SHELVES, type KbFile, type KbShelf } from "@/data/knowledge-bank";
 import { Button } from "@/components/ui/Button";
 import { FileBadge, fileType } from "@/components/ui/FileBadge";
-import { Field, Input } from "@/components/ui/Input";
+import { Field, Input, inputClass } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
@@ -17,9 +17,9 @@ import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
  * Kept out: "Only managers can delete files." under the form buttons (R-06).
  */
 
-// Spine colours, in the old palette order: violet, blue, navy, green, orange, amber, red, violet.
-const SPINES = ["bg-violet", "bg-accent", "bg-navy dark:bg-btn", "bg-ok", "bg-brand", "bg-warn", "bg-bad", "bg-violet"];
-const PLANK = "bg-[color-mix(in_srgb,var(--warn-mid)_38%,var(--line))]";
+// Spine colours from the status and regulator tokens (R-25: no off-system colours).
+const SPINES = ["bg-violet-mid", "bg-accent-mid", "bg-reg-mca", "bg-ok-mid", "bg-reg-it", "bg-warn-mid", "bg-bad-mid", "bg-teal-mid"];
+const PLANK = "bg-line-2";
 
 function ShelfFolder({ s }: { s: KbShelf }) {
   const books = Array.from({ length: Math.min(s.count, 9) }, (_, i) => ({
@@ -31,13 +31,13 @@ function ShelfFolder({ s }: { s: KbShelf }) {
     <div className="min-w-0">
       <div className="flex h-[112px] items-end gap-1.5 overflow-hidden px-3.5" aria-hidden>
         {books.map((b, i) => (
-          <span key={i} className={cn("block flex-none rounded-t-[2px]", b.tone)} style={{ width: b.w, height: b.h }} />
+          <span key={i} className={cn("block flex-none rounded-t-bar", b.tone)} style={{ width: b.w, height: b.h }} />
         ))}
       </div>
-      <div className={cn("h-[7px] rounded-[2px]", PLANK)} aria-hidden />
+      <div className={cn("h-1.5 rounded-bar", PLANK)} aria-hidden />
       <div className="mt-1.5 flex items-baseline justify-between gap-2 px-0.5">
-        <b className="truncate text-13 font-semibold">{s.name}</b>
-        <span className="flex-none text-12 text-muted">{s.count} docs</span>
+        <b className="truncate text-14 font-medium">{s.name}</b>
+        <span className="flex-none text-12.5 text-muted">{s.count} docs</span>
       </div>
     </div>
   );
@@ -84,11 +84,11 @@ export function KnowledgeBankScreen() {
     <div className="grid grid-cols-1 gap-4">
       <div className="flex flex-wrap items-center gap-2.5">
         <nav aria-label="Folder path" className="mr-auto text-13 text-muted">
-          All › <b className="font-semibold text-ink">{KB_OPEN_SHELF}</b>
+          All › <b className="font-medium text-ink">{KB_OPEN_SHELF}</b>
         </nav>
-        <label className="flex h-9 w-full items-center gap-2 rounded-md border border-line bg-surface px-3 sm:w-[260px]">
-          <Search size={14} strokeWidth={1.6} className="text-muted" />
-          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search files by name…" aria-label="Search files" className="h-full min-w-0 flex-1 bg-transparent text-13 outline-none placeholder:text-faint" />
+        <label className="flex h-10 w-full items-center gap-2 rounded-md border-1.5 border-line-2 bg-surface px-3 focus-within:border-primary focus-within:ring-4 focus-within:ring-focus sm:w-[260px]">
+          <Search size={15} strokeWidth={1.6} className="text-muted" />
+          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search files by name…" aria-label="Search files" className="h-full min-w-0 flex-1 bg-transparent text-14 outline-none placeholder:text-faint" />
         </label>
         <Button onClick={() => setFolder(true)}>New folder</Button>
         <Button variant="primary" onClick={() => titleRef.current?.focus()}>
@@ -113,10 +113,10 @@ export function KnowledgeBankScreen() {
                 <ListRow key={f.id}>
                   <FileBadge type={f.type} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">{f.title}</span>
+                    <span className="block truncate font-medium">{f.title}</span>
                     <span className="block truncate text-12.5 text-muted">{f.note}</span>
                   </span>
-                  <span className="flex-none text-12 text-muted">{f.when}</span>
+                  <span className="flex-none text-12.5 text-muted">{f.when}</span>
                 </ListRow>
               ))
             )}
@@ -135,9 +135,9 @@ export function KnowledgeBankScreen() {
               <Input ref={titleRef} value={title} onChange={(e) => setTitle(e.target.value)} />
             </Field>
             <div className="grid gap-1.5">
-              <span className="text-12.5 font-semibold text-muted">File</span>
+              <span className="text-13 font-medium text-ink-2">File</span>
               <div
-                className="grid min-h-[68px] place-items-center rounded-md border border-dashed border-line bg-raised px-3 py-3 text-center text-13 text-muted"
+                className="flex flex-col items-center gap-2.5 rounded-md border-1.5 border-dashed border-line-2 bg-surface px-4 py-5 text-center"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault();
@@ -146,18 +146,21 @@ export function KnowledgeBankScreen() {
                 }}
               >
                 {picked ? (
-                  <span className="flex items-center gap-2">
+                  <span className="flex max-w-full items-center gap-2">
                     <FileBadge type={fileType(picked)} />
-                    <span className="truncate font-mono text-12.5 text-ink">{picked}</span>
+                    <span className="truncate text-14 text-ink">{picked}</span>
                   </span>
                 ) : (
-                  <span>
-                    Drop a file or{" "}
-                    <button type="button" onClick={() => fileRef.current?.click()} className="font-semibold text-accent hover:underline">
-                      browse
-                    </button>
-                  </span>
+                  <>
+                    <span className="grid h-10 w-10 place-items-center rounded-md bg-accent-soft text-accent" aria-hidden>
+                      <Upload size={18} strokeWidth={1.6} />
+                    </span>
+                    <b className="text-15 font-medium">Drop a file here</b>
+                  </>
                 )}
+                <Button size="sm" onClick={() => fileRef.current?.click()}>
+                  {picked ? "Change file" : "Choose file"}
+                </Button>
                 <input ref={fileRef} type="file" className="hidden" aria-label="File" onChange={(e) => setPicked(e.target.files?.[0]?.name ?? "")} />
               </div>
             </div>
@@ -166,7 +169,7 @@ export function KnowledgeBankScreen() {
                 rows={3}
                 value={when}
                 onChange={(e) => setWhen(e.target.value)}
-                className="w-full rounded-md border border-line bg-surface px-3 py-2 text-13.5 text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-accent-line"
+                className={cn(inputClass, "h-auto py-2 leading-relaxed")}
               />
             </Field>
             <div className="flex justify-end gap-2">

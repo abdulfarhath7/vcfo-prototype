@@ -2,7 +2,7 @@
 import * as React from "react";
 import { DEPLOYS, DEPLOY_TONE, ENVIRONMENTS, ENV_TONE, FLAGS, MIGRATIONS, RELEASE_NOTES, stamp, type Deploy, type Environment, type Flag, type Migration } from "@/data/dev";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag } from "@/components/ui/Chip";
+import { Tag } from "@/components/ui/Chip";
 import { Switch } from "@/components/ui/Input";
 import { Tabs } from "@/components/ui/Tabs";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
@@ -10,7 +10,7 @@ import { SectionCard } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { InlineConfirm } from "@/components/cards/InlineConfirm";
 import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
-import { CloseButton, logAudit, nowToday, useRevealRef } from "./parts";
+import { CloseButton, StatusChip, logAudit, nowToday, useRevealRef } from "./parts";
 import { envColumns } from "./OverviewScreen";
 
 export function DeploysScreen() {
@@ -75,16 +75,16 @@ export function DeploysScreen() {
       mono: true,
       render: (d) => (
         <span className="whitespace-nowrap">
-          <b className="font-semibold">{d.version}</b> <span className="text-faint">{d.commit}</span>
+          <b className="font-medium">{d.version}</b> <span className="text-muted">{d.commit}</span>
         </span>
       ),
     },
-    { key: "env", label: "Environment", render: (d) => <Tag tone={ENV_TONE[d.env]}>{d.env}</Tag> },
-    { key: "when", label: "When", mono: true, render: (d) => <span className="whitespace-nowrap">{stamp(d.at)}</span> },
+    { key: "env", label: "Environment", render: (d) => <Tag tone={ENV_TONE[d.env]} className="w-[104px]">{d.env}</Tag> },
+    { key: "when", label: "When", render: (d) => <span className="whitespace-nowrap">{stamp(d.at)}</span> },
     { key: "by", label: "By", render: (d) => <span className="whitespace-nowrap">{d.by}</span> },
     { key: "note", label: "What changed", render: (d) => <span className="block min-w-[200px] text-12.5">{d.note}</span> },
     { key: "dur", label: "Duration", render: (d) => <span className="whitespace-nowrap">{d.duration}</span> },
-    { key: "status", label: "Status", width: 124, render: (d) => <Chip fixed tone={DEPLOY_TONE[d.status]}>{d.status}</Chip> },
+    { key: "status", label: "Status", width: 124, render: (d) => <StatusChip tone={DEPLOY_TONE[d.status]}>{d.status}</StatusChip> },
     {
       key: "act",
       label: "",
@@ -105,10 +105,10 @@ export function DeploysScreen() {
   ];
 
   const migColumns: Column<Migration>[] = [
-    { key: "id", label: "Migration", mono: true, render: (m) => <span className="whitespace-nowrap font-semibold">{m.id}</span> },
+    { key: "id", label: "Migration", mono: true, render: (m) => <span className="whitespace-nowrap font-medium">{m.id}</span> },
     { key: "what", label: "What it does", render: (m) => <span className="block min-w-[180px]">{m.what}</span> },
-    { key: "status", label: "Status", width: 124, render: (m) => <Chip fixed tone={m.status === "Applied" ? "ok" : "warn"}>{m.status}</Chip> },
-    { key: "at", label: "Applied", mono: true, render: (m) => <span className="whitespace-nowrap">{m.at ? stamp(m.at) : "-"}</span> },
+    { key: "status", label: "Status", width: 124, render: (m) => <StatusChip tone={m.status === "Applied" ? "ok" : "warn"}>{m.status}</StatusChip> },
+    { key: "at", label: "Applied", render: (m) => <span className="whitespace-nowrap">{m.at ? stamp(m.at) : "-"}</span> },
   ];
 
   const shownFlags = flags.filter((f) => flagEnv === "all" || f.env === flagEnv);
@@ -118,16 +118,16 @@ export function DeploysScreen() {
       label: "Flag",
       render: (f) => (
         <span className="block min-w-[200px]">
-          <b className="font-semibold">{f.name}</b>
+          <b className="font-medium">{f.name}</b>
           <span className="block font-mono text-12 text-muted">{f.id}</span>
         </span>
       ),
     },
-    { key: "env", label: "Environment", render: (f) => <Tag tone={ENV_TONE[f.env]}>{f.env}</Tag> },
+    { key: "env", label: "Environment", render: (f) => <Tag tone={ENV_TONE[f.env]} className="w-[104px]">{f.env}</Tag> },
     { key: "who", label: "Who sees it", render: (f) => <span className="block min-w-[140px] text-12.5">{f.who}</span> },
     { key: "on", label: "On", align: "center", render: (f) => <Switch on={f.on} onChange={(v) => flip(f, v)} label={f.name} /> },
     { key: "by", label: "Changed by", render: (f) => <span className="whitespace-nowrap">{f.by}</span> },
-    { key: "at", label: "When", mono: true, render: (f) => <span className="whitespace-nowrap">{stamp(f.at)}</span> },
+    { key: "at", label: "When", render: (f) => <span className="whitespace-nowrap">{stamp(f.at)}</span> },
   ];
 
   return (
@@ -185,7 +185,7 @@ export function DeploysScreen() {
             </div>
             <ul className="border-t border-line-soft">
               {(RELEASE_NOTES[cur.version] ?? [cur.note]).map((n) => (
-                <li key={n} className="border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 md:px-5">
+                <li key={n} className="border-t border-line-soft px-4 py-2.5 text-14 first:border-t-0 md:px-5">
                   {n}
                 </li>
               ))}

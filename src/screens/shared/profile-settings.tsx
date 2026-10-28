@@ -1,6 +1,9 @@
 "use client";
 import * as React from "react";
 import { AlignLeft, Camera, ChartColumn, Check, CircleCheck, Clock, FileText, Lock, Megaphone, Moon, Rss, TriangleAlert, X, type LucideIcon } from "lucide-react";
+import type { Tone } from "@/components/icons";
+import { IconTile } from "@/components/ui/IconTile";
+import { StepMark } from "@/components/ui/StepMark";
 import { cn } from "@/lib/cn";
 import type { Portal } from "@/data/nav";
 import { NOTIF_PREFS, DEFAULT_EMAIL, DEFAULT_WA, DEVICES, PROFILE_EXTRA } from "@/data/updates-team";
@@ -8,7 +11,7 @@ import { useThemeMode, type ThemeMode } from "./theme-mode";
 import { Button } from "@/components/ui/Button";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
-import { Field, Input, Switch, Checkbox } from "@/components/ui/Input";
+import { Field, Input, Switch, Checkbox, inputClass } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard, ListRow } from "@/components/cards/SectionCard";
@@ -35,7 +38,7 @@ export function PasswordForm({ onCancel, onSave }: { onCancel: () => void; onSav
   const barTone = passed >= 4 ? "bg-ok" : passed === 3 ? "bg-ok-mid" : passed === 2 ? "bg-warn-mid" : "bg-bad-mid";
   return (
     <form
-      className="grid gap-3 rounded-md border border-line bg-raised p-3"
+      className="grid gap-3 rounded-md border-1.5 border-line bg-surface p-4"
       onSubmit={(e) => {
         e.preventDefault();
         if (ok) onSave();
@@ -63,11 +66,11 @@ export function PasswordForm({ onCancel, onSave }: { onCancel: () => void; onSav
               </span>
             );
           })}
-          {next && <b className={cn("ml-auto font-semibold", passed >= 3 ? "text-ok" : "text-warn")}>{STRENGTH[passed]}</b>}
+          {next && <b className={cn("ml-auto font-medium", passed >= 3 ? "text-ok" : "text-warn")}>{STRENGTH[passed]}</b>}
         </div>
       </div>
       <Field label="Confirm new password">
-        <Input type="password" value={conf} onChange={(e) => setConf(e.target.value)} autoComplete="new-password" className={cn(conf && (match ? "border-ok" : "border-bad"))} aria-invalid={conf.length > 0 && !match} />
+        <Input type="password" value={conf} onChange={(e) => setConf(e.target.value)} autoComplete="new-password" className={cn(conf && match && "border-ok-mid")} aria-invalid={conf.length > 0 && !match} />
       </Field>
       {conf && !match && <span className="-mt-1.5 text-12 text-bad">Passwords do not match</span>}
       <div className="flex justify-end gap-2">
@@ -93,14 +96,14 @@ function SecurityCard({ portal, toast }: { portal: Portal; toast: Toast }) {
       {staff ? (
         <ListRow>
           <span className="flex-1">Microsoft sign-in</span>
-          <Chip tone="ok">Connected</Chip>
+          <Chip fixed tone="ok">Connected</Chip>
         </ListRow>
       ) : (
         <div className="border-b border-line-soft px-4 py-3 md:px-5">
           <div className="flex items-center gap-3 text-13.5">
             <span className="flex-1">
               Password
-              <span className="ml-2 font-mono text-12.5 text-muted">••••••••</span>
+              <span className="ml-2 text-12.5 text-muted">••••••••</span>
               <span className="ml-2 text-12.5 text-muted">changed {changed}</span>
             </span>
             {!pw && (
@@ -135,11 +138,11 @@ function SecurityCard({ portal, toast }: { portal: Portal; toast: Toast }) {
           label="Two-step verification"
         />
       </ListRow>
-      <p className="border-t border-line-soft bg-raised px-4 py-1.5 text-11.5 font-semibold text-faint md:px-5">Devices signed in</p>
+      <h3 className="flex h-9 items-end border-t border-line-soft px-4 pb-1.5 text-11.5 font-medium uppercase tracking-[.07em] text-muted md:px-5">Devices signed in</h3>
       {devices.map((d) => (
         <ListRow key={d.id}>
           <span className="min-w-0 flex-1 truncate">{d.name}</span>
-          {d.current ? <Chip tone="ok">{d.when}</Chip> : <span className=" text-12.5 text-muted">{d.when}</span>}
+          {d.current ? <Chip fixed tone="ok">{d.when}</Chip> : <span className="text-12.5 text-muted">{d.when}</span>}
         </ListRow>
       ))}
       {devices.length > 1 && (
@@ -161,7 +164,7 @@ function SecurityCard({ portal, toast }: { portal: Portal; toast: Toast }) {
         <ListRow href="/dev/access">
           <span className="flex-1">API tokens</span>
           <span className="text-12.5 text-muted">2 active</span>
-          <span className="text-13 font-semibold text-accent">Manage ›</span>
+          <span className="text-13 font-medium text-accent">Manage ›</span>
         </ListRow>
       )}
     </SectionCard>
@@ -195,8 +198,8 @@ function WhatsAppDialog({ open, onOpenChange, onDone, number }: { open: boolean;
       sub={
         <ol className="flex items-center gap-2" aria-label="Steps">
           {steps.map((s, i) => (
-            <li key={s} className={cn("inline-flex items-center gap-1.5 text-12.5 font-semibold", i === step ? "text-ink" : i < step ? "text-ok" : "text-faint")} aria-current={i === step ? "step" : undefined}>
-              <span className={cn("grid h-5 w-5 place-items-center rounded-sm text-11", i < step ? "bg-ok-soft text-ok" : i === step ? "bg-navy text-white" : "bg-raised text-faint")}>{i < step ? <Check size={12} strokeWidth={1.6} /> : i + 1}</span>
+            <li key={s} className={cn("inline-flex items-center gap-1.5 text-12.5 font-medium", i === step ? "text-ink" : i < step ? "text-ok" : "text-muted")} aria-current={i === step ? "step" : undefined}>
+              <StepMark state={i < step ? "done" : i === step ? "now" : "next"} size={18} />
               {s}
               {i < steps.length - 1 && <span className="ml-1 text-faint">›</span>}
             </li>
@@ -230,11 +233,11 @@ function WhatsAppDialog({ open, onOpenChange, onDone, number }: { open: boolean;
         <div className="grid gap-3">
           <Field label="WhatsApp number">
             <span className="flex gap-2">
-              <span className="grid h-9 w-[64px] flex-none place-items-center rounded-md border border-line bg-raised font-mono text-13">+91</span>
-              <Input value={num} onChange={(e) => setNum(e.target.value)} inputMode="tel" className="font-mono" autoFocus />
+              <span className="grid h-10 w-[64px] flex-none place-items-center rounded-md border-1.5 border-line-2 bg-raised text-14 text-ink-2">+91</span>
+              <Input value={num} onChange={(e) => setNum(e.target.value)} inputMode="tel" autoFocus />
             </span>
           </Field>
-          <label className="flex items-start gap-2.5 text-12.5 font-semibold">
+          <label className="flex items-start gap-2.5 text-13">
             <Checkbox checked={agree} onChange={setAgree} label="Send me WhatsApp updates" />
             <span>Send me WhatsApp updates about Northwind. Reply STOP to stop.</span>
           </label>
@@ -262,7 +265,7 @@ function WhatsAppDialog({ open, onOpenChange, onDone, number }: { open: boolean;
                 onKeyDown={(e) => {
                   if (e.key === "Backspace" && !code[i] && i > 0) refs.current[i - 1]?.focus();
                 }}
-                className="h-11 w-full rounded-md border border-line bg-surface text-center font-mono text-16 text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent-line"
+                className={cn(inputClass, "h-11 px-0 text-center text-16")}
               />
             ))}
           </span>
@@ -274,8 +277,8 @@ function WhatsAppDialog({ open, onOpenChange, onDone, number }: { open: boolean;
             <Check size={18} strokeWidth={1.6} />
           </span>
           <span className="min-w-0">
-            <span className="block text-14 font-semibold">WhatsApp is on</span>
-            <span className="block font-mono text-12.5 text-muted">+91 {num}</span>
+            <span className="block text-14 font-medium">WhatsApp is on</span>
+            <span className="block text-12.5 text-muted">+91 {num}</span>
           </span>
         </div>
       )}
@@ -285,30 +288,26 @@ function WhatsAppDialog({ open, onOpenChange, onDone, number }: { open: boolean;
 
 /* ---------- Notifications (settings_redesign) ---------- */
 
-// Solid icon circle on each alert row, as in the old Settings page. Dark mode mixes the tone with navy so the white glyph stays legible.
-const PREF_ICON: Record<string, { Icon: LucideIcon; bg: string }> = {
-  docs: { Icon: FileText, bg: "bg-brand" },
-  steps: { Icon: Check, bg: "bg-ok-mid" },
-  dead: { Icon: Clock, bg: "bg-bad-mid" },
-  time: { Icon: AlignLeft, bg: "bg-accent dark:bg-btn" },
-  ann: { Icon: Megaphone, bg: "bg-accent dark:bg-btn" },
-  feed: { Icon: Rss, bg: "bg-teal dark:bg-[color-mix(in_srgb,var(--teal)_45%,var(--navy))]" },
-  digest: { Icon: FileText, bg: "bg-violet dark:bg-[color-mix(in_srgb,var(--violet)_45%,var(--navy))]" },
-  daily: { Icon: FileText, bg: "bg-violet dark:bg-[color-mix(in_srgb,var(--violet)_45%,var(--navy))]" },
-  approvals: { Icon: CircleCheck, bg: "bg-ok-mid" },
-  esc: { Icon: TriangleAlert, bg: "bg-bad-mid" },
-  partner: { Icon: ChartColumn, bg: "bg-accent dark:bg-btn" },
-  incidents: { Icon: TriangleAlert, bg: "bg-bad-mid" },
-  quiet: { Icon: Moon, bg: "bg-navy dark:bg-btn" },
+// R-16: a tinted 28 px icon tile on each alert row.
+const PREF_ICON: Record<string, { Icon: LucideIcon; tone: Tone }> = {
+  docs: { Icon: FileText, tone: "amber" },
+  steps: { Icon: Check, tone: "green" },
+  dead: { Icon: Clock, tone: "red" },
+  time: { Icon: AlignLeft, tone: "blue" },
+  ann: { Icon: Megaphone, tone: "blue" },
+  feed: { Icon: Rss, tone: "teal" },
+  digest: { Icon: FileText, tone: "violet" },
+  daily: { Icon: FileText, tone: "violet" },
+  approvals: { Icon: CircleCheck, tone: "green" },
+  esc: { Icon: TriangleAlert, tone: "red" },
+  partner: { Icon: ChartColumn, tone: "blue" },
+  incidents: { Icon: TriangleAlert, tone: "red" },
+  quiet: { Icon: Moon, tone: "violet" },
 };
 
 function PrefIcon({ k }: { k: string }) {
   const x = PREF_ICON[k] ?? PREF_ICON.docs;
-  return (
-    <span className={cn("grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-white", x.bg)} aria-hidden>
-      <x.Icon size={14} strokeWidth={1.6} />
-    </span>
-  );
+  return <IconTile Icon={x.Icon} tone={x.tone} />;
 }
 
 export function NotificationsCard({ portal, toast, remind: showRemind = true }: { portal: Portal; toast: Toast; remind?: boolean }) {
@@ -335,15 +334,15 @@ export function NotificationsCard({ portal, toast, remind: showRemind = true }: 
       <div className="grid grid-cols-1 border-b border-line-soft sm:grid-cols-2">
         <div className="flex items-center gap-3 px-4 py-3 md:px-5">
           <span className="min-w-0 flex-1">
-            <span className="block text-13.5 font-semibold">Email</span>
-            <span className="block truncate font-mono text-12 text-muted">{email}</span>
+            <span className="block text-14 font-medium">Email</span>
+            <span className="block truncate text-12.5 text-muted">{email}</span>
           </span>
           <Tag>Always on</Tag>
         </div>
         <div className="flex items-center gap-3 border-t border-line-soft px-4 py-3 sm:border-l sm:border-t-0 md:px-5">
           <span className="min-w-0 flex-1">
-            <span className="block text-13.5 font-semibold">WhatsApp</span>
-            <span className="block truncate font-mono text-12 text-muted">{waOn ? waNum : "Off"}</span>
+            <span className="block text-14 font-medium">WhatsApp</span>
+            <span className="block truncate text-12.5 text-muted">{waOn ? waNum : "Off"}</span>
           </span>
           {waOn ? (
             <Switch
@@ -362,26 +361,26 @@ export function NotificationsCard({ portal, toast, remind: showRemind = true }: 
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[360px] text-13">
+        <table className="grid-table min-w-[360px]">
           <thead>
-            <tr className="bg-raised text-11.5 font-semibold text-faint">
-              <th className="px-4 py-1.5 text-left font-semibold md:px-5">Tell me when</th>
-              <th className="w-[76px] py-1.5 text-center font-semibold">Email</th>
-              <th className="w-[92px] py-1.5 pr-4 text-center font-semibold md:pr-5">WhatsApp</th>
+            <tr>
+              <th className="!pl-4 md:!pl-5">Tell me when</th>
+              <th className="w-[76px] !text-center">Email</th>
+              <th className="w-[100px] !pr-4 !text-center md:!pr-5">WhatsApp</th>
             </tr>
           </thead>
           <tbody>
             {prefs.map((p) => (
-              <tr key={p.key} className="border-t border-line-soft">
-                <td className="px-4 py-2 md:px-5">
+              <tr key={p.key}>
+                <td className="!pl-4 text-ink md:!pl-5">
                   <span className="flex items-center gap-3">
                     <PrefIcon k={p.key} />
                     {p.label}
                   </span>
                 </td>
-                <td className="py-2 text-center">
+                <td className="text-center">
                   {p.locked ? (
-                    <span className="inline-flex h-[22px] items-center gap-1 rounded-sm bg-raised px-2 text-12 font-semibold text-muted" title="Always on">
+                    <span className="inline-flex h-6 items-center gap-1 rounded-sm bg-raised px-2 text-12 font-medium text-muted" title="Always on">
                       <Lock size={11} strokeWidth={1.6} /> On
                     </span>
                   ) : (
@@ -390,7 +389,7 @@ export function NotificationsCard({ portal, toast, remind: showRemind = true }: 
                     </span>
                   )}
                 </td>
-                <td className="py-2 pr-4 text-center md:pr-5">
+                <td className="!pr-4 text-center md:!pr-5">
                   {p.noWa ? (
                     <span className="text-faint">-</span>
                   ) : (
@@ -404,7 +403,7 @@ export function NotificationsCard({ portal, toast, remind: showRemind = true }: 
           </tbody>
         </table>
       </div>
-      <ListRow className="bg-raised">
+      <ListRow>
         <PrefIcon k="quiet" />
         <span className="flex-1">Quiet hours · no WhatsApp 9 pm to 8 am</span>
         <span className={cn("inline-flex", !waOn && "pointer-events-none opacity-40")}>
@@ -521,9 +520,9 @@ function EmailCard({ portal, toast }: { portal: Portal; toast: Toast }) {
       <ListRow>
         <span className="min-w-0 flex-1">
           <span className="block">Outlook</span>
-          <span className="block truncate font-mono text-12 text-muted">{name}@sbcllp.in</span>
+          <span className="block truncate text-12.5 text-muted">{name}@sbcllp.in</span>
         </span>
-        <Chip tone="ok">Connected</Chip>
+        <Chip fixed tone="ok">Connected</Chip>
       </ListRow>
       <ListRow>
         <span className="flex-1">Signature</span>
@@ -544,14 +543,14 @@ function EmailCard({ portal, toast }: { portal: Portal; toast: Toast }) {
 function FactLine({ k, children, end }: { k: string; children: React.ReactNode; end?: React.ReactNode }) {
   return (
     <div className="flex min-h-[44px] items-center gap-3 border-t border-line-soft px-4 py-2 text-13.5 first:border-t-0 md:px-5">
-      <span className="w-[92px] flex-none text-12.5 font-semibold text-muted">{k}</span>
+      <span className="w-[92px] flex-none text-13 font-medium text-muted">{k}</span>
       <span className="min-w-0 flex-1">{children}</span>
       {end}
     </div>
   );
 }
 
-/** The client's Settings: navy profile card, profile facts, security, notifications with an icon on each alert row, appearance. */
+/** The client's Settings: profile card (plain, R-02), profile facts, security, notifications with an icon on each alert row, appearance. */
 function ClientSettingsView() {
   const toast = useUndoToast();
   const me = { name: "Rohan Kumar", ini: "RK", email: "rohan@northwind.in", phone: PROFILE_EXTRA.client.mobile };
@@ -567,20 +566,20 @@ function ClientSettingsView() {
   return (
     <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[400px_minmax(0,1fr)]">
       <div className="grid min-w-0 gap-4">
-        <section aria-label="Your profile" className="flex items-center gap-4 rounded-lg bg-navy px-4 py-4 text-white">
+        <section aria-label="Your profile" className="flex items-center gap-4 rounded-md border-1.5 border-line bg-surface px-4 py-4 md:px-5">
           <span className="relative flex-none">
-            <span className="grid h-[72px] w-[72px] place-items-center rounded-full bg-accent text-22 font-bold text-white ring-2 ring-white/[.25] dark:bg-btn">{me.ini}</span>
-            <button type="button" onClick={() => photo.current?.click()} aria-label="Change photo" title="Change photo" className="absolute -bottom-0.5 -right-1 grid h-7 w-7 place-items-center rounded-md bg-brand text-white">
+            <span className="grid h-[72px] w-[72px] place-items-center rounded-full bg-accent-soft text-22 font-medium text-accent">{me.ini}</span>
+            <button type="button" onClick={() => photo.current?.click()} aria-label="Change photo" title="Change photo" className="absolute -bottom-0.5 -right-1 grid h-7 w-7 place-items-center rounded-md border-1.5 border-line-2 bg-surface text-ink-2 shadow-control hover:bg-hover">
               <Camera size={14} strokeWidth={1.6} />
             </button>
             <input ref={photo} type="file" accept="image/png,image/jpeg" className="hidden" aria-label="Photo file" onChange={() => toast.show("Photo updated")} />
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-22 font-semibold leading-tight">{name}</span>
-            <span className="block truncate font-mono text-12 text-navy-ink">{me.email}</span>
-            <span className="mt-1.5 flex flex-wrap gap-1.5">
-              <span className="inline-flex h-[22px] items-center rounded-sm bg-brand px-2 text-11.5 font-bold text-white">Primary</span>
-              <span className="inline-flex h-[22px] items-center rounded-sm bg-white/[.12] px-2 text-11.5 font-semibold text-white">Northwind Technologies</span>
+            <span className="block truncate text-22 font-medium leading-tight">{name}</span>
+            <span className="block truncate text-13 text-muted">{me.email}</span>
+            <span className="mt-2 flex flex-wrap gap-1.5">
+              <Tag tone="prog">Primary</Tag>
+              <Tag>Northwind Technologies</Tag>
             </span>
           </span>
         </section>
@@ -614,11 +613,11 @@ function ClientSettingsView() {
         >
           <FactLine k="Full name">{edit ? <Input value={name} onChange={(e) => setName(e.target.value)} aria-label="Full name" /> : name}</FactLine>
           <FactLine k="Email">
-            <span className="font-mono text-13">{me.email}</span>
+            <span>{me.email}</span>
           </FactLine>
-          <FactLine k="Phone">{edit ? <Input value={phone} onChange={(e) => setPhone(e.target.value)} aria-label="Phone" className="font-mono" /> : <span className="whitespace-nowrap font-mono text-13">{phone}</span>}</FactLine>
-          <FactLine k="WhatsApp" end={<Chip tone="ok">Verified</Chip>}>
-            <span className="whitespace-nowrap font-mono text-13">{phone}</span>
+          <FactLine k="Phone">{edit ? <Input value={phone} onChange={(e) => setPhone(e.target.value)} aria-label="Phone" /> : <span className="whitespace-nowrap">{phone}</span>}</FactLine>
+          <FactLine k="WhatsApp" end={<Chip fixed tone="ok">Verified</Chip>}>
+            <span className="whitespace-nowrap">{phone}</span>
           </FactLine>
         </SectionCard>
 
@@ -633,7 +632,7 @@ function ClientSettingsView() {
               )
             }
           >
-            <span className="whitespace-nowrap font-mono text-12.5">••••••••</span>
+            <span className="whitespace-nowrap">••••••••</span>
             <span className="ml-2 text-12 text-muted">changed {changed}</span>
           </FactLine>
           {pw && (
@@ -649,7 +648,7 @@ function ClientSettingsView() {
               />
             </div>
           )}
-          <FactLine k="This device" end={<Chip tone="ok">{device.when}</Chip>}>
+          <FactLine k="This device" end={<Chip fixed tone="ok">{device.when}</Chip>}>
             {device.name}
           </FactLine>
         </SectionCard>
@@ -660,11 +659,11 @@ function ClientSettingsView() {
         <SectionCard title="Appearance">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid justify-items-start gap-1.5">
-              <span className="text-12.5 font-semibold text-muted">Theme</span>
+              <span className="text-13 font-medium text-muted">Theme</span>
               <ThemePicker toast={toast} />
             </div>
             <div className="grid justify-items-start gap-1.5">
-              <span className="text-12.5 font-semibold text-muted">Reduce motion</span>
+              <span className="text-13 font-medium text-muted">Reduce motion</span>
               <Switch
                 on={motion}
                 onChange={(v) => {

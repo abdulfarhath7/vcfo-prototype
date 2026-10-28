@@ -3,7 +3,8 @@ import * as React from "react";
 import { STAFF_TODAY, fmt, fmtYear, daysFrom } from "@/lib/dates";
 import { API_KEYS, CONSOLE_SETTINGS, CONSOLE_USERS, ROLES, SERVICE_ACCOUNTS, SESSIONS, SIGNIN, stamp, type ApiKey, type ConsoleUser, type ServiceAccount, type Session } from "@/data/dev";
 import { Button } from "@/components/ui/Button";
-import { Chip, Tag } from "@/components/ui/Chip";
+import { Tag } from "@/components/ui/Chip";
+import { cn } from "@/lib/cn";
 import { Switch } from "@/components/ui/Input";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
@@ -11,7 +12,7 @@ import { InlineConfirm } from "@/components/cards/InlineConfirm";
 import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
 import { StackedBar, type Segment } from "@/components/cards/StackedBar";
 import { Cols, Col } from "@/components/shell/Page";
-import { ChoiceRow, SettingRow, SwitchRow, logAudit, useSwitch } from "./parts";
+import { ChoiceRow, SettingRow, StatusChip, SwitchRow, ident, logAudit, useSwitch } from "./parts";
 
 type Kind = "rotate" | "revoke" | "set" | "purge";
 type Ask = { id: string; kind: Kind } | null;
@@ -33,23 +34,23 @@ function keyStatus(k: LiveKey): { label: string; tone: "ok" | "warn" | "bad" | "
 }
 
 const userColumns: Column<ConsoleUser>[] = [
-  { key: "name", label: "Name", render: (u) => <span className="whitespace-nowrap font-semibold">{u.name}</span> },
+  { key: "name", label: "Name", render: (u) => <span className="whitespace-nowrap font-medium">{u.name}</span> },
   { key: "role", label: "Role", render: (u) => <span className="whitespace-nowrap">{u.role}</span> },
-  { key: "2fa", label: "Two-step sign-in", width: 124, render: (u) => <Chip fixed tone={u.twoFactor === "On" ? "ok" : u.twoFactor === "Off" ? "warn" : "idle"}>{u.twoFactor}</Chip> },
-  { key: "last", label: "Last sign-in", mono: true, render: (u) => <span className="whitespace-nowrap">{stamp(u.lastSignIn)}</span> },
+  { key: "2fa", label: "Two-step sign-in", width: 124, render: (u) => <StatusChip tone={u.twoFactor === "On" ? "ok" : u.twoFactor === "Off" ? "warn" : "idle"}>{u.twoFactor}</StatusChip> },
+  { key: "last", label: "Last sign-in", render: (u) => <span className="whitespace-nowrap">{stamp(u.lastSignIn)}</span> },
 ];
 
 const roleColumns: Column<(typeof ROLES)[number]>[] = [
-  { key: "role", label: "Role", render: (r) => <span className="whitespace-nowrap font-semibold">{r.role}</span> },
+  { key: "role", label: "Role", render: (r) => <span className="whitespace-nowrap font-medium">{r.role}</span> },
   { key: "people", label: "People", align: "right", render: (r) => r.people },
   { key: "can", label: "Can open", render: (r) => <span className="block min-w-[140px]">{r.can}</span> },
 ];
 
 const saColumns: Column<ServiceAccount>[] = [
-  { key: "name", label: "Account", mono: true, render: (a) => <span className="whitespace-nowrap font-semibold">{a.name}</span> },
+  { key: "name", label: "Account", render: (a) => <span className={cn("whitespace-nowrap font-medium", ident(a.name) && "font-mono text-13")}>{a.name}</span> },
   { key: "kind", label: "Kind", render: (a) => <span className="whitespace-nowrap">{a.kind}</span> },
   { key: "can", label: "Can", render: (a) => <span className="block min-w-[180px]">{a.can}</span> },
-  { key: "used", label: "Last used", mono: true, render: (a) => <span className="whitespace-nowrap">{stamp(a.lastUsed)}</span> },
+  { key: "used", label: "Last used", render: (a) => <span className="whitespace-nowrap">{stamp(a.lastUsed)}</span> },
 ];
 
 /** Two-step check for staff: turning it off asks first (R-40). */
@@ -117,15 +118,15 @@ export function AccessScreen() {
       label: "Name",
       render: (k) => (
         <span className="block min-w-0 max-w-[260px]">
-          <span className={k.revoked || k.purged ? "block truncate font-mono text-faint line-through" : "block truncate font-mono font-semibold"}>{k.name}</span>
+          <span className={cn("block truncate", ident(k.name) && "font-mono text-13", k.revoked || k.purged ? "text-faint line-through" : "font-medium")}>{k.name}</span>
           <span className="block truncate text-12 text-muted">{k.scope}</span>
         </span>
       ),
     },
     { key: "where", label: "Stored in", render: (k) => <span className="whitespace-nowrap">{k.where}</span> },
-    { key: "prefix", label: "Value", mono: true, render: (k) => <span className={k.missing ? "whitespace-nowrap font-semibold text-bad" : "whitespace-nowrap"}>{k.prefix}</span> },
+    { key: "prefix", label: "Value", render: (k) => <span className={cn("whitespace-nowrap", ident(k.prefix) && "font-mono text-13", k.missing && "font-medium text-bad")}>{k.prefix}</span> },
     { key: "created", label: "Created", render: (k) => <span className="whitespace-nowrap">{day(k.created)}</span> },
-    { key: "expires", label: "Expires", render: (k) => <span className={k.expires && daysFrom(k.expires, STAFF_TODAY) <= 15 ? "whitespace-nowrap font-semibold text-warn" : "whitespace-nowrap"}>{k.expires ? day(k.expires) : "None"}</span> },
+    { key: "expires", label: "Expires", render: (k) => <span className={k.expires && daysFrom(k.expires, STAFF_TODAY) <= 15 ? "whitespace-nowrap font-medium text-warn" : "whitespace-nowrap"}>{k.expires ? day(k.expires) : "None"}</span> },
     {
       key: "status",
       label: "Status",
@@ -133,13 +134,13 @@ export function AccessScreen() {
       render: (k) => {
         const s = keyStatus(k);
         return (
-          <Chip fixed tone={s.tone}>
+          <StatusChip wide tone={s.tone}>
             {s.label}
-          </Chip>
+          </StatusChip>
         );
       },
     },
-    { key: "used", label: "Last used", mono: true, render: (k) => <span className="whitespace-nowrap">{k.lastUsed ? stamp(k.lastUsed) : "-"}</span> },
+    { key: "used", label: "Last used", render: (k) => <span className="whitespace-nowrap">{k.lastUsed ? stamp(k.lastUsed) : "-"}</span> },
     {
       key: "act",
       label: "Action",
@@ -172,7 +173,7 @@ export function AccessScreen() {
       label: "Person",
       render: (s) => (
         <span className="block whitespace-nowrap">
-          <b className="font-semibold">{s.person}</b>
+          <b className="font-medium">{s.person}</b>
           <span className="block text-12 text-muted">{s.role}</span>
         </span>
       ),
@@ -180,7 +181,7 @@ export function AccessScreen() {
     { key: "device", label: "Device", render: (s) => <span className="whitespace-nowrap">{s.device}</span> },
     { key: "browser", label: "Browser", render: (s) => <span className="whitespace-nowrap">{s.browser}</span> },
     { key: "place", label: "Place", render: (s) => <span className="whitespace-nowrap">{s.place}</span> },
-    { key: "since", label: "Since", mono: true, render: (s) => <span className="whitespace-nowrap">{stamp(s.since)}</span> },
+    { key: "since", label: "Since", render: (s) => <span className="whitespace-nowrap">{stamp(s.since)}</span> },
     { key: "active", label: "Active", render: (s) => <span className="whitespace-nowrap">{s.active}</span> },
     {
       key: "act",
@@ -188,7 +189,7 @@ export function AccessScreen() {
       width: 1,
       render: (s) =>
         s.you ? (
-          <Tag tone="prog">You</Tag>
+          <Tag tone="prog" className="w-[104px] justify-center">You</Tag>
         ) : (
           <Button size="sm" onClick={() => setRevoke(s.id)} aria-expanded={revoke === s.id}>
             Revoke
@@ -211,14 +212,14 @@ export function AccessScreen() {
             <ChoiceRow k="acc-2fa" opts={["Staff only", "Everyone"]} initial={0} label="Two-step check" hint="An SMS code after the password" />
             <ChoiceRow k="acc-sess" opts={["8 hours", "24 hours", "7 days"]} initial={1} label="Session length" hint="Signed out after this long without use" />
           </SectionCard>
-        </Col>
-        <Col>
-          <DataGrid title="Roles" meta="What each role can open" columns={roleColumns} rows={ROLES} rowKey={(r) => r.id} />
           <SectionCard title="Console settings" flush>
             {CONSOLE_SETTINGS.map((s) => (
               <SwitchRow key={s.id} k={s.id} initial={s.on} label={s.label} />
             ))}
           </SectionCard>
+        </Col>
+        <Col>
+          <DataGrid title="Roles" meta="What each role can open" columns={roleColumns} rows={ROLES} rowKey={(r) => r.id} />
         </Col>
       </Cols>
 
@@ -251,8 +252,6 @@ export function AccessScreen() {
           />
         )}
       </SectionCard>
-
-
 
       <DataGrid title="Users with console access" columns={userColumns} rows={CONSOLE_USERS} rowKey={(u) => u.id} />
       <DataGrid title="Service accounts" columns={saColumns} rows={SERVICE_ACCOUNTS} rowKey={(a) => a.id} />

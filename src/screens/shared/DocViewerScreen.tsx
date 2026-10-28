@@ -95,18 +95,18 @@ export function DocViewerScreen({ portal, id }: { portal: Portal; id: string }) 
           role="dialog"
           aria-modal="true"
           aria-label="Document preview"
-          className="absolute inset-0 flex flex-col overflow-hidden bg-surface md:inset-x-5 md:bottom-auto md:top-1/2 md:h-[min(720px,calc(100vh-40px))] md:-translate-y-1/2 md:rounded-lg md:border md:border-line"
+          className="absolute inset-0 flex flex-col overflow-hidden bg-surface md:inset-x-5 md:bottom-auto md:top-1/2 md:h-[min(720px,calc(100vh-40px))] md:-translate-y-1/2 md:rounded-md md:border-1.5 md:border-line md:shadow-dialog"
         >
           <div className="flex min-h-[54px] flex-none flex-wrap items-center gap-3 border-b border-line-soft px-3 py-2 md:px-4">
             <FileBadge type={f.type} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-mono text-13.5 font-semibold">{f.fileName === "-" ? f.name : f.fileName}</span>
-              <span className="block truncate text-12 text-muted">
+              <span className="block truncate text-15 font-medium">{f.fileName === "-" ? f.name : f.fileName}</span>
+              <span className="block truncate text-12.5 text-muted">
                 From {fromLabel} · {fmt(f.date)} {f.date.getFullYear()}
                 {f.size && ` · ${f.size}`}
               </span>
             </span>
-            <span className="text-12 text-muted" aria-label={`File ${pos + 1} of ${seq.length}`}>
+            <span className="text-12.5 text-muted" aria-label={`File ${pos + 1} of ${seq.length}`}>
               {pos + 1} of {seq.length}
             </span>
             <Button size="sm" onClick={download} aria-label="Download">
@@ -126,17 +126,17 @@ export function DocViewerScreen({ portal, id }: { portal: Portal; id: string }) 
               </div>
             )}
           </div>
-          <Link href={`${base}/documents/view/${prev.id}`} aria-label="Previous document" className="absolute left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-md border border-line bg-surface text-ink-2 hover:text-ink md:grid">
+          <Link href={`${base}/documents/view/${prev.id}`} aria-label="Previous document" className="absolute left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-md border-1.5 border-line-2 bg-surface text-ink-2 shadow-float hover:bg-hover hover:text-ink md:grid">
             <ChevronLeft size={18} strokeWidth={1.6} />
           </Link>
-          <Link href={`${base}/documents/view/${next.id}`} aria-label="Next document" className="absolute right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-md border border-line bg-surface text-ink-2 hover:text-ink md:grid">
+          <Link href={`${base}/documents/view/${next.id}`} aria-label="Next document" className="absolute right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-md border-1.5 border-line-2 bg-surface text-ink-2 shadow-float hover:bg-hover hover:text-ink md:grid">
             <ChevronRight size={18} strokeWidth={1.6} />
           </Link>
 
           {can && (
-            <div className="absolute bottom-16 left-1/2 flex h-[38px] -translate-x-1/2 items-center gap-1 rounded-md bg-navy px-2 text-12.5 font-semibold text-white md:bottom-4">
+            <div className="absolute bottom-16 left-1/2 flex h-[38px] -translate-x-1/2 items-center gap-1 rounded-md border-1.5 border-line bg-surface px-2 text-13 font-medium text-ink shadow-float md:bottom-4">
               {pages > 1 && (
-                <button type="button" aria-label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="grid h-7 w-6 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
+                <button type="button" aria-label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="grid h-7 w-6 place-items-center rounded-sm hover:bg-ghost disabled:opacity-40">
                   <ChevronLeft size={14} strokeWidth={1.6} />
                 </button>
               )}
@@ -144,18 +144,18 @@ export function DocViewerScreen({ portal, id }: { portal: Portal; id: string }) 
                 Page {page} / {pages}
               </span>
               {pages > 1 && (
-                <button type="button" aria-label="Next page" disabled={page >= pages} onClick={() => setPage((p) => p + 1)} className="grid h-7 w-6 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
+                <button type="button" aria-label="Next page" disabled={page >= pages} onClick={() => setPage((p) => p + 1)} className="grid h-7 w-6 place-items-center rounded-sm hover:bg-ghost disabled:opacity-40">
                   <ChevronRight size={14} strokeWidth={1.6} />
                 </button>
               )}
-              <span className="mx-1 h-4 w-px bg-white/[.25]" aria-hidden />
-              <button type="button" aria-label="Zoom out" disabled={zoom <= ZOOMS[0]} onClick={() => setZoom((z) => ZOOMS[Math.max(0, ZOOMS.indexOf(z) - 1)])} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
+              <span className="mx-1 h-4 w-px bg-line" aria-hidden />
+              <button type="button" aria-label="Zoom out" disabled={zoom <= ZOOMS[0]} onClick={() => setZoom((z) => ZOOMS[Math.max(0, ZOOMS.indexOf(z) - 1)])} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-ghost disabled:opacity-40">
                 <Minus size={14} strokeWidth={1.6} />
               </button>
-              <button type="button" onClick={() => setZoom(100)} aria-label="Reset zoom" className="h-7 w-12 rounded-sm text-12 hover:bg-white/[.12]">
+              <button type="button" onClick={() => setZoom(100)} aria-label="Reset zoom" className="h-7 w-12 rounded-sm text-13 hover:bg-ghost">
                 {zoom}%
               </button>
-              <button type="button" aria-label="Zoom in" disabled={zoom >= ZOOMS[ZOOMS.length - 1]} onClick={() => setZoom((z) => ZOOMS[Math.min(ZOOMS.length - 1, ZOOMS.indexOf(z) + 1)])} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-white/[.12] disabled:opacity-40">
+              <button type="button" aria-label="Zoom in" disabled={zoom >= ZOOMS[ZOOMS.length - 1]} onClick={() => setZoom((z) => ZOOMS[Math.min(ZOOMS.length - 1, ZOOMS.indexOf(z) + 1)])} className="grid h-7 w-7 place-items-center rounded-sm hover:bg-ghost disabled:opacity-40">
                 <Plus size={14} strokeWidth={1.6} />
               </button>
             </div>

@@ -2,12 +2,11 @@
 import * as React from "react";
 import { JOBS, JOB_FAILURES, JOB_RUNS, JOB_TONE, QUEUE_FACTS, stamp, type Job } from "@/data/dev";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
-import { CloseButton, LogLines, PickCell, SettingRow, SwitchRow, logAudit, nowToday, useRevealRef, useSwitch } from "./parts";
+import { CloseButton, LogLines, PickCell, SettingRow, StatusChip, SwitchRow, logAudit, nowToday, useRevealRef, useSwitch } from "./parts";
 
 export function JobsScreen() {
   const [rows, setRows] = React.useState<Job[]>(JOBS);
@@ -57,11 +56,11 @@ export function JobsScreen() {
         </span>
       ),
     },
-    { key: "last", label: "Last run", mono: true, render: (j) => <span className="whitespace-nowrap">{j.lastRun ? stamp(j.lastRun) : "-"}</span> },
+    { key: "last", label: "Last run", render: (j) => <span className="whitespace-nowrap">{j.lastRun ? stamp(j.lastRun) : "-"}</span> },
     { key: "dur", label: "Duration", render: (j) => <span className="whitespace-nowrap">{j.duration}</span> },
-    { key: "status", label: "Status", width: 124, render: (j) => <Chip fixed tone={JOB_TONE[j.status]}>{j.status}</Chip> },
-    { key: "next", label: "Next run", mono: true, render: (j) => <span className="whitespace-nowrap">{stamp(j.nextRun)}</span> },
-    { key: "fails", label: "Failures, 7 days", align: "right", render: (j) => <span className={j.failures7d > 0 ? "font-semibold text-bad" : "text-muted"}>{j.failures7d}</span> },
+    { key: "status", label: "Status", width: 124, render: (j) => <StatusChip tone={JOB_TONE[j.status]}>{j.status}</StatusChip> },
+    { key: "next", label: "Next run", render: (j) => <span className="whitespace-nowrap">{stamp(j.nextRun)}</span> },
+    { key: "fails", label: "Failures, 7 days", align: "right", render: (j) => <span className={j.failures7d > 0 ? "font-medium text-bad" : "text-muted"}>{j.failures7d}</span> },
     {
       key: "act",
       label: "",
@@ -110,9 +109,9 @@ export function JobsScreen() {
           const name = j?.name ?? f.job;
           return (
             <SettingRow key={f.id} label={`${name} · ${stamp(f.at)}`} hint={f.cause}>
-              <Chip tone={f.status === "Failed" ? "bad" : "warn"}>{f.status}</Chip>
+              <StatusChip tone={f.status === "Failed" ? "bad" : "warn"}>{f.status}</StatusChip>
               {retried[f.id] ? (
-                <Chip tone="prog">Queued again</Chip>
+                <StatusChip tone="prog">Queued again</StatusChip>
               ) : (
                 <Button
                   size="sm"

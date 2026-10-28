@@ -6,7 +6,7 @@ import { SBC, WHATSAPP, type Person } from "@/data/people";
 import { MEMBERS, MEMBER_LABEL, MEMBER_TONE, type Member } from "@/data/updates-team";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
+import { Chip, Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { Field, Input, Checkbox } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -18,7 +18,7 @@ import { DataGrid } from "@/components/cards/DataGrid";
 
 /** C-0026: 8 px gap between contact buttons. */
 export function Contact({ p }: { p: Pick<Person, "name" | "phone" | "email"> }) {
-  const btn = "grid h-[30px] w-[30px] place-items-center rounded-md border border-line text-ink-2 hover:bg-raised";
+  const btn = "grid h-[30px] w-[30px] place-items-center rounded-md border-1.5 border-line-2 bg-surface text-ink-2 hover:bg-hover";
   return (
     <span className="flex gap-2">
       <a href={WHATSAPP(p.phone)} className={cn(btn, "border-transparent bg-ok-soft text-ok")} aria-label={`WhatsApp ${p.name}`} title="WhatsApp">
@@ -44,12 +44,12 @@ const LINK = "https://vcfo.sbcllp.in/set-password/7f3a9c";
 function SignInLink() {
   return (
     <div className="grid gap-1.5">
-      <span className="text-12.5 font-semibold text-muted">Sign-in</span>
-      <div className="flex items-center gap-3 rounded-md border border-line px-3 py-2">
+      <span className="text-12.5 font-medium text-muted">Sign-in</span>
+      <div className="flex items-center gap-3 rounded-md border-1.5 border-line px-3 py-2">
         <Link2 size={16} strokeWidth={1.6} className="flex-none text-accent" aria-hidden />
         <span className="min-w-0 flex-1">
-          <span className="block text-13.5 font-semibold">Set-password link by email</span>
-          <span className="block text-12 text-muted">Expires in 7 days</span>
+          <span className="block text-13.5 font-medium">Set-password link by email</span>
+          <span className="block text-12.5 text-muted">Expires in 7 days</span>
         </span>
         <CopyButton value={LINK} label="the link" />
       </div>
@@ -101,7 +101,7 @@ function InviteDialog({ open, onOpenChange, onSend }: { open: boolean; onOpenCha
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ananya Rao" autoFocus />
         </Field>
         <Field label="Work email">
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ananya@northwind.in" className="font-mono text-13" aria-invalid={email.length > 0 && !validEmail(email)} />
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ananya@northwind.in" aria-invalid={email.length > 0 && !validEmail(email)} />
         </Field>
         <Field label="Role">
           <Select size="md" value={role} onChange={(e) => setRole(e.target.value)} options={ROLES.map((r) => ({ value: r, label: r }))} />
@@ -148,11 +148,11 @@ function SeatDialog({ from, self, open, onOpenChange, onDone }: { from: Member |
       }
     >
       <div className="grid gap-3">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-md border border-line bg-raised px-3 py-2.5">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-md border-1.5 border-line bg-raised px-3 py-2.5">
           <span className="flex min-w-0 items-center gap-2">
             <Avatar name={from.ini} size={30} />
             <span className="min-w-0">
-              <span className="block truncate text-13 font-semibold">{from.name}</span>
+              <span className="block truncate text-13 font-medium">{from.name}</span>
               <span className="block truncate text-12 text-muted">{MEMBER_LABEL[from.kind]} · Northwind</span>
             </span>
           </span>
@@ -162,7 +162,7 @@ function SeatDialog({ from, self, open, onOpenChange, onDone }: { from: Member |
           <span className="flex min-w-0 items-center gap-2">
             <Avatar name={toIni} size={30} />
             <span className="min-w-0">
-              <span className="block truncate text-13 font-semibold">{name.trim() || "New person"}</span>
+              <span className="block truncate text-13 font-medium">{name.trim() || "New person"}</span>
               <span className="block truncate text-12 text-muted">{self ? "New Primary" : "New member"}</span>
             </span>
           </span>
@@ -171,10 +171,10 @@ function SeatDialog({ from, self, open, onOpenChange, onDone }: { from: Member |
           <Input value={name} onChange={(e) => setName(e.target.value)} autoFocus />
         </Field>
         <Field label="Work email">
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="font-mono text-13" />
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
         <SignInLink />
-        <label className="flex items-start gap-2.5 text-13 font-semibold">
+        <label className="flex items-start gap-2.5 text-13">
           <Checkbox checked={sure} onChange={setSure} label={self ? "I understand I will be signed out" : `I understand ${from.name} loses access`} />
           <span>{self ? "I understand I will be signed out" : `I understand ${from.name} loses access`}</span>
         </label>
@@ -215,12 +215,10 @@ export function TeamSection() {
             <Avatar name={p.ini ?? p.name} size={36} />
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-2">
-                <span className="truncate font-semibold">{p.name}</span>
-                <Chip tone={p.id === "support" ? "prog" : "idle"} dot={false}>
-                  {p.role}
-                </Chip>
+                <span className="truncate font-medium">{p.name}</span>
+                <Tag tone={p.id === "support" ? "prog" : "idle"}>{p.role}</Tag>
               </span>
-              <span className="block truncate text-12 text-muted">
+              <span className="block truncate text-12.5 text-muted">
                 {p.email}
                 {p.id === "support" && ` · ${p.phone}`}
               </span>
@@ -249,7 +247,7 @@ export function TeamSection() {
             render: (m) => (
               <span className="flex min-w-[160px] items-center gap-2.5">
                 <Avatar name={m.ini} size={24} />
-                <span className="font-semibold">{m.name}</span>
+                <span className="font-medium">{m.name}</span>
                 {m.you && <span className="text-12 text-muted">you</span>}
               </span>
             ),
@@ -257,7 +255,7 @@ export function TeamSection() {
           { key: "role", label: "Role", width: 120 },
           { key: "email", label: "Email" },
           { key: "when", label: "Since", width: 110, render: (m) => <span className="whitespace-nowrap text-12.5 text-muted">{m.when}</span> },
-          { key: "access", label: "Access", width: 132, render: (m) => <Chip tone={MEMBER_TONE[m.kind]} fixed>{MEMBER_LABEL[m.kind]}</Chip> },
+          { key: "access", label: "Access", width: 124, render: (m) => <Chip tone={MEMBER_TONE[m.kind]} fixed>{MEMBER_LABEL[m.kind]}</Chip> },
           {
             key: "act",
             label: "",

@@ -1,17 +1,17 @@
 "use client";
 import * as React from "react";
-import { Check } from "lucide-react";
 import { CONNECT_STEPS, DOMAIN, ROUTES, stamp, type ConnEvent, type Connection, type DomainRecord, type Route } from "@/data/dev";
 import type { Section, SpecButton, SpecCell, SpecRow } from "@/data/dev-connections";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
+import { StepMark } from "@/components/ui/StepMark";
 import { Checkbox, Input, Switch } from "@/components/ui/Input";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { InlineConfirm } from "@/components/cards/InlineConfirm";
 import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
-import { Segmented, SettingRow, logAudit, nowToday, useChoice, useSwitch } from "./parts";
+import { cn } from "@/lib/cn";
+import { Segmented, SettingRow, StatusChip, ident, logAudit, nowToday, useChoice, useSwitch } from "./parts";
 
 // ---------- Buttons that ask first (R-40) ----------
 
@@ -46,7 +46,7 @@ function useAsk(owner: string) {
   ) : null;
   const render = (key: string, btn: SpecButton) =>
     done[key] ? (
-      <Chip tone="ok">{done[key]}</Chip>
+      <StatusChip loose tone="ok">{done[key]}</StatusChip>
     ) : (
       <Button size="sm" onClick={() => press(key, btn)} aria-expanded={asking?.key === key}>
         {btn.label}
@@ -79,13 +79,15 @@ function RowsSection({ title, meta, rows, owner }: { title: string; meta?: strin
         return (
           <React.Fragment key={key}>
             <SettingRow label={r.label} hint={r.hint}>
-              {r.value && <span className={`min-w-0 break-words text-right ${x.mono && !x.list ? "font-mono text-12.5" : ""}`}>{r.value}</span>}
+              {r.value && <span className={cn("min-w-0 break-words text-right", x.mono && !x.list && ident(r.value) && "font-mono text-13")}>{r.value}</span>}
               {x.copy && r.value && <CopyButton value={r.value} label={r.label} />}
-              {x.chip && <Chip tone={x.chip[1]}>{x.chip[0]}</Chip>}
+              {x.chip && <StatusChip loose tone={x.chip[1]}>{x.chip[0]}</StatusChip>}
               {x.list && (
-                <ul className={`grid gap-0.5 text-12.5 sm:text-right ${x.mono ? "font-mono" : ""}`}>
+                <ul className="grid gap-0.5 text-13 sm:text-right">
                   {x.list.map((l) => (
-                    <li key={l}>{l}</li>
+                    <li key={l} className={cn(x.mono && ident(l) && "font-mono")}>
+                      {l}
+                    </li>
                   ))}
                 </ul>
               )}
@@ -120,13 +122,13 @@ function TableSection({ title, meta, head, rows, owner }: { title: string; meta?
       if (c.btn) return ask.render(`${r.id}-${ci}`, c.btn);
       if (c.tone)
         return (
-          <Chip fixed tone={c.tone}>
-            {c.t}
-          </Chip>
+          <StatusChip loose tone={c.tone}>
+            {c.t ?? ""}
+          </StatusChip>
         );
       return (
         <span className="block">
-          <span className={c.mono ? "whitespace-nowrap font-mono text-12.5" : "whitespace-nowrap"}>{c.t}</span>
+          <span className={cn("whitespace-nowrap", c.mono && c.t && ident(c.t) && "font-mono text-13")}>{c.t}</span>
           {c.sub && <span className="block text-12 text-muted">{c.sub}</span>}
         </span>
       );
@@ -151,9 +153,9 @@ export function DomainCard() {
     logAudit("Verify domain", "sbcllp.in", "Done", "-", failing.length ? `${failing.join(", ")} needs a change` : "All passing");
   };
   const columns: Column<DomainRecord>[] = [
-    { key: "record", label: "Record", render: (r) => <span className="whitespace-nowrap font-semibold">{r.record}</span> },
-    { key: "status", label: "Status", width: 124, render: (r) => <Chip fixed tone={r.status === "Passing" ? "ok" : "warn"}>{r.status}</Chip> },
-    { key: "value", label: "Value", mono: true, render: (r) => <span className="block min-w-[200px] break-words">{r.value}</span> },
+    { key: "record", label: "Record", render: (r) => <span className="whitespace-nowrap font-medium">{r.record}</span> },
+    { key: "status", label: "Status", width: 124, render: (r) => <StatusChip wide tone={r.status === "Passing" ? "ok" : "warn"}>{r.status}</StatusChip> },
+    { key: "value", label: "Value", render: (r) => <span className={cn("block min-w-[200px] break-words", /=|\./.test(r.value) && "font-mono text-13")}>{r.value}</span> },
   ];
   return (
     <DataGrid
@@ -179,13 +181,13 @@ function UsedBy({ channel }: { channel: Route["channel"] }) {
       label: "Message",
       render: (r) => (
         <span className="block min-w-[200px]">
-          <b className="font-semibold">{r.message}</b>
+          <b className="font-medium">{r.message}</b>
           <span className="block text-12 text-muted">{r.when}</span>
         </span>
       ),
     },
     { key: "tpl", label: "Template", mono: true, render: (r) => <span className="whitespace-nowrap">{r.template}</span> },
-    { key: "status", label: "Status", width: 124, render: (r) => <Chip fixed tone={r.status === "Approved" ? "ok" : "warn"}>{r.status === "Approved" ? "Approved" : "Waiting"}</Chip> },
+    { key: "status", label: "Status", width: 124, render: (r) => <StatusChip tone={r.status === "Approved" ? "ok" : "teal"}>{r.status === "Approved" ? "Approved" : "Waiting"}</StatusChip> },
     { key: "sent", label: "Sent, 7 days", align: "right", render: (r) => r.sent7d },
   ];
   if (!rows.length) return null;
@@ -197,7 +199,7 @@ function TestCard({ to, via, onSent }: { to: string; via: string; onSent: (to: s
   return (
     <SectionCard title="Send a test" flush>
       <SettingRow label="Send to">
-        <Input aria-label="Send to" value={value} onChange={(e) => setValue(e.target.value)} className="h-[30px] w-full min-w-0 font-mono text-12.5 sm:w-[220px]" />
+        <Input aria-label="Send to" value={value} onChange={(e) => setValue(e.target.value)} className="h-[30px] w-full min-w-0 text-13 sm:w-[220px]" />
         <Button size="sm" variant="primary" disabled={!value.trim()} onClick={() => onSent(value.trim())}>
           Send a test
         </Button>
@@ -214,9 +216,9 @@ export function EventsCard({ events }: { events: ConnEvent[] }) {
       <ul>
         {events.slice(0, 5).map((e, i) => (
           <li key={i} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13 first:border-t-0 md:px-5">
-            <span className="w-[92px] flex-none font-mono text-12 text-muted">{stamp(e.at)}</span>
+            <span className="w-[92px] flex-none text-12.5 text-muted">{stamp(e.at)}</span>
             <span className="min-w-0 flex-1 break-words">{e.text}</span>
-            {e.chip && <Chip tone={e.tone}>{e.chip}</Chip>}
+            {e.chip && <StatusChip tone={e.tone}>{e.chip}</StatusChip>}
           </li>
         ))}
       </ul>
@@ -230,7 +232,7 @@ function DisconnectCard({ name, effect, off, onConfirm }: { name: string; effect
     <SectionCard title="Disconnect" flush>
       <SettingRow label={`Disconnect ${name}`} hint={effect}>
         {off ? (
-          <Chip tone="idle">Disconnected</Chip>
+          <StatusChip wide tone="idle">Disconnected</StatusChip>
         ) : (
           <Button size="sm" onClick={() => setAsk(true)} aria-expanded={ask}>
             Disconnect
@@ -302,27 +304,25 @@ export function ConnectFlow({ c, onConnect, onCancel }: { c: Connection; onConne
           const open = i === firstOpen || done;
           return (
             <li key={s.label} className={`grid gap-2 border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5 ${!open ? "opacity-50" : ""}`}>
-              <div className="flex items-center gap-2.5 text-13.5 font-semibold">
-                <span className={`grid h-[22px] w-[22px] flex-none place-items-center rounded-sm text-12 ${done ? "bg-ok-soft text-ok" : i === firstOpen ? "bg-accent-soft text-accent" : "border border-line text-faint"}`}>
-                  {done ? <Check size={13} strokeWidth={2} /> : i + 1}
-                </span>
+              <div className="flex items-center gap-2.5 text-14 font-medium">
+                <StepMark state={done ? "done" : i === firstOpen ? "now" : "next"} />
                 {s.label}
               </div>
               {open && (
                 <div className="pl-[32px]">
                   {s.kind === "input" && (
-                    <Input aria-label={s.field} placeholder={s.placeholder} value={vals[i] ?? ""} onChange={(e) => setVals((v) => ({ ...v, [i]: e.target.value }))} className="h-[30px] w-full max-w-[320px] font-mono text-12.5" />
+                    <Input aria-label={s.field} placeholder={s.placeholder} value={vals[i] ?? ""} onChange={(e) => setVals((v) => ({ ...v, [i]: e.target.value }))} className="w-full max-w-[320px]" />
                   )}
                   {s.kind === "signin" &&
                     (signed[i] ? (
-                      <Chip tone="ok">Done</Chip>
+                      <StatusChip tone="ok">Done</StatusChip>
                     ) : (
                       <Button size="sm" onClick={() => setSigned((v) => ({ ...v, [i]: true }))}>
                         {s.field ?? "Sign in"}
                       </Button>
                     ))}
                   {s.kind === "consent" && (
-                    <div className="grid gap-1.5 text-13">
+                    <div className="grid gap-2 text-14">
                       {(s.items ?? []).map((it) => (
                         <label key={it} className="flex items-center gap-2">
                           <Checkbox checked={!!ticks[`${i}-${it}`]} onChange={(v) => setTicks((t) => ({ ...t, [`${i}-${it}`]: v }))} label={it} />

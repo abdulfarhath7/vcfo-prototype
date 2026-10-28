@@ -94,13 +94,13 @@ export function StatusGlyph({ f }: { f: DocItem }) {
 
 /** Due chip for a missing file: "Overdue" or "Due 9 Oct". */
 export function MissingChip({ f, className }: { f: DocItem; className?: string }) {
-  if (f.status === "Sent back") return <Chip tone="bad" className={className}>Sent back</Chip>;
-  return daysFrom(f.date) < 0 ? <Chip tone="bad" className={className}>Overdue</Chip> : <Chip tone="warn" className={className}>Due {fmt(f.date)}</Chip>;
+  if (f.status === "Sent back") return <Chip fixed tone="bad" className={className}>Sent back</Chip>;
+  return daysFrom(f.date) < 0 ? <Chip fixed tone="bad" className={className}>Overdue</Chip> : <Chip fixed tone="warn" className={className}>Due {fmt(f.date)}</Chip>;
 }
 
 export function FileMark({ f }: { f: DocItem }) {
   return isMissing(f) && f.status === "Requested" ? (
-    <span className="inline-flex h-6 w-11 flex-none items-center justify-center rounded-sm border border-dashed border-line text-faint" aria-label="Not uploaded yet">
+    <span className="inline-flex h-6 w-11 flex-none items-center justify-center rounded-sm border-1.5 border-dashed border-line-2 text-faint" aria-label="Not uploaded yet">
       <FileQuestion size={14} strokeWidth={1.6} />
     </span>
   ) : (
@@ -113,9 +113,9 @@ export function ProgressTrack({ files, className }: { files: DocItem[]; classNam
   const p = progress(files);
   if (!p.tot) return null;
   return (
-    <span className={cn("flex h-1.5 w-16 flex-none overflow-hidden rounded-bar bg-line", className)} aria-hidden>
+    <span className={cn("flex h-1.5 w-16 flex-none overflow-hidden rounded-bar bg-raised", className)} aria-hidden>
       <span className="bg-ok-mid" style={{ width: `${(p.ok / p.tot) * 100}%` }} />
-      <span className="bg-accent" style={{ width: `${(p.rv / p.tot) * 100}%` }} />
+      <span className="bg-accent-mid" style={{ width: `${(p.rv / p.tot) * 100}%` }} />
       <span className="bg-warn-mid" style={{ width: `${(p.ms / p.tot) * 100}%` }} />
     </span>
   );
@@ -124,18 +124,18 @@ export function ProgressTrack({ files, className }: { files: DocItem[]; classNam
 /** Sample page. Static grey lines, no motion. The viewer adds a large SAMPLE mark (v7x_doc_viewer). */
 export function PaperPage({ f, zoom = 100, page = 1, mark = false }: { f: DocItem; zoom?: number; page?: number; mark?: boolean }) {
   return (
-    <span className="relative mx-auto grid aspect-[1/1.3] w-full content-start gap-2 overflow-hidden rounded-md border border-line bg-surface p-5 text-left md:p-7" style={{ maxWidth: Math.round(460 * (zoom / 100)) }}>
-      <span className="text-11 font-semibold text-faint">Sample · placeholder page{page > 1 ? ` · page ${page}` : ""}</span>
-      <span className="text-16 font-semibold leading-snug">{f.label}</span>
-      <span className="text-12 text-muted">
+    <span className="relative mx-auto grid aspect-[1/1.3] w-full content-start gap-2 overflow-hidden rounded-md border-1.5 border-line bg-surface p-5 text-left md:p-7" style={{ maxWidth: Math.round(460 * (zoom / 100)) }}>
+      <span className="text-11.5 font-medium text-muted">Sample · placeholder page{page > 1 ? ` · page ${page}` : ""}</span>
+      <span className="text-16 font-medium leading-snug">{f.label}</span>
+      <span className="text-12.5 text-muted">
         {NORTHWIND.name} · {fmt(f.date)}
       </span>
       {[92, 80, 86, 64, 88, 72, 50].map((w, i) => (
-        <span key={i} className="mt-1 block h-2 rounded-sm bg-raised" style={{ width: `${w}%` }} />
+        <span key={i} className="mt-1 block h-2 rounded-bar bg-raised" style={{ width: `${w}%` }} />
       ))}
       {mark && (
         <span className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden>
-          <span className="-rotate-[24deg] select-none font-bold tracking-[.18em] text-line" style={{ fontSize: Math.round(64 * (zoom / 100)) }}>
+          <span className="-rotate-[24deg] select-none font-display tracking-[.18em] text-line" style={{ fontSize: Math.round(64 * (zoom / 100)) }}>
             SAMPLE
           </span>
         </span>
@@ -147,9 +147,9 @@ export function PaperPage({ f, zoom = 100, page = 1, mark = false }: { f: DocIte
 /** Explains a file that the browser cannot draw. */
 export function NoPreview({ f, onDownload }: { f: DocItem; onDownload?: () => void }) {
   return (
-    <div className="grid place-items-center gap-3 rounded-md border border-line bg-surface px-4 py-10 text-center">
+    <div className="grid place-items-center gap-3 rounded-md border-1.5 border-line bg-surface px-4 py-10 text-center">
       <FileBadge type={f.type} />
-      <span className="text-13.5 font-semibold">Preview not available for this file type</span>
+      <span className="text-14 font-medium">Preview not available for this file type</span>
       <Button variant="primary" size="sm" onClick={onDownload}>
         <Download size={15} strokeWidth={1.6} /> Download
       </Button>
@@ -196,14 +196,14 @@ export function DocDrillDialog({
       title={
         <span className="flex items-center gap-2">
           <span className="min-w-0 truncate">{node.label}</span>
-          <span className="font-mono text-13 font-medium text-muted">
+          <span className="text-13 font-medium text-muted">
             {p.ok}/{p.tot}
           </span>
         </span>
       }
       sub={
         node.kind === "step" ? (
-          <Link href={incHref} className="font-semibold text-accent hover:underline">
+          <Link href={incHref} className="font-medium text-accent hover:underline">
             Open incorporation
           </Link>
         ) : undefined
@@ -225,17 +225,17 @@ export function DocDrillDialog({
         <Empty />
       ) : (
         rows.map((f) => (
-          <div key={f.id} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13.5 first:border-t-0 md:px-5">
+          <div key={f.id} className="flex min-h-11 items-center gap-3 border-t border-line-soft px-4 py-1.5 text-14 first:border-t-0 md:px-5">
             <FileMark f={f} />
             {isMissing(f) ? (
-              <span className="min-w-0 flex-1 truncate font-semibold">{f.label}</span>
+              <span className="min-w-0 flex-1 truncate font-medium">{f.label}</span>
             ) : (
-              <Link href={viewHref(f.id)} className="min-w-0 flex-1 truncate font-semibold hover:underline">
+              <Link href={viewHref(f.id)} className="min-w-0 flex-1 truncate font-medium hover:underline">
                 {f.label}
               </Link>
             )}
-            <span className="hidden text-12 text-muted sm:inline">{fmt(f.date)}</span>
-            {isMissing(f) ? <MissingChip f={f} /> : <Chip tone={docStatusTone[f.status]}>{f.status}</Chip>}
+            <span className="hidden text-12.5 text-muted sm:inline">{fmt(f.date)}</span>
+            {isMissing(f) ? <MissingChip f={f} /> : <Chip fixed tone={docStatusTone[f.status]}>{f.status}</Chip>}
             {isMissing(f) ? (
               !staff || f.status === "Requested" ? (
                 <Button size="iconSm" variant="ghost" aria-label={`Upload ${f.label}`} onClick={() => onUpload(f.id)}>
@@ -275,10 +275,10 @@ export function ActionSheet({ title, items, open, onOpenChange }: { title: strin
                 onOpenChange(false);
                 it.onSelect?.();
               }}
-              className={cn("flex h-11 w-full items-center gap-3 px-4 text-left text-13.5 hover:bg-raised md:px-5", it.danger && "text-bad")}
+              className={cn("flex h-11 w-full items-center gap-3 px-4 text-left text-14 hover:bg-hover md:px-5", it.danger && "text-bad")}
             >
               <span className="min-w-0 flex-1 truncate">{it.label}</span>
-              {it.hint && <span className="font-mono text-11.5 text-faint">{it.hint}</span>}
+              {it.hint && <span className="text-12.5 text-muted">{it.hint}</span>}
             </button>
           ),
         )}
@@ -298,9 +298,9 @@ export function PreviewSheet({ f, open, onOpenChange, viewHref, onDownload }: { 
       size="md"
       sub={
         <>
-          <Chip tone={docStatusTone[f.status]}>{f.status}</Chip>
+          <Chip fixed tone={docStatusTone[f.status]}>{f.status}</Chip>
           <OwnerChip owner={f.from} label={f.from === "client" ? "Northwind" : undefined} />
-          <span className="">{fmt(f.date)}</span>
+          <span>{fmt(f.date)}</span>
         </>
       }
       footer={
@@ -316,7 +316,7 @@ export function PreviewSheet({ f, open, onOpenChange, viewHref, onDownload }: { 
     >
       <div className="grid gap-2 bg-raised p-3">
         {can ? <PaperPage f={f} /> : <NoPreview f={f} onDownload={onDownload} />}
-        {can && <span className="text-center font-mono text-11.5 text-faint">Page 1 of {f.pages ?? 1}</span>}
+        {can && <span className="text-center text-12.5 text-muted">Page 1 of {f.pages ?? 1}</span>}
       </div>
     </Modal>
   );
