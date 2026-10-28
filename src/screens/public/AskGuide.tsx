@@ -6,7 +6,7 @@ import { GUIDE, GUIDE_HELLO } from "./content";
 
 type Msg = { id: number; who: "bot" | "me"; text?: string; q?: number; typing?: boolean };
 
-/** Ask VCFO quick answers on the landing page: a fixed text button (R-04, no mascot) and a small panel. */
+/** Ask VCFO quick answers on the landing page, as on the old v6 landing: a fixed text button (R-04, no mascot) and a small panel. */
 export function AskGuide({ onDemo }: { onDemo: () => void }) {
   const [open, setOpen] = React.useState(false);
   const [log, setLog] = React.useState<Msg[]>([]);
@@ -18,7 +18,7 @@ export function AskGuide({ onDemo }: { onDemo: () => void }) {
 
   React.useEffect(() => {
     if (!open) return;
-    panel.current?.querySelector<HTMLElement>(".lp-guide-qs button, .lp-guide-x")?.focus();
+    panel.current?.querySelector<HTMLElement>(".guide-qs button, .guide-x")?.focus();
   }, [open]);
 
   React.useEffect(() => {
@@ -48,14 +48,14 @@ export function AskGuide({ onDemo }: { onDemo: () => void }) {
   const left = GUIDE.map((g, i) => ({ g, i })).filter(({ i }) => !asked.has(i));
 
   return (
-    <div className="lp-guide">
+    <div className={`guide${open ? " open" : ""}`}>
       {open ? (
         <div
           ref={panel}
-          className="lp-guide-panel"
+          className="guide-panel card"
           role="dialog"
           aria-modal="false"
-          aria-labelledby="lp-guide-t"
+          aria-labelledby="guide-t"
           onKeyDown={(e) => {
             if (e.key === "Escape") {
               e.stopPropagation();
@@ -63,20 +63,20 @@ export function AskGuide({ onDemo }: { onDemo: () => void }) {
             }
           }}
         >
-          <div className="lp-guide-head">
+          <div className="guide-head">
             <div>
-              <b id="lp-guide-t">Ask VCFO</b>
+              <b id="guide-t">Ask VCFO</b>
               <span>Quick answers about the product</span>
             </div>
-            <button type="button" className="lp-guide-x" aria-label="Close Ask VCFO" onClick={hide}>
+            <button type="button" className="guide-x" aria-label="Close Ask VCFO" onClick={hide}>
               <X size={18} strokeWidth={1.6} />
             </button>
           </div>
-          <div ref={logRef} className="lp-guide-log" aria-live="polite">
+          <div ref={logRef} className="guide-log" aria-live="polite">
             {log.map((m) => {
               if (m.typing)
                 return (
-                  <div key={m.id} className="lp-msg bot typing" aria-hidden>
+                  <div key={m.id} className="msg bot typing" aria-hidden>
                     <i />
                     <i />
                     <i />
@@ -84,24 +84,24 @@ export function AskGuide({ onDemo }: { onDemo: () => void }) {
                 );
               if (m.q === undefined)
                 return (
-                  <div key={m.id} className={`lp-msg ${m.who}`}>
+                  <div key={m.id} className={`msg ${m.who}`}>
                     {m.text}
                   </div>
                 );
               const g = GUIDE[m.q];
               return (
-                <div key={m.id} className="lp-msg bot">
+                <div key={m.id} className="msg bot">
                   {g.a}
                   <div className="acts">
-                    <button type="button" className="lp-btn lined sm" onClick={() => scrollTo(g.sec)}>
+                    <button type="button" className="btn btn-secondary" onClick={() => scrollTo(g.sec)}>
                       Show me
                     </button>
                     {g.href && (
-                      <Link className="lp-btn lined sm" href={g.href}>
+                      <Link className="btn btn-secondary" href={g.href}>
                         Open the screen
                       </Link>
                     )}
-                    <button type="button" className={`lp-btn sm ${g.sales ? "navy" : "lined"}`} onClick={onDemo}>
+                    <button type="button" className={`btn ${g.sales ? "btn-primary" : "btn-ghost"}`} onClick={onDemo}>
                       Book a demo
                     </button>
                   </div>
@@ -109,7 +109,7 @@ export function AskGuide({ onDemo }: { onDemo: () => void }) {
               );
             })}
           </div>
-          <div className="lp-guide-qs" role="group" aria-label="Suggested questions">
+          <div className="guide-qs" role="group" aria-label="Suggested questions">
             {left.length ? (
               left.map(({ g, i }) => (
                 <button key={g.q} type="button" onClick={() => ask(i)}>
@@ -117,14 +117,14 @@ export function AskGuide({ onDemo }: { onDemo: () => void }) {
                 </button>
               ))
             ) : (
-              <button type="button" className="lp-btn navy sm" onClick={onDemo}>
+              <button type="button" className="btn btn-primary btn-sm" onClick={onDemo}>
                 Book a demo
               </button>
             )}
           </div>
         </div>
       ) : (
-        <button ref={pill} type="button" className="lp-guide-pill" aria-expanded={false} onClick={show}>
+        <button ref={pill} type="button" className="guide-pill" aria-expanded={false} onClick={show}>
           Ask VCFO
         </button>
       )}
