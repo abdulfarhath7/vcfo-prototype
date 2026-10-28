@@ -10,9 +10,9 @@ import { BOARD_COLS, CAL_ALLDAY, type TimelineRow, DAY_SHORT, ESTIMATE, MGR_DELE
 import { HourWeek, spanOf, useBlockMoves, type Slot } from "./HourWeek";
 import { Button } from "@/components/ui/Button";
 import { PopoverCard } from "@/components/ui/PopoverCard";
-import { initials } from "@/components/ui/Avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { LEADS } from "@/data/staff-team";
-import { Chip, Tag } from "@/components/ui/Chip";
+import { AreaPill, Chip, Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { barFill, type BarTone } from "@/components/ui/Bar";
 import { Select } from "@/components/ui/Select";
@@ -22,7 +22,7 @@ import { SidePanel, PanelSection } from "@/components/ui/SidePanel";
 import { FileBadge, fileType } from "@/components/ui/FileBadge";
 import { KeyValue } from "@/components/cards/KeyValue";
 import { SectionCard, Empty } from "@/components/cards/SectionCard";
-import { StackedBar } from "@/components/cards/StackedBar";
+import { Donut } from "@/components/cards/Donut";
 import { ClientDot, TaskChip, taskHref, type StaffPortal } from "./parts";
 
 // Work page parts. Ported from reference/old-screens/s/lead/Work.dc.html (planner: to-dos, timeline, calendar, status),
@@ -57,11 +57,88 @@ export function SessionButton({ timer, now, onToggle, label }: { timer?: Timer; 
   const ms = elapsed(timer, now);
   return (
     <span className="inline-flex flex-none items-center gap-1.5">
-      {ms > 0 && <span className={cn("font-mono text-12", running ? "font-semibold text-accent" : "text-muted")}>{clock(ms)}</span>}
+      {ms > 0 && <span className={cn("text-12 tabular-nums", running ? "font-medium text-accent" : "text-muted")}>{clock(ms)}</span>}
       <Button size="iconSm" variant={running ? "outline" : "ghost"} onClick={onToggle} aria-label={running ? `Stop session on ${label}` : `Start session on ${label}`} title={running ? "Stop session" : "Start session"}>
         {running ? <Pause size={14} strokeWidth={1.6} /> : <Play size={14} strokeWidth={1.6} />}
       </Button>
     </span>
+  );
+}
+
+type BarKind = "locked" | "mine" | "wait" | "repeat";
+
+/**
+ * R-21 Gantt bar: 16 px, 3 px corners. A manager-dated bar shows the part up to today solid and the rest hatched.
+ * Late bars are solid red. My to-dos are dashed. Waiting on the client is teal (R-13 waiting).
+ */
+function GanttBar({ from, to, today, kind, late, label, title, onClick }: { from: number; to: number; today: number; kind: BarKind; late?: boolean; label?: string; title: string; onClick?: () => void }) {
+  const span = Math.max(1, to - from);
+  const done = kind === "locked" && !late ? Math.max(0, Math.min(1, (today + 0.5 - from) / span)) : 0;
+  const El = onClick ? "button" : "span";
+  return (
+    <El
+      {...(onClick ? { type: "button" as const, onClick } : {})}
+      title={title}
+      style={{ gridColumn: `${from + 2} / ${to + 2}`, gridRow: 1 }}
+      className={cn(
+        "relative z-[1] flex h-4 min-w-0 items-center gap-1 self-center overflow-hidden whitespace-nowrap rounded-bar px-1.5 text-11 font-medium",
+        kind === "locked" && (late ? "bg-bad-mid text-primary-on" : "hatch text-accent"),
+        kind === "mine" && "border-1.5 border-dashed border-accent-line bg-accent-soft text-accent",
+        kind === "wait" && "bg-teal-soft text-teal",
+        kind === "repeat" && "border-1.5 border-line-2 bg-surface text-ink-2",
+        onClick && "cursor-pointer hover:opacity-90",
+      )}
+    >
+      {done > 0 && <i className="absolute inset-y-0 left-0 bg-accent-mid" style={{ width: `${done * 100}%` }} aria-hidden />}
+      {kind === "locked" && <Lock size={10} strokeWidth={1.6} className={cn("relative flex-none", done > 0 && "text-primary-on")} />}
+      {kind === "repeat" && <Repeat size={11} strokeWidth={1.6} className="flex-none" />}
+      {label && <span className="relative truncate">{label}</span>}
+    </El>
+  );
+}
+
+/** Timeline legend swatches, matched to GanttBar. */
+const GANTT_LEGEND: Array<[string, string]> = [
+  ["Manager date", "bg-accent-mid"],
+  ["Overdue", "bg-bad-mid"],
+  ["Waiting on client", "bg-teal-soft border-1.5 border-teal-mid"],
+  ["My to-do", "border-1.5 border-dashed border-accent-line bg-accent-soft"],
+];
+
+function GanttLegend({ step }: { step?: boolean }) {
+  return (
+    <span className="hidden flex-wrap items-center gap-3 text-12 text-muted xl:flex">
+      {GANTT_LEGEND.map(([l, c]) => (
+        <span key={l} className="flex items-center gap-1.5">
+          <i className={cn("h-2.5 w-3.5 rounded-bar", c)} aria-hidden />
+          {l}
+        </span>
+      ))}
+      {step && (
+        <span className="flex items-center gap-1.5">
+          <i className="h-2 w-2 rotate-45 rounded-[1px] bg-ink-2" aria-hidden />
+          Step due
+        </span>
+      )}
+      <span className="flex items-center gap-1.5">
+        <i className="h-2 w-2 rotate-45 rounded-[1px] bg-bad-mid" aria-hidden />
+        Filing due
+      </span>
+    </span>
+  );
+}
+
+/** Day header of both timelines: T1 head type. */
+function GanttHead({ grid, todayCol }: { grid: React.CSSProperties; todayCol: number }) {
+  return (
+    <div className="grid h-9 items-center border-b-1.5 border-line text-11.5 font-medium uppercase tracking-[.07em] text-muted" style={grid}>
+      <span className="px-4 md:px-5">Task</span>
+      {SPAN.map((x, i) => (
+        <span key={i} className={cn("text-center tracking-normal", i === todayCol && "text-accent", (x.getDay() === 0 || x.getDay() === 6) && i !== todayCol && "text-faint")}>
+          {DAY_SHORT[x.getDay()][0]} {x.getDate()}
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -70,43 +147,14 @@ export function WorkTimeline({ tasks, onOpen, onLocked }: { tasks: StaffTask[]; 
   const rows = tasks.filter((t) => t.status !== "Done" && t.due >= SPAN[0] && t.due <= SPAN[13]).slice(0, 12);
   const idx = (x: Date) => Math.max(0, Math.min(13, Math.round((x.getTime() - SPAN[0].getTime()) / 86400000)));
   const todayCol = idx(TODAY);
-  const grid = { gridTemplateColumns: "minmax(140px,190px) repeat(14, minmax(30px, 1fr))" };
+  const grid = {
+    gridTemplateColumns: "minmax(140px,190px) repeat(14, minmax(30px, 1fr))",
+  };
   return (
-    <SectionCard
-      title="Timeline"
-      meta={`${fmt(SPAN[0])} to ${fmt(SPAN[13])}`}
-      flush
-      right={
-        <span className="hidden flex-wrap items-center gap-3 text-12 text-muted xl:flex">
-          <span className="flex items-center gap-1.5">
-            <i className="h-2 w-3 rounded-[2px] bg-accent" aria-hidden />
-            Manager date
-          </span>
-          <span className="flex items-center gap-1.5">
-            <i className="h-2 w-3 rounded-[2px] border border-dashed border-accent bg-accent-soft" aria-hidden />
-            Mine
-          </span>
-          <span className="flex items-center gap-1.5">
-            <i className="h-2 w-3 rounded-[2px] bg-line" aria-hidden />
-            Waiting on client
-          </span>
-          <span className="flex items-center gap-1.5">
-            <i className="h-2 w-2 rotate-45 rounded-[1px] bg-bad-mid" aria-hidden />
-            Filing due
-          </span>
-        </span>
-      }
-    >
+    <SectionCard title="Timeline" meta={`${fmt(SPAN[0])} to ${fmt(SPAN[13])}`} flush right={<GanttLegend />}>
       <div className="overflow-x-auto">
         <div className="min-w-[640px]">
-          <div className="grid border-b border-line-soft py-2 text-11.5 font-semibold text-muted" style={grid}>
-            <span className="px-4 md:px-5">Task</span>
-            {SPAN.map((x, i) => (
-              <span key={i} className={cn("text-center", i === todayCol && "font-bold text-brand", (x.getDay() === 0 || x.getDay() === 6) && i !== todayCol && "text-faint")}>
-                {DAY_SHORT[x.getDay()][0]} {x.getDate()}
-              </span>
-            ))}
-          </div>
+          <GanttHead grid={grid} todayCol={todayCol} />
           {rows.length === 0 && <Empty />}
           {rows.map((t) => {
             const end = idx(t.due);
@@ -115,18 +163,12 @@ export function WorkTimeline({ tasks, onOpen, onLocked }: { tasks: StaffTask[]; 
             const late = t.status === "Overdue";
             const kind = isFiling(t) ? "filing" : t.status === "With client" ? "wait" : locked ? "locked" : "mine";
             const c = clientById(t.client);
-            const bar = cn(
-              "relative z-[1] flex h-5 min-w-0 items-center gap-1 self-center overflow-hidden whitespace-nowrap rounded-[6px] px-1.5 text-11 font-semibold",
-              kind === "locked" && (late ? "cursor-pointer bg-bad-mid text-white" : "cursor-pointer bg-accent text-white"),
-              kind === "mine" && "border border-dashed border-accent bg-accent-soft text-accent",
-              kind === "wait" && "bg-line text-ink-2",
-            );
             return (
               <div key={t.id} className="relative grid border-b border-line-soft py-2 last:border-b-0" style={grid}>
                 <button type="button" onClick={() => onOpen(t)} className="flex min-w-0 items-center gap-2 px-4 text-left md:px-5" style={{ gridColumn: 1, gridRow: 1 }}>
                   {c && <ClientDot tone={c.tone} />}
                   <span className="min-w-0">
-                    <b className="block truncate text-12.5 font-semibold hover:underline">{t.title}</b>
+                    <b className="block truncate text-13 font-medium text-ink hover:underline">{t.title}</b>
                     <span className="block truncate text-11.5 text-muted">
                       {c?.short}
                       {t.code ? ` · ${t.code}` : " · Filing"}
@@ -138,19 +180,19 @@ export function WorkTimeline({ tasks, onOpen, onLocked }: { tasks: StaffTask[]; 
                 </span>
                 {kind === "filing" ? (
                   <span className="grid place-items-center self-center" style={{ gridColumn: `${end + 2} / span 1`, gridRow: 1 }} title={`${t.title} · due ${fmt(t.due)}`}>
-                    <i className={cn("h-3 w-3 rotate-45 rounded-[2px]", late ? "bg-bad-mid" : "bg-btn")} aria-hidden />
+                    <i className={cn("h-3 w-3 rotate-45 rounded-[2px]", late ? "bg-bad-mid" : "bg-ink-2")} aria-hidden />
                   </span>
                 ) : (
-                  <button
-                    type="button"
-                    className={bar}
-                    style={{ gridColumn: `${start + 2} / ${end + 3}`, gridRow: 1 }}
+                  <GanttBar
+                    from={start}
+                    to={end + 1}
+                    today={todayCol}
+                    kind={kind}
+                    late={late}
+                    label={kind === "wait" ? "Waiting on client" : kind === "mine" ? "Mine" : undefined}
                     title={`${t.title} · ${fmt(SPAN[start])} to ${fmt(t.due)} · ${locked ? `dates set by ${t.setBy}` : "your dates"}`}
                     onClick={() => (locked ? onLocked(t) : onOpen(t))}
-                  >
-                    {locked && <Lock size={11} strokeWidth={1.6} className="flex-none" />}
-                    <span className="truncate">{kind === "wait" ? "Waiting on client" : kind === "mine" ? "Mine" : `${fmt(SPAN[start])} to ${fmt(t.due)}`}</span>
-                  </button>
+                  />
                 )}
               </div>
             );
@@ -164,56 +206,18 @@ export function WorkTimeline({ tasks, onOpen, onLocked }: { tasks: StaffTask[]; 
 /** Old planner timeline (Work.dc.html T): fixed rows with bars by kind, filing diamonds and the today line. */
 export function PlanTimeline({ rows, tasks, onOpen, onLocked }: { rows: TimelineRow[]; tasks: StaffTask[]; onOpen: (t: StaffTask) => void; onLocked: (t: StaffTask) => void }) {
   const todayCol = SPAN.findIndex(isToday);
-  const grid = { gridTemplateColumns: "minmax(150px,190px) repeat(14, minmax(30px, 1fr))" };
-  const legend: Array<[string, string]> = [
-    ["In progress", "bg-accent"],
-    ["Overdue", "bg-bad-mid"],
-    ["Waiting on client", "bg-line"],
-    ["Manager date", "bg-btn"],
-    ["My to-do", "border border-dashed border-accent bg-accent-soft"],
-  ];
+  const grid = {
+    gridTemplateColumns: "minmax(150px,190px) repeat(14, minmax(30px, 1fr))",
+  };
   return (
-    <SectionCard
-      title="Timeline"
-      meta={`${SPAN[0].getDate()} to ${fmt(SPAN[13])}`}
-      flush
-      right={
-        <span className="hidden flex-wrap items-center gap-3 text-12 text-muted xl:flex">
-          {legend.map(([l, c]) => (
-            <span key={l} className="flex items-center gap-1.5">
-              <i className={cn("h-2 w-3 rounded-[2px]", c)} aria-hidden />
-              {l}
-            </span>
-          ))}
-          <span className="flex items-center gap-1.5">
-            <i className="h-2 w-2 rotate-45 rounded-[1px] bg-bad-mid" aria-hidden />
-            Filing due
-          </span>
-        </span>
-      }
-    >
+    <SectionCard title="Timeline" meta={`${SPAN[0].getDate()} to ${fmt(SPAN[13])}`} flush right={<GanttLegend step />}>
       <div className="overflow-x-auto">
         <div className="min-w-[640px]">
-          <div className="grid border-b border-line-soft py-2 text-11.5 font-semibold text-muted" style={grid}>
-            <span className="px-4 md:px-5">Task</span>
-            {SPAN.map((x, i) => (
-              <span key={i} className={cn("text-center", i === todayCol && "font-bold text-brand", (x.getDay() === 0 || x.getDay() === 6) && i !== todayCol && "text-faint")}>
-                {DAY_SHORT[x.getDay()][0]} {x.getDate()}
-              </span>
-            ))}
-          </div>
+          <GanttHead grid={grid} todayCol={todayCol} />
           {rows.map((r) => {
             const c = clientById(r.client);
             const t = r.task ? tasks.find((x) => x.id === r.task) : undefined;
             const click = () => (t ? (r.kind === "locked" ? onLocked(t) : onOpen(t)) : undefined);
-            const bar = cn(
-              "relative z-[1] flex h-5 min-w-0 items-center gap-1 self-center overflow-hidden whitespace-nowrap rounded-[6px] px-1.5 text-11 font-semibold",
-              r.kind === "locked" && (r.late ? "bg-bad-soft text-bad" : "bg-accent-soft text-accent"),
-              r.kind === "mine" && "border border-dashed border-accent bg-accent-soft text-accent",
-              r.kind === "wait" && "bg-line text-ink-2",
-              r.kind === "repeat" && "border border-navy bg-surface text-ink",
-              t && "cursor-pointer",
-            );
             return (
               <div key={r.id} className="relative grid border-b border-line-soft py-1.5 last:border-b-0" style={grid}>
                 {/* A row without a task (a to-do or a recurring item) has no drawer: show it as plain text. */}
@@ -223,7 +227,7 @@ export function PlanTimeline({ rows, tasks, onOpen, onLocked }: { rows: Timeline
                     <El {...(t ? { type: "button" as const, onClick: () => onOpen(t) } : {})} className="flex min-w-0 items-center gap-2 px-4 text-left md:px-5" style={{ gridColumn: 1, gridRow: 1 }}>
                       {c && <ClientDot tone={c.tone} />}
                       <span className="min-w-0">
-                        <b className={cn("block truncate text-12.5 font-semibold", t && "hover:underline")}>{r.title}</b>
+                        <b className={cn("block truncate text-13 font-medium text-ink", t && "hover:underline")}>{r.title}</b>
                         <span className="block truncate text-11.5 text-muted">
                           {c?.short} · {r.sub}
                         </span>
@@ -234,20 +238,28 @@ export function PlanTimeline({ rows, tasks, onOpen, onLocked }: { rows: Timeline
                 <span aria-hidden className="pointer-events-none -my-1.5 flex justify-center" style={{ gridColumn: `${todayCol + 2} / span 1`, gridRow: 1 }}>
                   <i className="block h-full w-0.5 bg-brand" />
                 </span>
-                {r.kind !== "filing" &&
-                  (() => {
-                    const El = t ? "button" : "span";
-                    return (
-                      <El {...(t ? { type: "button" as const, onClick: click } : {})} className={bar} style={{ gridColumn: `${r.from + 2} / ${r.to + 2}`, gridRow: 1 }} title={`${r.title} · ${fmt(SPAN[r.from])} to ${fmt(SPAN[r.to - 1])}${r.kind === "locked" ? " · dates set by manager" : ""}`}>
-                        {r.kind === "locked" && <Lock size={11} strokeWidth={1.6} className="flex-none" />}
-                        {r.kind === "repeat" && <Repeat size={11} strokeWidth={1.6} className="flex-none" />}
-                        <span className="truncate">{r.kind === "wait" ? "Waiting on client" : r.kind === "mine" ? "Mine" : r.kind === "repeat" ? "repeats" : ""}</span>
-                      </El>
-                    );
-                  })()}
+                {r.kind !== "filing" && (
+                  <GanttBar
+                    from={r.from}
+                    to={r.to}
+                    today={todayCol}
+                    kind={r.kind}
+                    late={r.late}
+                    label={r.kind === "wait" ? "Waiting on client" : r.kind === "mine" ? "Mine" : r.kind === "repeat" ? "repeats" : undefined}
+                    title={`${r.title} · ${fmt(SPAN[r.from])} to ${fmt(SPAN[r.to - 1])}${r.kind === "locked" ? " · dates set by manager" : ""}`}
+                    onClick={t ? click : undefined}
+                  />
+                )}
                 {r.due && (
-                  <span className="z-[2] grid place-items-center self-center" style={{ gridColumn: `${r.due.day + 2} / span 1`, gridRow: 1 }} title={r.due.tip}>
-                    <i className={cn("h-3 w-3 rotate-45 rounded-[2px]", r.kind === "filing" ? "bg-bad-mid" : "bg-btn")} aria-hidden />
+                  <span
+                    className="z-[2] grid place-items-center self-center"
+                    style={{
+                      gridColumn: `${r.due.day + 2} / span 1`,
+                      gridRow: 1,
+                    }}
+                    title={r.due.tip}
+                  >
+                    <i className={cn("h-3 w-3 rotate-45 rounded-[2px]", r.kind === "filing" ? "bg-bad-mid" : "bg-ink-2")} aria-hidden />
                   </span>
                 )}
               </div>
@@ -313,9 +325,9 @@ export function RequestChangeDialog({ task, onClose, onSend }: { task: StaffTask
 
 function Head({ label, count }: { label: string; count: number }) {
   return (
-    <div className="flex items-center gap-2 bg-raised px-4 py-1.5 text-11.5 font-semibold text-muted md:px-5">
+    <div className="flex h-8 items-center gap-2 border-t border-line-soft bg-raised px-4 text-11.5 font-medium uppercase tracking-[.07em] text-muted md:px-5">
       {label}
-      <span className="font-mono text-faint">{count}</span>
+      <span className="tracking-normal text-faint">{count}</span>
     </div>
   );
 }
@@ -335,11 +347,11 @@ function DelegateButton({ id, label, value, onPick }: { id: string; label: strin
       width={200}
       trigger={
         value ? (
-          <button type="button" title={`With ${value}`} aria-label={`${label}: with ${value}`} className="grid h-6 w-6 flex-none place-items-center rounded-md bg-btn text-[10px] font-bold text-white">
-            {initials(value)}
+          <button type="button" title={`With ${value}`} aria-label={`${label}: with ${value}`} className="grid h-6 w-6 flex-none place-items-center rounded-full">
+            <Avatar name={value} size={24} />
           </button>
         ) : (
-          <button type="button" title="Hand to a project lead" aria-label={`Hand ${label} to a project lead`} className="grid h-6 w-6 flex-none place-items-center rounded-md border border-dashed border-line text-muted hover:bg-raised">
+          <button type="button" title="Hand to a project lead" aria-label={`Hand ${label} to a project lead`} className="grid h-6 w-6 flex-none place-items-center rounded-sm border-1.5 border-dashed border-line-2 text-muted hover:bg-hover">
             <UserPlus size={13} strokeWidth={1.6} />
           </button>
         )
@@ -351,13 +363,13 @@ function DelegateButton({ id, label, value, onPick }: { id: string; label: strin
             key={l.name}
             type="button"
             role="menuitem"
-            className={cn("flex h-9 items-center gap-2 px-3 text-left text-13 hover:bg-raised", l.name === value && "font-semibold")}
+            className={cn("flex h-[34px] items-center gap-2 rounded-sm px-2.5 text-left text-14 hover:bg-hover", l.name === value && "font-medium")}
             onClick={() => {
               setOpen(false);
               onPick(id, l.name);
             }}
           >
-            <span className="grid h-6 w-6 place-items-center rounded-md bg-raised text-[10px] font-bold">{initials(l.name)}</span>
+            <Avatar name={l.name} size={24} />
             {l.name}
           </button>
         ))}
@@ -404,7 +416,7 @@ export function TodoCard({
       meta={
         <>
           {n}
-          {portal === "manager" && withLeads > 0 && <span className="ml-2 rounded-sm bg-accent-soft px-1.5 py-0.5 text-11.5 font-semibold text-accent">{withLeads} with project leads</span>}
+          {portal === "manager" && withLeads > 0 && <span className="ml-2 rounded-sm bg-accent-soft px-1.5 py-0.5 text-11.5 font-medium text-accent">{withLeads} with project leads</span>}
         </>
       }
       flush
@@ -414,28 +426,38 @@ export function TodoCard({
         onSubmit={(e) => {
           e.preventDefault();
           if (!text.trim()) return;
-          setTodos((l) => [{ id: `q${Date.now()}`, text: text.trim(), client: client || undefined, due: TODAY }, ...l]);
+          setTodos((l) => [
+            {
+              id: `q${Date.now()}`,
+              text: text.trim(),
+              client: client || undefined,
+              due: TODAY,
+            },
+            ...l,
+          ]);
           setText("");
         }}
       >
         <label htmlFor={`qa-${portal}`} className="sr-only">
           Quick add
         </label>
-        <Input id={`qa-${portal}`} value={text} onChange={(e) => setText(e.target.value)} placeholder="Add a to-do" className="h-[30px] text-13" />
+        <Input id={`qa-${portal}`} value={text} onChange={(e) => setText(e.target.value)} placeholder="Add a to-do" />
       </form>
       <Head label="Assigned by manager" count={assigned.length} />
       {assigned.map((t) => (
         <Row key={t.id}>
           <ClientDot tone={clientById(t.client)?.tone ?? "idle"} />
           <button type="button" onClick={() => onOpen(t)} className="min-w-0 flex-1 text-left">
-            <b className="block truncate font-semibold hover:underline">{t.title}</b>
+            <b className="block truncate font-medium hover:underline">{t.title}</b>
             <span className="block truncate text-12 text-muted">
               {clientById(t.client)?.short} · {t.code} · {t.setBy}
             </span>
           </button>
           <Lock size={13} strokeWidth={1.6} className="flex-none text-muted" aria-label="Due date set by manager" />
           {dg(t.id, t.title)}
-          <Chip tone={t.status === "Overdue" ? "bad" : t.due.getTime() === TODAY.getTime() ? "warn" : "idle"}>{t.status === "Overdue" ? "Overdue" : dayLabel(t.due)}</Chip>
+          <Chip fixed tone={t.status === "Overdue" ? "bad" : t.due.getTime() === TODAY.getTime() ? "warn" : "idle"}>
+            {t.status === "Overdue" ? "Overdue" : dayLabel(t.due)}
+          </Chip>
         </Row>
       ))}
       <Head label="My to-dos" count={mine.filter((t) => !t.done).length} />
@@ -446,11 +468,19 @@ export function TodoCard({
             <Checkbox checked={!!t.done} label={t.text} onChange={(v) => setTodos((l) => l.map((x) => (x.id === t.id ? { ...x, done: v } : x)))} />
             {c && <ClientDot tone={c.tone} />}
             <span className="min-w-0 flex-1">
-              <span className={cn("block truncate font-semibold", t.done && "font-normal text-muted line-through")}>{t.text}</span>
+              <span className={cn("block truncate font-medium", t.done && "font-normal text-muted line-through")}>{t.text}</span>
               {(c || t.meta) && <span className="block truncate text-12 text-muted">{[c?.short, t.meta].filter(Boolean).join(" · ")}</span>}
             </span>
             {dg(t.id, t.text)}
-            {t.done ? <Chip tone="ok">Done</Chip> : t.due ? <Chip tone={isToday(t.due) ? "warn" : "idle"}>{dayLabel(t.due)}</Chip> : null}
+            {t.done ? (
+              <Chip fixed tone="ok">
+                Done
+              </Chip>
+            ) : t.due ? (
+              <Chip fixed tone={isToday(t.due) ? "warn" : "idle"}>
+                {dayLabel(t.due)}
+              </Chip>
+            ) : null}
           </Row>
         );
       })}
@@ -459,7 +489,7 @@ export function TodoCard({
         <Row key={t.id}>
           <ClientDot tone={clientById(t.client)?.tone ?? "idle"} />
           <button type="button" onClick={() => onOpen(t)} className="min-w-0 flex-1 text-left">
-            <b className="block truncate font-semibold hover:underline">{t.title}</b>
+            <b className="block truncate font-medium hover:underline">{t.title}</b>
             <span className="block truncate text-12 text-muted">
               {clientById(t.client)?.short} · due {fmt(t.due)}
             </span>
@@ -485,13 +515,15 @@ export function TodoCard({
         <Row key={r.id}>
           <Repeat size={14} strokeWidth={1.6} className="flex-none text-muted" aria-hidden />
           <span className="min-w-0 flex-1">
-            <b className="block truncate font-semibold">{r.text}</b>
+            <b className="block truncate font-medium">{r.text}</b>
             <span className="block truncate text-12 text-muted">
               {clientById(r.client)?.short} · {r.rule}
             </span>
           </span>
           {dg(r.id, r.text)}
-          <Chip tone={isToday(r.next) ? "warn" : "idle"}>{isToday(r.next) ? "Today" : fmt(r.next)}</Chip>
+          <Chip fixed tone={isToday(r.next) ? "warn" : "idle"}>
+            {isToday(r.next) ? "Today" : fmt(r.next)}
+          </Chip>
         </Row>
       ))}
     </SectionCard>
@@ -581,7 +613,7 @@ export function PlanCalendar({
         <div className="overflow-x-auto">
           <div className="grid min-w-[560px] grid-cols-7 border-t border-line-soft text-12">
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((w) => (
-              <span key={w} className="border-b border-r border-line-soft bg-raised px-2 py-1.5 text-11.5 font-semibold text-muted last:border-r-0">
+              <span key={w} className="border-b-1.5 border-line px-2 py-2.5 text-11.5 font-medium uppercase tracking-[.07em] text-muted">
                 {w}
               </span>
             ))}
@@ -591,8 +623,8 @@ export function PlanCalendar({
               return (
                 <div key={i} className={cn("min-h-[72px] border-b border-r border-line-soft px-2 py-1.5 [&:nth-child(7n)]:border-r-0", x.getMonth() !== 9 && "text-faint", isToday(x) && "bg-accent-soft")}>
                   <span className="flex items-center gap-1">
-                    <b className={cn("font-semibold", isToday(x) && "text-accent")}>{x.getDate()}</b>
-                    {due.length > 0 && <span className={cn("ml-auto rounded-sm px-1 text-11 font-bold text-white", late ? "bg-bad-mid" : "bg-btn")}>{due.length}</span>}
+                    <b className={cn("font-medium", isToday(x) && "text-accent")}>{x.getDate()}</b>
+                    {due.length > 0 && <span className={cn("ml-auto rounded-sm px-1.5 text-11 font-medium", late ? "bg-bad-soft text-bad" : "bg-accent-soft text-accent")}>{due.length}</span>}
                   </span>
                   {due.slice(0, 2).map((t) => (
                     <button key={t.id} type="button" onClick={() => onOpen(t)} className="mt-1 block w-full truncate rounded-sm bg-raised px-1 text-left text-11 hover:underline">
@@ -611,7 +643,23 @@ export function PlanCalendar({
   if (cal === "day") {
     return (
       <SectionCard title="Calendar" meta={`${DAY_SHORT[days[di].getDay()]} ${fmt(days[di])}`} right={tabs}>
-        <HourWeek days={[days[di]]} blocks={shown.filter((b) => b.day === di).map((b) => ({ ...b, day: 0 }))} allDay={wk === 0 ? CAL_ALLDAY.filter((a) => a.day === di).map((a) => ({ ...a, day: 0 })) : []} today={TODAY} now={NOW_HOUR} onBlock={openBlock} canOpen={canOpen} onMove={moveBlock} />
+        <HourWeek
+          days={[days[di]]}
+          blocks={shown.filter((b) => b.day === di).map((b) => ({ ...b, day: 0 }))}
+          allDay={
+            wk === 0
+              ? CAL_ALLDAY.filter((a) => a.day === di).map((a) => ({
+                  ...a,
+                  day: 0,
+                }))
+              : []
+          }
+          today={TODAY}
+          now={NOW_HOUR}
+          onBlock={openBlock}
+          canOpen={canOpen}
+          onMove={moveBlock}
+        />
       </SectionCard>
     );
   }
@@ -625,7 +673,11 @@ export function PlanCalendar({
 
 /** Plan my week dialog (WorkPlan.dc.html): an hour grid for next week with suggested blocks, options, Reshuffle, add the blocks. */
 export function PlanWeekDialog({ open, onOpenChange, onApply }: { open: boolean; onOpenChange: (v: boolean) => void; onApply: (blocks: CalBlock[]) => void }) {
-  const [opts, setOpts] = React.useState({ deep: true, lateFirst: true, byClient: false });
+  const [opts, setOpts] = React.useState({
+    deep: true,
+    lateFirst: true,
+    byClient: false,
+  });
   const [seed, setSeed] = React.useState(0);
   const [skip, setSkip] = React.useState<Set<string>>(new Set());
   const [view, setView] = React.useState("week");
@@ -716,15 +768,15 @@ export function PlanWeekDialog({ open, onOpenChange, onApply }: { open: boolean;
           ))}
         </div>
         {(heavy !== undefined || seed === 0) && (
-          <p className="rounded-md border border-accent-line bg-accent-soft px-3 py-2 text-12.5 text-ink-2">
+          <p className="rounded-md border-1.5 border-info-line bg-info-soft px-3 py-2 text-13 text-info">
             {heavy !== undefined ? (
               <>
-                <b className="block font-semibold text-ink">{DAY_LONG[NEXT_WEEK[heavy].getDay()]} is over 6 h.</b>
+                <b className="block font-medium text-ink">{DAY_LONG[NEXT_WEEK[heavy].getDay()]} is over 6 h.</b>
                 Move a block to a lighter day before you add the plan.
               </>
             ) : (
               <>
-                <b className="block font-semibold text-ink">Tuesday was over 6 h.</b>
+                <b className="block font-medium text-ink">Tuesday was over 6 h.</b>
                 The GST recon moved to Thursday. Its due date is still met.
               </>
             )}
@@ -759,7 +811,7 @@ export function TodayAgenda({ tasks, plan, onOpen, timers, now, onTimer }: { tas
           <div key={t.id} className="flex items-center gap-2.5 border-t border-line-soft px-4 py-2.5 text-13 first:border-t-0 md:px-5">
             <ClientDot tone={clientById(t.client)?.tone ?? "idle"} />
             <button type="button" onClick={() => onOpen(t)} className="min-w-0 flex-1 text-left">
-              <b className="block truncate font-semibold hover:underline">{t.title}</b>
+              <b className="block truncate font-medium hover:underline">{t.title}</b>
               <span className="block truncate text-12 text-muted">
                 {clientById(t.client)?.short} · {hoursOf(t)} h{t.due < TODAY ? " · after due date" : ""}
               </span>
@@ -772,12 +824,28 @@ export function TodayAgenda({ tasks, plan, onOpen, timers, now, onTimer }: { tas
   );
 }
 
-const STATUS_SEG: Array<{ label: string; tone: BarTone; test: (t: StaffTask) => boolean }> = [
+const STATUS_SEG: Array<{
+  label: string;
+  tone: BarTone;
+  test: (t: StaffTask) => boolean;
+}> = [
   { label: "Done", tone: "ok", test: (t) => t.status === "Done" },
-  { label: "In progress", tone: "accent", test: (t) => t.status === "In progress" || t.status === "With client" },
-  { label: "Due soon", tone: "warn", test: (t) => t.status === "Due this week" },
+  {
+    label: "In progress",
+    tone: "accent",
+    test: (t) => t.status === "In progress" || t.status === "With client",
+  },
+  {
+    label: "Due soon",
+    tone: "warn",
+    test: (t) => t.status === "Due this week",
+  },
   { label: "Overdue", tone: "bad", test: (t) => t.status === "Overdue" },
-  { label: "Not started", tone: "idle", test: (t) => t.status === "Not started" },
+  {
+    label: "Not started",
+    tone: "idle",
+    test: (t) => t.status === "Not started",
+  },
 ];
 
 /** My work · status (R-25: stacked bar, not the old donut) and By area (Work.dc.html). */
@@ -786,7 +854,16 @@ export function WorkStatus({ tasks, mine }: { tasks: StaffTask[]; mine: boolean 
   return (
     <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2">
       <SectionCard title={mine ? "My work · status" : "Team work · status"}>
-        <StackedBar total={tasks.length} title="Tasks" segments={STATUS_SEG.map((s) => ({ label: s.label, tone: s.tone, value: tasks.filter(s.test).length }))} />
+        <Donut
+          size={96}
+          total={tasks.length}
+          segments={STATUS_SEG.map((s) => ({
+            label: s.label,
+            tone: s.tone,
+            value: tasks.filter(s.test).length,
+          }))}
+          className="gap-6 [&>div:last-child]:flex-1"
+        />
       </SectionCard>
       <SectionCard title="By area" meta="Sep to Oct">
         <ul className="grid gap-3">
@@ -797,14 +874,14 @@ export function WorkStatus({ tasks, mine }: { tasks: StaffTask[]; mine: boolean 
             const pend = mineA.length - done - late - mineA.filter((t) => t.status === "Not started").length;
             const seg = (n: number) => `${(n / mineA.length) * 100}%`;
             return (
-              <li key={a} className="grid grid-cols-[84px_minmax(0,1fr)_40px] items-center gap-3 text-12.5" title={`${a}: ${done} done, ${pend} pending, ${late} overdue`}>
-                <span className="text-ink-2">{a}</span>
-                <span className="flex h-2 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
+              <li key={a} className="grid grid-cols-[104px_minmax(0,1fr)_40px] items-center gap-3 text-12.5" title={`${a}: ${done} done, ${pend} pending, ${late} overdue`}>
+                <AreaPill area={a} />
+                <span className="flex h-2.5 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
                   <i className={barFill.ok} style={{ width: seg(done) }} />
                   <i className={barFill.accent} style={{ width: seg(pend) }} />
                   <i className={barFill.bad} style={{ width: seg(late) }} />
                 </span>
-                <span className="text-right font-mono text-12 text-muted">
+                <span className="text-right text-12.5 text-muted">
                   {done}/{mineA.length}
                 </span>
               </li>
@@ -821,7 +898,7 @@ export function WorkStatus({ tasks, mine }: { tasks: StaffTask[]; mine: boolean 
             ] as const
           ).map(([l, t]) => (
             <li key={l} className="flex items-center gap-1.5">
-              <i className={cn("h-2 w-2 rounded-[2px]", t === "idle" ? "bg-line-soft" : barFill[t])} aria-hidden />
+              <i className={cn("h-2 w-2 rounded-[2px]", t === "idle" ? "bg-line-2" : barFill[t])} aria-hidden />
               {l}
             </li>
           ))}
@@ -842,7 +919,7 @@ export function WorkBoard({ portal, tasks, onOpen, notify }: { portal: StaffPort
         return (
           <section key={col.key} className="min-w-0 rounded-md border-1.5 border-line bg-raised" aria-label={col.label}>
             <header className="flex h-11 items-center gap-2 border-b border-line-soft px-4">
-              <h2 className="text-13.5 font-semibold">{col.label}</h2>
+              <h2 className="text-14 font-medium">{col.label}</h2>
               <Tag tone={col.key === "action" ? "warn" : col.key === "doing" ? "prog" : col.key === "done" ? "ok" : "idle"}>{items.length}</Tag>
             </header>
             <div className="grid gap-2 p-3">
@@ -851,18 +928,18 @@ export function WorkBoard({ portal, tasks, onOpen, notify }: { portal: StaffPort
                 const c = clientById(t.client);
                 const late = t.status === "Overdue";
                 return (
-                  <article key={t.id} className={cn("grid gap-2 rounded-md border bg-surface px-3 py-2.5", late ? "border-bad-mid" : "border-line")}>
+                  <article key={t.id} className={cn("grid gap-2 rounded-md border-1.5 bg-surface px-3 py-2.5", late ? "border-bad-mid" : "border-line")}>
                     <div className="flex min-w-0 items-center gap-2 text-12 text-muted">
                       {c && <ClientDot tone={c.tone} />}
                       <span className="truncate">{c?.short}</span>
                       {t.code && <span className="ml-auto flex-none font-mono">{t.code}</span>}
                     </div>
-                    <button type="button" onClick={() => onOpen(t)} className="text-left text-13.5 font-semibold leading-snug hover:underline">
+                    <button type="button" onClick={() => onOpen(t)} className="text-left text-14 font-medium leading-snug text-ink hover:underline">
                       {t.title}
                     </button>
                     <div className="flex flex-wrap items-center gap-2">
                       <TaskChip status={t.status} fixed={false} />
-                      <span className={cn("text-12", late ? "font-semibold text-bad" : "text-muted")}>{fmt(t.due)}</span>
+                      <span className={cn("text-12", late ? "font-medium text-bad" : "text-muted")}>{fmt(t.due)}</span>
                       {portal !== "lead" && <span className="text-12 text-muted">· {t.owner}</span>}
                     </div>
                     {t.status === "With client" ? (
@@ -984,7 +1061,7 @@ export function WorkDrawer({
           </PanelSection>
           <PanelSection title="Span">
             <div className="flex flex-wrap items-center gap-2 text-13">
-              <span className="font-mono">
+              <span className="font-medium text-ink">
                 {fmt(start)} to {fmt(task.due)}
               </span>
               <span className="text-12.5 text-muted">{task.setBy ? "manager dates" : "your dates"}</span>
@@ -1038,7 +1115,7 @@ export function WorkDrawer({
                 {x.files.map((f) => (
                   <li key={f.name} className="flex items-center gap-2.5 text-13">
                     <FileBadge type={fileType(f.name)} />
-                    <span className="min-w-0 truncate font-mono text-12.5">{f.name}</span>
+                    <span className="min-w-0 truncate text-13">{f.name}</span>
                   </li>
                 ))}
               </ul>
@@ -1048,7 +1125,7 @@ export function WorkDrawer({
             <ul className="grid gap-2 text-13">
               {x.activity.map((a, i) => (
                 <li key={i}>
-                  <b className="font-semibold">{a.who}</b> {a.text} <span className=" text-12 text-muted">· {a.when}</span>
+                  <b className="font-medium">{a.who}</b> {a.text} <span className=" text-12 text-muted">· {a.when}</span>
                 </li>
               ))}
             </ul>
@@ -1081,7 +1158,12 @@ export function NewTodoDialog({ open, onOpenChange, clients, onAdd, title = "New
             disabled={!text.trim()}
             onClick={() => {
               const [y, m, dd] = due.split("-").map(Number);
-              onAdd({ id: `n${Date.now()}`, text: text.trim(), client: client || undefined, due: y ? d(y, m, dd) : undefined });
+              onAdd({
+                id: `n${Date.now()}`,
+                text: text.trim(),
+                client: client || undefined,
+                due: y ? d(y, m, dd) : undefined,
+              });
               setText("");
               onOpenChange(false);
             }}
@@ -1105,4 +1187,3 @@ export function NewTodoDialog({ open, onOpenChange, clients, onAdd, title = "New
     </Modal>
   );
 }
-

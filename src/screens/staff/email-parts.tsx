@@ -38,7 +38,7 @@ function ToChip({ t, onRemove }: { t: To; onRemove: () => void }) {
     <Tag tone={tone} className="h-[24px] gap-1.5 pr-1">
       {t.kind === "group" && <Users size={12} strokeWidth={1.6} aria-hidden />}
       <span className="max-w-[200px] truncate">{toLabel(t)}</span>
-      <button type="button" onClick={onRemove} className="grid h-4 w-4 place-items-center rounded-sm hover:bg-white/40" aria-label={`Remove ${toLabel(t)}`}>
+      <button type="button" onClick={onRemove} className="grid h-4 w-4 place-items-center rounded-sm hover:bg-surface" aria-label={`Remove ${toLabel(t)}`}>
         <X size={12} strokeWidth={1.6} />
       </button>
     </Tag>
@@ -47,12 +47,12 @@ function ToChip({ t, onRemove }: { t: To; onRemove: () => void }) {
 
 function PickRow({ r, on, onPick }: { r: Recipient; on: boolean; onPick: () => void }) {
   return (
-    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={onPick} className={cn("flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-raised", on && "bg-accent-soft")}>
+    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={onPick} className={cn("flex w-full items-center gap-2.5 rounded-sm px-2 py-1.5 text-left hover:bg-hover", on && "bg-hover")}>
       <Avatar name={r.name} size={24} />
       <span className="min-w-0 flex-1">
-        <b className="block truncate text-12.5 font-semibold">{r.name}</b>
+        <b className="block truncate text-13 font-medium text-ink">{r.name}</b>
         <span className="block truncate text-11.5 text-muted">
-          {r.org} · <span className="font-mono">{r.email}</span>
+          {r.org} · {r.email}
         </span>
       </span>
     </button>
@@ -78,7 +78,7 @@ export function RecipientField({ value, onChange, bare, initialQuery = "" }: { v
 
   return (
     <div className="relative">
-      <div className={cn("flex min-h-9 flex-wrap items-center gap-1.5", bare ? "py-1" : "rounded-md border border-line bg-surface px-2 py-1 focus-within:ring-2 focus-within:ring-accent-line")}>
+      <div className={cn("flex min-h-9 flex-wrap items-center gap-1.5", bare ? "py-1" : "rounded-md border-1.5 border-line-2 bg-surface px-2 py-1 focus-within:border-accent focus-within:ring-4 focus-within:ring-accent-line")}>
         {value.map((t) => (
           <ToChip key={`${t.kind}:${t.id}`} t={t} onRemove={() => onChange(value.filter((v) => !(v.kind === t.kind && v.id === t.id)))} />
         ))}
@@ -107,7 +107,7 @@ export function RecipientField({ value, onChange, bare, initialQuery = "" }: { v
         <div className="absolute left-0 top-[calc(100%+4px)] z-30 w-full max-w-[380px] rounded-md border-1.5 border-line bg-surface p-1.5 shadow-pop" role="listbox" aria-label="Recipients">
           {clients.length > 0 && (
             <>
-              <p className="px-2 pb-1 pt-1.5 text-11 font-semibold text-faint">Client</p>
+              <p className="px-2 pb-1 pt-1.5 text-11 font-medium uppercase tracking-[.07em] text-muted">Client</p>
               {clients.map((r, i) => (
                 <PickRow key={r.id} r={r} on={i === 0} onPick={() => add({ kind: "person", id: r.id })} />
               ))}
@@ -115,7 +115,7 @@ export function RecipientField({ value, onChange, bare, initialQuery = "" }: { v
           )}
           {team.length > 0 && (
             <>
-              <p className="px-2 pb-1 pt-2 text-11 font-semibold text-faint">Team</p>
+              <p className="px-2 pb-1 pt-2 text-11 font-medium uppercase tracking-[.07em] text-muted">Team</p>
               {team.map((r, i) => (
                 <PickRow key={r.id} r={r} on={clients.length === 0 && i === 0} onPick={() => add({ kind: "person", id: r.id })} />
               ))}
@@ -123,7 +123,7 @@ export function RecipientField({ value, onChange, bare, initialQuery = "" }: { v
           )}
           {groups.length > 0 && (
             <>
-              <p className="px-2 pb-1 pt-2 text-11 font-semibold text-faint">Groups</p>
+              <p className="px-2 pb-1 pt-2 text-11 font-medium uppercase tracking-[.07em] text-muted">Groups</p>
               <div className="flex flex-wrap gap-1.5 px-2 pb-1.5">
                 {groups.map((g) => (
                   <button key={g.id} type="button" title={g.members} onMouseDown={(e) => e.preventDefault()} onClick={() => add({ kind: "group", id: g.id })} className="rounded-sm hover:opacity-80">
@@ -150,7 +150,7 @@ export function Attachments({ files, onChange }: { files: string[]; onChange: (f
       {files.map((f) => (
         <span key={f} className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-md border border-line py-1 pl-2 pr-1">
           <FileBadge type={fileType(f)} />
-          <span className="min-w-0 truncate font-mono text-12">{f}</span>
+          <span className="min-w-0 truncate text-12.5">{f}</span>
           <Button size="iconSm" variant="ghost" className="h-6 w-6" onClick={() => onChange(files.filter((x) => x !== f))} aria-label={`Remove ${f}`}>
             <X size={14} strokeWidth={1.6} />
           </Button>
@@ -178,7 +178,13 @@ const STYLES = ["SBC branded", "Plain"];
 
 /** Create or edit a template. */
 export function TemplateDialog({ open, onOpenChange, initial, onSave }: { open: boolean; onOpenChange: (v: boolean) => void; initial?: MailTemplate; onSave: (t: MailTemplate) => void }) {
-  const blank: MailTemplate = { id: "", name: "", style: "SBC branded", subject: "", body: "" };
+  const blank: MailTemplate = {
+    id: "",
+    name: "",
+    style: "SBC branded",
+    subject: "",
+    body: "",
+  };
   const [t, setT] = React.useState<MailTemplate>(initial ?? blank);
   React.useEffect(() => {
     if (open) setT(initial ?? blank);
@@ -222,24 +228,38 @@ export function TemplateDialog({ open, onOpenChange, initial, onSave }: { open: 
 }
 
 /** Template list with Edit and Delete. Delete asks first (R-40). The old rail puts Create in the card head. */
-export function TemplateList({ templates, active, onUse, onEdit, onDelete, onCreate }: { templates: MailTemplate[]; active?: string; onUse: (id: string) => void; onEdit: (t: MailTemplate) => void; onDelete: (id: string) => void; onCreate?: () => void }) {
+export function TemplateList({
+  templates,
+  active,
+  onUse,
+  onEdit,
+  onDelete,
+  onCreate,
+}: {
+  templates: MailTemplate[];
+  active?: string;
+  onUse: (id: string) => void;
+  onEdit: (t: MailTemplate) => void;
+  onDelete: (id: string) => void;
+  onCreate?: () => void;
+}) {
   const [asking, setAsking] = React.useState<string | null>(null);
   return (
     <div>
-      <button type="button" onClick={() => onUse("")} className={cn("flex w-full items-center gap-2 border-b border-line-soft px-4 py-2.5 text-left text-13.5 text-muted hover:bg-raised", active === "" && "bg-raised")}>
+      <button type="button" onClick={() => onUse("")} className={cn("flex w-full items-center gap-2 border-b border-line-soft px-4 py-2.5 text-left text-13.5 text-muted hover:bg-hover md:px-5", active === "" && "bg-accent-soft text-accent")}>
         Write without a template
       </button>
       {templates.map((t) => (
         <div key={t.id} className="border-b border-line-soft last:border-b-0">
-          <div className={cn("flex items-center gap-3 px-4 py-2.5 hover:bg-raised", active === t.id && "bg-warn-soft hover:bg-warn-soft")}>
+          <div className={cn("flex items-center gap-3 px-4 py-2.5 hover:bg-hover md:px-5", active === t.id && "bg-accent-soft hover:bg-accent-soft")}>
             <button type="button" onClick={() => onUse(t.id)} className="min-w-0 flex-1 text-left" aria-pressed={active === t.id}>
-              <b className="block truncate text-13 font-semibold">{t.name}</b>
+              <b className="block truncate text-13.5 font-medium text-ink">{t.name}</b>
               <span className="block truncate text-12 text-muted">{t.style}</span>
             </button>
-            <button type="button" onClick={() => onEdit(t)} className="text-12.5 font-semibold text-accent hover:underline">
+            <button type="button" onClick={() => onEdit(t)} className="text-13 font-medium text-accent hover:underline">
               Edit
             </button>
-            <button type="button" onClick={() => setAsking(t.id)} className="text-12.5 font-semibold text-bad hover:underline">
+            <button type="button" onClick={() => setAsking(t.id)} className="text-13 font-medium text-bad hover:underline">
               Delete
             </button>
           </div>

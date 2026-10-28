@@ -11,28 +11,46 @@ import { Tabs } from "@/components/ui/Tabs";
 import { Tag } from "@/components/ui/Chip";
 import { NumberStrip, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard } from "@/components/cards/SectionCard";
-import { StackedBar } from "@/components/cards/StackedBar";
+import { Donut } from "@/components/cards/Donut";
 import { ProgressList } from "@/components/cards/ProgressList";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import type { StaffPortal } from "./parts";
 import { waitWord } from "@/data/status-words";
 
+// R-25: status colours only. Due soon is amber, waiting is teal; stuck is red like overdue.
 const HEALTH: Array<[Health, BarTone]> = [
   ["In progress", "accent"],
-  ["Due this week", "teal"],
+  ["Due this week", "warn"],
   ["With client", "teal"],
   ["Overdue", "bad"],
-  ["Stuck", "violet"],
+  ["Stuck", "bad"],
   ["Not started", "idle"],
 ];
 
 const TOOLTIP = {
   cursor: { fill: "var(--raised)" },
-  contentStyle: { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 8, fontSize: 12.5, color: "var(--ink)" },
-  labelStyle: { color: "var(--ink)", fontWeight: 600 },
+  contentStyle: {
+    background: "var(--surface)",
+    border: "1.5px solid var(--line)",
+    borderRadius: 6,
+    fontSize: 12.5,
+    color: "var(--ink)",
+    boxShadow: "var(--shadow-float)",
+  },
+  labelStyle: { color: "var(--ink)", fontWeight: 500 },
 };
-const AXIS_X = { tickLine: false, axisLine: { stroke: "var(--line)" }, tick: { fill: "var(--muted)", fontSize: 11.5 }, interval: 0 } as const;
-const AXIS_Y = { allowDecimals: false, tickLine: false, axisLine: false, tick: { fill: "var(--faint)", fontSize: 11.5 } } as const;
+const AXIS_X = {
+  tickLine: false,
+  axisLine: { stroke: "var(--line)" },
+  tick: { fill: "var(--muted)", fontSize: 11.5 },
+  interval: 0,
+} as const;
+const AXIS_Y = {
+  allowDecimals: false,
+  tickLine: false,
+  axisLine: false,
+  tick: { fill: "var(--faint)", fontSize: 11.5 },
+} as const;
 
 function FilingsOnTime({ portal, span }: { portal: StaffPortal; span: number }) {
   const data = ANALYTICS[portal].filings.slice(-span).map((f) => ({ m: f.m, "On time": f.onTime, Late: f.late }));
@@ -49,7 +67,7 @@ function FilingsOnTime({ portal, span }: { portal: StaffPortal; span: number }) 
             <Tooltip {...TOOLTIP} />
             <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize: 12.5, color: "var(--ink-2)" }} />
             <Bar dataKey="On time" stackId="a" fill="var(--ok-mid)" isAnimationActive={false} maxBarSize={28} />
-            <Bar dataKey="Late" stackId="a" fill="var(--bad-mid)" isAnimationActive={false} maxBarSize={28} />
+            <Bar dataKey="Late" stackId="a" fill="var(--bad-mid)" isAnimationActive={false} maxBarSize={28} radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -70,10 +88,20 @@ function CompletionRate({ portal, span }: { portal: StaffPortal; span: number })
             <XAxis dataKey="m" {...AXIS_X} />
             <YAxis {...AXIS_Y} domain={[70, 100]} unit="%" />
             <Tooltip {...TOOLTIP} formatter={(v) => [`${v}% on time`, "Rate"]} />
-            <ReferenceLine y={RATE_TARGET} stroke="var(--warn-mid)" strokeDasharray="6 5" label={{ value: `${RATE_TARGET}% target`, position: "insideTopRight", fill: "var(--warn)", fontSize: 11 }} />
+            <ReferenceLine
+              y={RATE_TARGET}
+              stroke="var(--warn-mid)"
+              strokeDasharray="6 5"
+              label={{
+                value: `${RATE_TARGET}% target`,
+                position: "insideTopRight",
+                fill: "var(--warn)",
+                fontSize: 11,
+              }}
+            />
             <Bar dataKey="rate" isAnimationActive={false} maxBarSize={36} radius={[3, 3, 0, 0]}>
               {data.map((r) => (
-                <Cell key={r.m} fill={r.rate >= RATE_TARGET ? "var(--ok-mid)" : "var(--accent)"} />
+                <Cell key={r.m} fill={r.rate >= RATE_TARGET ? "var(--ok-mid)" : "var(--accent-mid)"} />
               ))}
             </Bar>
           </BarChart>
@@ -95,8 +123,18 @@ function FilingDelay({ portal, span }: { portal: StaffPortal; span: number }) {
             <XAxis dataKey="m" {...AXIS_X} />
             <YAxis {...AXIS_Y} allowDecimals />
             <Tooltip {...TOOLTIP} formatter={(v) => [`${v} days`, "Delay"]} />
-            <ReferenceLine y={DELAY_BENCHMARK} stroke="var(--warn-mid)" strokeDasharray="6 5" label={{ value: `${DELAY_BENCHMARK}d benchmark`, position: "insideTopRight", fill: "var(--warn)", fontSize: 11 }} />
-            <Line dataKey="delay" stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 4, fill: "var(--surface)", strokeWidth: 2 }} isAnimationActive={false} label={{ position: "top", fill: "var(--ink)", fontSize: 11 }} />
+            <ReferenceLine
+              y={DELAY_BENCHMARK}
+              stroke="var(--warn-mid)"
+              strokeDasharray="6 5"
+              label={{
+                value: `${DELAY_BENCHMARK}d benchmark`,
+                position: "insideTopRight",
+                fill: "var(--warn)",
+                fontSize: 11,
+              }}
+            />
+            <Line dataKey="delay" stroke="var(--accent-mid)" strokeWidth={2} dot={{ r: 4, fill: "var(--surface)", strokeWidth: 2 }} isAnimationActive={false} label={{ position: "top", fill: "var(--ink)", fontSize: 11 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -121,19 +159,22 @@ function KpiStrip({ portal, span, setSpan }: { portal: StaffPortal; span: string
     value: (
       <span className="inline-flex items-baseline gap-2">
         {k.value}
-        <Tag tone={k.good ? "ok" : "warn"} className="h-[20px] px-1.5 align-middle">
+        <Tag tone={k.good ? "ok" : "warn"} className="h-5 px-1.5 align-middle text-12">
           {k.delta}
         </Tag>
       </span>
     ),
   }));
   return (
-    <SectionCard
-      title="Practice"
-      meta={span === "6" ? "Last 6 months" : "Last 12 months"}
-      flush
-      right={
+    <>
+      {/* Plain page head (R-02): 28 px title, muted meta, the period switch on the right. */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0 flex-[1_1_240px]">
+          <h1 className="text-28 font-medium leading-9 tracking-[-0.01em]">Analytics</h1>
+          <p className="text-13.5 text-muted">{span === "6" ? "Last 6 months" : "Last 12 months"}</p>
+        </div>
         <Tabs
+          size="md"
           items={[
             { key: "6", label: "Last 6 months" },
             { key: "12", label: "Last 12 months" },
@@ -141,10 +182,9 @@ function KpiStrip({ portal, span, setSpan }: { portal: StaffPortal; span: string
           value={span}
           onChange={setSpan}
         />
-      }
-    >
+      </div>
       <NumberStrip items={items} />
-    </SectionCard>
+    </>
   );
 }
 
@@ -159,7 +199,7 @@ function StepsPerWeek({ portal }: { portal: StaffPortal }) {
             <XAxis dataKey="w" {...AXIS_X} interval="preserveStartEnd" />
             <YAxis {...AXIS_Y} />
             <Tooltip {...TOOLTIP} />
-            <Bar dataKey="Steps" fill="var(--accent)" isAnimationActive={false} maxBarSize={28} radius={[3, 3, 0, 0]} />
+            <Bar dataKey="Steps" fill="var(--accent-mid)" isAnimationActive={false} maxBarSize={28} radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -168,9 +208,19 @@ function StepsPerWeek({ portal }: { portal: StaffPortal }) {
 }
 
 const stepCols: Column<StepTime>[] = [
-  { key: "step", label: "Step", render: (s) => <span className="font-semibold">{s.step}</span> },
+  {
+    key: "step",
+    label: "Step",
+    render: (s) => <span className="font-medium text-ink">{s.step}</span>,
+  },
   { key: "median", label: "Median days", width: 110, align: "right" },
-  { key: "longest", label: "Longest", width: 90, align: "right", render: (s) => <span className={s.longest > 7 ? "font-semibold text-bad" : undefined}>{s.longest}</span> },
+  {
+    key: "longest",
+    label: "Longest",
+    width: 90,
+    align: "right",
+    render: (s) => <span className={s.longest > 7 ? "font-medium text-bad" : undefined}>{s.longest}</span>,
+  },
   { key: "longestClient", label: "Longest client", width: 140 },
 ];
 
@@ -197,11 +247,28 @@ export function AnalyticsScreen({ portal }: { portal: StaffPortal }) {
         </Col>
         <Col>
           <SectionCard title="Client health" meta={`${clients.length} clients`}>
-            <StackedBar segments={HEALTH.map(([h, tone]) => ({ label: waitWord(h), value: clients.filter((c) => c.health === h).length, tone })).filter((s) => s.value > 0)} />
+            <Donut
+              size={96}
+              className="gap-6 [&>div:last-child]:flex-1"
+              total={clients.length}
+              segments={HEALTH.map(([h, tone]) => ({
+                label: waitWord(h),
+                value: clients.filter((c) => c.health === h).length,
+                tone,
+              })).filter((s) => s.value > 0)}
+            />
           </SectionCard>
           {leads.length > 0 && (
             <SectionCard title="Workload" meta="Hours planned this week" flush>
-              <ProgressList items={leads.map((l) => ({ id: l.name, name: l.name, sub: `${l.clients} clients · ${l.open} open · ${l.overdue} overdue`, pct: l.load, tone: l.load > 95 ? "bad" : l.load > 80 ? "warn" : "accent" }))} />
+              <ProgressList
+                items={leads.map((l) => ({
+                  id: l.name,
+                  name: l.name,
+                  sub: `${l.clients} clients · ${l.open} open · ${l.overdue} overdue`,
+                  pct: l.load,
+                  tone: l.load > 95 ? "bad" : l.load > 80 ? "warn" : "accent",
+                }))}
+              />
             </SectionCard>
           )}
         </Col>

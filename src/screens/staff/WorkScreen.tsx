@@ -8,27 +8,14 @@ import { CAL_BLOCKS, TIMELINE_ROWS, TODOS, type CalBlock, type Todo } from "@/da
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
-import { Select } from "@/components/ui/Select";
+import { AreaPill } from "@/components/ui/Chip";
 import { PopoverCard } from "@/components/ui/PopoverCard";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { ClientName, TaskChip, type StaffPortal } from "./parts";
-import { ClientSelect } from "./filters";
+import { FilterChip } from "./today-parts";
 import { AdminWorkItems } from "./AdminWorkItems";
-import {
-  NewTodoDialog,
-  PlanCalendar,
-  PlanWeekDialog,
-  RequestChangeDialog,
-  SessionButton,
-  PlanTimeline,
-  TodoCard,
-  WorkBoard,
-  WorkDrawer,
-  WorkStatus,
-  WorkTimeline,
-  type Timer,
-} from "./work-parts";
+import { NewTodoDialog, PlanCalendar, PlanWeekDialog, RequestChangeDialog, SessionButton, PlanTimeline, TodoCard, WorkBoard, WorkDrawer, WorkStatus, WorkTimeline, type Timer } from "./work-parts";
 
 // Staff Work. Old sources: reference/old-screens/s/lead/Work.dc.html (Planner, List, Board), WorkPlan.dc.html,
 // WorkBoard.dc.html, WorkDrawer.dc.html, WorkPhone.dc.html; the same under s/mgr; s/admin/Work.dc.html and
@@ -71,16 +58,17 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
       const t = all[id] ?? { start: null, ms: 0 };
       const at = Date.now();
       setNow(at);
-      return { ...all, [id]: t.start ? { start: null, ms: t.ms + (at - t.start) } : { start: at, ms: t.ms } };
+      return {
+        ...all,
+        [id]: t.start ? { start: null, ms: t.ms + (at - t.start) } : { start: at, ms: t.ms },
+      };
     });
 
   // Lead and manager Work show Bharath's planner, as in the old s/lead and s/mgr Work.dc.html. Admin's Project leads tab shows the firm.
   const all = (portal === "admin" ? tasksFor("admin") : LEAD_WORK).map((t) => (doneIds.has(t.id) ? { ...t, status: "Done" as TaskStatus } : t));
   const owners = [...new Set(all.map((t) => t.owner))];
   const myClients = clientsFor(portal).filter((c) => all.some((t) => t.client === c.id));
-  const tasks = all
-    .filter((t) => (!owner || t.owner === owner) && (!client || t.client === client) && (show === "all" || (show === "filings") === !t.code))
-    .sort((a, b) => a.due.getTime() - b.due.getTime());
+  const tasks = all.filter((t) => (!owner || t.owner === owner) && (!client || t.client === client) && (show === "all" || (show === "filings") === !t.code)).sort((a, b) => a.due.getTime() - b.due.getTime());
   const open = all.find((t) => t.id === openId) ?? null;
   const openCount = tasks.filter((t) => t.status !== "Done").length;
   const clientCount = new Set(tasks.filter((t) => t.status !== "Done").map((t) => t.client)).size;
@@ -110,42 +98,76 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
       key: "title",
       label: "Step or filing",
       render: (t) => (
-        <button type="button" onClick={() => setOpenId(t.id)} className="text-left font-semibold hover:underline">
+        <button type="button" onClick={() => setOpenId(t.id)} className="text-left font-medium text-ink hover:underline">
           {t.title}
         </button>
       ),
     },
-    { key: "client", label: "Client", width: 170, render: (t) => <ClientName id={t.client} short /> },
-    { key: "code", label: "Step", width: 90, mono: true, render: (t) => t.code ?? "Filing" },
-    { key: "area", label: "Area", width: 100 },
+    {
+      key: "client",
+      label: "Client",
+      width: 170,
+      render: (t) => <ClientName id={t.client} short />,
+    },
+    {
+      key: "code",
+      label: "Step",
+      width: 90,
+      render: (t) => (t.code ? <span className="font-mono text-13">{t.code}</span> : "Filing"),
+    },
+    {
+      key: "area",
+      label: "Area",
+      width: 128,
+      render: (t) => <AreaPill area={t.area} />,
+    },
     ...(portal !== "admin" ? [] : [{ key: "owner", label: "Owner", width: 120 } as Column<StaffTask>]),
-    { key: "due", label: "Due", width: 80, render: (t) => <span className={urgency(t.due, STAFF_TODAY) === "bad" && t.status !== "Done" ? "font-semibold text-bad" : undefined}>{fmt(t.due)}</span> },
-    { key: "status", label: "Status", width: 130, render: (t) => <TaskChip status={t.status} /> },
-    { key: "session", label: "Session", width: 120, render: (t) => (t.status === "Done" ? "" : <SessionButton timer={timers[t.id]} now={now} onToggle={() => toggleTimer(t.id)} label={t.title} />) },
+    {
+      key: "due",
+      label: "Due",
+      width: 80,
+      render: (t) => <span className={urgency(t.due, STAFF_TODAY) === "bad" && t.status !== "Done" ? "font-medium text-bad" : undefined}>{fmt(t.due)}</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: 130,
+      render: (t) => <TaskChip status={t.status} />,
+    },
+    {
+      key: "session",
+      label: "Session",
+      width: 120,
+      render: (t) => (t.status === "Done" ? "" : <SessionButton timer={timers[t.id]} now={now} onToggle={() => toggleTimer(t.id)} label={t.title} />),
+    },
   ];
 
+  const viewTabs = (
+    <Tabs
+      size="md"
+      items={[
+        { key: "planner", label: "Planner" },
+        { key: "list", label: "List" },
+        { key: "board", label: "Board" },
+      ]}
+      value={view}
+      onChange={(k) => setView(k as View)}
+    />
+  );
+
+  // R-10: filter chips. Set chips are soft blurple with an ×; unset chips are dashed "+ Label".
   const filters = (
-    <>
-      <Tabs
-        items={[
-          { key: "planner", label: "Planner" },
-          { key: "list", label: "List" },
-          { key: "board", label: "Board" },
-        ]}
-        value={view}
-        onChange={(k) => setView(k as View)}
-      />
-      {portal === "admin" && <Select value={owner} onChange={(e) => setOwner(e.target.value)} options={[{ value: "", label: "All owners" }, ...owners.map((o) => ({ value: o, label: o }))]} aria-label="Owner" />}
-      <ClientSelect clients={myClients} value={client} onChange={setClient} />
-      <Select
-        value={show}
-        onChange={(e) => setShow(e.target.value as Show)}
+    <div className="flex flex-wrap items-center gap-2">
+      {portal === "admin" && <FilterChip label="Owner" value={owner} onChange={setOwner} options={owners.map((o) => ({ value: o, label: o }))} />}
+      <FilterChip label="Company" value={client} onChange={setClient} options={myClients.map((c) => ({ value: c.id, label: c.short }))} />
+      <FilterChip
+        label="Show"
+        value={show === "all" ? "" : show}
+        onChange={(v) => setShow((v || "all") as Show)}
         options={[
-          { value: "all", label: "Steps + filings" },
           { value: "steps", label: "Steps only" },
           { value: "filings", label: "Filings only" },
         ]}
-        aria-label="Show"
       />
       {any && (
         <Button
@@ -160,16 +182,16 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
           Clear
         </Button>
       )}
-    </>
+    </div>
   );
 
   const actions = (
     <>
-      <Button variant="outline" size="sm" onClick={() => setPlanOpen(true)}>
-        <Sparkles size={14} strokeWidth={1.6} /> Plan my week
+      <Button variant="secondary" onClick={() => setPlanOpen(true)}>
+        <Sparkles size={16} strokeWidth={1.6} /> Plan my week
       </Button>
-      <Button variant="primary" size="sm" onClick={() => setNewOpen(true)}>
-        <Plus size={14} strokeWidth={1.6} /> New to-do
+      <Button variant="primary" onClick={() => setNewOpen(true)}>
+        <Plus size={16} strokeWidth={1.6} /> New to-do
       </Button>
       <PopoverCard
         open={moreOpen}
@@ -177,12 +199,12 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
         align="end"
         width={200}
         trigger={
-          <Button variant="outline" size="iconSm" aria-label="More actions" title="More actions">
+          <Button variant="secondary" size="icon" aria-label="More actions" title="More actions">
             <MoreHorizontal size={16} strokeWidth={1.6} />
           </Button>
         }
       >
-        <div className="grid py-1" role="menu">
+        <div className="grid p-1" role="menu">
           {[
             ["Templates", "Templates open in the next release"],
             ["Export", `Exported ${tasks.length} tasks to Work.xlsx`],
@@ -191,7 +213,7 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
               key={label}
               type="button"
               role="menuitem"
-              className="h-9 px-4 text-left text-13.5 hover:bg-raised"
+              className="h-[34px] rounded-sm px-2.5 text-left text-14 hover:bg-hover"
               onClick={() => {
                 setMoreOpen(false);
                 toast.show(msg);
@@ -223,15 +245,19 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      {/* Old toolbar (Work.dc.html): count chip, view tabs, filters; actions on the right. No page title (R-09). */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex h-[22px] items-center rounded-sm bg-accent-soft px-2 text-11.5 font-semibold text-accent">
-          {openCount} open · {clientCount} companies
-        </span>
+      {/* Plain page head (R-02): 28 px title, muted meta, views and actions on the right; filter chips under it (R-10). */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0 flex-[1_1_240px]">
+          <h1 className="text-28 font-medium leading-9 tracking-[-0.01em]">Work</h1>
+          <p className="text-13.5 text-muted">
+            {openCount} open · {clientCount} companies
+          </p>
+        </div>
         {adminTabs}
-        {filters}
-        <div className="ml-auto flex flex-wrap items-center gap-2">{actions}</div>
+        {viewTabs}
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
       </div>
+      {filters}
 
       {view === "planner" && (
         <>
@@ -252,19 +278,7 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
         </>
       )}
 
-      {view === "list" && (
-        <DataGrid
-          title="List view"
-          meta={`${openCount} open`}
-          columns={cols}
-          rows={tasks}
-          rowKey={(t) => t.id}
-          rowLate={(t) => t.status === "Overdue"}
-          pageSize={12}
-          onRowClick={(t) => setCursor(t.id)}
-          selectedKey={cursor}
-        />
-      )}
+      {view === "list" && <DataGrid title="Tasks" meta={`${openCount} open`} columns={cols} rows={tasks} rowKey={(t) => t.id} rowLate={(t) => t.status === "Overdue"} pageSize={12} onRowClick={(t) => setCursor(t.id)} selectedKey={cursor} />}
 
       {view === "board" && <WorkBoard portal={portal} tasks={tasks} onOpen={openTask} notify={toast.show} />}
 

@@ -14,9 +14,17 @@ import { RecipientField, TemplateDialog, TemplateList, toLabel, type To } from "
 // Staff Email, as in reference/old-screens/s/lead/Email.dc.html: the compose form is open first,
 // "To" takes client, team and group chips with suggestions, and the templates sit on the right.
 
-const SIGNER: Record<StaffPortal, string> = { lead: "Bharath", manager: "Pranay", admin: "Krishna" };
+const SIGNER: Record<StaffPortal, string> = {
+  lead: "Bharath",
+  manager: "Pranay",
+  admin: "Krishna",
+};
 /** The team chip in the old "To" field: Pranay on the lead and manager screens, Krishna on the admin screen. */
-const TEAM_TO: Record<StaffPortal, string> = { lead: "pranay", manager: "pranay", admin: "krishna" };
+const TEAM_TO: Record<StaffPortal, string> = {
+  lead: "pranay",
+  manager: "pranay",
+  admin: "krishna",
+};
 
 interface Draft {
   to: To[];
@@ -64,7 +72,7 @@ const EMPTY: Draft = { to: [], subject: "", template: "", body: "" };
 function Line({ label, htmlFor, children, className }: { label: string; htmlFor?: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("grid grid-cols-[72px_minmax(0,1fr)] items-center gap-3 border-b border-line-soft px-4 py-2 md:grid-cols-[90px_minmax(0,1fr)] md:px-5", className)}>
-      <label htmlFor={htmlFor} className="text-12.5 font-semibold text-ink-2">
+      <label htmlFor={htmlFor} className="text-13 font-medium text-muted">
         {label}
       </label>
       <div className="min-w-0">{children}</div>
@@ -88,7 +96,12 @@ function Email({ portal }: { portal: StaffPortal }) {
   const pick = (id: string) => {
     const t = templates.find((x) => x.id === id);
     setSent(null);
-    setDraft({ ...draft, template: id, subject: t ? fill(t.subject, draft.to) : draft.subject, body: t ? `${fill(t.body, draft.to)}\n${SIGNER[portal]}` : draft.body });
+    setDraft({
+      ...draft,
+      template: id,
+      subject: t ? fill(t.subject, draft.to) : draft.subject,
+      body: t ? `${fill(t.body, draft.to)}\n${SIGNER[portal]}` : draft.body,
+    });
   };
   const send = () => {
     setSent(draft.to.map(toLabel).join(", "));
@@ -96,18 +109,21 @@ function Email({ portal }: { portal: StaffPortal }) {
   };
 
   return (
-    <div className="grid gap-3.5">
-      <div className="flex flex-wrap items-center gap-2.5">
+    <div className="grid gap-5">
+      {/* Plain page head (R-02). K-40: Outlook adds the signature on the server. */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0 flex-[1_1_240px]">
+          <h1 className="text-28 font-medium leading-9 tracking-[-0.01em]">Email</h1>
+          <p className="text-13.5 text-muted">Signature from Outlook · server-side signature on</p>
+        </div>
         <Chip tone="ok">Outlook connected</Chip>
-        {/* K-40: Outlook adds the signature on the server. */}
-        <Tag>Signature from Outlook · server-side signature on</Tag>
         <HeadLink href={`/${portal}/profile?tab=settings`}>Profile › Email</HeadLink>
       </div>
 
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <section className="min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="New message">
           <Line label="From">
-            <span className="block truncate font-mono text-13">{MAIL_ADDRESS[portal]}</span>
+            <span className="block truncate text-14 text-ink">{MAIL_ADDRESS[portal]}</span>
           </Line>
           <Line label="To">
             <RecipientField
@@ -120,13 +136,7 @@ function Email({ portal }: { portal: StaffPortal }) {
             />
           </Line>
           <Line label="Subject" htmlFor="mail-subject">
-            <input
-              id="mail-subject"
-              value={draft.subject}
-              onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
-              className="h-8 w-full bg-transparent text-13.5 text-ink outline-none placeholder:text-faint"
-              placeholder="Subject"
-            />
+            <input id="mail-subject" value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })} className="h-8 w-full bg-transparent text-14 text-ink outline-none placeholder:text-faint" placeholder="Subject" />
           </Line>
           <div className="px-4 pb-4 pt-3 md:px-5">
             <textarea
@@ -134,13 +144,12 @@ function Email({ portal }: { portal: StaffPortal }) {
               rows={12}
               value={draft.body}
               onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-              className="block min-h-[220px] w-full resize-y bg-transparent text-13.5 leading-relaxed text-ink outline-none placeholder:text-faint"
+              className="block min-h-[220px] w-full resize-y bg-transparent text-14 leading-relaxed text-ink outline-none placeholder:text-faint"
               placeholder="Message"
             />
-            <p className="mt-3 border-t border-dashed border-line pt-3 text-12.5 text-faint">Your Outlook signature and the SBC footer are added when this is sent.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 border-t border-line bg-raised px-4 py-3 md:px-5">
-            {tpl && <Tag tone="warn">Template · {tpl.name}</Tag>}
+          <div className="flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-3 md:px-5">
+            {tpl && <Tag tone="prog">Template · {tpl.name}</Tag>}
             {tpl && <Tag>{tpl.style}</Tag>}
             {sent && (
               <span className="flex min-w-0 items-center gap-2 text-12.5 text-muted">
@@ -150,6 +159,7 @@ function Email({ portal }: { portal: StaffPortal }) {
             )}
             <span className="ml-auto flex items-center gap-2">
               <Button
+                variant="secondary"
                 onClick={() => {
                   setSent(null);
                   setDraft(EMPTY);
@@ -170,6 +180,7 @@ function Email({ portal }: { portal: StaffPortal }) {
           right={
             <Button
               size="sm"
+              variant="secondary"
               onClick={() => {
                 setEditing(undefined);
                 setDialog(true);

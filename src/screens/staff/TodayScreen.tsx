@@ -1,32 +1,40 @@
 "use client";
-import { waitWord } from "@/data/status-words";
 import * as React from "react";
+import Link from "next/link";
 import { Plus } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { STAFF_TODAY as TODAY, fmt } from "@/lib/dates";
-import { clientsFor } from "@/data/staff-clients";
+import { clientById, clientsFor } from "@/data/staff-clients";
 import { tasksFor, type StaffTask } from "@/data/staff-tasks";
 import { managerRows } from "@/data/staff-team";
-import { Cols, Col, Row } from "@/components/shell/Page";
+import { Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
+import { Tabs } from "@/components/ui/Tabs";
+import { AreaPill } from "@/components/ui/Chip";
+import { Avatar } from "@/components/ui/Avatar";
+import { barFill } from "@/components/ui/Bar";
+import { SectionCard } from "@/components/cards/SectionCard";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { GreetingCard } from "@/components/cards/GreetingCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { ClientName, TaskChip, personOf, taskHref, type StaffPortal } from "./parts";
+import { TaskChip, personOf, plainName, taskHref, type StaffPortal } from "./parts";
 import { FirmClientsGrid, ManagersGrid } from "./grids";
-import { ClientSelect } from "./filters";
 import { NewTodoDialog } from "./work-parts";
 import {
   ActionQueue,
   ApprovalsWaiting,
+  ClientCodeTile,
   ClientsFilings,
   DecisionsCard,
+  FilterChip,
+  STATUS_ORDER,
   InboxCard,
   PhaseProgress,
   PracticeAreas,
   ScopeTabs,
   TaskStatusCard,
   WaitingOnClient,
+  WorkloadByLead,
   inScope,
   todayStats,
   type Scope,
@@ -36,58 +44,162 @@ import {
 // every client incorporating or every client in compliance; here the scope select shows each variant), TodayPhone.dc.html,
 // s/mgr/Main.dc.html (Team tasks, Task status, Approvals), reference/old-patch/admin/Main.dc.html.
 
+/** ManagerToday.dc.html grid: main column and a rail, on every staff Today. */
+const GRID = "grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(300px,1fr)]";
+
+/** Status filter words: the six (R-13), plus "Open" for everything not done. */
+const STATUS_FILTER: Array<{
+  value: string;
+  label: string;
+  test: (t: StaffTask) => boolean;
+}> = [
+  { value: "open", label: "Open", test: (t) => t.status !== "Done" },
+  ...STATUS_ORDER.map((x) => ({
+    value: x.s,
+    label: x.label,
+    test: (t: StaffTask) => t.status === x.s,
+  })),
+];
+
+/** Lead cell: face and first name (ManagerToday.dc.html). */
+function LeadCell({ name }: { name: string }) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-2" title={name}>
+      <Avatar name={name} size={24} />
+      <span className="truncate">{name.split(" ")[0]}</span>
+    </span>
+  );
+}
+
+/** Task cell: company tile, task, company under it. */
+function TaskCell({ t, portal, link }: { t: StaffTask; portal: StaffPortal; link?: boolean }) {
+  const c = clientById(t.client);
+  return (
+    <span className="flex min-w-0 items-center gap-2.5">
+      {c && <ClientCodeTile c={c} />}
+      <span className="flex min-w-0 flex-col">
+        {link ? (
+          <Link href={taskHref(portal, t)} className="truncate font-medium text-ink hover:underline">
+            {t.title}
+          </Link>
+        ) : (
+          <span className="truncate font-medium text-ink">{t.title}</span>
+        )}
+        <span className="truncate text-12.5 text-muted">{c ? plainName(c) : ""}</span>
+      </span>
+    </span>
+  );
+}
+
+const dueClass = (t: StaffTask) => (t.status === "Done" ? undefined : t.due < TODAY || t.status === "Overdue" ? "font-medium text-bad" : t.status === "Due this week" ? "font-medium text-warn" : undefined);
+
+/** Team tasks (ManagerToday.dc.html): R-10 filter chips, List or Board, a T1 table with 104 px area and status columns. */
 function TeamTasks({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
   const all = tasksFor(portal).filter((t) => inScope(scope, t.client));
   const [lead, setLead] = React.useState("");
   const [status, setStatus] = React.useState("");
   const [client, setClient] = React.useState("");
+  const [area, setArea] = React.useState("");
+  const [view, setView] = React.useState("list");
   const leads = [...new Set(all.map((t) => t.owner))];
-  const rows = all.filter((t) => (!lead || t.owner === lead) && (!status || t.status === status) && (!client || t.client === client)).sort((a, b) => a.due.getTime() - b.due.getTime());
-  const any = lead || status || client;
+  const areas = [...new Set(all.map((t) => t.area))];
+  const st = STATUS_FILTER.find((x) => x.value === status);
+  const rows = all.filter((t) => (!lead || t.owner === lead) && (!st || st.test(t)) && (!client || t.client === client) && (!area || t.area === area)).sort((a, b) => a.due.getTime() - b.due.getTime());
   // C-0031: one status mark per row, no checkbox.
   const cols: Column<StaffTask>[] = [
-    { key: "title", label: "Task", render: (t) => <span className="font-semibold">{t.title}</span> },
-    { key: "client", label: "Client", width: 170, render: (t) => <ClientName id={t.client} short /> },
-    { key: "owner", label: "Project lead", width: 130 },
-    { key: "due", label: "Due", width: 80, render: (t) => <span className={t.due < TODAY ? "font-semibold text-bad" : undefined}>{fmt(t.due)}</span> },
-    { key: "status", label: "Status", width: 130, render: (t) => <TaskChip status={t.status} /> },
+    {
+      key: "title",
+      label: "Task",
+      render: (t) => <TaskCell t={t} portal={portal} />,
+    },
+    {
+      key: "owner",
+      label: "Lead",
+      width: 128,
+      render: (t) => <LeadCell name={t.owner} />,
+    },
+    {
+      key: "area",
+      label: "Area",
+      width: 128,
+      render: (t) => <AreaPill area={t.area} />,
+    },
+    {
+      key: "due",
+      label: "Due",
+      width: 76,
+      render: (t) => <span className={dueClass(t)}>{fmt(t.due)}</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: 128,
+      render: (t) => <TaskChip status={t.status} />,
+    },
   ];
   return (
-    <DataGrid
-      title="Team tasks"
-      meta={String(rows.length)}
-      columns={cols}
-      rows={rows}
-      rowKey={(t) => t.id}
-      rowHref={(t) => taskHref(portal, t)}
-      pageSize={8}
-      empty="No tasks match these filters"
-      filters={
-        <>
-          <Select value={lead} onChange={(e) => setLead(e.target.value)} options={[{ value: "", label: "All leads" }, ...leads.map((l) => ({ value: l, label: l }))]} aria-label="Project lead" />
-          <ClientSelect clients={clientsFor(portal).filter((c) => inScope(scope, c.id))} value={client} onChange={setClient} />
-          <Select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            options={[{ value: "", label: "All statuses" }, ...["Overdue", "Due this week", "In progress", "With client", "Not started"].map((s) => ({ value: s, label: waitWord(s) }))]}
-            aria-label="Status"
-          />
-          {any && (
-            <Button
-              variant="link"
-              size="sm"
-              onClick={() => {
-                setLead("");
-                setStatus("");
-                setClient("");
-              }}
-            >
-              Clear
-            </Button>
-          )}
-        </>
-      }
-    />
+    <SectionCard title="Team tasks" meta={String(rows.length)} flush>
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3 md:px-5">
+        <FilterChip
+          label="Status"
+          value={status}
+          onChange={setStatus}
+          options={STATUS_FILTER.map((x) => ({
+            value: x.value,
+            label: x.label,
+          }))}
+        />
+        <FilterChip label="Lead" value={lead} onChange={setLead} options={leads.map((l) => ({ value: l, label: l }))} />
+        <FilterChip
+          label="Company"
+          value={client}
+          onChange={setClient}
+          options={clientsFor(portal)
+            .filter((c) => inScope(scope, c.id))
+            .map((c) => ({ value: c.id, label: c.short }))}
+        />
+        <FilterChip label="Area" value={area} onChange={setArea} options={areas.map((a) => ({ value: a, label: a }))} />
+        <Tabs
+          className="ml-auto"
+          items={[
+            { key: "list", label: "List" },
+            { key: "board", label: "Board" },
+          ]}
+          value={view}
+          onChange={setView}
+        />
+      </div>
+      {view === "list" ? (
+        <DataGrid inset columns={cols} rows={rows} rowKey={(t) => t.id} rowHref={(t) => taskHref(portal, t)} pageSize={10} empty="No tasks match these filters" className="border-t border-line-soft" />
+      ) : (
+        <div className="grid grid-cols-1 gap-3 border-t border-line-soft p-4 sm:grid-cols-2 md:p-5 xl:grid-cols-3">
+          {STATUS_ORDER.map((x) => {
+            const list = rows.filter((t) => t.status === x.s);
+            return (
+              <section key={x.s} className="min-w-0 rounded-md border-1.5 border-line bg-raised p-2.5" aria-label={x.label}>
+                <h3 className="mb-2 flex items-center gap-2 px-1 text-13 font-medium text-ink-2">
+                  <i className={cn("h-2 w-2 rounded-[2px]", barFill[x.tone])} aria-hidden />
+                  {x.label}
+                  <span className="ml-auto text-12 text-muted">{list.length}</span>
+                </h3>
+                <ul className="grid gap-2">
+                  {list.map((t) => (
+                    <li key={t.id} className="grid gap-2 rounded-md border-1.5 border-line bg-surface p-2.5">
+                      <TaskCell t={t} portal={portal} link />
+                      <span className="flex items-center gap-2 text-12.5 text-muted">
+                        <LeadCell name={t.owner} />
+                        <span className={cn("ml-auto", dueClass(t))}>{fmt(t.due)}</span>
+                      </span>
+                    </li>
+                  ))}
+                  {list.length === 0 && <li className="rounded-md border-1.5 border-dashed border-line-2 px-2 py-3 text-center text-12.5 text-muted">None</li>}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
+      )}
+    </SectionCard>
   );
 }
 
@@ -127,10 +239,10 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
         <PracticeAreas portal={portal} />
         <FirmClientsGrid title="Clients · where each one is" rows={cl} />
         <PhaseProgress portal={portal} scope="all" />
-        <Row cols={2}>
+        <div className={GRID}>
           <ManagersGrid rows={managerRows()} />
           <DecisionsCard portal={portal} notify={toast.show} />
-        </Row>
+        </div>
         {toast.node}
       </div>
     );
@@ -140,33 +252,36 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
     <div className="grid grid-cols-1 gap-5">
       {greeting}
       {portal === "manager" && (
-        <Cols>
+        // ManagerToday.dc.html: Team tasks beside Approvals, Task status and Workload by lead.
+        <div className={GRID}>
+          <TeamTasks portal={portal} scope={scope} />
           <Col>
-            <TeamTasks portal={portal} scope={scope} />
-          </Col>
-          <Col>
+            <ApprovalsWaiting portal={portal} notify={toast.show} />
             <TaskStatusCard portal={portal} scope={scope} />
+            <WorkloadByLead portal={portal} />
           </Col>
-        </Cols>
+        </div>
       )}
-      <Cols>
+      <div className={GRID}>
         <Col>
           <ActionQueue portal={portal} scope={scope} />
           {showInc && <PhaseProgress portal={portal} scope={scope} />}
           {showCmp && <ClientsFilings portal={portal} scope={scope} />}
         </Col>
         <Col>
-          {portal === "manager" && <ApprovalsWaiting portal={portal} notify={toast.show} />}
           <InboxCard portal={portal} scope={scope} notify={toast.show} />
           <WaitingOnClient portal={portal} scope={scope} notify={toast.show} />
         </Col>
-      </Cols>
+      </div>
       {portal === "manager" && (
         <NewTodoDialog
           open={assign}
           onOpenChange={setAssign}
           title="Assign task"
-          clients={clientsFor(portal).map((c) => ({ id: c.id, short: c.short }))}
+          clients={clientsFor(portal).map((c) => ({
+            id: c.id,
+            short: c.short,
+          }))}
           onAdd={(t) => toast.show(`Task assigned · ${t.text}`)}
         />
       )}

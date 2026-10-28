@@ -13,7 +13,7 @@ export const HOURS = 10;
 const PX = 44;
 const DOW = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-/** Block colours per client identity tone (R-35). Soft on the week view, solid in the plan dialog. */
+/** Block colours per client identity tone (R-35). Soft on the week view; soft with a solid left edge in the plan dialog. */
 const soft: Record<StaffClient["tone"], string> = {
   accent: "bg-accent-soft text-accent",
   violet: "bg-violet-soft text-violet",
@@ -23,12 +23,12 @@ const soft: Record<StaffClient["tone"], string> = {
   idle: "bg-idle-soft text-idle",
 };
 const solid: Record<StaffClient["tone"], string> = {
-  accent: "bg-accent text-white",
-  violet: "bg-violet text-white",
-  teal: "bg-teal text-white",
-  warn: "bg-warn text-white",
-  ok: "bg-ok text-white",
-  idle: "bg-idle text-white",
+  accent: "border-l-[3px] border-accent-mid bg-accent-soft text-accent",
+  violet: "border-l-[3px] border-violet-mid bg-violet-soft text-violet",
+  teal: "border-l-[3px] border-teal-mid bg-teal-soft text-teal",
+  warn: "border-l-[3px] border-warn-mid bg-warn-soft text-warn",
+  ok: "border-l-[3px] border-ok-mid bg-ok-soft text-ok",
+  idle: "border-l-[3px] border-idle-mid bg-idle-soft text-idle",
 };
 const dashed: Record<StaffClient["tone"], string> = {
   accent: "border-accent text-accent",
@@ -59,11 +59,25 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), h
 
 function slotAfter(b: CalBlock, edge: Edge, dx: number, dy: number, colW: number, nDays: number): Slot {
   const dh = Math.round(dy / PX / Q) * Q;
-  if (edge === "top") return { day: b.day, start: clamp(b.start + dh, H0, b.end - MIN), end: b.end };
-  if (edge === "bottom") return { day: b.day, start: b.start, end: clamp(b.end + dh, b.start + MIN, H0 + HOURS) };
+  if (edge === "top")
+    return {
+      day: b.day,
+      start: clamp(b.start + dh, H0, b.end - MIN),
+      end: b.end,
+    };
+  if (edge === "bottom")
+    return {
+      day: b.day,
+      start: b.start,
+      end: clamp(b.end + dh, b.start + MIN, H0 + HOURS),
+    };
   const len = b.end - b.start;
   const start = clamp(b.start + dh, H0, H0 + HOURS - len);
-  return { day: clamp(b.day + Math.round(dx / colW), 0, nDays - 1), start, end: start + len };
+  return {
+    day: clamp(b.day + Math.round(dx / colW), 0, nDays - 1),
+    start,
+    end: start + len,
+  };
 }
 
 /** Moved blocks, keyed by scope and block id. move() returns the undo. */
@@ -78,7 +92,17 @@ export function useBlockMoves() {
 }
 
 /** Top or bottom edge of a block: drag it, or focus it and press the up and down arrows. */
-function EdgeHandle({ b, edge, onGrab, onNudge }: { b: CalBlock; edge: "top" | "bottom"; onGrab: (e: React.PointerEvent<HTMLElement>, b: CalBlock, edge: Edge) => void; onNudge: (e: React.KeyboardEvent, b: CalBlock, edge: "top" | "bottom") => void }) {
+function EdgeHandle({
+  b,
+  edge,
+  onGrab,
+  onNudge,
+}: {
+  b: CalBlock;
+  edge: "top" | "bottom";
+  onGrab: (e: React.PointerEvent<HTMLElement>, b: CalBlock, edge: Edge) => void;
+  onNudge: (e: React.KeyboardEvent, b: CalBlock, edge: "top" | "bottom") => void;
+}) {
   const h = edge === "top" ? b.start : b.end;
   return (
     <span
@@ -91,7 +115,7 @@ function EdgeHandle({ b, edge, onGrab, onNudge }: { b: CalBlock; edge: "top" | "
       aria-valuetext={timeOf(h)}
       onPointerDown={(e) => onGrab(e, b, edge)}
       onKeyDown={(e) => onNudge(e, b, edge)}
-      className={cn("absolute inset-x-0 z-[2] h-2 cursor-ns-resize touch-none focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-navy", edge === "top" ? "top-0" : "bottom-0")}
+      className={cn("absolute inset-x-0 z-[2] h-2 cursor-ns-resize touch-none focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent", edge === "top" ? "top-0" : "bottom-0")}
     />
   );
 }
@@ -100,11 +124,11 @@ export interface HourWeekProps {
   days: Date[];
   blocks: CalBlock[];
   allDay?: AllDayItem[];
-  /** The day that shows the now line and the navy date box. */
+  /** The day that shows the now line and the blurple date box. */
   today?: Date;
   /** Hour of the now line on today, e.g. 12.5. */
   now?: number;
-  /** Solid blocks with white text (plan dialog). */
+  /** Stronger blocks with a solid left edge (plan dialog). */
   solidBlocks?: boolean;
   /** Show the day load ("3.5 h") under each day name. */
   showLoad?: boolean;
@@ -124,7 +148,14 @@ export function HourWeek({ days, blocks, allDay = [], today, now, solidBlocks, s
   const dragged = React.useRef(false);
   const placed = live ? blocks.map((b) => (b.id === live.id ? { ...b, ...live } : b)) : blocks;
 
-  const drag = React.useRef<{ b: CalBlock; edge: Edge; x0: number; y0: number; colW: number; to: Slot | null } | null>(null);
+  const drag = React.useRef<{
+    b: CalBlock;
+    edge: Edge;
+    x0: number;
+    y0: number;
+    colW: number;
+    to: Slot | null;
+  } | null>(null);
 
   const grab = (e: React.PointerEvent<HTMLElement>, b: CalBlock, edge: Edge) => {
     // Touch scrolls the page. On touch, only the edge handles drag.
@@ -165,18 +196,20 @@ export function HourWeek({ days, blocks, allDay = [], today, now, solidBlocks, s
   };
 
   const isToday = (x: Date) => !!today && x.getTime() === today.getTime();
-  const cols = { gridTemplateColumns: `56px repeat(${days.length}, minmax(${days.length > 1 ? 80 : 200}px, 1fr))` };
+  const cols = {
+    gridTemplateColumns: `56px repeat(${days.length}, minmax(${days.length > 1 ? 80 : 200}px, 1fr))`,
+  };
   const load = (i: number) => blocks.filter((b) => b.day === i && !skipped?.has(b.id)).reduce((a, b) => a + (b.end - b.start), 0);
   return (
     <div className={cn("overflow-x-auto", className)}>
-      <div className={cn("rounded-md border border-line", days.length > 1 && "min-w-[640px]")}>
-        <div className="grid border-b border-line" style={cols}>
+      <div className={cn("overflow-hidden rounded-md border-1.5 border-line", days.length > 1 && "min-w-[640px]")}>
+        <div className="grid border-b-1.5 border-line" style={cols}>
           <span className="border-r border-line-soft" aria-hidden />
           {days.map((x, i) => (
             <div key={i} className={cn("grid justify-items-center gap-1 border-r border-line-soft py-2 last:border-r-0", isToday(x) && "bg-raised")}>
-              <span className="text-11 font-bold tracking-wide text-muted">{DOW[x.getDay()]}</span>
-              <span className={cn("grid h-6 min-w-[26px] place-items-center rounded-sm px-1 text-14 font-semibold", isToday(x) && "border border-navy text-ink")}>{x.getDate()}</span>
-              {showLoad && <span className="font-mono text-11 text-faint">{load(i)} h</span>}
+              <span className="text-11.5 font-medium tracking-[.07em] text-muted">{DOW[x.getDay()]}</span>
+              <span className={cn("grid h-6 min-w-[26px] place-items-center rounded-sm px-1 text-14 font-medium text-ink", isToday(x) && "bg-primary text-primary-on")}>{x.getDate()}</span>
+              {showLoad && <span className="text-11 text-faint">{load(i)} h</span>}
             </div>
           ))}
         </div>
@@ -191,7 +224,7 @@ export function HourWeek({ days, blocks, allDay = [], today, now, solidBlocks, s
                     <span
                       key={a.text}
                       title={a.kind === "locked" ? `${a.text} · manager date · locked` : `${a.text} · filing · read-only`}
-                      className={cn("flex min-w-0 items-center gap-1 truncate rounded-sm border border-line border-l-[3px] bg-surface px-1.5 py-0.5 text-11.5 font-semibold", a.kind === "filing" ? "border-l-bad" : "border-l-navy")}
+                      className={cn("flex min-w-0 items-center gap-1 truncate rounded-sm border border-line border-l-[3px] bg-surface px-1.5 py-0.5 text-11.5 font-medium text-ink", a.kind === "filing" ? "border-l-bad-mid" : "border-l-accent-mid")}
                     >
                       {a.kind === "locked" && <Lock size={11} strokeWidth={1.6} className="flex-none" aria-hidden />}
                       <span className="truncate">{a.text}</span>
@@ -204,7 +237,7 @@ export function HourWeek({ days, blocks, allDay = [], today, now, solidBlocks, s
         <div data-hours className="grid" style={cols} onPointerMove={onMove ? onDrag : undefined} onPointerUp={onMove ? onDrop : undefined} onPointerCancel={onMove ? onDrop : undefined}>
           <div className="relative border-r border-line-soft" style={{ height: HOURS * PX }}>
             {Array.from({ length: HOURS }, (_, h) => (
-              <span key={h} className="absolute right-1.5 whitespace-nowrap text-11 font-semibold text-ink-2" style={{ top: h * PX + 2 }}>
+              <span key={h} className="absolute right-1.5 whitespace-nowrap text-11 text-muted" style={{ top: h * PX + 2 }}>
                 {hourLabel(H0 + h)}
               </span>
             ))}
@@ -224,7 +257,7 @@ export function HourWeek({ days, blocks, allDay = [], today, now, solidBlocks, s
                   const held = live?.id === b.id;
                   const body = (
                     <>
-                      <b className="block truncate font-semibold">{b.title}</b>
+                      <b className="block truncate font-medium">{b.title}</b>
                       <span className="block truncate">{spanOf(b)}</span>
                       {b.note && <span className="block truncate text-11 opacity-80">{b.note}</span>}
                     </>
@@ -236,15 +269,18 @@ export function HourWeek({ days, blocks, allDay = [], today, now, solidBlocks, s
                       onPointerDown={onMove ? (e) => grab(e, b, "move") : undefined}
                       onClickCapture={onMove ? swallow : undefined}
                       className={cn(
-                        "absolute inset-x-1 z-[1] overflow-hidden rounded-md text-left text-11.5 leading-snug",
+                        "absolute inset-x-1 z-[1] overflow-hidden rounded-sm text-left text-11.5 leading-snug",
                         b.own ? cn("border-[1.5px] border-dashed bg-surface", dashed[tone]) : solidBlocks ? solid[tone] : soft[tone],
                         b.late && "ring-2 ring-warn ring-offset-1 ring-offset-surface",
                         off && "opacity-40",
                         active && "hover:brightness-95",
                         onMove && "cursor-grab select-none",
-                        held && "z-[3] cursor-grabbing shadow-pop ring-2 ring-navy",
+                        held && "z-[3] cursor-grabbing shadow-float ring-2 ring-accent",
                       )}
-                      style={{ top: (b.start - H0) * PX + 1, height: (b.end - b.start) * PX - 2 }}
+                      style={{
+                        top: (b.start - H0) * PX + 1,
+                        height: (b.end - b.start) * PX - 2,
+                      }}
                     >
                       {active ? (
                         <button type="button" onClick={() => onBlock?.(b)} className={cn("block h-full w-full px-1.5 py-1 text-left", onMove && "cursor-[inherit]")}>

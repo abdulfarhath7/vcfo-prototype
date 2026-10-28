@@ -36,7 +36,7 @@ export function StaffSettingsSection({ portal }: { portal: StaffPortal }) {
       <SectionCard title="Profile" meta={saved ? <Chip tone="ok">Saved</Chip> : undefined}>
         <div className="grid gap-4">
           <div className="flex flex-wrap items-center gap-3">
-            <span className={cn("grid h-16 w-16 flex-none place-items-center rounded-lg bg-raised text-22 font-bold text-ink", photo === "outlook" && "bg-accent-soft text-accent ring-2 ring-accent-line")} aria-hidden>
+            <span className={cn("grid h-16 w-16 flex-none place-items-center rounded-full bg-raised text-22 font-medium text-ink", photo === "outlook" && "bg-accent-soft text-accent ring-2 ring-accent-line")} aria-hidden>
               {me.ini ?? me.name.slice(0, 2).toUpperCase()}
             </span>
             <span className="flex flex-wrap gap-2">
@@ -47,31 +47,47 @@ export function StaffSettingsSection({ portal }: { portal: StaffPortal }) {
               <Button size="sm" onClick={() => setPhoto("outlook")}>
                 Use Outlook photo
               </Button>
-              <Button size="sm" onClick={() => setPhoto("initials")} disabled={photo === "initials"} className="text-bad">
+              <Button size="sm" variant="quiet" onClick={() => setPhoto("initials")} disabled={photo === "initials"} className="text-bad">
                 Remove
               </Button>
             </span>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Full name">
-              <Input value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} />
+              <Input
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setSaved(false);
+                }}
+              />
             </Field>
             <Field label="Email">
               <Input value={me.email} disabled className="bg-raised" />
             </Field>
             <Field label="Phone">
-              <Input value={phone} onChange={(e) => { setPhone(e.target.value); setSaved(false); }} className="font-mono text-13" />
+              <Input
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setSaved(false);
+                }}
+              />
             </Field>
             <Field label="Role">
               <Input value={me.role} disabled className="bg-raised" />
             </Field>
           </div>
-          <label className={cn("flex flex-wrap items-center gap-2.5 rounded-md border px-3 py-2.5 text-13.5 font-semibold", wa ? "border-ok-mid bg-ok-soft" : "border-line bg-raised")}>
-            <Checkbox checked={wa} onChange={(v) => { setWa(v); setSaved(false); }} label="WhatsApp reminders" />
-            <span>
-              WhatsApp reminders on <span className="font-mono text-13">{phone}</span>
-            </span>
-            <span className="ml-auto text-12.5 font-normal text-muted">Email stays the record</span>
+          <label className={cn("flex flex-wrap items-center gap-2.5 rounded-md border-1.5 px-3 py-2.5 text-14 font-medium", wa ? "border-ok-mid bg-ok-soft" : "border-line bg-raised")}>
+            <Checkbox
+              checked={wa}
+              onChange={(v) => {
+                setWa(v);
+                setSaved(false);
+              }}
+              label="WhatsApp reminders"
+            />
+            <span>WhatsApp reminders on {phone}</span>
           </label>
           <div>
             <Button variant="primary" onClick={() => setSaved(true)} disabled={!dirty && saved}>
@@ -112,7 +128,7 @@ export function StaffSettingsSection({ portal }: { portal: StaffPortal }) {
         <SectionCard title="Outlook" right={<Chip tone={outlook ? "ok" : "idle"}>{outlook ? "Connected" : "Not connected"}</Chip>} flush>
           <div className="flex flex-wrap items-center gap-3 px-4 py-3 md:px-5">
             <span className="text-12.5 text-muted">Mailbox</span>
-            <b className="min-w-0 truncate font-mono text-13 font-semibold">{me.email}</b>
+            <b className="min-w-0 truncate text-14 font-medium text-ink">{me.email}</b>
             {outlook ? (
               <Button size="sm" className="ml-auto" onClick={() => setAsk(true)} disabled={ask}>
                 Disconnect

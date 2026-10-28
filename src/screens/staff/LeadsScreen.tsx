@@ -5,24 +5,14 @@ import Link from "next/link";
 import { MoreHorizontal, Plus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { STAFF_TODAY as TODAY, d, fmt } from "@/lib/dates";
-import {
-  LEAD_WORK,
-  TASKS,
-  type StaffTask,
-  type TaskStatus,
-} from "@/data/staff-tasks";
-import {
-  LEAD_STATS,
-  leadOpen,
-  leadRows,
-  type LeadRow,
-} from "@/data/staff-team";
+import { LEAD_WORK, TASKS, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
+import { LEAD_STATS, leadOpen, leadRows, type LeadRow } from "@/data/staff-team";
 import { STAFF_CLIENTS, clientById } from "@/data/staff-clients";
 import { Row, Cols, Col } from "@/components/shell/Page";
-import { Avatar, initials } from "@/components/ui/Avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { Bar } from "@/components/ui/Bar";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
+import { AreaPill, Chip } from "@/components/ui/Chip";
 import { Chevron } from "@/components/ui/Chevron";
 import { Checkbox, Field, Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
@@ -30,54 +20,22 @@ import { PopoverCard } from "@/components/ui/PopoverCard";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
-import {
-  SectionCard,
-  ListRow,
-  Empty,
-  HeadLink,
-} from "@/components/cards/SectionCard";
-import { StackedBar, type Segment } from "@/components/cards/StackedBar";
+import { SectionCard, ListRow, Empty, HeadLink } from "@/components/cards/SectionCard";
+import type { Segment } from "@/components/cards/StackedBar";
+import { Donut } from "@/components/cards/Donut";
 import { GanttTimeline, type GanttRow } from "@/components/cards/GanttTimeline";
-import {
-  CAL_BLOCKS,
-  DAY_SHORT,
-  TIMELINE_ROWS,
-  TODOS,
-  WEEK,
-  type CalBlock,
-  type Todo as WorkTodo,
-} from "@/data/staff-work";
+import { CAL_BLOCKS, DAY_SHORT, TIMELINE_ROWS, TODOS, WEEK, type CalBlock, type Todo as WorkTodo } from "@/data/staff-work";
 import { DataGrid } from "@/components/cards/DataGrid";
 import { PlanCalendar, PlanTimeline, TodoCard, WorkBoard } from "./work-parts";
+import { FilterChip } from "./today-parts";
 import { HourWeek, spanOf, useBlockMoves, type Slot } from "./HourWeek";
-import {
-  ClientDot,
-  ClientName,
-  TaskChip,
-  taskHref,
-  clientHref,
-  base,
-  type StaffPortal,
-} from "./parts";
-import {
-  ReassignDialog,
-  reassignTask,
-  taskOwner,
-  useAssignments,
-  leadOf,
-} from "./record-parts";
+import { ClientDot, ClientName, TaskChip, taskHref, clientHref, base, type StaffPortal } from "./parts";
+import { ReassignDialog, reassignTask, taskOwner, useAssignments, leadOf } from "./record-parts";
 
 // Manager portal: Pranay's project leads. Ported from reference/old-screens/s/mgr/Leads.dc.html:
 // picked lead with status and area split, to-do with assign, timeline, week calendar; every lead expands to clients and open tasks.
 
-const ORDER: TaskStatus[] = [
-  "Overdue",
-  "Due this week",
-  "In progress",
-  "With client",
-  "Not started",
-  "Done",
-];
+const ORDER: TaskStatus[] = ["Overdue", "Due this week", "In progress", "With client", "Not started", "Done"];
 const SEG_TONE = {
   Overdue: "bad",
   "Due this week": "warn",
@@ -108,24 +66,14 @@ export function AreaRows({ tasks }: { tasks: StaffTask[] }) {
         const pend = l.length - done - late;
         const w = (n: number) => `${(n / l.length) * 100}%`;
         return (
-          <li
-            key={a}
-            className="grid grid-cols-[96px_minmax(0,1fr)_40px] items-center gap-3 text-13"
-            title={`${a}: ${done} done, ${pend} pending, ${late} overdue`}
-          >
-            <span className="truncate">{a}</span>
-            <span className="flex h-2 gap-0.5 overflow-hidden rounded-bar bg-line-soft">
-              {done > 0 && (
-                <i className="block bg-ok-mid" style={{ width: w(done) }} />
-              )}
-              {pend > 0 && (
-                <i className="block bg-warn-mid" style={{ width: w(pend) }} />
-              )}
-              {late > 0 && (
-                <i className="block bg-bad-mid" style={{ width: w(late) }} />
-              )}
+          <li key={a} className="grid grid-cols-[104px_minmax(0,1fr)_40px] items-center gap-3 text-13" title={`${a}: ${done} done, ${pend} pending, ${late} overdue`}>
+            <AreaPill area={a} />
+            <span className="flex h-2.5 gap-0.5 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
+              {done > 0 && <i className="block rounded-[2px] bg-ok-mid" style={{ width: w(done) }} />}
+              {pend > 0 && <i className="block rounded-[2px] bg-warn-mid" style={{ width: w(pend) }} />}
+              {late > 0 && <i className="block rounded-[2px] bg-bad-mid" style={{ width: w(late) }} />}
             </span>
-            <span className="text-right font-mono text-12 text-muted">
+            <span className="text-right text-12.5 text-muted">
               {done}/{l.length}
             </span>
           </li>
@@ -136,34 +84,20 @@ export function AreaRows({ tasks }: { tasks: StaffTask[] }) {
 }
 
 /** Old By area rows (Leads.dc.html LD areas): done, pending, overdue, not started out of the total. */
-function OldAreaRows({
-  areas,
-}: {
-  areas: Array<[string, number, number, number, number]>;
-}) {
+function OldAreaRows({ areas }: { areas: Array<[string, number, number, number, number]> }) {
   return (
     <ul className="grid gap-3">
       {areas.map(([a, done, pend, late, total]) => {
         const w = (n: number) => `${(n / total) * 100}%`;
         return (
-          <li
-            key={a}
-            className="grid grid-cols-[96px_minmax(0,1fr)_40px] items-center gap-3 text-13"
-            title={`${a}: ${done} done, ${pend} pending, ${late} overdue, ${total - done - pend - late} not started`}
-          >
-            <span className="truncate">{a}</span>
-            <span className="flex h-2 gap-0.5 overflow-hidden rounded-bar bg-line-soft">
-              {done > 0 && (
-                <i className="block bg-ok-mid" style={{ width: w(done) }} />
-              )}
-              {pend > 0 && (
-                <i className="block bg-warn-mid" style={{ width: w(pend) }} />
-              )}
-              {late > 0 && (
-                <i className="block bg-bad-mid" style={{ width: w(late) }} />
-              )}
+          <li key={a} className="grid grid-cols-[104px_minmax(0,1fr)_40px] items-center gap-3 text-13" title={`${a}: ${done} done, ${pend} pending, ${late} overdue, ${total - done - pend - late} not started`}>
+            <AreaPill area={a} />
+            <span className="flex h-2.5 gap-0.5 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
+              {done > 0 && <i className="block rounded-[2px] bg-ok-mid" style={{ width: w(done) }} />}
+              {pend > 0 && <i className="block rounded-[2px] bg-warn-mid" style={{ width: w(pend) }} />}
+              {late > 0 && <i className="block rounded-[2px] bg-bad-mid" style={{ width: w(late) }} />}
             </span>
-            <span className="text-right font-mono text-12 text-muted">
+            <span className="text-right text-12.5 text-muted">
               {done}/{total}
             </span>
           </li>
@@ -192,32 +126,15 @@ function AreaLegend() {
 const loadTone = (n: number) => (n > 95 ? "bad" : n > 80 ? "warn" : "accent");
 
 /** Leads that expand to their clients and open tasks. Each task can move to another lead. */
-export function LeadExpandList({
-  portal,
-  leads,
-  manager,
-  title = "Project leads",
-}: {
-  portal: StaffPortal;
-  leads: LeadRow[];
-  manager: string;
-  title?: string;
-}) {
+export function LeadExpandList({ portal, leads, manager, title = "Project leads" }: { portal: StaffPortal; leads: LeadRow[]; manager: string; title?: string }) {
   const s = useAssignments();
   const [open, setOpen] = React.useState<string | null>(null);
   const [move, setMove] = React.useState<StaffTask | null>(null);
   const toast = useUndoToast();
-  const maxOpen = Math.max(
-    1,
-    ...leads.map(
-      (l) =>
-        TASKS.filter((t) => taskOwner(t, s) === l.name && t.status !== "Done")
-          .length,
-    ),
-  );
+  const maxOpen = Math.max(1, ...leads.map((l) => TASKS.filter((t) => taskOwner(t, s) === l.name && t.status !== "Done").length));
   return (
     <SectionCard title={title} meta={String(leads.length)} flush>
-      <div className="hidden grid-cols-[minmax(0,1fr)_64px_64px_140px_16px] gap-3 bg-raised px-5 py-1.5 text-12 font-semibold text-muted md:grid">
+      <div className="hidden h-9 grid-cols-[minmax(0,1fr)_64px_64px_140px_16px] items-center gap-3 border-b-1.5 border-line px-5 text-11.5 font-medium uppercase tracking-[.07em] text-muted md:grid">
         <span>Project lead</span>
         <span className="text-right">Open</span>
         <span className="text-right">Late</span>
@@ -226,58 +143,31 @@ export function LeadExpandList({
       </div>
       {leads.map((l) => {
         const mine = TASKS.filter((t) => taskOwner(t, s) === l.name);
-        const openTasks = mine
-          .filter((t) => t.status !== "Done")
-          .sort(
-            (a, b) =>
-              ORDER.indexOf(a.status) - ORDER.indexOf(b.status) ||
-              a.due.getTime() - b.due.getTime(),
-          );
+        const openTasks = mine.filter((t) => t.status !== "Done").sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status) || a.due.getTime() - b.due.getTime());
         const late = openTasks.filter((t) => t.status === "Overdue").length;
-        const clients = STAFF_CLIENTS.filter(
-          (c) => leadOf(c, s) === l.name || mine.some((t) => t.client === c.id),
-        );
+        const clients = STAFF_CLIENTS.filter((c) => leadOf(c, s) === l.name || mine.some((t) => t.client === c.id));
         const isOpen = open === l.name;
         return (
-          <div
-            key={l.name}
-            className="border-t border-line-soft first:border-t-0"
-          >
+          <div key={l.name} className="border-t border-line-soft first:border-t-0">
             <button
               type="button"
               onClick={() => setOpen(isOpen ? null : l.name)}
               aria-expanded={isOpen}
-              className="grid w-full grid-cols-[minmax(0,1fr)_48px_16px] items-center gap-3 px-4 py-3 text-left text-13.5 hover:bg-raised md:grid-cols-[minmax(0,1fr)_64px_64px_140px_16px] md:px-5"
+              className="grid w-full grid-cols-[minmax(0,1fr)_48px_16px] items-center gap-3 px-4 py-3 text-left text-14 hover:bg-hover md:grid-cols-[minmax(0,1fr)_64px_64px_140px_16px] md:px-5"
             >
               <span className="flex min-w-0 items-center gap-2.5">
                 <Avatar name={l.name} size={30} />
                 <span className="min-w-0">
-                  <b className="block truncate font-semibold">{l.name}</b>
-                  <span className="block truncate text-12.5 text-muted">
-                    {clients.length
-                      ? clients.map((c) => c.short).join(", ")
-                      : "No client yet"}
-                  </span>
+                  <b className="block truncate font-medium text-ink">{l.name}</b>
+                  <span className="block truncate text-12.5 text-muted">{clients.length ? clients.map((c) => c.short).join(", ") : "No client yet"}</span>
                 </span>
               </span>
-              <span className="text-right font-semibold">
-                {openTasks.length}
-              </span>
-              <span
-                className={cn(
-                  "hidden text-right md:block",
-                  late ? "font-semibold text-bad" : "text-muted",
-                )}
-              >
-                {late}
-              </span>
-              <span className="hidden h-2 overflow-hidden rounded-bar bg-line-soft md:flex">
+              <span className="text-right font-medium">{openTasks.length}</span>
+              <span className={cn("hidden text-right md:block", late ? "font-medium text-bad" : "text-muted")}>{late}</span>
+              <span className="hidden h-2.5 gap-0.5 md:flex" aria-hidden>
+                <i className="block rounded-[2px] bg-bad-mid" style={{ width: `${(late / maxOpen) * 100}%` }} />
                 <i
-                  className="block bg-bad-mid"
-                  style={{ width: `${(late / maxOpen) * 100}%` }}
-                />
-                <i
-                  className="block bg-accent"
+                  className="block rounded-[2px] bg-accent-mid"
                   style={{
                     width: `${((openTasks.length - late) / maxOpen) * 100}%`,
                   }}
@@ -286,28 +176,17 @@ export function LeadExpandList({
               <Chevron open={isOpen} />
             </button>
             {isOpen && (
-              <div className="border-t border-line-soft bg-raised/50">
+              <div className="border-t border-line-soft bg-raised">
                 <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 md:px-5">
-                  <span className="text-12 font-semibold text-muted">
-                    Clients
-                  </span>
+                  <span className="text-11.5 font-medium uppercase tracking-[.07em] text-muted">Clients</span>
                   {clients.map((c) => (
-                    <Link
-                      key={c.id}
-                      href={clientHref(portal, c.id)}
-                      className="inline-flex h-[22px] items-center gap-1.5 rounded-sm border border-line bg-surface px-2 text-12 font-semibold hover:bg-raised"
-                    >
+                    <Link key={c.id} href={clientHref(portal, c.id)} className="inline-flex h-6 items-center gap-1.5 rounded-md border-1.5 border-line bg-surface px-2 text-12 font-medium text-ink-2 hover:bg-hover">
                       <ClientDot tone={c.tone} />
                       {c.short}
                     </Link>
                   ))}
                   <span className="ml-auto text-12 text-muted">
-                    {l.hours} h planned ·{" "}
-                    <Bar
-                      pct={l.load}
-                      tone={loadTone(l.load)}
-                      className="inline-block w-[60px] align-middle"
-                    />
+                    {l.hours} h planned · <Bar pct={l.load} tone={loadTone(l.load)} className="inline-block w-[60px] align-middle" />
                   </span>
                 </div>
                 {openTasks.length === 0 ? (
@@ -318,34 +197,16 @@ export function LeadExpandList({
                     return (
                       <ListRow key={t.id} className="flex-wrap md:flex-nowrap">
                         {c && <ClientDot tone={c.tone} />}
-                        <Link
-                          href={taskHref(portal, t)}
-                          className="min-w-0 flex-1 hover:underline"
-                        >
-                          <span className="block truncate font-semibold">
-                            {t.title}
-                          </span>
+                        <Link href={taskHref(portal, t)} className="min-w-0 flex-1 hover:underline">
+                          <span className="block truncate font-medium text-ink">{t.title}</span>
                           <span className="block truncate text-12.5 text-muted">
                             {c?.short}
                             {t.code ? ` · ${t.code}` : ""}
                           </span>
                         </Link>
                         <TaskChip status={t.status} />
-                        <span
-                          className={cn(
-                            "w-[52px] text-right text-12.5",
-                            t.status === "Overdue"
-                              ? "font-semibold text-bad"
-                              : "text-muted",
-                          )}
-                        >
-                          {fmt(t.due)}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setMove(t)}
-                        >
+                        <span className={cn("w-[52px] text-right text-12.5", t.status === "Overdue" ? "font-medium text-bad" : "text-muted")}>{fmt(t.due)}</span>
+                        <Button size="sm" variant="outline" onClick={() => setMove(t)}>
                           Reassign
                         </Button>
                       </ListRow>
@@ -367,9 +228,7 @@ export function LeadExpandList({
           if (!move) return;
           const from = taskOwner(move, s);
           reassignTask(move.id, to);
-          toast.show(`${move.title} moved to ${to}`, () =>
-            reassignTask(move.id, from),
-          );
+          toast.show(`${move.title} moved to ${to}`, () => reassignTask(move.id, from));
         }}
       />
       {toast.node}
@@ -429,30 +288,15 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
   const toast = useUndoToast();
   const [moved, move] = useBlockMoves();
 
-  const [view, setView] = React.useState<"planner" | "list" | "board">(
-    "planner",
-  );
+  const [view, setView] = React.useState<"planner" | "list" | "board">("planner");
   const [kindF, setKindF] = React.useState("all");
   const lead = rows.find((l) => l.name === pick)!;
   const stat = LEAD_STATS[pick];
   const mine = TASKS.filter((t) => taskOwner(t, s) === pick);
   const open = mine.filter((t) => t.status !== "Done");
-  const clients = STAFF_CLIENTS.filter(
-    (c) => leadOf(c, s) === pick || mine.some((t) => t.client === c.id),
-  );
-  const list = mine
-    .filter(
-      (t) =>
-        (show === "all" ||
-          (show === "open" ? t.status !== "Done" : t.status === "Overdue")) &&
-        (!clientF || t.client === clientF),
-    )
-    .sort((a, b) => a.due.getTime() - b.due.getTime());
-  const shownWork = (pick === "Bharath" ? LEAD_WORK : mine).filter(
-    (t) =>
-      (!clientF || t.client === clientF) &&
-      (kindF === "all" || (kindF === "filings") === !t.code),
-  );
+  const clients = STAFF_CLIENTS.filter((c) => leadOf(c, s) === pick || mine.some((t) => t.client === c.id));
+  const list = mine.filter((t) => (show === "all" || (show === "open" ? t.status !== "Done" : t.status === "Overdue")) && (!clientF || t.client === clientF)).sort((a, b) => a.due.getTime() - b.due.getTime());
+  const shownWork = (pick === "Bharath" ? LEAD_WORK : mine).filter((t) => (!clientF || t.client === clientF) && (kindF === "all" || (kindF === "filings") === !t.code));
   const myTodos = todos.filter((t) => t.id.startsWith(`${pick}:`));
 
   const tlStart = d(2026, 10, 10);
@@ -508,129 +352,101 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
   const addTodo = (title: string, client: string, due: Date, to = pick) => {
     // Bharath's planner shows his Work to-do card, which reads mgrTodos.
     if (to === "Bharath") {
-      setMgrTodos((ts) => [{ id: `Bharath:${Date.now()}`, text: title, client: client || undefined, due }, ...ts]);
+      setMgrTodos((ts) => [
+        {
+          id: `Bharath:${Date.now()}`,
+          text: title,
+          client: client || undefined,
+          due,
+        },
+        ...ts,
+      ]);
       return;
     }
-    setTodos((ts) => [
-      { id: `${to}:${Date.now()}`, title, client, due, done: false },
-      ...ts,
-    ]);
+    setTodos((ts) => [{ id: `${to}:${Date.now()}`, title, client, due, done: false }, ...ts]);
   };
 
   return (
     <div className="grid grid-cols-1 gap-5">
-      <SectionCard title={lead.name} bare>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="grid h-9 w-9 flex-none place-items-center rounded-md bg-raised text-12 font-bold">
-            {initials(lead.name)}
-          </span>
-          <span className="min-w-0 flex-1">
-            <b className="block truncate text-16 font-semibold">{lead.name}</b>
-            <span className="block truncate text-12.5 text-muted">
-              Project lead ·{" "}
-              {stat
-                ? `${leadOpen(pick)} open · ${stat.st[3]} overdue · 8 clients`
-                : `${open.length} open · ${open.filter((t) => t.status === "Overdue").length} overdue · ${clients.length} clients`}{" "}
-              · Sep to Oct 2026
-            </span>
-          </span>
-          <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto">
-            <Button size="sm" variant="outline" asChild>
-              <Link href={`${base(portal)}/work`}>
-                <Sparkles size={14} strokeWidth={1.6} /> Plan the week
-              </Link>
-            </Button>
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={() => {
-                setForm({
-                  title: "",
-                  client: clients[0]?.id ?? "",
-                  due: "2026-10-19",
-                  lead: pick,
-                });
-                setAssignOpen(true);
-              }}
-            >
-              <Plus size={14} strokeWidth={1.6} /> Assign to-do
-            </Button>
-            <PopoverCard
-              align="end"
-              width={200}
-              trigger={
-                <Button
-                  size="iconSm"
-                  variant="outline"
-                  aria-label="More actions"
-                >
-                  <MoreHorizontal size={16} strokeWidth={1.6} />
-                </Button>
-              }
-            >
-              <div role="menu" className="py-1">
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="flex h-9 w-full items-center px-4 text-13.5 hover:bg-raised"
-                  onClick={() => toast.show(`To-do templates for ${lead.name}`)}
-                >
-                  Templates
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="flex h-9 w-full items-center px-4 text-13.5 hover:bg-raised"
-                  onClick={() => toast.show(`Exported ${lead.name}'s work`)}
-                >
-                  Export
-                </button>
-              </div>
-            </PopoverCard>
-          </div>
+      {/* Plain page head (R-02): face, 28 px name, muted meta; actions right. Views and filter chips under it (R-10, R-11). */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Avatar name={lead.name} size={44} />
+        <div className="min-w-0 flex-[1_1_240px]">
+          <h1 className="truncate text-28 font-medium leading-9 tracking-[-0.01em]">{lead.name}</h1>
+          <p className="truncate text-13.5 text-muted">
+            Project lead · {stat ? `${leadOpen(pick)} open · ${stat.st[3]} overdue · 8 clients` : `${open.length} open · ${open.filter((t) => t.status === "Overdue").length} overdue · ${clients.length} clients`} · Sep to Oct 2026
+          </p>
         </div>
-        <div className="-mx-4 -mb-4 mt-4 flex flex-wrap items-center gap-2 border-t border-line-soft px-4 py-2.5 md:-mx-5 md:px-5">
-          <Tabs
-            items={[
-              { key: "planner", label: "Planner" },
-              { key: "list", label: "List" },
-              { key: "board", label: "Board" },
-            ]}
-            value={view}
-            onChange={(k) => setView(k as "planner" | "list" | "board")}
-          />
-          <Select
-            value={clientF}
-            onChange={(e) => setClientF(e.target.value)}
-            options={[
-              { value: "", label: "All clients" },
-              ...clients.map((c) => ({ value: c.id, label: c.short })),
-            ]}
-            aria-label="Clients"
-          />
-          <Select
-            value={kindF}
-            onChange={(e) => setKindF(e.target.value)}
-            options={[
-              { value: "all", label: "Steps + filings" },
-              { value: "steps", label: "Steps only" },
-              { value: "filings", label: "Filings only" },
-            ]}
-            aria-label="Show"
-          />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="secondary" asChild>
+            <Link href={`${base(portal)}/work`}>
+              <Sparkles size={16} strokeWidth={1.6} /> Plan the week
+            </Link>
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setForm({
+                title: "",
+                client: clients[0]?.id ?? "",
+                due: "2026-10-19",
+                lead: pick,
+              });
+              setAssignOpen(true);
+            }}
+          >
+            <Plus size={16} strokeWidth={1.6} /> Assign to-do
+          </Button>
+          <PopoverCard
+            align="end"
+            width={200}
+            trigger={
+              <Button size="icon" variant="secondary" aria-label="More actions">
+                <MoreHorizontal size={16} strokeWidth={1.6} />
+              </Button>
+            }
+          >
+            <div role="menu" className="grid p-1">
+              <button type="button" role="menuitem" className="flex h-[34px] w-full items-center rounded-sm px-2.5 text-14 hover:bg-hover" onClick={() => toast.show(`To-do templates for ${lead.name}`)}>
+                Templates
+              </button>
+              <button type="button" role="menuitem" className="flex h-[34px] w-full items-center rounded-sm px-2.5 text-14 hover:bg-hover" onClick={() => toast.show(`Exported ${lead.name}'s work`)}>
+                Export
+              </button>
+            </div>
+          </PopoverCard>
         </div>
-      </SectionCard>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Tabs
+          size="md"
+          items={[
+            { key: "planner", label: "Planner" },
+            { key: "list", label: "List" },
+            { key: "board", label: "Board" },
+          ]}
+          value={view}
+          onChange={(k) => setView(k as "planner" | "list" | "board")}
+        />
+        <FilterChip label="Company" value={clientF} onChange={setClientF} options={clients.map((c) => ({ value: c.id, label: c.short }))} />
+        <FilterChip
+          label="Show"
+          value={kindF === "all" ? "" : kindF}
+          onChange={(v) => setKindF(v || "all")}
+          options={[
+            { value: "steps", label: "Steps only" },
+            { value: "filings", label: "Filings only" },
+          ]}
+        />
+      </div>
 
       <Row cols={2}>
-        <SectionCard
-          title={`${lead.name.split(" ")[0]} · status`}
-          meta="Sep to Oct"
-          right={<HeadLink href={`${base(portal)}/work`}>Open Work ›</HeadLink>}
-        >
+        <SectionCard title={`${lead.name.split(" ")[0]} · status`} meta="Sep to Oct" right={<HeadLink href={`${base(portal)}/work`}>Open Work ›</HeadLink>}>
           {stat ? (
-            <StackedBar
+            <Donut
+              size={96}
+              className="gap-6 [&>div:last-child]:flex-1"
               total={stat.st.reduce((a, n) => a + n, 0)}
-              title="Tasks"
               segments={[
                 { label: "Done", value: stat.st[0], tone: "ok" },
                 { label: "In progress", value: stat.st[1], tone: "accent" },
@@ -640,31 +456,23 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
               ]}
             />
           ) : (
-            <StackedBar
-              segments={statusSegments(mine)}
-              total={mine.length}
-              title="Tasks"
-            />
+            <Donut size={96} className="gap-6 [&>div:last-child]:flex-1" segments={statusSegments(mine)} total={mine.length} />
           )}
         </SectionCard>
         <SectionCard title="By area · Sep to Oct" right={<AreaLegend />}>
-          {stat ? (
-            <OldAreaRows areas={stat.areas} />
-          ) : (
-            <AreaRows tasks={mine} />
-          )}
+          {stat ? <OldAreaRows areas={stat.areas} /> : <AreaRows tasks={mine} />}
         </SectionCard>
       </Row>
 
       {view === "list" && (
         <DataGrid
-          title="List view"
+          title="Tasks"
           meta={`${shownWork.filter((t) => t.status !== "Done").length} open`}
           columns={[
             {
               key: "title",
               label: "Step or filing",
-              render: (t) => <span className="font-semibold">{t.title}</span>,
+              render: (t) => <span className="font-medium">{t.title}</span>,
             },
             {
               key: "client",
@@ -676,25 +484,19 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
               key: "code",
               label: "Step",
               width: 90,
-              mono: true,
-              render: (t) => t.code ?? "Filing",
+              render: (t) => (t.code ? <span className="font-mono text-13">{t.code}</span> : "Filing"),
             },
-            { key: "area", label: "Area", width: 100 },
+            {
+              key: "area",
+              label: "Area",
+              width: 128,
+              render: (t) => <AreaPill area={t.area} />,
+            },
             {
               key: "due",
               label: "Due",
               width: 80,
-              render: (t) => (
-                <span
-                  className={
-                    t.status === "Overdue"
-                      ? "font-semibold text-bad"
-                      : undefined
-                  }
-                >
-                  {fmt(t.due)}
-                </span>
-              ),
+              render: (t) => <span className={t.status === "Overdue" ? "font-medium text-bad" : undefined}>{fmt(t.due)}</span>,
             },
             {
               key: "status",
@@ -710,125 +512,44 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
           pageSize={12}
         />
       )}
-      {view === "board" && (
-        <WorkBoard
-          portal={portal}
-          tasks={shownWork}
-          onOpen={(t) =>
-            toast.show(`${t.title} · ${clientById(t.client)?.short ?? ""}`)
-          }
-          notify={toast.show}
-        />
-      )}
+      {view === "board" && <WorkBoard portal={portal} tasks={shownWork} onOpen={(t) => toast.show(`${t.title} · ${clientById(t.client)?.short ?? ""}`)} notify={toast.show} />}
 
       {view === "planner" && (
         <Cols>
           <Col>
             {pick === "Bharath" ? (
-              <PlanTimeline
-                rows={TIMELINE_ROWS.filter(
-                  (r) => !clientF || r.client === clientF,
-                )}
-                tasks={LEAD_WORK}
-                onOpen={(t) => toast.show(`${t.title} · dates set by Pranay`)}
-                onLocked={(t) => toast.show(`${t.title} · dates set by Pranay`)}
-              />
+              <PlanTimeline rows={TIMELINE_ROWS.filter((r) => !clientF || r.client === clientF)} tasks={LEAD_WORK} onOpen={(t) => toast.show(`${t.title} · dates set by Pranay`)} onLocked={(t) => toast.show(`${t.title} · dates set by Pranay`)} />
             ) : (
-              <SectionCard
-                title="Timeline"
-                meta={`${fmt(tlStart)} to ${fmt(tlEnd)}`}
-                flush
-              >
-                {tlRows.length === 0 ? (
-                  <Empty />
-                ) : (
-                  <GanttTimeline
-                    start={tlStart}
-                    end={tlEnd}
-                    ticks={[
-                      d(2026, 10, 11),
-                      d(2026, 10, 16),
-                      d(2026, 10, 21),
-                      d(2026, 10, 26),
-                    ]}
-                    rows={tlRows}
-                  />
-                )}
+              <SectionCard title="Timeline" meta={`${fmt(tlStart)} to ${fmt(tlEnd)}`} flush>
+                {tlRows.length === 0 ? <Empty /> : <GanttTimeline start={tlStart} end={tlEnd} ticks={[d(2026, 10, 11), d(2026, 10, 16), d(2026, 10, 21), d(2026, 10, 26)]} rows={tlRows} />}
               </SectionCard>
             )}
             {pick === "Bharath" ? (
-              <PlanCalendar
-                tasks={LEAD_WORK}
-                blocks={CAL_BLOCKS}
-                nextBlocks={[]}
-                notify={toast.show}
-                onOpen={(t) =>
-                  toast.show(
-                    `${t.title} · ${clientById(t.client)?.short ?? ""}`,
-                  )
-                }
-              />
+              <PlanCalendar tasks={LEAD_WORK} blocks={CAL_BLOCKS} nextBlocks={[]} notify={toast.show} onOpen={(t) => toast.show(`${t.title} · ${clientById(t.client)?.short ?? ""}`)} />
             ) : (
-              <SectionCard
-                title="Calendar"
-                meta={`${WEEK[0].getDate()} to ${fmt(WEEK[6])}`}
-              >
-                <HourWeek
-                  days={WEEK}
-                  blocks={calBlocks}
-                  allDay={[]}
-                  today={TODAY}
-                  now={12.5}
-                  onMove={moveBlock}
-                />
+              <SectionCard title="Calendar" meta={`${WEEK[0].getDate()} to ${fmt(WEEK[6])}`}>
+                <HourWeek days={WEEK} blocks={calBlocks} allDay={[]} today={TODAY} now={12.5} onMove={moveBlock} />
               </SectionCard>
             )}
           </Col>
           <Col>
             {pick === "Bharath" ? (
-              <TodoCard
-                portal="manager"
-                tasks={LEAD_WORK}
-                todos={mgrTodos}
-                setTodos={setMgrTodos}
-                client={clientF}
-                onOpen={(t) =>
-                  toast.show(
-                    `${t.title} · ${clientById(t.client)?.short ?? ""}`,
-                  )
-                }
-                notify={toast.show}
-              />
+              <TodoCard portal="manager" tasks={LEAD_WORK} todos={mgrTodos} setTodos={setMgrTodos} client={clientF} onOpen={(t) => toast.show(`${t.title} · ${clientById(t.client)?.short ?? ""}`)} notify={toast.show} />
             ) : (
               <SectionCard
                 title="To-do"
                 meta={`${list.length + myTodos.length}`}
                 flush
                 right={
-                  <>
-                    <Select
-                      value={clientF}
-                      onChange={(e) => setClientF(e.target.value)}
-                      options={[
-                        { value: "", label: "All clients" },
-                        ...clients.map((c) => ({
-                          value: c.id,
-                          label: c.short,
-                        })),
-                      ]}
-                      aria-label="Clients"
-                    />
-                    <Select
-                      value={show}
-                      onChange={(e) => setShow(e.target.value)}
-                      options={[
-                        { value: "open", label: "Open" },
-                        { value: "late", label: "Overdue" },
-                        { value: "all", label: "All" },
-                      ]}
-                      aria-label="Show"
-                    />
-                  </>
+                  <Tabs
+                    items={[
+                      { key: "open", label: "Open" },
+                      { key: "late", label: "Overdue" },
+                      { key: "all", label: "All" },
+                    ]}
+                    value={show}
+                    onChange={setShow}
+                  />
                 }
               >
                 <form
@@ -840,42 +561,17 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
                     setQuick("");
                   }}
                 >
-                  <Input
-                    value={quick}
-                    onChange={(e) => setQuick(e.target.value)}
-                    placeholder="Add a to-do: Call Mei Fri 3 pm"
-                    aria-label="Quick add"
-                    className="h-8"
-                  />
-                  <Button type="submit" size="sm">
+                  <Input value={quick} onChange={(e) => setQuick(e.target.value)} placeholder="Add a to-do: Call Mei Fri 3 pm" aria-label="Quick add" />
+                  <Button type="submit" variant="secondary">
                     Add
                   </Button>
                 </form>
                 {myTodos.map((t) => (
                   <ListRow key={t.id}>
-                    <Checkbox
-                      checked={t.done}
-                      onChange={() =>
-                        setTodos((ts) =>
-                          ts.map((x) =>
-                            x.id === t.id ? { ...x, done: !x.done } : x,
-                          ),
-                        )
-                      }
-                      label={t.title}
-                    />
-                    <span
-                      className={cn(
-                        "min-w-0 flex-1 truncate",
-                        t.done && "text-muted line-through",
-                      )}
-                    >
-                      {t.title}
-                    </span>
+                    <Checkbox checked={t.done} onChange={() => setTodos((ts) => ts.map((x) => (x.id === t.id ? { ...x, done: !x.done } : x)))} label={t.title} />
+                    <span className={cn("min-w-0 flex-1 truncate", t.done && "text-muted line-through")}>{t.title}</span>
                     <Chip tone="prog">New</Chip>
-                    <span className="w-[52px] text-right text-12.5 text-muted">
-                      {fmt(t.due)}
-                    </span>
+                    <span className="w-[52px] text-right text-12.5 text-muted">{fmt(t.due)}</span>
                   </ListRow>
                 ))}
                 {list.length === 0 && myTodos.length === 0 ? (
@@ -886,29 +582,9 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
                     const isDone = t.status === "Done" || checked.has(t.id);
                     return (
                       <ListRow key={t.id} className="flex-wrap md:flex-nowrap">
-                        <Checkbox
-                          checked={isDone}
-                          onChange={() =>
-                            setChecked((x) =>
-                              x.has(t.id)
-                                ? new Set([...x].filter((y) => y !== t.id))
-                                : new Set([...x, t.id]),
-                            )
-                          }
-                          label={t.title}
-                        />
-                        <Link
-                          href={taskHref(portal, t)}
-                          className="min-w-0 flex-1 hover:underline"
-                        >
-                          <span
-                            className={cn(
-                              "block truncate font-semibold",
-                              isDone && "text-muted line-through",
-                            )}
-                          >
-                            {t.title}
-                          </span>
+                        <Checkbox checked={isDone} onChange={() => setChecked((x) => (x.has(t.id) ? new Set([...x].filter((y) => y !== t.id)) : new Set([...x, t.id])))} label={t.title} />
+                        <Link href={taskHref(portal, t)} className="min-w-0 flex-1 hover:underline">
+                          <span className={cn("block truncate font-medium", isDone && "text-muted line-through")}>{t.title}</span>
                           <span className="flex items-center gap-1.5 truncate text-12.5 text-muted">
                             {c && <ClientDot tone={c.tone} />}
                             {c?.short}
@@ -919,26 +595,11 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
                           (reminded.has(t.id) ? (
                             <Chip tone="ok">Reminded</Chip>
                           ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                setReminded(new Set([...reminded, t.id]))
-                              }
-                            >
+                            <Button size="sm" variant="outline" onClick={() => setReminded(new Set([...reminded, t.id]))}>
                               Remind
                             </Button>
                           ))}
-                        <Chip
-                          tone={
-                            t.status === "Overdue"
-                              ? "bad"
-                              : t.due.getTime() === TODAY.getTime()
-                                ? "warn"
-                                : "idle"
-                          }
-                          dot={false}
-                        >
+                        <Chip tone={t.status === "Overdue" ? "bad" : t.due.getTime() === TODAY.getTime() ? "warn" : "idle"} dot={false} fixed>
                           {fmt(t.due)}
                         </Chip>
                       </ListRow>
@@ -965,16 +626,9 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
               disabled={!form.title.trim()}
               onClick={() => {
                 const [y, m, dd] = form.due.split("-").map(Number);
-                addTodo(
-                  form.title.trim(),
-                  form.client,
-                  new Date(y, m - 1, dd),
-                  form.lead || pick,
-                );
+                addTodo(form.title.trim(), form.client, new Date(y, m - 1, dd), form.lead || pick);
                 setAssignOpen(false);
-                toast.show(
-                  `Assigned to ${form.lead || pick}: ${form.title.trim()}`,
-                );
+                toast.show(`Assigned to ${form.lead || pick}: ${form.title.trim()}`);
               }}
             >
               Assign
@@ -984,23 +638,11 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
       >
         <div className="grid gap-4">
           <Field label="To-do">
-            <Input
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Call Mei about the FIRMS login"
-              autoFocus
-            />
+            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Call Mei about the FIRMS login" autoFocus />
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Project lead">
-              <Select
-                size="md"
-                className="[&>select]:w-full"
-                value={form.lead}
-                onChange={(e) => setForm({ ...form, lead: e.target.value })}
-                options={rows.map((l) => ({ value: l.name, label: l.name }))}
-                aria-label="Project lead"
-              />
+              <Select size="md" className="[&>select]:w-full" value={form.lead} onChange={(e) => setForm({ ...form, lead: e.target.value })} options={rows.map((l) => ({ value: l.name, label: l.name }))} aria-label="Project lead" />
             </Field>
             <Field label="Client">
               <Select
@@ -1008,18 +650,12 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
                 className="[&>select]:w-full"
                 value={form.client}
                 onChange={(e) => setForm({ ...form, client: e.target.value })}
-                options={STAFF_CLIENTS.filter(
-                  (c) => c.manager === "Pranay",
-                ).map((c) => ({ value: c.id, label: c.short }))}
+                options={STAFF_CLIENTS.filter((c) => c.manager === "Pranay").map((c) => ({ value: c.id, label: c.short }))}
                 aria-label="Client"
               />
             </Field>
             <Field label="Due">
-              <Input
-                type="date"
-                value={form.due}
-                onChange={(e) => setForm({ ...form, due: e.target.value })}
-              />
+              <Input type="date" value={form.due} onChange={(e) => setForm({ ...form, due: e.target.value })} />
             </Field>
           </div>
         </div>

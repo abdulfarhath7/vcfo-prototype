@@ -1,14 +1,15 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { AlertTriangle, Building2, CalendarDays, CheckCheck, Clock, ListChecks, Rocket, ShieldCheck, User, X } from "lucide-react";
+import * as DM from "@radix-ui/react-dropdown-menu";
+import { AlertTriangle, Building2, CalendarDays, Check, CheckCheck, Clock, ListChecks, Plus, Rocket, ShieldCheck, User, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { STAFF_TODAY as TODAY, fmt, relative } from "@/lib/dates";
 import { clientById, clientsFor, PHASE_TOTALS, type StaffClient } from "@/data/staff-clients";
 import { INBOX, queueFor, tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
-import { MANAGERS, managerRows, UNASSIGNED } from "@/data/staff-team";
+import { LEAD_STATS, MANAGERS, leadOpen, managerRows, UNASSIGNED } from "@/data/staff-team";
 import { APPROVALS } from "@/data/staff-tasks";
-import { DAY_SHORT, TODOS, WEEK, isToday, sameDay, type Todo } from "@/data/staff-work";
+import { TODOS, sameDay, type Todo } from "@/data/staff-work";
 import {
   DAYS_TO_COI,
   DONE_TODAY,
@@ -21,7 +22,6 @@ import {
   MGR_DAYS_TO_COI,
   PIPE_STAGES,
   pipeOf,
-  WEEK_TODAY,
   filingCounts,
   filingRow,
   phaseCells,
@@ -29,22 +29,19 @@ import {
   waitingOnClient,
   weekItems,
   type FilingCell,
-  type WeekKind,
 } from "@/data/staff-today";
 import { Row } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Chip, Tag } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { Bar, barFill, type BarTone } from "@/components/ui/Bar";
-import { initials } from "@/components/ui/Avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { Input, Checkbox } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
-import { SelectOnNavy } from "@/components/ui/Select";
 import type { StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, ListRow, HeadLink, Empty } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { StackedBar } from "@/components/cards/StackedBar";
-import { WeekStrip, type WeekStripDay } from "@/components/cards/WeekStrip";
+import { Donut } from "@/components/cards/Donut";
 import { ClientDot, ClientName, TaskChip, base, clientHref, plainName, taskHref, type StaffPortal } from "./parts";
 
 // Today cards for the staff portals. Ported from reference/old-screens/s/lead/Main.dc.html (lead and manager),
@@ -58,25 +55,7 @@ export const inScope = (scope: Scope, clientId?: string) => {
   return clientById(clientId)?.stage === scope;
 };
 
-/** Old greeting scope switch (All, Incorporating, Compliance), on the navy band. */
-export function ScopeSelect({ portal, value, onChange }: { portal: StaffPortal; value: Scope; onChange: (s: Scope) => void }) {
-  const cl = clientsFor(portal);
-  const inc = cl.filter((c) => c.stage === "incorporating").length;
-  return (
-    <SelectOnNavy
-      aria-label="Client scope"
-      value={value}
-      onChange={(e) => onChange(e.target.value as Scope)}
-      options={[
-        { value: "all", label: `All clients · ${cl.length}` },
-        { value: "incorporating", label: `Incorporating · ${inc}` },
-        { value: "compliance", label: `Compliance · ${cl.length - inc}` },
-      ]}
-    />
-  );
-}
-
-/** Old greeting scope tabs on the navy band: All, Incorporating, Compliance with counts (Main.dc.html scopes). */
+/** Greeting scope switch (N5 segmented): All, Incorporating, Compliance with counts (Main.dc.html scopes). */
 export function ScopeTabs({ portal, value, onChange }: { portal: StaffPortal; value: Scope; onChange: (s: Scope) => void }) {
   const cl = clientsFor(portal);
   const inc = cl.filter((c) => c.stage === "incorporating").length;
@@ -88,7 +67,60 @@ export function ScopeTabs({ portal, value, onChange }: { portal: StaffPortal; va
   return <Tabs size="md" items={items.map(([key, label, n]) => ({ key, label, count: n }))} value={value} onChange={(k) => onChange(k as Scope)} />;
 }
 
-/** Client code tile: initials in the client colour (Main.dc.html av). */
+export interface FilterOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * R-10 filter chip. Set: soft blurple fill, "Label Value" and an ×. Not set: dashed edge, "+ Label".
+ * A click opens a light menu (34 px rows) with the options.
+ */
+export function FilterChip({ label, value, options, onChange }: { label: string; value: string; options: FilterOption[]; onChange: (v: string) => void }) {
+  const picked = options.find((o) => o.value === value);
+  const menu = (
+    <DM.Portal>
+      <DM.Content align="start" sideOffset={4} collisionPadding={12} className="z-50 max-h-[320px] min-w-[180px] overflow-y-auto rounded-md border border-line bg-surface p-1 text-14 text-ink shadow-float">
+        {options.map((o) => (
+          <DM.Item key={o.value} onSelect={() => onChange(o.value)} className="flex h-[34px] cursor-pointer select-none items-center gap-2 rounded-sm px-2.5 outline-none data-[highlighted]:bg-hover">
+            <span className="min-w-0 flex-1 truncate">{o.label}</span>
+            {o.value === value && <Check size={14} strokeWidth={1.6} className="text-accent" aria-hidden />}
+          </DM.Item>
+        ))}
+      </DM.Content>
+    </DM.Portal>
+  );
+  if (picked)
+    return (
+      <span className="inline-flex h-7 max-w-full flex-none items-center gap-1.5 rounded-md border-1.5 border-accent-line bg-accent-soft pl-2.5 pr-1.5 text-13 text-accent">
+        <DM.Root modal={false}>
+          <DM.Trigger asChild>
+            <button type="button" className="inline-flex min-w-0 items-center gap-1.5">
+              <span className="text-ink-2">{label}</span>
+              <b className="truncate font-medium">{picked.label}</b>
+            </button>
+          </DM.Trigger>
+          {menu}
+        </DM.Root>
+        <button type="button" aria-label={`Remove ${label} filter`} onClick={() => onChange("")} className="grid h-[18px] w-[18px] flex-none place-items-center rounded-sm text-accent hover:bg-surface">
+          <X size={13} strokeWidth={1.6} />
+        </button>
+      </span>
+    );
+  return (
+    <DM.Root modal={false}>
+      <DM.Trigger asChild>
+        <button type="button" className="inline-flex h-7 flex-none items-center gap-1.5 rounded-md border-1.5 border-dashed border-line-2 px-2.5 text-13 font-medium text-ink-2 hover:bg-hover data-[state=open]:bg-hover">
+          <Plus size={14} strokeWidth={1.6} aria-hidden />
+          {label}
+        </button>
+      </DM.Trigger>
+      {menu}
+    </DM.Root>
+  );
+}
+
+/** Client identity colour, as the company tile uses it. */
 const codeTone: Record<StaffClient["tone"], string> = {
   accent: "bg-accent-soft text-accent",
   violet: "bg-violet-soft text-violet",
@@ -107,10 +139,10 @@ export function ClientCode({ c, href }: { c: StaffClient; href?: string }) {
     .toUpperCase();
   const inner = (
     <>
-      <span className={cn("grid h-6 w-6 flex-none place-items-center rounded-sm text-[10px] font-extrabold", codeTone[c.tone])} aria-hidden>
+      <span className={cn("grid h-[26px] w-[26px] flex-none place-items-center rounded-md text-11 font-medium tracking-[.02em]", codeTone[c.tone])} aria-hidden>
         {code}
       </span>
-      <b className="min-w-0 truncate font-semibold">{name}</b>
+      <b className="min-w-0 truncate font-medium text-ink">{name}</b>
     </>
   );
   return href ? (
@@ -129,45 +161,93 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     const cl = clientsFor(portal).filter((c) => inScope(scope, c.id));
     const open = tasksFor(portal).filter((t) => t.status !== "Done" && inScope(scope, t.client));
     return [
-      { label: "Clients", value: cl.length, Icon: Building2, tone: "blue", href: `${b}/clients` },
-      { label: "Incorporating", value: cl.filter((c) => c.stage === "incorporating").length, Icon: Rocket, tone: "violet", href: `${b}/clients` },
-      { label: "In compliance", value: cl.filter((c) => c.stage === "compliance").length, Icon: ShieldCheck, tone: "green", href: `${b}/clients` },
-      { label: "Overdue", value: open.filter((t) => t.status === "Overdue").length, Icon: AlertTriangle, tone: "red", bad: true, href: `${b}/work` },
-      { label: "Stuck", value: cl.filter((c) => c.health === "Stuck").length, Icon: Clock, tone: "amber", bad: true, href: `${b}/clients` },
-      { label: "Due this week", value: open.filter((t) => t.status === "Due this week").length, Icon: CalendarDays, tone: "teal", href: `${b}/work` },
+      {
+        label: "Clients",
+        value: cl.length,
+        Icon: Building2,
+        tone: "blue",
+        href: `${b}/clients`,
+      },
+      {
+        label: "Incorporating",
+        value: cl.filter((c) => c.stage === "incorporating").length,
+        Icon: Rocket,
+        tone: "violet",
+        href: `${b}/clients`,
+      },
+      {
+        label: "In compliance",
+        value: cl.filter((c) => c.stage === "compliance").length,
+        Icon: ShieldCheck,
+        tone: "green",
+        href: `${b}/clients`,
+      },
+      {
+        label: "Overdue",
+        value: open.filter((t) => t.status === "Overdue").length,
+        Icon: AlertTriangle,
+        tone: "red",
+        bad: true,
+        href: `${b}/work`,
+      },
+      {
+        label: "Stuck",
+        value: cl.filter((c) => c.health === "Stuck").length,
+        Icon: Clock,
+        tone: "amber",
+        bad: true,
+        href: `${b}/clients`,
+      },
+      {
+        label: "Due this week",
+        value: open.filter((t) => t.status === "Due this week").length,
+        Icon: CalendarDays,
+        tone: "teal",
+        href: `${b}/work`,
+      },
     ];
   }
   const queue = queueFor(portal).filter((t) => inScope(scope, t.client));
   const late = queue.filter((t) => t.status === "Overdue").length + filingCounts(clientsFor(portal).filter((c) => inScope(scope, c.id))).overdue;
   const week = weekItems(portal).filter((w) => w.kind !== "done" && inScope(scope, w.client)).length;
   return [
-    { label: "Needs action", value: queue.length, Icon: ListChecks, tone: "blue", href: `${b}/work` },
-    { label: "Overdue", value: late, Icon: AlertTriangle, tone: "red", bad: late > 0, href: `${b}/work` },
-    { label: "Waiting on clients", value: waitingOnClient(portal).filter((t) => inScope(scope, t.client)).length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length, Icon: User, tone: "amber", href: `${b}/work` },
-    { label: "Due this week", value: week, Icon: CalendarDays, tone: "teal", href: `${b}/work` },
-    { label: "Done today", value: DONE_TODAY[portal], Icon: CheckCheck, tone: "green", good: DONE_TODAY[portal] > 0 },
+    {
+      label: "Needs action",
+      value: queue.length,
+      Icon: ListChecks,
+      tone: "blue",
+      href: `${b}/work`,
+    },
+    {
+      label: "Overdue",
+      value: late,
+      Icon: AlertTriangle,
+      tone: "red",
+      bad: late > 0,
+      href: `${b}/work`,
+    },
+    {
+      label: "Waiting on clients",
+      value: waitingOnClient(portal).filter((t) => inScope(scope, t.client)).length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length,
+      Icon: User,
+      tone: "amber",
+      href: `${b}/work`,
+    },
+    {
+      label: "Due this week",
+      value: week,
+      Icon: CalendarDays,
+      tone: "teal",
+      href: `${b}/work`,
+    },
+    {
+      label: "Done today",
+      value: DONE_TODAY[portal],
+      Icon: CheckCheck,
+      tone: "green",
+      good: DONE_TODAY[portal] > 0,
+    },
   ];
-}
-
-/** Practice strip (Practice.dc.html slim): one text row with incorporating, registrations pending, filings overdue. */
-export function PracticeStrip({ portal }: { portal: StaffPortal }) {
-  const p = practiceNumbers(portal);
-  const b = base(portal);
-  const items = [
-    { n: p.inc, label: "Incorporating", href: `${b}/clients` },
-    { n: p.regOpen, label: "Registrations pending", href: `${b}/registrations` },
-    { n: p.filings.overdue, label: "Filings overdue", href: `${b}/compliances/filings` },
-  ];
-  return (
-    <nav className="flex flex-wrap overflow-hidden rounded-md border-1.5 border-line bg-surface" aria-label="Practice areas">
-      {items.map((x) => (
-        <Link key={x.label} href={x.href} className="flex items-baseline gap-2.5 border-r border-line-soft px-4 py-2.5 last:border-r-0 hover:bg-raised md:px-5">
-          <b className=" text-[18px] font-semibold leading-none">{x.n}</b>
-          <span className="text-13 text-ink-2">{x.label}</span>
-        </Link>
-      ))}
-    </nav>
-  );
 }
 
 /** Practice areas (Practice.dc.html full, admin): incorporation stages, registrations, October filings. Counts only (R-37). */
@@ -175,7 +255,10 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
   const p = practiceNumbers(portal);
   const b = base(portal);
   const inc = clientsFor(portal).filter((c) => c.stage === "incorporating");
-  const stages = PIPE_STAGES.map((label) => ({ label, n: inc.filter((c) => pipeOf(c) === label).length }));
+  const stages = PIPE_STAGES.map((label) => ({
+    label,
+    n: inc.filter((c) => pipeOf(c) === label).length,
+  }));
   const max = Math.max(1, ...stages.map((x) => x.n));
   const avg = Math.round(Object.values(MGR_DAYS_TO_COI).reduce((a, n) => a + n, 0) / Object.values(MGR_DAYS_TO_COI).length);
   const f = ADMIN_FILINGS;
@@ -190,7 +273,7 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
   const foot = (left: React.ReactNode, href: string, label: string) => (
     <div className="-mx-4 -mb-4 mt-auto flex items-center gap-2 border-t border-line-soft px-4 py-3 text-12.5 text-muted md:-mx-5 md:px-5">
       <span className="min-w-0 flex-1 truncate">{left}</span>
-      <Link href={href} className="font-semibold text-accent hover:underline">
+      <Link href={href} className="font-medium text-accent hover:underline">
         {label}
       </Link>
     </div>
@@ -204,15 +287,15 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
         <ul className="grid gap-2.5">
           {stages.map((x) => (
             <li key={x.label} className="grid grid-cols-[minmax(0,120px)_minmax(0,1fr)_24px] items-center gap-3 text-12.5">
-              <span className="truncate font-semibold">{x.label}</span>
+              <span className="truncate font-medium">{x.label}</span>
               <Bar pct={(x.n / max) * 100} tone="accent" />
-              <b className="text-right font-semibold">{x.n}</b>
+              <b className="text-right font-medium">{x.n}</b>
             </li>
           ))}
         </ul>
         {foot(
           <>
-            Average <b className="font-semibold text-ink">{avg} days</b> to COI · target 30
+            Average <b className="font-medium text-ink">{avg} days</b> to COI · target 30
           </>,
           `${b}/clients`,
           "Open clients",
@@ -222,11 +305,15 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
         <div className="flex flex-wrap gap-6">
           {[
             { n: p.regDone, label: "Done", cls: "text-ok" },
-            { n: p.regOpen - p.regWait, label: "In progress", cls: "text-accent" },
+            {
+              n: p.regOpen - p.regWait,
+              label: "In progress",
+              cls: "text-accent",
+            },
             { n: p.regWait, label: "Pending", cls: "text-warn" },
           ].map((x) => (
             <div key={x.label}>
-              <b className={cn("block text-24 font-semibold leading-tight", x.cls)}>{x.n}</b>
+              <b className={cn("block text-24 font-medium leading-tight", x.cls)}>{x.n}</b>
               <span className="text-12 text-muted">{x.label}</span>
             </div>
           ))}
@@ -234,19 +321,19 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
         <ul className="-mt-1 grid gap-2">
           {p.regSplit.slice(0, 3).map((r) => (
             <li key={r.name} className="grid grid-cols-[84px_minmax(0,1fr)_24px] items-center gap-3 text-12.5" title={`${r.name}: ${r.d} done, ${r.p} in progress, ${r.w} pending`}>
-              <span className="font-semibold">{r.name}</span>
+              <span className="font-medium">{r.name}</span>
               <span className="flex h-2 overflow-hidden rounded-bar bg-line-soft" aria-hidden>
                 <i className={barFill.ok} style={{ width: `${(r.d / r.total) * 100}%` }} />
                 <i className={barFill.accent} style={{ width: `${(r.p / r.total) * 100}%` }} />
                 <i className={barFill.warn} style={{ width: `${(r.w / r.total) * 100}%` }} />
               </span>
-              <b className="text-right font-semibold">{r.p + r.w}</b>
+              <b className="text-right font-medium">{r.p + r.w}</b>
             </li>
           ))}
         </ul>
         {foot(
           <>
-            Most pending: <b className="font-semibold text-ink">{p.regSplit[0]?.mostPending ?? ""}</b>
+            Most pending: <b className="font-medium text-ink">{p.regSplit[0]?.mostPending ?? ""}</b>
           </>,
           `${b}/registrations`,
           "Open clients",
@@ -255,7 +342,7 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
       <SectionCard title="Compliances · October" className={card} bodyClassName={body}>
         <div>
           <p className="flex items-baseline gap-1.5">
-            <b className="text-24 font-semibold leading-tight">{fTotal}</b>
+            <b className="text-24 font-medium leading-tight">{fTotal}</b>
             <span className="text-12.5 text-muted">filings</span>
           </p>
           <span className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-bar" aria-hidden>
@@ -266,16 +353,16 @@ export function PracticeAreas({ portal }: { portal: StaffPortal }) {
           <ul className="mt-2.5 grid gap-1">
             {fSegs.map((x) => (
               <li key={x.label} className="flex items-center gap-2 text-12.5">
-                <i className={cn("h-2.5 w-2.5 flex-none rounded-[3px]", barFill[x.tone])} aria-hidden />
-                <span className="flex-1 font-semibold">{x.label}</span>
-                <b className="font-semibold">{x.value}</b>
+                <i className={cn("h-2 w-2 flex-none rounded-[2px]", barFill[x.tone])} aria-hidden />
+                <span className="flex-1 font-medium">{x.label}</span>
+                <b className="font-medium">{x.value}</b>
               </li>
             ))}
           </ul>
         </div>
         {foot(
           <>
-            Worst statute: <b className="font-semibold text-ink">{f.worst}</b>
+            Worst statute: <b className="font-medium text-ink">{f.worst}</b>
           </>,
           `${b}/compliances/calendar`,
           "Open calendar",
@@ -305,7 +392,10 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
   const [pick, setPick] = React.useState<string | null>(null);
   const all = queueFor(portal).filter((t) => inScope(scope, t.client));
   const rows: HeatRow[] = [...new Set(all.map((t) => t.client))]
-    .map((id) => ({ client: clientById(id)!, tasks: all.filter((t) => t.client === id) }))
+    .map((id) => ({
+      client: clientById(id)!,
+      tasks: all.filter((t) => t.client === id),
+    }))
     .filter((r) => r.client)
     .sort((a, b) => (portal === "admin" ? b.tasks.filter((t) => t.status === "Overdue").length - a.tasks.filter((t) => t.status === "Overdue").length : 0));
   const picked = pick ? all.filter((t) => `${t.client}|${t.status}` === pick) : [];
@@ -318,35 +408,42 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
       : STUCK_STEPS.filter((x) => inScope(scope, x.client));
 
   const mapCols: Column<HeatRow>[] = [
-    { key: "client", label: "Client", render: (r) => <ClientCode c={r.client} href={clientHref(portal, r.client.id)} /> },
-    ...HEAT_COLS.map(
-      (h): Column<HeatRow> => ({
-        key: h.key,
-        label: h.label,
-        width: 96,
-        align: "center",
-        render: (r) => {
-          const n = r.tasks.filter((t) => t.status === h.status).length;
-          const key = `${r.client.id}|${h.status}`;
-          if (!n) return <span className="mx-auto block w-[56px] text-center text-faint" aria-hidden>–</span>;
+    {
+      key: "client",
+      label: "Client",
+      render: (r) => <ClientCode c={r.client} href={clientHref(portal, r.client.id)} />,
+    },
+    ...HEAT_COLS.map((h): Column<HeatRow> => ({
+      key: h.key,
+      label: h.label,
+      width: 96,
+      align: "center",
+      render: (r) => {
+        const n = r.tasks.filter((t) => t.status === h.status).length;
+        const key = `${r.client.id}|${h.status}`;
+        if (!n)
           return (
-            <button
-              type="button"
-              onClick={() => setPick(pick === key ? null : key)}
-              aria-pressed={pick === key}
-              aria-label={`${r.client.short} · ${h.label} · ${n}`}
-              title={r.tasks
-                .filter((t) => t.status === h.status)
-                .map((t) => `${t.code ?? ""} ${t.title}`.trim())
-                .join("\n")}
-              className={cn("mx-auto grid h-[28px] w-[56px] place-items-center rounded-sm text-13 font-bold", heatCell[h.tone], pick === key && "ring-2 ring-navy ring-offset-1 ring-offset-surface")}
-            >
-              {n}
-            </button>
+            <span className="mx-auto block w-[56px] text-center text-faint" aria-hidden>
+              –
+            </span>
           );
-        },
-      }),
-    ),
+        return (
+          <button
+            type="button"
+            onClick={() => setPick(pick === key ? null : key)}
+            aria-pressed={pick === key}
+            aria-label={`${r.client.short} · ${h.label} · ${n}`}
+            title={r.tasks
+              .filter((t) => t.status === h.status)
+              .map((t) => `${t.code ?? ""} ${t.title}`.trim())
+              .join("\n")}
+            className={cn("mx-auto grid h-[28px] w-[56px] place-items-center rounded-sm text-13 font-medium", heatCell[h.tone], pick === key && "ring-2 ring-accent ring-offset-1 ring-offset-surface")}
+          >
+            {n}
+          </button>
+        );
+      },
+    })),
     {
       key: "total",
       label: "Total",
@@ -354,26 +451,45 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
       align: "center",
       render: (r) => (
         <span className="whitespace-nowrap text-12 text-muted">
-          <b className="text-13.5 font-bold text-ink">{r.tasks.length}</b> {r.tasks.length > 1 ? "tasks" : "task"}
+          <b className="text-13.5 font-medium text-ink">{r.tasks.length}</b> {r.tasks.length > 1 ? "tasks" : "task"}
         </span>
       ),
     },
   ];
 
   const listCols: Column<StaffTask>[] = [
-    { key: "client", label: "Client", width: 170, render: (t) => <ClientName id={t.client} short /> },
-    { key: "title", label: "Task", render: (t) => <span className="font-semibold">{t.title}</span> },
+    {
+      key: "client",
+      label: "Client",
+      width: 170,
+      render: (t) => <ClientName id={t.client} short />,
+    },
+    {
+      key: "title",
+      label: "Task",
+      render: (t) => <span className="font-medium">{t.title}</span>,
+    },
     { key: "code", label: "Step", width: 90, render: (t) => t.code ?? "" },
     { key: "owner", label: "Owner", width: 120 },
-    { key: "due", label: "Due", width: 80, render: (t) => <span className={t.due < TODAY ? "font-semibold text-bad" : undefined}>{fmt(t.due)}</span> },
-    { key: "status", label: "Status", width: 130, render: (t) => <TaskChip status={t.status} /> },
+    {
+      key: "due",
+      label: "Due",
+      width: 80,
+      render: (t) => <span className={t.due < TODAY ? "font-medium text-bad" : undefined}>{fmt(t.due)}</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: 130,
+      render: (t) => <TaskChip status={t.status} />,
+    },
   ];
 
   const head = (
     <>
       {stuck.length > 0 && (
-        <Link href={clientHref(portal, stuck[0].client)} className="hidden items-center gap-1.5 rounded-sm bg-bad-soft px-2 py-0.5 text-12 font-semibold text-bad hover:underline md:inline-flex">
-          <i className="h-1.5 w-1.5 rounded-[2px] bg-bad" aria-hidden />
+        <Link href={clientHref(portal, stuck[0].client)} className="hidden items-center gap-1.5 rounded-sm bg-bad-soft px-2 py-0.5 text-12 font-medium text-bad hover:underline md:inline-flex">
+          <i className="h-[7px] w-[7px] rounded-[2px] bg-bad-mid" aria-hidden />
           {stuck.length} stuck · {stuck[0].text}
         </Link>
       )}
@@ -397,7 +513,7 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
       {pick && pickedCol && (
         <div className="border-t border-line">
           <div className="flex items-center gap-2 px-4 py-2.5 md:px-5">
-            <b className="text-13.5 font-semibold">
+            <b className="text-13.5 font-medium">
               {pickedCol.label} · {clientById(pick.split("|")[0])?.short}
             </b>
             <Chip tone="idle" dot={false}>
@@ -409,9 +525,9 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
           </div>
           {picked.map((t) => (
             <ListRow key={t.id} className="flex-wrap md:flex-nowrap">
-              <span className="w-[64px] flex-none font-mono text-12 text-muted">{t.code ?? "To-do"}</span>
+              <span className={cn("w-[64px] flex-none text-12 text-muted", t.code && "font-mono")}>{t.code ?? "To-do"}</span>
               <span className="min-w-0 flex-1">
-                <b className="block truncate font-semibold">{t.title}</b>
+                <b className="block truncate font-medium">{t.title}</b>
                 <span className="block truncate text-12.5 text-muted">
                   {clientById(t.client)?.short} · {t.owner} · due {fmt(t.due)}
                 </span>
@@ -428,74 +544,12 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
   );
 }
 
-const weekTone: Record<WeekKind, BarTone> = { filing: "bad", step: "navy", reminder: "warn", done: "ok" };
-
-/** This week: seven day boxes, then the picked day's agenda (Main.dc.html week strip, TodayPhone.dc.html). */
-export function ThisWeek({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
-  const [day, setDay] = React.useState(WEEK_TODAY);
-  const items = weekItems(portal).filter((w) => inScope(scope, w.client));
-  const hasCmp = items.some((w) => w.kind === "filing");
-  const days: WeekStripDay[] = WEEK.map((w) => ({
-    key: String(w.getTime()),
-    dow: DAY_SHORT[w.getDay()],
-    day: String(w.getDate()),
-    today: isToday(w),
-    items: items
-      .filter((x) => sameDay(x.day, w))
-      .map((x) => ({ id: x.id, text: `${x.text} · ${clientById(x.client)?.short ?? ""}`, tone: weekTone[x.kind], strong: x.kind === "filing" })),
-  }));
-  const agenda = day >= 0 ? items.filter((x) => sameDay(x.day, WEEK[day])) : items.filter((x) => x.kind !== "done");
-  const open = items.filter((x) => x.kind !== "done").length;
-  return (
-    <SectionCard title="This week" meta={`${fmt(WEEK[0])} to ${fmt(WEEK[6])} · ${open} open`}>
-      <WeekStrip
-        days={days}
-        value={day}
-        onChange={setDay}
-        legend={[
-          ...(hasCmp ? [{ label: "Statutory filing", tone: "bad" as const }] : []),
-          { label: "Step deadline", tone: "navy" },
-          { label: "Reminder due", tone: "warn" },
-          { label: "Done", tone: "ok" },
-        ]}
-      />
-      <div className="-mx-4 mt-3 border-t border-line-soft md:-mx-5">
-        <div className="flex items-center gap-2 px-4 pt-3 text-12.5 font-semibold text-muted md:px-5">
-          {day >= 0 ? (isToday(WEEK[day]) ? `Today · ${fmt(WEEK[day])}` : `${DAY_SHORT[WEEK[day].getDay()]} ${fmt(WEEK[day])}`) : "Whole week"}
-          {day >= 0 && (
-            <button type="button" className="ml-auto text-12.5 font-semibold text-accent hover:underline" onClick={() => setDay(-1)}>
-              Whole week
-            </button>
-          )}
-        </div>
-        {agenda.length === 0 ? (
-          <Empty />
-        ) : (
-          <ul className="mt-1">
-            {agenda.slice(0, 8).map((x) => {
-              const c = clientById(x.client);
-              return (
-                <li key={x.id} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 text-13 first:border-t-0 md:px-5">
-                  <i className={cn("h-2 w-2 flex-none rounded-[2px]", barFill[weekTone[x.kind]])} aria-hidden />
-                  <span className={cn("min-w-0 flex-1 truncate", x.kind === "filing" && "font-semibold text-bad", x.kind === "done" && "text-muted line-through")}>{x.text}</span>
-                  {c && (
-                    <span className="hidden flex-none items-center gap-1.5 text-12.5 text-muted md:flex">
-                      <ClientDot tone={c.tone} />
-                      {c.short}
-                    </span>
-                  )}
-                  {day < 0 && <span className="w-[52px] flex-none text-right text-12 text-muted">{DAY_SHORT[x.day.getDay()]} {x.day.getDate()}</span>}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </SectionCard>
-  );
-}
-
-const phaseBarTone = { done: "ok", current: "accent", stuck: "bad", next: "idle" } as const;
+const phaseBarTone = {
+  done: "ok",
+  current: "accent",
+  stuck: "bad",
+  next: "idle",
+} as const;
 
 /** Phase progress: one row per incorporating client, a cell per phase, days to COI (Main.dc.html, admin Main). */
 export function PhaseProgress({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
@@ -503,24 +557,26 @@ export function PhaseProgress({ portal, scope }: { portal: StaffPortal; scope: S
     .filter((c) => c.stage === "incorporating" && inScope(scope, c.id))
     .sort((a, b) => (portal === "admin" ? (DAYS_TO_COI[a.id] ?? 99) - (DAYS_TO_COI[b.id] ?? 99) : 0));
   const cols: Column<StaffClient>[] = [
-    { key: "name", label: "Client", render: (c) => <ClientName id={c.id} plain className="font-semibold" /> },
-    ...PHASE_LABELS.map(
-      (label, i): Column<StaffClient> => ({
-        key: `p${i}`,
-        label,
-        width: 140,
-        render: (c) => {
-          const cell = phaseCells(c)[i];
-          // K-33: a 6 px bar per phase with the count under it.
-          return (
-            <span title={`${label} · ${cell.done} of ${cell.total}${cell.kind === "stuck" ? " · stuck" : ""}`} className="grid gap-1 text-left">
-              <Bar pct={(cell.done / cell.total) * 100} tone={phaseBarTone[cell.kind]} />
-              <span className={cn("font-mono text-12", cell.kind === "done" ? "text-ok" : cell.kind === "stuck" ? "font-semibold text-bad" : "text-ink-2")}>{cell.kind === "done" ? "✓" : `${cell.done}/${PHASE_TOTALS[i]}`}</span>
-            </span>
-          );
-        },
-      }),
-    ),
+    {
+      key: "name",
+      label: "Client",
+      render: (c) => <ClientName id={c.id} plain className="font-medium" />,
+    },
+    ...PHASE_LABELS.map((label, i): Column<StaffClient> => ({
+      key: `p${i}`,
+      label,
+      width: 140,
+      render: (c) => {
+        const cell = phaseCells(c)[i];
+        // K-33: a 6 px bar per phase with the count under it.
+        return (
+          <span title={`${label} · ${cell.done} of ${cell.total}${cell.kind === "stuck" ? " · stuck" : ""}`} className="grid gap-1 text-left">
+            <Bar pct={(cell.done / cell.total) * 100} tone={phaseBarTone[cell.kind]} />
+            <span className={cn("text-12", cell.kind === "done" ? "text-ok" : cell.kind === "stuck" ? "font-medium text-bad" : "text-ink-2")}>{cell.kind === "done" ? "✓" : `${cell.done}/${PHASE_TOTALS[i]}`}</span>
+          </span>
+        );
+      },
+    })),
     {
       key: "coi",
       label: "Days to COI",
@@ -528,10 +584,18 @@ export function PhaseProgress({ portal, scope }: { portal: StaffPortal; scope: S
       align: "right",
       render: (c) => {
         const n = DAYS_TO_COI[c.id];
-        return <span className={cn("font-semibold", n !== undefined && n < 10 && "text-bad")}>{n !== undefined ? `${n} days` : ""}</span>;
+        return <span className={cn("font-medium", n !== undefined && n < 10 && "text-bad")}>{n !== undefined ? `${n} days` : ""}</span>;
       },
     },
-    ...(portal === "admin" ? [{ key: "manager", label: "Manager", width: 110 } as Column<StaffClient>] : []),
+    ...(portal === "admin"
+      ? [
+          {
+            key: "manager",
+            label: "Manager",
+            width: 110,
+          } as Column<StaffClient>,
+        ]
+      : []),
   ];
   return (
     <DataGrid
@@ -545,8 +609,15 @@ export function PhaseProgress({ portal, scope }: { portal: StaffPortal; scope: S
         <span className="hidden flex-wrap items-center gap-3 md:flex">
           {(["done", "current", "stuck", "next"] as const).map((k) => (
             <span key={k} className="flex items-center gap-1.5">
-              <i className={cn("h-2.5 w-2.5 rounded-[3px]", barFill[phaseBarTone[k]])} aria-hidden />
-              {{ done: "Done", current: "Current", stuck: "Stuck", next: "Next" }[k]}
+              <i className={cn("h-2 w-2 rounded-[2px]", barFill[phaseBarTone[k]])} aria-hidden />
+              {
+                {
+                  done: "Done",
+                  current: "Current",
+                  stuck: "Stuck",
+                  next: "Next",
+                }[k]
+              }
             </span>
           ))}
         </span>
@@ -556,13 +627,26 @@ export function PhaseProgress({ portal, scope }: { portal: StaffPortal; scope: S
 }
 
 const filingCellClass: Record<FilingCell["kind"], string> = {
-  filed: "bg-ok-mid text-white",
-  due: "bg-warn-mid text-white",
-  overdue: "bg-bad-mid text-white",
+  filed: "bg-ok-soft text-ok",
+  due: "bg-warn-soft text-warn",
+  overdue: "bg-bad-soft text-bad",
   upcoming: "bg-raised text-muted",
-  na: "border border-dashed border-line-soft",
+  na: "border-1.5 border-dashed border-line",
 };
-const filingLabel: Record<FilingCell["kind"], string> = { filed: "Filed", due: "Due soon", overdue: "Overdue", upcoming: "Upcoming", na: "Not applicable" };
+const filingDot: Record<FilingCell["kind"], string> = {
+  filed: "bg-ok-mid",
+  due: "bg-warn-mid",
+  overdue: "bg-bad-mid",
+  upcoming: "bg-idle-mid",
+  na: "border-1.5 border-dashed border-line-2",
+};
+const filingLabel: Record<FilingCell["kind"], string> = {
+  filed: "Filed",
+  due: "Due soon",
+  overdue: "Overdue",
+  upcoming: "Upcoming",
+  na: "Not applicable",
+};
 
 /** Clients × filings · October (Main.dc.html filing grid). Only clients with a filing due or overdue show. */
 export function ClientsFilings({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
@@ -574,24 +658,26 @@ export function ClientsFilings({ portal, scope }: { portal: StaffPortal; scope: 
     .sort((a, b) => rank(a.id) - rank(b.id))
     .map((c) => ({ c, cells: filingRow(c) }));
   const cols: Column<(typeof rows)[number]>[] = [
-    { key: "client", label: "Client", render: (r) => <ClientName id={r.c.id} plain href={clientHref(portal, r.c.id)} className="font-semibold" /> },
-    ...FILING_COLS.map(
-      (f, i): Column<(typeof rows)[number]> => ({
-        key: f,
-        label: f.replace(" challan", "").replace("Professional tax", "PT").replace(" KYC", ""),
-        width: 58,
-        align: "center",
-        className: "!px-1",
-        render: (r) => {
-          const x = r.cells[i];
-          return (
-            <span title={`${r.c.short} · ${f} · ${filingLabel[x.kind]}${x.due ? ` · ${fmt(x.due)}` : ""}`} className={cn("mx-auto grid h-[24px] w-[40px] place-items-center rounded-sm text-12 font-bold", filingCellClass[x.kind])}>
-              {x.kind === "filed" ? "✓" : x.kind === "overdue" ? "!" : x.kind === "due" && x.due ? x.due.getDate() : ""}
-            </span>
-          );
-        },
-      }),
-    ),
+    {
+      key: "client",
+      label: "Client",
+      render: (r) => <ClientName id={r.c.id} plain href={clientHref(portal, r.c.id)} className="font-medium" />,
+    },
+    ...FILING_COLS.map((f, i): Column<(typeof rows)[number]> => ({
+      key: f,
+      label: f.replace(" challan", "").replace("Professional tax", "PT").replace(" KYC", ""),
+      width: 58,
+      align: "center",
+      className: "!px-1",
+      render: (r) => {
+        const x = r.cells[i];
+        return (
+          <span title={`${r.c.short} · ${f} · ${filingLabel[x.kind]}${x.due ? ` · ${fmt(x.due)}` : ""}`} className={cn("mx-auto grid h-[24px] w-[40px] place-items-center rounded-sm text-12 font-medium", filingCellClass[x.kind])}>
+            {x.kind === "filed" ? "✓" : x.kind === "overdue" ? "!" : x.kind === "due" && x.due ? x.due.getDate() : ""}
+          </span>
+        );
+      },
+    })),
   ];
   return (
     <DataGrid
@@ -604,35 +690,13 @@ export function ClientsFilings({ portal, scope }: { portal: StaffPortal; scope: 
         <span className="hidden flex-wrap items-center gap-3 md:flex">
           {(["filed", "due", "overdue", "upcoming", "na"] as const).map((k) => (
             <span key={k} className="flex items-center gap-1.5">
-              <i className={cn("h-2.5 w-2.5 rounded-[3px]", filingCellClass[k])} aria-hidden />
+              <i className={cn("h-2 w-2 rounded-[2px]", filingDot[k])} aria-hidden />
               {filingLabel[k]}
             </span>
           ))}
         </span>
       }
     />
-  );
-}
-
-/** Compliance health (TodayPhone.dc.html, Main.dc.html donut). R-25: a stacked bar, not a donut, outside Calendar and Filings. */
-export function ComplianceHealth({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
-  const cl = clientsFor(portal).filter((c) => inScope(scope, c.id));
-  const n = filingCounts(cl);
-  const total = n.filed + n.due + n.overdue + n.upcoming;
-  if (!total) return null;
-  return (
-    <SectionCard title="Compliance health" meta="October" right={<HeadLink href={`${base(portal)}/compliances/filings`}>Filings ›</HeadLink>}>
-      <StackedBar
-        total={total}
-        title={`Filings across ${cl.filter((c) => c.stage === "compliance").length} clients`}
-        segments={[
-          { label: "Filed", value: n.filed, tone: "ok" },
-          { label: "Due soon", value: n.due, tone: "warn" },
-          { label: "Overdue", value: n.overdue, tone: "bad" },
-          { label: "Upcoming", value: n.upcoming, tone: "idle" },
-        ]}
-      />
-    </SectionCard>
   );
 }
 
@@ -650,7 +714,13 @@ export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scop
   const fromQueue = () => {
     const q = queueFor(portal).find((t) => !todos.some((x) => x.text === t.title));
     if (q) {
-      add({ id: `q${q.id}`, text: q.title, client: q.client, pinned: true, due: q.due });
+      add({
+        id: `q${q.id}`,
+        text: q.title,
+        client: q.client,
+        pinned: true,
+        due: q.due,
+      });
       notify(`Pinned from the action queue · ${q.title}`);
     }
   };
@@ -662,7 +732,11 @@ export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scop
         <Tabs
           items={[
             { key: "triage", label: "Triage", count: tri.length },
-            { key: "todos", label: "My to-dos", count: mine.filter((t) => !t.done).length },
+            {
+              key: "todos",
+              label: "My to-dos",
+              count: mine.filter((t) => !t.done).length,
+            },
           ]}
           value={tab}
           onChange={setTab}
@@ -678,10 +752,10 @@ export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scop
               <div key={r.id} className="border-t border-line-soft px-4 py-3 first:border-t-0 md:px-5">
                 <div className="flex items-start gap-2.5">
                   {c && <ClientDot tone={c.tone} className="mt-1.5" />}
-                  <Link href={clientHref(portal, r.client)} className={cn("min-w-0 flex-1 text-13.5 hover:underline", r.unread && "font-semibold")}>
+                  <Link href={clientHref(portal, r.client)} className={cn("min-w-0 flex-1 text-13.5 hover:underline", r.unread && "font-medium")}>
                     {r.text}
                   </Link>
-                  <span className="flex-none font-mono text-12 text-muted">{r.time}</span>
+                  <span className="flex-none text-12 text-muted">{r.time}</span>
                 </div>
                 <div className="mt-0.5 pl-[18px] text-12.5 text-muted">
                   {c?.short} · {r.from}
@@ -758,33 +832,34 @@ export function InboxCard({ portal, scope, notify }: { portal: StaffPortal; scop
   );
 }
 
-/** Waiting for your approval (reference/old-screens/s/mgr/Approvals.dc.html): code tile, task, client · date · lead, a navy button on each row (owner exception to R-12, 28 Oct 2026). */
+/** Approvals (ManagerToday.dc.html): company tile, task, client · due date · lead, a navy button on each row (D-13, exception to R-12). */
 export function ApprovalsWaiting({ portal, notify }: { portal: StaffPortal; notify: Notify }) {
   const [gone, setGone] = React.useState<Set<string>>(new Set());
   const rows = APPROVALS.manager.filter((a) => !gone.has(a.id)).sort((a, b) => a.sent.getTime() - b.sent.getTime());
   return (
-    <SectionCard title="Waiting for your approval" meta={String(rows.length)} flush>
+    <SectionCard title="Approvals" meta={String(rows.length)} flush>
       {rows.length === 0 && <Empty />}
       {rows.map((a) => {
         const c = clientById(a.client);
         const review = a.title.startsWith("Review");
+        const today = sameDay(a.sent, TODAY);
         return (
           <ListRow key={a.id}>
-            {c && <ClientCodeTile c={c} />}
+            {c && <ClientCodeTile c={c} size={30} />}
             <span className="min-w-0 flex-1">
-              <Link href={clientHref(portal, a.client)} className="block truncate font-semibold hover:underline">
+              <Link href={clientHref(portal, a.client)} className="block font-medium leading-snug text-ink hover:underline">
                 {a.title}
               </Link>
               <span className="block truncate text-12.5 text-muted">
-                {c?.short} · {fmt(a.sent)} · {a.by.split(" ")[0]}
+                {c?.short} · <span className={today ? "text-warn" : "text-accent"}>{today ? "Due today" : `Due ${fmt(a.sent)}`}</span> · {a.by.split(" ")[0]}
               </span>
             </span>
             <Button
               size="sm"
-              variant="primary"
+              variant="strong"
               onClick={() => {
                 setGone(new Set([...gone, a.id]));
-                notify(`${review ? "Opened for review" : "Approved"}: ${a.title.replace(/^(Approve|Review) /, "")} · ${c?.short ?? ""}`);
+                notify(`${review ? "Opened for review" : "Approved"}: ${a.title.replace(/^(Approve|Review) /, "")} · ${c?.short ?? ""}`, () => setGone((s) => new Set([...s].filter((x) => x !== a.id))));
               }}
             >
               {review ? "Review" : "Approve"}
@@ -796,8 +871,8 @@ export function ApprovalsWaiting({ portal, notify }: { portal: StaffPortal; noti
   );
 }
 
-/** The two-letter client code tile on its own. */
-function ClientCodeTile({ c }: { c: StaffClient }) {
+/** The two-letter company tile on its own: a 6 px square in the client colour (R-44). */
+export function ClientCodeTile({ c, size = 26 }: { c: StaffClient; size?: 26 | 30 }) {
   const code = plainName(c)
     .split(" ")
     .slice(0, 2)
@@ -805,7 +880,7 @@ function ClientCodeTile({ c }: { c: StaffClient }) {
     .join("")
     .toUpperCase();
   return (
-    <span className={cn("grid h-[26px] w-[26px] flex-none place-items-center rounded-sm text-[10px] font-extrabold", codeTone[c.tone])} aria-hidden>
+    <span className={cn("grid flex-none place-items-center rounded-md font-medium tracking-[.02em]", size === 30 ? "h-[30px] w-[30px] text-13" : "h-[26px] w-[26px] text-11", codeTone[c.tone])} title={c.name} aria-hidden>
       {code}
     </span>
   );
@@ -824,7 +899,7 @@ export function WaitingOnClient({ portal, scope, notify }: { portal: StaffPortal
           <ListRow key={t.id}>
             {c && <ClientDot tone={c.tone} />}
             <span className="min-w-0 flex-1">
-              <Link href={taskHref(portal, t)} className="block truncate font-semibold hover:underline">
+              <Link href={taskHref(portal, t)} className="block truncate font-medium hover:underline">
                 {t.title}
               </Link>
               <span className="block truncate text-12.5 text-muted">
@@ -853,45 +928,87 @@ export function WaitingOnClient({ portal, scope, notify }: { portal: StaffPortal
   );
 }
 
-const STATUS_ORDER: Array<{ s: TaskStatus; label: string; tone: BarTone }> = [
+/** The six status words in chart order, with their status colours (R-25). */
+export const STATUS_ORDER: Array<{
+  s: TaskStatus;
+  label: string;
+  tone: BarTone;
+}> = [
   { s: "Overdue", label: "Overdue", tone: "bad" },
-  { s: "Due this week", label: "Due this week", tone: "warn" },
+  { s: "Due this week", label: "Due soon", tone: "warn" },
   { s: "In progress", label: "In progress", tone: "accent" },
-  { s: "With client", label: "Waiting on client", tone: "teal" },
+  { s: "With client", label: "Waiting", tone: "teal" },
   { s: "Not started", label: "Not started", tone: "idle" },
   { s: "Done", label: "Done", tone: "ok" },
 ];
 
-/** Task status (mgr Main.dc.html "Task status" donut). R-25: a stacked bar here. Plus open tasks by project lead. */
+/** Task status (ManagerToday.dc.html): C1 donut with the total in the centre and a legend beside it (R-25). */
 export function TaskStatusCard({ portal, scope, title = "Task status", tasks }: { portal: StaffPortal; scope: Scope; title?: string; tasks?: StaffTask[] }) {
   const all = (tasks ?? tasksFor(portal)).filter((t) => inScope(scope, t.client));
-  const open = all.filter((t) => t.status !== "Done");
-  // Old order: leads by name (mgr Main.dc.html mtInterns). The red part of each bar is the late tasks.
-  const owners = [...new Set(open.map((t) => t.owner))]
-    .map((o) => ({ o, n: open.filter((t) => t.owner === o).length, late: open.filter((t) => t.owner === o && t.status === "Overdue").length }))
-    .sort((a, b) => a.o.localeCompare(b.o));
-  const max = Math.max(1, ...owners.map((x) => x.n));
   return (
     <SectionCard title={title}>
-      <StackedBar total={all.length} title="Tasks" segments={STATUS_ORDER.map((x) => ({ label: x.label, value: all.filter((t) => t.status === x.s).length, tone: x.tone }))} />
-      {portal !== "lead" && owners.length > 1 && (
-        <div className="mt-4 border-t border-line-soft pt-3">
-          <h3 className="mb-2 text-12 font-semibold text-muted">Open tasks by project lead</h3>
-          <ul className="grid gap-2">
-            {owners.map((x) => (
-              <li key={x.o} className="grid grid-cols-[24px_56px_minmax(0,1fr)_24px] items-center gap-2 text-12.5">
-                <span className="grid h-6 w-6 place-items-center rounded-md bg-raised text-[10px] font-bold text-ink">{initials(x.o)}</span>
-                <span className="truncate text-ink-2" title={x.o}>{x.o.split(" ")[0]}</span>
-                <span className="flex h-1.5 overflow-hidden rounded-bar bg-raised" title={`${x.o} · ${x.n} open${x.late ? ` · ${x.late} late` : ""}`}>
-                  <span className={cn("h-full", barFill.bad)} style={{ width: `${(x.late / max) * 100}%` }} />
-                  <span className={cn("h-full", barFill.accent)} style={{ width: `${((x.n - x.late) / max) * 100}%` }} />
-                </span>
-                <span className="text-right text-11.5 text-muted">{x.n}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <Donut
+        size={96}
+        total={all.length}
+        segments={STATUS_ORDER.map((x) => ({
+          label: x.label,
+          value: all.filter((t) => t.status === x.s).length,
+          tone: x.tone,
+        }))}
+        className="gap-6 [&>div:last-child]:flex-1"
+      />
+    </SectionCard>
+  );
+}
+
+/** Workload by lead (ManagerToday.dc.html): C2, one stacked bar per person in status colours, scaled to the busiest lead (R-25). */
+export function WorkloadByLead({ portal }: { portal: StaffPortal }) {
+  const rows = Object.entries(LEAD_STATS).map(([name, x]) => ({
+    name,
+    open: leadOpen(name) ?? 0,
+    segs: [
+      { label: "Overdue", value: x.st[3], tone: "bad" as const },
+      { label: "Due soon", value: x.st[2], tone: "warn" as const },
+      { label: "In progress", value: x.st[1], tone: "accent" as const },
+      { label: "Not started", value: x.st[4], tone: "idle" as const },
+    ],
+  }));
+  const max = Math.max(1, ...rows.map((r) => r.open));
+  return (
+    <SectionCard
+      title="Workload by lead"
+      right={
+        <Button size="sm" variant="secondary" asChild>
+          <Link href={`${base(portal)}/leads`}>Rebalance</Link>
+        </Button>
+      }
+    >
+      <ul className="grid gap-3.5">
+        {rows.map((r) => (
+          <li key={r.name} className="grid gap-[7px]" title={r.segs.map((s) => `${s.label} ${s.value}`).join(" · ")}>
+            <div className="flex items-center gap-2">
+              <Avatar name={r.name} size={24} />
+              <span className="min-w-0 flex-1 truncate text-13.5 font-medium text-ink">{r.name}</span>
+              <span className="text-12.5 text-muted">{r.open} open</span>
+            </div>
+            <span className="flex h-2.5 gap-0.5" style={{ width: `${(r.open / max) * 100}%` }} aria-hidden>
+              {r.segs
+                .filter((s) => s.value > 0)
+                .map((s) => (
+                  <i key={s.label} className={cn("block h-full rounded-[2px]", barFill[s.tone])} style={{ flex: `${s.value} 1 0` }} />
+                ))}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-12.5 text-muted">
+        {rows[0]?.segs.map((s) => (
+          <li key={s.label} className="flex items-center gap-1.5">
+            <i className={cn("h-2 w-2 rounded-[2px]", barFill[s.tone])} aria-hidden />
+            {s.label}
+          </li>
+        ))}
+      </ul>
     </SectionCard>
   );
 }
@@ -930,10 +1047,10 @@ export function AssignClientDialog({ open, onOpenChange, clientName, onAssign }:
           const s = stats.find((x) => x.name === m.name);
           const on = mgr === m.name;
           return (
-            <label key={m.name} className={cn("flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5", on ? "border-navy bg-raised" : "border-line hover:bg-raised")}>
-              <input type="radio" name="assign-mgr" value={m.name} checked={on} onChange={() => setMgr(m.name)} className="accent-[var(--navy)]" />
+            <label key={m.name} className={cn("flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5", on ? "border-accent-line bg-accent-soft" : "border-line hover:bg-hover")}>
+              <input type="radio" name="assign-mgr" value={m.name} checked={on} onChange={() => setMgr(m.name)} className="accent-[var(--primary)]" />
               <span className="min-w-0">
-                <b className="block text-13.5 font-semibold">{m.name}</b>
+                <b className="block text-13.5 font-medium">{m.name}</b>
                 <span className="block text-12.5 text-muted">
                   {s?.clients ?? 0} clients · {s?.open ?? 0} open · {s?.overdue ?? 0} late
                 </span>
@@ -960,7 +1077,7 @@ export function DecisionsCard({ portal, notify }: { portal: StaffPortal; notify:
       {fresh.map((u) => (
         <ListRow key={u.id}>
           <span className="min-w-0 flex-1">
-            <b className="block truncate font-semibold">{u.name} has no manager</b>
+            <b className="block truncate font-medium">{u.name} has no manager</b>
             <span className="block truncate text-12.5 text-muted">
               {u.service} · {u.won}
             </span>
@@ -976,7 +1093,7 @@ export function DecisionsCard({ portal, notify }: { portal: StaffPortal; notify:
           <ListRow key={a.id}>
             {c && <ClientDot tone={c.tone} />}
             <span className="min-w-0 flex-1">
-              <Link href={clientHref(portal, a.client)} className="block truncate font-semibold hover:underline">
+              <Link href={clientHref(portal, a.client)} className="block truncate font-medium hover:underline">
                 {a.title.replace("Escalation: ", "")}
               </Link>
               <span className="block truncate text-12.5 text-muted">
