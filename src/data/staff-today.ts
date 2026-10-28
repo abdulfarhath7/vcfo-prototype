@@ -201,13 +201,13 @@ export function practiceNumbers(portal: StaffPortal) {
 /** Done today count for the greeting (Main.dc.html KPIs). */
 export const DONE_TODAY: Record<StaffPortal, number> = { lead: 2, manager: 2, admin: 6 };
 
-/**
- * Home card sub lines and trends (R-18). Lead and manager share Bharath's queue, so they share these.
- * Trends are the last seven working days, ending today. Admin has no history in the sample data.
- */
-export const TODAY_NOTES: Record<StaffPortal, { newToday?: number; doneWhat?: string; overdueTrend?: number[]; waitingTrend?: number[] }> = {
-  lead: { newToday: 3, doneWhat: "GSTR-1 · PT", overdueTrend: [2, 2, 3, 3, 5, 4, 4], waitingTrend: [4, 5, 5, 7, 6, 6, 6] },
-  manager: { newToday: 3, doneWhat: "GSTR-1 · PT", overdueTrend: [2, 2, 3, 3, 5, 4, 4], waitingTrend: [4, 5, 5, 7, 6, 6, 6] },
+/** Home card notes (R-17): tasks new in the queue today. Lead and manager share Bharath's queue. */
+export const NEW_TODAY: Record<StaffPortal, number> = { lead: 3, manager: 3, admin: 0 };
+
+/** Home card trend lines (R-18): the last five working days, ending today. Lead and manager share Bharath's queue. Admin has no history. */
+export const TODAY_TRENDS: Record<StaffPortal, { action?: number[]; overdue?: number[]; waiting?: number[]; done?: number[] }> = {
+  lead: { action: [6, 8, 7, 10, 11], overdue: [3, 2, 4, 3, 4], waiting: [9, 9, 6, 6, 6], done: [1, 3, 2, 4, 2] },
+  manager: { action: [6, 8, 7, 10, 11], overdue: [3, 2, 4, 3, 4], waiting: [9, 9, 6, 6, 6], done: [1, 3, 2, 4, 2] },
   admin: {},
 };
 

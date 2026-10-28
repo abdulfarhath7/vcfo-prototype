@@ -115,6 +115,7 @@ const config: Config = {
         float: "var(--shadow-float)",
         dialog: "var(--shadow-dialog)",
         tile: "var(--shadow-tile)",
+        mini: "var(--shadow-mini)",
         shine: "var(--shine)",
         control: "var(--shadow-control)",
       },

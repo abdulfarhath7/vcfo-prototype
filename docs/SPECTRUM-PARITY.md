@@ -41,7 +41,7 @@ Source: the Spectrum canvas (https://claude.ai/artifact/Mthtcsro8KnEd5xHyJ9pTi),
 | B-19 | Loading (L1) | Grey shapes of the content | `Skeleton.tsx` exists. No screen uses it. | ✗ | Show L1 on first load of each card (300 ms) and on tab switch. |
 | B-20 | Upload U1 / U2 / U3 | Per-file progress; compact chips; big drop zone | Drop zone present. No per-file progress row on Client Home. | ◐ | Show "Recent uploads" with a progress row and an Uploaded tick (C-02). |
 | B-21 | Table T1 | Clean rows, 44 px, uppercase head | Present | ✓ | None |
-| B-22 | Number tile (KP1) | Label, number, note, trend line | Notes and trend lines missing on staff homes | ◐ | Use the compact tile (D-01). |
+| B-22 | Number tile (KP1) | Label, number, note, trend line | Notes and trend lines missing on staff homes | ✓ | Done: home cards use the compact tile with a note and a trend line (D-01). |
 | B-23 | Charts C1 / C2 / C4 | Donut, stacked person bars, on-time vs late columns | C1 and C2 present. C4 not found. | ◐ | Add C4 to Compliances and Analytics (C-07). |
 | B-24 | Progress G1 | 10 px, 3 px corners, shine | Present | ✓ | None |
 | B-25 | People and companies | People are circles; stacks with a ring; companies are 6 px squares | Present. Stacked avatars (V3) not used. | ◐ | Use V3 in client lists ("who works on this client") and on Team. |
@@ -53,21 +53,21 @@ Source: the Spectrum canvas (https://claude.ai/artifact/Mthtcsro8KnEd5xHyJ9pTi),
 
 | No. | Screen | Design | Prototype | Status | Action |
 |---|---|---|---|---|---|
-| C-01 | Client Home · home card | One compact card (D-01) | Tall card, 5 tiles without trend lines | ◐ | Use the compact card. |
+| C-01 | Client Home · home card | One compact card (D-01) | Tall card, 5 tiles without trend lines | ✓ | Done: compact card with a 40 px company tile, stage chip, step count, five tiles, Report icon and Upload. |
 | C-02 | Client Home · cards | Incorporation (ST5), Timeline, Needs from Northwind, Who holds it now, Recent uploads (U1) | All present except Recent uploads with progress. Extra cards: Important alerts, What SBC is doing, Recent documents, Recent activity. | ◐ | Keep the extra cards (they are real features). Add the progress row (B-20) to Recent documents. Remove the duplicate passport row: it shows in Needs, Important alerts and Overdue at once. |
-| C-03 | Manager Today | Compact card; Team tasks with chips; Approvals; Task status; Workload | Present. Tall card. | ◐ | Compact card (D-01). Move the All / Incorporating / Compliance switch into the Team tasks head. |
-| C-04 | Other staff homes (Lead, Admin, Super admin, Developer) | Same compact card, each with its own five numbers | Tall card | ◐ | Compact card (D-01). |
+| C-03 | Manager Today | Compact card; Team tasks with chips; Approvals; Task status; Workload | Present. Tall card. | ✓ | Done: compact card. The All / Incorporating / Compliance switch is in the Team tasks head. |
+| C-04 | Other staff homes (Lead, Admin, Super admin, Developer) | Same compact card, each with its own five numbers | Tall card | ✓ | Done: lead, admin, super admin and developer use the compact card with their own five numbers. The lead switch is in the Action queue head. |
 | C-05 | Compliances · Filings | Tabs By filing / By client / Calendar; four KPI tiles; filter chips; rows grouped by filing (date tile, area pill, "3 of 5 filed" bar), client rows under each group with Lead, Note, Status and a File now / Open action | Flat grid of filings. Area tabs and a status switch instead of chips. No grouping. No row action. | ◐ | Add the "By filing" grouped view as the default tab. Keep the flat grid as "All filings". Add the row actions. |
 | C-06 | Compliances · KPI row | Due this month, Filed, Due in 7 days, Overdue | Donut only | ✗ | Add the four tiles above the list. |
 | C-07 | Compliances · charts | On time vs late (C4); By regulator bars with all six regulators | By area bars without Labour; donut | ◐ | Add C4. Add Labour to the regulator bars. |
-| C-08 | Phone · Client Home | Compact card; 2 × 2 tiles; ST5 compact; bottom tab bar (Home, Steps, Documents, Ask, More) with a tinted active tab | Tall card; 5 large tiles; menu button only | ◐ | Add the bottom tab bar on phones for every portal (four main items + More). Use 2 × 2 compact tiles. |
+| C-08 | Phone · Client Home | Compact card; 2 × 2 tiles; ST5 compact; bottom tab bar (Home, Steps, Documents, Ask, More) with a tinted active tab | Tall card; 5 large tiles; menu button only | ✓ | Done: a bottom tab bar on phones for every portal (three main screens, Ask, More). Phone tiles wrap 2 × 2. |
 | C-09 | Landing | v6 landing + C2 comparison table | Present. Big logo block mid-page. Old portal screenshots. | ◐ | Review fixes 1 and 2 (already sent). |
 
 ## D. Owner decisions after the build
 
 | No. | Decision | Status | Action |
 |---|---|---|---|
-| D-01 | Home card: one row, about 84 px. Greeting or company on the left, five mini tiles (label, number, short note, 52 × 24 trend line where history exists), one action on the right. | ✗ | Copy the boards OptH3cCards and OptH3c. |
+| D-01 | Home card: one row, about 84 px. Greeting or company on the left, five mini tiles (label, number, short note, 52 × 24 trend line where history exists), one action on the right. | ✓ | Done: `GreetingCard` copies OptH3c. Tiles are 56 px; the trend line hides when a tile is too narrow. |
 | D-02 | Keep R-38: no "Your next action" bars on pages | ✓ | None |
 
 ## E. New ideas (my additions, approved by the owner's "bring all your ideas")

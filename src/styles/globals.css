@@ -64,6 +64,15 @@
   .bg-wash {
     background: var(--wash);
   }
+  /* R-18: a home card tile hides its trend line when it is too narrow for the label, number and note. */
+  .mini-tile {
+    container-type: inline-size;
+  }
+  @container (max-width: 168px) {
+    .mini-spark {
+      display: none;
+    }
+  }
   /* R-21: remaining part of the current phase, blurple hatch */
   .hatch {
     background: repeating-linear-gradient(135deg, var(--accent-soft) 0 4px, var(--accent-line) 4px 6px);

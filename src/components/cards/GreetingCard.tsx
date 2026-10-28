@@ -2,7 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { fmtLong } from "@/lib/dates";
+import { fmt } from "@/lib/dates";
 import type { Tone } from "@/components/icons";
 
 export interface StatItem {
@@ -18,6 +18,8 @@ export interface StatItem {
   good?: boolean;
   /** Small line under the number: "3 new today". */
   sub?: string;
+  /** Home card only: a short note after the number ("3 new", "2 clients"). */
+  note?: string;
   /** Sparkline points. */
   spark?: number[];
   /** Sparkline colour; default from bad/good, else blurple. */
@@ -93,41 +95,100 @@ export interface GreetingCardProps {
   name: string;
   /** Greeting before the name: "Good afternoon" gives "Good afternoon, Mithilesh". */
   eyebrow?: string;
-  /** Chip or small text after the name. */
+  /** Small chip after the name line (client stage). */
   tag?: React.ReactNode;
   /** Company tile before the name (client home). */
   lead?: React.ReactNode;
-  /** Small line under the name: project lead, CIN. */
+  /** Small text after the tag: "6 of 25 steps". */
   sub?: React.ReactNode;
+  /** One main action (R-17). */
   actions?: React.ReactNode;
   stats: StatItem[];
-  /** Clock after the date: "12:31 PM" on staff portals, as in the old greeting. */
+  /** Clock after the date: "12:31 PM" on staff portals. */
   time?: string;
 }
 
+const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 /**
- * R-17 (H3): one home card on every portal. Date, greeting or company name, the actions and the number tiles,
- * on the deep colour wash. The tiles float on it.
+ * R-17 (H3c): one compact home card on every portal home, about 80 px tall. The colour wash holds the greeting
+ * or company on the left, five mini tiles in one row, and one main action on the right. It wraps on phones.
  */
 export function GreetingCard({ date, name, eyebrow, tag, lead, sub, actions, stats, time }: GreetingCardProps) {
-  const when = time ? `${fmtLong(date)} · ${time}` : fmtLong(date);
+  const when = `${WD[date.getDay()]} ${fmt(date)}${time ? ` · ${time}` : ""}`;
   return (
-    <section className="bg-wash flex flex-col gap-5 rounded-md border-1.5 border-line px-4 pb-5 pt-[18px] md:px-6 md:pb-6 md:pt-[22px]" aria-label="Summary">
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="flex min-w-0 flex-[1_1_300px] items-center gap-4">
-          {lead}
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-13 text-wash-ink-2">{when}</span>
-            <h1 className="flex flex-wrap items-center gap-2.5 text-22 font-medium tracking-[-0.01em] text-ink md:text-28">
-              <span className="min-w-0">{eyebrow ? `${eyebrow}, ${name}` : name}</span>
+    <section className="bg-wash flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border-1.5 border-line py-3.5 pl-5 pr-4" aria-label="Summary">
+      <div className="mr-1 flex min-w-0 flex-none items-center gap-3">
+        {lead}
+        <div className="flex min-w-0 flex-col gap-[3px]">
+          {!lead && <span className="text-12.5 text-wash-ink-2">{when}</span>}
+          <h1 className="whitespace-nowrap text-20 font-medium text-ink">{eyebrow ? `${eyebrow}, ${name}` : name}</h1>
+          {(tag || sub) && (
+            <span className="flex items-center gap-2 whitespace-nowrap text-12.5 text-wash-ink-2">
               {tag}
-            </h1>
-            {sub && <span className="text-13 text-wash-ink-2">{sub}</span>}
-          </div>
+              {sub}
+            </span>
+          )}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2.5">{actions}</div>}
       </div>
-      <NumberStrip items={stats} onWash />
+      <div className="flex min-w-0 flex-[999_1_520px] flex-wrap gap-2">
+        {stats.slice(0, 5).map((s) => (
+          <MiniTile key={s.label} s={s} />
+        ))}
+      </div>
+      {actions && <div className="flex flex-none items-center gap-2">{actions}</div>}
     </section>
+  );
+}
+
+/**
+ * R-18 (home card): 56 px tile. A 12 px label, a 20 px number and a short 12 px note on the left;
+ * a 52 x 24 trend line on the right where history exists, or a 44 px bar for a share.
+ */
+function MiniTile({ s }: { s: StatItem }) {
+  const note = s.note ?? s.of;
+  const inner = (
+    <span className="flex h-full min-w-0 items-center gap-2">
+      <span className="flex min-w-0 flex-1 flex-col justify-center gap-[3px]">
+        <span className="truncate text-12 font-medium text-muted">{s.label}</span>
+        <span className="flex min-w-0 items-baseline gap-1.5">
+          <b className={cn("whitespace-nowrap text-20 font-medium leading-none tabular-nums", s.bad ? "text-bad" : s.good ? "text-ok" : "text-ink")}>{s.value}</b>
+          {note && <span className="truncate text-12 text-muted">{note}</span>}
+          {s.bar !== undefined && (
+            <span className="ml-0.5 block h-[5px] w-11 flex-none self-center overflow-hidden rounded-bar bg-raised" aria-hidden>
+              <i className="block h-full rounded-bar bg-ok-mid" style={{ width: `${s.bar}%` }} />
+            </span>
+          )}
+        </span>
+      </span>
+      {s.spark && <MiniSpark points={s.spark} className={cn("mini-spark", SPARK[s.sparkTone ?? (s.bad ? "bad" : s.good ? "ok" : "accent")])} />}
+    </span>
+  );
+  const cls = cn(
+    "mini-tile h-14 min-w-[104px] flex-[1_1_120px] rounded-md border border-wash-tile-line bg-wash-tile pl-3 pr-2.5 shadow-mini",
+    s.href && "transition-colors hover:border-line-2",
+  );
+  return s.href ? (
+    <Link href={s.href} className={cls}>
+      {inner}
+    </Link>
+  ) : (
+    <div className={cls}>{inner}</div>
+  );
+}
+
+/** 52 x 24 trend line with a soft area and a dot on the last point. */
+function MiniSpark({ points, className }: { points: number[]; className?: string }) {
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const xy = points.map((p, i) => [2 + (i / (points.length - 1)) * 48, 20 - ((p - min) / (max - min || 1)) * 16] as const);
+  const line = xy.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const [lx, ly] = xy[xy.length - 1]!;
+  return (
+    <svg width="52" height="24" viewBox="0 0 52 24" className={cn("flex-none", className)} aria-hidden>
+      <path d={`M2,24 L${line.replaceAll(" ", " L")} L50,24 Z`} fill="currentColor" fillOpacity=".14" />
+      <polyline points={line} fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={lx} cy={ly} r="2.5" fill="currentColor" />
+    </svg>
   );
 }

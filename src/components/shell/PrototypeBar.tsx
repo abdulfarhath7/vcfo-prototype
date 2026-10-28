@@ -149,7 +149,7 @@ export function PrototypeBar({ portal, incorporated = false }: { portal: Portal;
         <button
           type="button"
           onClick={() => hide(false)}
-          className="fixed bottom-3.5 left-3.5 z-[70] rounded-lg bg-navy px-2.5 py-2 text-11 font-extrabold tracking-[.08em] text-brand md:left-[264px]"
+          className="fixed bottom-[76px] left-3.5 z-[70] rounded-lg bg-navy md:bottom-3.5 px-2.5 py-2 text-11 font-extrabold tracking-[.08em] text-brand md:left-[264px]"
           aria-label="Show prototype controls"
         >
           PROTOTYPE
@@ -165,7 +165,7 @@ export function PrototypeBar({ portal, incorporated = false }: { portal: Portal;
         role="toolbar"
         aria-label="Prototype controls"
         className={cn(
-          "fixed bottom-20 left-1/2 z-[70] flex max-w-[calc(100vw-24px)] -translate-x-1/2 items-center gap-1.5 overflow-x-auto rounded-[10px] bg-navy p-[5px] text-12 font-semibold text-white [scrollbar-width:none]",
+          "fixed bottom-[76px] left-1/2 z-[70] flex max-w-[calc(100vw-24px)] -translate-x-1/2 items-center gap-1.5 overflow-x-auto rounded-[10px] bg-navy p-[5px] text-12 font-semibold text-white [scrollbar-width:none]",
           // Desktop: start 16 px right of the sidebar and stop short of the Ask VCFO button.
           "md:bottom-3.5 md:left-[264px] md:max-w-[calc(100vw-400px)] md:translate-x-0",
           mobile && "md:left-1/2 md:max-w-[calc(100vw-24px)] md:-translate-x-1/2",

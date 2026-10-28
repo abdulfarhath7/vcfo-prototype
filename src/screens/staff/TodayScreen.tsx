@@ -94,7 +94,7 @@ function TaskCell({ t, portal, link }: { t: StaffTask; portal: StaffPortal; link
 const dueClass = (t: StaffTask) => (t.status === "Done" ? undefined : t.due < TODAY || t.status === "Overdue" ? "font-medium text-bad" : t.status === "Due this week" ? "font-medium text-warn" : undefined);
 
 /** Team tasks (ManagerToday.dc.html): R-10 filter chips, List or Board, a T1 table with 104 px area and status columns. */
-function TeamTasks({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
+function TeamTasks({ portal, scope, scopeTabs }: { portal: StaffPortal; scope: Scope; scopeTabs?: React.ReactNode }) {
   const all = tasksFor(portal).filter((t) => inScope(scope, t.client));
   const [lead, setLead] = React.useState("");
   const [status, setStatus] = React.useState("");
@@ -161,8 +161,9 @@ function TeamTasks({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
             .map((c) => ({ value: c.id, label: c.short }))}
         />
         <FilterChip label="Area" value={area} onChange={setArea} options={areas.map((a) => ({ value: a, label: a }))} />
+        <span className="ml-auto flex flex-wrap items-center gap-2">
+          {scopeTabs}
         <Tabs
-          className="ml-auto"
           items={[
             { key: "list", label: "List" },
             { key: "board", label: "Board" },
@@ -170,6 +171,7 @@ function TeamTasks({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
           value={view}
           onChange={setView}
         />
+        </span>
       </div>
       {view === "list" ? (
         <DataGrid inset columns={cols} rows={rows} rowKey={(t) => t.id} rowHref={(t) => taskHref(portal, t)} pageSize={10} empty="No tasks match these filters" className="border-t border-line-soft" />
@@ -212,22 +214,25 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
   const cl = clientsFor(portal);
   const showInc = scope !== "compliance" && cl.some((c) => c.stage === "incorporating");
   const showCmp = scope !== "incorporating" && cl.some((c) => c.stage === "compliance");
+  const scopeTabs = <ScopeTabs portal={portal} value={scope} onChange={setScope} />;
+  const dialog = (
+    <NewTodoDialog
+      open={assign}
+      onOpenChange={setAssign}
+      title={portal === "lead" ? "New to-do" : "Assign task"}
+      clients={cl.map((c) => ({ id: c.id, short: c.short }))}
+      onAdd={(t) => toast.show(portal === "lead" ? `To-do added · ${t.text}` : `Task assigned · ${t.text}`)}
+    />
+  );
   const greeting = (
     <GreetingCard
       date={TODAY}
       time="12:31 PM"
       name={`Good afternoon, ${personOf(portal)}`}
       actions={
-        portal === "admin" ? undefined : (
-          <>
-            <ScopeTabs portal={portal} value={scope} onChange={setScope} />
-            {portal === "manager" && (
-              <Button variant="primary" onClick={() => setAssign(true)}>
-                <Plus size={16} strokeWidth={1.6} aria-hidden /> Assign task
-              </Button>
-            )}
-          </>
-        )
+        <Button variant="primary" onClick={() => setAssign(true)}>
+          <Plus size={16} strokeWidth={1.6} aria-hidden /> {portal === "lead" ? "New to-do" : "Assign task"}
+        </Button>
       }
       stats={todayStats(portal, scope)}
     />
@@ -245,6 +250,7 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
           <ManagersGrid rows={managerRows()} />
           <DecisionsCard portal={portal} notify={toast.show} />
         </div>
+        {dialog}
         {toast.node}
       </div>
     );
@@ -256,7 +262,7 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
       {portal === "manager" && (
         // ManagerToday.dc.html: Team tasks beside Approvals, Task status and Workload by lead.
         <div className={GRID}>
-          <TeamTasks portal={portal} scope={scope} />
+          <TeamTasks portal={portal} scope={scope} scopeTabs={scopeTabs} />
           <Col>
             <ApprovalsWaiting portal={portal} notify={toast.show} />
             <TaskStatusCard portal={portal} scope={scope} />
@@ -266,7 +272,7 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
       )}
       <div className={GRID}>
         <Col>
-          <ActionQueue portal={portal} scope={scope} />
+          <ActionQueue portal={portal} scope={scope} scopeTabs={portal === "lead" ? scopeTabs : undefined} />
           {showInc && <PhaseProgress portal={portal} scope={scope} />}
           {showCmp && <ClientsFilings portal={portal} scope={scope} />}
         </Col>
@@ -275,18 +281,7 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
           <WaitingOnClient portal={portal} scope={scope} notify={toast.show} />
         </Col>
       </div>
-      {portal === "manager" && (
-        <NewTodoDialog
-          open={assign}
-          onOpenChange={setAssign}
-          title="Assign task"
-          clients={clientsFor(portal).map((c) => ({
-            id: c.id,
-            short: c.short,
-          }))}
-          onAdd={(t) => toast.show(`Task assigned · ${t.text}`)}
-        />
-      )}
+      {dialog}
       {toast.node}
     </div>
   );

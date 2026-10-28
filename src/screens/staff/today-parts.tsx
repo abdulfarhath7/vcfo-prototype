@@ -9,7 +9,7 @@ import { clientById, clientsFor, PHASE_TOTALS, type StaffClient } from "@/data/s
 import { INBOX, queueFor, tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
 import { LEAD_STATS, MANAGERS, leadOpen, managerRows, UNASSIGNED } from "@/data/staff-team";
 import { APPROVALS } from "@/data/staff-tasks";
-import { DAY_SHORT, TODOS, WEEK, sameDay, type Todo } from "@/data/staff-work";
+import { TODOS, sameDay, type Todo } from "@/data/staff-work";
 import {
   DAYS_TO_COI,
   DONE_TODAY,
@@ -26,7 +26,8 @@ import {
   filingRow,
   phaseCells,
   practiceNumbers,
-  TODAY_NOTES,
+  NEW_TODAY,
+  TODAY_TRENDS,
   waitingOnClient,
   weekItems,
   type FilingCell,
@@ -163,12 +164,10 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     const open = tasksFor(portal).filter((t) => t.status !== "Done" && inScope(scope, t.client));
     const overdue = open.filter((t) => t.status === "Overdue");
     const stuck = cl.filter((c) => c.health === "Stuck");
-    const lastDay = WEEK[WEEK.length - 1];
     return [
       {
         label: "Clients",
         value: cl.length,
-        sub: `${new Set(cl.map((c) => c.manager)).size} managers`,
         Icon: Building2,
         tone: "blue",
         href: `${b}/clients`,
@@ -176,7 +175,6 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "Incorporating",
         value: cl.filter((c) => c.stage === "incorporating").length,
-        sub: `${cl.filter((c) => c.stage === "incorporating" && c.pendingWith === "MCA").length} with MCA`,
         Icon: Rocket,
         tone: "violet",
         href: `${b}/clients`,
@@ -184,7 +182,6 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "In compliance",
         value: cl.filter((c) => c.stage === "compliance").length,
-        sub: `${cl.filter((c) => c.stage === "compliance" && c.pendingWith === "Client").length} waiting on client`,
         Icon: ShieldCheck,
         tone: "green",
         href: `${b}/clients`,
@@ -192,7 +189,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "Overdue",
         value: overdue.length,
-        sub: `${new Set(overdue.map((t) => t.client)).size} clients`,
+        note: `${new Set(overdue.map((t) => t.client)).size} clients`,
         Icon: AlertTriangle,
         tone: "red",
         bad: true,
@@ -201,37 +198,26 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "Stuck",
         value: stuck.length,
-        sub: stuck.length ? `longest ${Math.max(...stuck.map((c) => c.days))} days` : undefined,
         Icon: Clock,
         tone: "amber",
         bad: true,
         href: `${b}/clients`,
-      },
-      {
-        label: "Due this week",
-        value: open.filter((t) => t.status === "Due this week").length,
-        sub: `by ${DAY_SHORT[lastDay.getDay()]} ${fmt(lastDay)}`,
-        Icon: CalendarDays,
-        tone: "teal",
-        href: `${b}/work`,
       },
     ];
   }
   const queue = queueFor(portal).filter((t) => inScope(scope, t.client));
   const late = queue.filter((t) => t.status === "Overdue").length + filingCounts(clientsFor(portal).filter((c) => inScope(scope, c.id))).overdue;
   const week = weekItems(portal).filter((w) => w.kind !== "done" && inScope(scope, w.client)).length;
-  const notes = TODAY_NOTES[portal];
-  const lateTasks = queue.filter((t) => t.status === "Overdue");
-  const lateClients = new Set(lateTasks.map((t) => t.client)).size;
+  const lateClients = new Set(queue.filter((t) => t.status === "Overdue").map((t) => t.client)).size;
   const waits = waitingOnClient(portal).filter((t) => inScope(scope, t.client));
   const oldest = Math.max(0, ...waits.map((t) => t.days));
-  const lastDay = WEEK[WEEK.length - 1];
-  const full = scope === "all";
+  const trend = scope === "all" ? TODAY_TRENDS[portal] : {};
   return [
     {
       label: "Needs action",
       value: queue.length,
-      sub: full && notes.newToday ? `${notes.newToday} new today` : undefined,
+      note: scope === "all" && NEW_TODAY[portal] ? `${NEW_TODAY[portal]} new` : undefined,
+      spark: trend.action,
       Icon: ListChecks,
       tone: "blue",
       href: `${b}/work`,
@@ -239,9 +225,8 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     {
       label: "Overdue",
       value: late,
-      sub: lateClients ? `${lateClients} ${lateClients === 1 ? "client" : "clients"}` : undefined,
-      spark: full ? notes.overdueTrend : undefined,
-      sparkTone: "bad",
+      note: lateClients ? `${lateClients} ${lateClients === 1 ? "client" : "clients"}` : undefined,
+      spark: trend.overdue,
       Icon: AlertTriangle,
       tone: "red",
       bad: late > 0,
@@ -250,8 +235,8 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     {
       label: "Waiting on clients",
       value: waits.length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length,
-      sub: oldest ? `oldest ${oldest} days` : undefined,
-      spark: full ? notes.waitingTrend : undefined,
+      note: oldest ? `oldest ${oldest}d` : undefined,
+      spark: trend.waiting,
       sparkTone: "teal",
       Icon: User,
       tone: "amber",
@@ -260,15 +245,15 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     {
       label: "Due this week",
       value: week,
-      sub: `by ${DAY_SHORT[lastDay.getDay()]} ${fmt(lastDay)}`,
+      note: "by Fri",
       Icon: CalendarDays,
       tone: "teal",
       href: `${b}/work`,
     },
     {
       label: "Done today",
-      sub: notes.doneWhat,
       value: DONE_TODAY[portal],
+      spark: trend.done,
       Icon: CheckCheck,
       tone: "green",
       good: DONE_TODAY[portal] > 0,
@@ -413,7 +398,7 @@ interface HeatRow {
 }
 
 /** Action queue: a clients × status heatmap (Main.dc.html) or the e-Filing list. Click a count to list its tasks. */
-export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
+export function ActionQueue({ portal, scope, scopeTabs }: { portal: StaffPortal; scope: Scope; /** Lead Today: the All / Incorporating / Compliance switch (R-17 moved it here). */ scopeTabs?: React.ReactNode }) {
   const [view, setView] = React.useState<"map" | "list">("map");
   const [pick, setPick] = React.useState<string | null>(null);
   const all = queueFor(portal).filter((t) => inScope(scope, t.client));
@@ -513,6 +498,7 @@ export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Sco
 
   const head = (
     <>
+      {scopeTabs}
       {stuck.length > 0 && (
         <Link href={clientHref(portal, stuck[0].client)} className="hidden items-center gap-1.5 rounded-sm bg-bad-soft px-2 py-0.5 text-12 font-medium text-bad hover:underline md:inline-flex">
           <i className="h-[7px] w-[7px] rounded-[2px] bg-bad-mid" aria-hidden />

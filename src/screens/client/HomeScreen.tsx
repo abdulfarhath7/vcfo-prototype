@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
-import { Chip } from "@/components/ui/Chip";
-import { AlertTriangle, Award, Building2, CalendarCheck, FileText, IdCard, ShieldCheck, Upload, User } from "lucide-react";
+import { cn } from "@/lib/cn";
+import { AlertTriangle, Award, Building2, CalendarCheck, Download, FileText, IdCard, ShieldCheck, Upload, User } from "lucide-react";
 import { TODAY, daysFrom, fmt } from "@/lib/dates";
 import { NORTHWIND } from "@/data/people";
 import { COI_EXPECTED } from "@/data/incorporation";
@@ -29,7 +29,6 @@ import {
 import { useClientState } from "@/components/shell/ClientState";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
-import { Avatar } from "@/components/ui/Avatar";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { GreetingCard, type StatItem } from "@/components/cards/GreetingCard";
@@ -150,11 +149,11 @@ export function HomeScreen() {
   const open = (spec: DrillSpec, tab = 0) => drill.open(spec, tab);
 
   const statsBefore: StatItem[] = [
-    { label: "Waiting on Northwind", value: 4, sub: "1 overdue", Icon: User, tone: "amber", href: "#dd-you" },
-    { label: "With SBC", value: 1, sub: SBC_STEP?.title, Icon: Building2, tone: "blue", href: "#dd-sbc" },
-    { label: "Overdue", value: 1, sub: LATE_NEED?.title, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
+    { label: "Waiting on Northwind", value: 4, note: "oldest 5d", spark: [5, 6, 4, 4, 4], sparkTone: "teal", Icon: User, tone: "amber", href: "#dd-you" },
+    { label: "With SBC", value: 1, note: "KYC + DSC", sub: SBC_STEP?.title, Icon: Building2, tone: "blue", href: "#dd-sbc" },
+    { label: "Overdue", value: 1, note: "passport", sub: LATE_NEED?.title, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
     { label: "Documents in", value: "4/6", bar: 67, Icon: FileText, tone: "teal", href: "#dd-docs" },
-    { label: "Expected COI", value: fmt(COI_EXPECTED), sub: `in ${daysFrom(COI_EXPECTED)} days`, Icon: Award, tone: "green", href: "/client/incorporation" },
+    { label: "Expected COI", value: fmt(COI_EXPECTED), note: `${daysFrom(COI_EXPECTED)} days`, sub: `in ${daysFrom(COI_EXPECTED)} days`, Icon: Award, tone: "green", href: "/client/incorporation" },
   ];
   const statsAfter: StatItem[] = [
     { label: "Waiting on Northwind", value: NEEDS_AFTER.length, Icon: User, tone: "amber", href: "#dd-needs" },
@@ -187,7 +186,7 @@ export function HomeScreen() {
       onClick={() => (after ? open(POST_DRILL, 2) : open(stepsDrill(), 1))}
       className="whitespace-nowrap text-accent underline-offset-2 hover:underline"
     >
-      {after ? `Setup · ${done} of ${total} done` : `SPICe+ · ${done} of ${total} steps`} · {Math.round((done / total) * 100)}%
+      {after ? `${done} of ${total} done` : `${done} of ${total} steps`}
     </button>
   );
 
@@ -198,30 +197,25 @@ export function HomeScreen() {
       <div onClickCapture={onStrip}>
         <GreetingCard
           date={today}
-          name={NORTHWIND.name}
+          name={NORTHWIND.name.replace(/ India Pvt Ltd$/, "")}
           lead={
-            <span className="grid h-[52px] w-[52px] flex-none place-items-center rounded-md bg-accent-soft text-18 font-medium text-accent shadow-tile" aria-hidden>
+            <span className="grid h-10 w-10 flex-none place-items-center rounded-md bg-accent-soft text-13 font-medium text-accent" aria-hidden>
               NT
             </span>
           }
-          tag={<Chip tone={after ? "ok" : "prog"}>{after ? "Incorporated" : "Incorporating"}</Chip>}
-          sub={
-            <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
-              <Avatar name={NORTHWIND.lead} size={24} />
-              <span>
-                <b className="font-medium text-ink">{NORTHWIND.lead}</b>, project lead
-              </span>
-              <span aria-hidden>·</span>
-              {progress}
+          tag={
+            <span className={cn("inline-flex h-5 items-center rounded-sm px-[7px] text-11.5 font-medium", after ? "bg-ok-soft text-ok" : "bg-accent-soft text-accent")}>
+              {after ? "Incorporated" : "Incorporating"}
             </span>
           }
+          sub={progress}
           actions={
             <>
-              <Button variant="secondary" onClick={report}>
-                Report
+              <Button variant="secondary" size="icon" onClick={report} aria-label="Report" title="Report">
+                <Download size={16} strokeWidth={1.6} />
               </Button>
               <Button variant="primary" onClick={() => setUpload(true)}>
-                <Upload size={16} strokeWidth={1.6} /> Upload document
+                <Upload size={16} strokeWidth={1.6} /> Upload
               </Button>
             </>
           }

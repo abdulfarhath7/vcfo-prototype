@@ -5,6 +5,7 @@ import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { AskButton } from "./AskButton";
 import { PrototypeBar } from "./PrototypeBar";
+import { TabBar } from "./TabBar";
 import type { Portal } from "@/data/nav";
 
 /** R-39: the sidebar stays fixed when the page scrolls. On phones it is a drawer. */
@@ -56,8 +57,9 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar portal={portal} incorporated={incorporated} onMenu={() => setDrawer(true)} updatesBase={updatesBase} />
-        <main className="mx-auto w-full max-w-page flex-1 px-4 pb-20 pt-5 md:px-8 md:pt-7">{children}</main>
+        <main className="mx-auto w-full max-w-page flex-1 px-4 pb-28 pt-5 md:px-8 md:pb-20 md:pt-7">{children}</main>
       </div>
+      <TabBar portal={portal} incorporated={incorporated} onMore={() => setDrawer(true)} />
       <AskButton portal={portal} />
       <PrototypeBar portal={portal} incorporated={incorporated} />
     </div>
