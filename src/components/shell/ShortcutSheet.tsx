@@ -16,6 +16,7 @@ const GROUPS: Array<[string, Array<[string[], string]>]> = [
       [["Ctrl", "K"], "Search clients, filings and documents"],
       [["/"], "Ask VCFO (on list pages: search the list)"],
       [["?"], "This list of shortcuts"],
+      [["["], "Pin or collapse the sidebar"],
       [["Esc"], "Close a menu, dialog or panel"],
     ],
   ],

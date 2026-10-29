@@ -1,13 +1,15 @@
 "use client";
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { Sidebar } from "./Sidebar";
+import { Sidebar, SidebarRail } from "./Sidebar";
+import { usePeek, useSidebarMode } from "./useSidebarMode";
 import { TopBar } from "./TopBar";
 import { AskButton } from "./AskButton";
 import { PrototypeBar } from "./PrototypeBar";
 import { TabBar } from "./TabBar";
 import { ShortcutSheet } from "./ShortcutSheet";
 import type { Portal } from "@/data/nav";
+import { cn } from "@/lib/cn";
 
 /** R-39: the sidebar stays fixed when the page scrolls. On phones it is a drawer. */
 export function Shell({ portal, incorporated = false, children }: { portal: Portal; incorporated?: boolean; children: React.ReactNode }) {
@@ -39,14 +41,46 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
     return () => window.removeEventListener("keydown", onKey);
   }, [drawer]);
 
+  // R-49: pinned sidebar, or a rail that opens over the page on hover and focus.
+  const { mode, narrow, toggle } = useSidebarMode();
+  const rail = mode === "rail";
+  const { peek, onEnter, onLeave, openNow, closeNow } = usePeek(rail);
+  React.useEffect(() => closeNow(), [path]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const updatesBase = portal === "client" ? "/client" : `/${portal}/updates`;
 
   return (
     <div className="flex min-h-screen pt-[3px]">
       {/* R-46: the regulator spectrum ribbon, 3 px, across the very top. The only decorative line. */}
       <div className="spectrum fixed inset-x-0 top-0 z-[90] h-[3px]" aria-hidden />
-      <div className="sticky top-[3px] hidden h-[calc(100vh-3px)] flex-none md:block">
-        <Sidebar portal={portal} incorporated={incorporated} />
+      <div
+        className={cn(
+          "sticky top-[3px] z-[70] hidden h-[calc(100vh-3px)] flex-none transition-[width] duration-200 ease-out motion-reduce:transition-none md:block",
+          rail ? "w-14" : "w-[248px]",
+        )}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
+        onFocus={openNow}
+        onBlur={onLeave}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && peek) {
+            closeNow();
+            (document.activeElement as HTMLElement | null)?.blur();
+          }
+        }}
+      >
+        {rail ? (
+          <>
+            <SidebarRail portal={portal} incorporated={incorporated} onExpand={toggle} narrow={narrow} />
+            {peek && (
+              <div className="sidebar-peek absolute left-0 top-0 h-full shadow-float">
+                <Sidebar portal={portal} incorporated={incorporated} pin={{ mode, peeking: true, onToggle: toggle, narrow }} />
+              </div>
+            )}
+          </>
+        ) : (
+          <Sidebar portal={portal} incorporated={incorporated} pin={{ mode, onToggle: toggle, narrow }} />
+        )}
       </div>
       {drawer && (
         <div ref={drawerRef} className="fixed inset-x-0 bottom-0 top-[3px] z-[80] flex md:hidden" role="dialog" aria-modal="true" aria-label="Menu">

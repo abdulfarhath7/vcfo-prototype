@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronRight, Headphones, Keyboard, LogOut, Mail, MessageCircle, MessagesSquare, Phone, Sparkles, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Headphones, Keyboard, LogOut, Mail, MessageCircle, MessagesSquare, PanelLeftClose, PanelLeftOpen, Phone, Pin, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui/Avatar";
 import { CLIENT_TEAM, PORTALS, navFor, type NavItem, type Portal, type TeamContact } from "@/data/nav";
@@ -12,6 +12,7 @@ import { BeforeAfter } from "./BeforeAfter";
 import { openAsk } from "./AskButton";
 import { openShortcuts } from "./ShortcutSheet";
 import { Tip } from "@/components/ui/Tip";
+import type { SidebarMode } from "./useSidebarMode";
 
 type StaffPortal = "lead" | "manager" | "admin";
 const isStaff = (p: Portal): p is StaffPortal => p === "lead" || p === "manager" || p === "admin";
@@ -209,7 +210,106 @@ function TeamBlock() {
   );
 }
 
-export function Sidebar({ portal, incorporated, onClose }: { portal: Portal; incorporated?: boolean; onClose?: () => void }) {
+/** R-49 pin control in the sidebar head. Pinned: "Collapse sidebar". Peeking over the page: "Pin sidebar". */
+function PinButton({ mode, peeking, onToggle, narrow }: { mode: SidebarMode; peeking?: boolean; onToggle: () => void; narrow?: boolean }) {
+  if (narrow) return null; // under 1100 px the sidebar is always a rail; pinning would cover the page
+  const pin = mode === "rail" || peeking;
+  const label = pin ? "Pin sidebar" : "Collapse sidebar";
+  const Icon = pin ? Pin : PanelLeftClose;
+  return (
+    <Tip label={label} keys={["["]} side="right">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={label}
+        aria-pressed={!pin}
+        className="ml-auto grid h-8 w-8 flex-none place-items-center rounded-md text-navy-faint hover:bg-white/[.12] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+      >
+        <Icon size={16} strokeWidth={1.6} />
+      </button>
+    </Tip>
+  );
+}
+
+function railActive(it: NavItem, path: string) {
+  const on = (h?: string) => !!h && (path === h || path.startsWith(h + "/"));
+  return on(it.href) || (it.kids?.some((k) => on(k.href)) ?? false);
+}
+
+/**
+ * R-49 rail: 56 px of icons. Hover or focus opens the full sidebar over the page (the Shell handles that).
+ * Urgent counts show as a small red badge on the icon; other counts wait for the full sidebar.
+ */
+export function SidebarRail({ portal, incorporated, onExpand, narrow }: { portal: Portal; incorporated?: boolean; onExpand: () => void; narrow?: boolean }) {
+  const path = usePathname();
+  const meta = PORTALS[portal];
+  const items = navFor(portal, incorporated);
+  return (
+    <aside className="flex h-full w-14 flex-none flex-col items-center border-r-1.5 border-navy-line bg-navy text-navy-ink" aria-label="Sidebar">
+      <div className="flex h-14 w-full flex-none items-center justify-center border-b border-navy-line">
+        <Link href={meta.home} aria-label="VCFO Suite · home" className="grid h-9 w-9 place-items-center rounded-md hover:bg-navy-hover">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/vcfo-mark.webp" alt="" className="h-[26px] w-[26px] object-contain" />
+        </Link>
+      </div>
+      <nav className="grid min-h-0 w-full flex-1 content-start justify-items-center gap-1 overflow-y-auto py-3 [scrollbar-width:none]" aria-label="Main">
+        {items.map((it) => {
+          const Icon = it.icon;
+          const on = railActive(it, path);
+          const href = it.href ?? it.kids?.find((k) => k.href)?.href ?? "#";
+          const name = it.count !== undefined ? `${it.label}, ${it.count}` : it.label;
+          return (
+            <Link
+              key={it.label}
+              href={href}
+              aria-label={name}
+              aria-current={on ? "page" : undefined}
+              className={cn(
+                "relative grid h-9 w-10 place-items-center rounded-md text-navy-faint hover:bg-navy-hover hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus",
+                on && PICKED,
+              )}
+            >
+              {Icon && <Icon size={18} strokeWidth={1.6} aria-hidden className={on ? "text-navy-on-ink" : undefined} />}
+              {it.hot && it.count !== undefined && (
+                <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-[4px] bg-bad-mid px-[3px] text-[10px] font-medium leading-none text-white ring-2 ring-navy" aria-hidden>
+                  {it.count}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="grid w-full flex-none justify-items-center gap-1.5 border-t-1.5 border-navy-line py-2.5">
+        <button type="button" onClick={openAsk} aria-label="Ask VCFO (/)" className="grid h-9 w-10 place-items-center rounded-md hover:bg-navy-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          <span className="grid h-[24px] w-[24px] place-items-center rounded-sm bg-primary text-white" aria-hidden>
+            <Sparkles size={14} strokeWidth={1.6} />
+          </span>
+        </button>
+        {!narrow && (
+          <button type="button" onClick={onExpand} aria-label="Pin sidebar ([)" className="grid h-9 w-10 place-items-center rounded-md text-navy-faint hover:bg-navy-hover hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            <PanelLeftOpen size={18} strokeWidth={1.6} />
+          </button>
+        )}
+        <Link href={meta.profile} aria-label={`${meta.person}, your profile`} className="grid h-10 w-10 place-items-center rounded-md hover:bg-navy-hover">
+          <Avatar name={meta.person} size={30} onNavy />
+        </Link>
+      </div>
+    </aside>
+  );
+}
+
+export function Sidebar({
+  portal,
+  incorporated,
+  onClose,
+  pin,
+}: {
+  portal: Portal;
+  incorporated?: boolean;
+  onClose?: () => void;
+  /** R-49: the pin control, on desktop only. */
+  pin?: { mode: SidebarMode; peeking?: boolean; onToggle: () => void; narrow?: boolean };
+}) {
   const path = usePathname();
   const meta = PORTALS[portal];
   const items = navFor(portal, incorporated);
@@ -222,6 +322,7 @@ export function Sidebar({ portal, incorporated, onClose }: { portal: Portal; inc
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/vcfo-logo-on-black.webp" alt="VCFO Suite by SBC" className={cn("block w-auto max-w-full object-contain object-left", client ? "h-[34px]" : "h-[26px]")} />
         </Link>
+        {pin && !onClose && <PinButton {...pin} />}
         {onClose && (
           <button type="button" onClick={onClose} className="ml-auto grid h-10 w-10 flex-none place-items-center rounded-md bg-white/[.08] hover:bg-white/[.14]" aria-label="Close menu">
             <X size={18} strokeWidth={1.6} />

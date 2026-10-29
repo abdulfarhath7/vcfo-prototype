@@ -92,6 +92,7 @@ Sizes: corners 6 px (marks 4 px, bars 3 px). Card edge 1.5 px. Chip 24 x 104 px.
 | R-46 | Put a 3 px regulator spectrum ribbon across the top of every screen: six equal parts in the regulator colours. It is the only decorative line. |
 | R-47 | Make inputs 40 px with a 1.5 px edge and 6 px corners. Focus shows a blurple edge and a 4 px glow. An error shows a red edge and a message under the field. A switch is a 44 x 24 track with 6 px corners. A checkbox is 18 px with 4 px corners. |
 | R-48 | Make light menus roomy (34 px rows) and dark menus 30 px with letter shortcuts. Use a white info card for terms and a dark tip for actions. Use toasts with a status tile or Undo. Put a banner only inside the card it is about. A danger confirm asks the person to type the word. Show empty states as a dashed area with the action. Show loading as grey shapes. |
+| R-49 | Make the sidebar pinned or a rail. Pinned is 248 px, and the page sits beside it. The rail is 56 px of icons. In rail mode, hover (after 160 ms) or keyboard focus opens the full sidebar over the page; it closes 280 ms after the pointer leaves, on Esc, or when a page opens. The pin button in the sidebar head and the "[" key switch the mode. Save the mode per browser. Under 1100 px the sidebar is always a rail. Urgent counts show as a red badge on the rail icon. |
 
 ## Icon tile for each card title
 

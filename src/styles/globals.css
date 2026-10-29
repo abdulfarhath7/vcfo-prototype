@@ -81,3 +81,8 @@
     );
   }
 }
+
+/* R-49: the rail opens the full sidebar over the page. One short slide, none under reduced motion. */
+@keyframes sidebar-peek-in { from { transform: translateX(-10px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sidebar-peek { animation: sidebar-peek-in 160ms cubic-bezier(.2,.8,.2,1); }
+@media (prefers-reduced-motion: reduce) { .sidebar-peek { animation: none; } }
