@@ -8,7 +8,17 @@ import { staffObHref, complianceClients } from "@/data/staff-compliance";
 import { itemExists } from "@/data/staff-item";
 import { clientById } from "@/data/staff-clients";
 import { ANALYTICS } from "@/data/staff-analytics";
-import { FILINGS_TODAY, FILING_REGULATORS, OLD_FILINGS, clientFilingsFor, leadOfFiling, type ClientFiling, type ClientFilingState, type OldFiling, type OldFilingStatus } from "@/data/staff-filings-table";
+import {
+  FILINGS_TODAY,
+  FILING_REGULATORS,
+  OLD_FILINGS,
+  clientFilingsFor,
+  leadOfFiling,
+  type ClientFiling,
+  type ClientFilingState,
+  type OldFiling,
+  type OldFilingStatus,
+} from "@/data/staff-filings-table";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -16,6 +26,9 @@ import { Input } from "@/components/ui/Input";
 import { AreaPill, Chip, type ChipTone } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { FilterChip } from "@/components/ui/FilterChip";
+import { FileBadge, fileType } from "@/components/ui/FileBadge";
+import { STAFF_TASKS, taskHref } from "@/data/compliance-tasks";
+import { INTERNAL, catTabs, isTaskFiling, showStat, showTasks, taskFilings, type CatFilter, type TaskFiling } from "@/data/compliance-tasks-views";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { type BarTone } from "@/components/ui/Bar";
 import { Donut } from "@/components/cards/Donut";
@@ -111,6 +124,7 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
   const [query, setQuery] = React.useState("");
   const [tile, setTile] = React.useState<Tile>("");
   const [proof, setProof] = React.useState<Proof | null>(null);
+  const [cat, setCat] = React.useState<CatFilter>("all");
   const toast = useUndoToast();
   const listRef = React.useRef<HTMLElement>(null);
   const searchRef = React.useRef<HTMLSpanElement>(null);
@@ -131,8 +145,17 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
 
   /* ---------- Rows ---------- */
 
-  const scope = clientFilingsFor(portal);
   const clients = complianceClients(portal);
+  /* F-2: completed non-statutory tasks are filing rows with their deliverable. One band per task name and end date. */
+  const ids = new Set(clients.map((c) => c.id));
+  const tFilings = taskFilings(STAFF_TASKS.filter((t) => ids.has(t.client)));
+  const taskRows: ClientFiling[] = tFilings.flatMap((f) =>
+    f.tasks.map((t) => ({ key: `${t.client}-${t.id}`, filing: f, client: t.client, state: "done" as const, note: t.deliverable ?? "", filed: t.end })),
+  );
+  const taskOf = (r: ClientFiling) => (isTaskFiling(r.filing) ? r.filing.tasks.find((t) => t.client === r.client) : undefined);
+  const statRows = clientFilingsFor(portal);
+  /* F-1: the category filter. F-3: every count below follows it. */
+  const scope = [...(showStat(cat) ? statRows : []), ...(showTasks(cat) ? taskRows : [])];
   const leads = [...new Set(clients.map((c) => c.lead))].sort();
   const isMonth = (r: ClientFiling) => fyIndex(r.filing.due) === TODAY_I;
   const weekEnd = addDays(FILINGS_TODAY, 7);
@@ -156,7 +179,9 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
   const shown = winRows.filter(match);
   const shownIds = new Set(shown.map((r) => r.filing.id));
   // A filing shows when at least one of its clients passes the filters, so the three views agree.
-  const winFilings = OLD_FILINGS.filter((f) => inWin(f.due) && winRows.some((r) => r.filing.id === f.id));
+  const allFilings: OldFiling[] = [...OLD_FILINGS, ...tFilings].sort((a, b) => a.due.getTime() - b.due.getTime());
+  const winFilings = allFilings.filter((f) => inWin(f.due) && winRows.some((r) => r.filing.id === f.id));
+  const cats = catTabs(statRows.filter((r) => inWin(r.filing.due)).length, taskRows.filter((r) => inWin(r.filing.due)).length);
   const [filedNow, setFiledNow] = React.useState<Set<string>>(new Set());
   const flat = winFilings.filter((f) => shownIds.has(f.id)).map((f) => (filedNow.has(f.id) ? { ...f, status: "Filed" as const, filedOn: "Today" } : f));
   const many = (n: number) => `${n} ${n === 1 ? "filing" : "filings"}`;
@@ -182,10 +207,33 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
   const week = scope.filter(isWeek);
   const late = scope.filter((r) => r.state === "bad");
   const strip: StripItem[] = [
-    { key: "month", label: "Due this month", value: month.length, Icon: CalendarDays, tone: "blue", sub: `${plural(new Set(month.map((r) => r.filing.id)).size, "filing")} · ${plural(new Set(month.map((r) => r.client)).size, "client")}` },
-    { key: "filed", label: "Filed", value: monthDone, Icon: CircleCheck, tone: "green", valueClass: "text-ok", sub: month.length ? `${Math.round((monthDone / month.length) * 100)}%` : "-" },
+    {
+      key: "month",
+      label: "Due this month",
+      value: month.length,
+      Icon: CalendarDays,
+      tone: "blue",
+      sub: `${plural(new Set(month.map((r) => r.filing.id)).size, "filing")} · ${plural(new Set(month.map((r) => r.client)).size, "client")}`,
+    },
+    {
+      key: "filed",
+      label: "Filed",
+      value: monthDone,
+      Icon: CircleCheck,
+      tone: "green",
+      valueClass: "text-ok",
+      sub: month.length ? `${Math.round((monthDone / month.length) * 100)}%` : "-",
+    },
     { key: "week", label: "Due in 7 days", value: week.length, Icon: Clock, tone: "amber", valueClass: "text-warn", sub: `by ${DOW[weekEnd.getDay()]} ${dm(weekEnd)}` },
-    { key: "late", label: "Overdue", value: late.length, Icon: AlertTriangle, tone: "red", valueClass: "text-bad", sub: late.length ? late.map((r) => `${r.filing.form} · ${initials(clientName(r.client))}`).join(", ") : "None" },
+    {
+      key: "late",
+      label: "Overdue",
+      value: late.length,
+      Icon: AlertTriangle,
+      tone: "red",
+      valueClass: "text-bad",
+      sub: late.length ? late.map((r) => `${r.filing.form} · ${initials(clientName(r.client))}`).join(", ") : "None",
+    },
   ];
   const pickTile = (k: string) => {
     setTile(k as Tile);
@@ -207,7 +255,8 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
 
   /* ---------- Row parts ---------- */
 
-  const recordHref = (r: ClientFiling) => (r.ob && itemExists("ob", `${r.client}-${r.ob}`) ? staffObHref(portal, `${r.client}-${r.ob}`) : undefined);
+  const recordHref = (r: ClientFiling) =>
+    taskOf(r) ? taskHref(portal, taskOf(r)!.id) : r.ob && itemExists("ob", `${r.client}-${r.ob}`) ? staffObHref(portal, `${r.client}-${r.ob}`) : undefined;
   const openProof = (f: OldFiling, clientId = "", filed?: Date) => setProof({ title: f.form, period: f.period, client: clientId, area: f.area, filed });
 
   const actionCol: Column<ClientFiling> = {
@@ -219,7 +268,8 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
     render: (r) => {
       const href = recordHref(r);
       const ctx = `${r.filing.form} ${r.filing.period}, ${clientName(r.client)}`;
-      if (r.state === "done") return href ? <FilingAction label="Open" href={href} context={ctx} /> : <FilingAction label="Open" onClick={() => openProof(r.filing, r.client, r.filed)} context={ctx} />;
+      if (r.state === "done")
+        return href ? <FilingAction label="Open" href={href} context={ctx} /> : <FilingAction label="Open" onClick={() => openProof(r.filing, r.client, r.filed)} context={ctx} />;
       const urgent = r.state === "bad";
       if (href) return <FilingAction label={r.state === "wait" || r.state === "none" ? "Open" : "File now"} urgent={urgent} href={href} context={ctx} />;
       // No record page (TCS return, ITR-6): file on the government portal.
@@ -232,7 +282,7 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
     width: 128,
     render: (r) => (
       <Chip tone={STATE[r.state].tone} fixed>
-        {STATE[r.state].label}
+        {taskOf(r) ? "Done" : STATE[r.state].label}
       </Chip>
     ),
   };
@@ -241,7 +291,17 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
     label: "Note",
     width: 140,
     className: "hidden md:table-cell",
-    render: (r) => (r.note ? <span className={cn("block max-w-[130px] truncate", r.state === "bad" ? "font-medium text-bad" : r.state === "soon" ? "text-warn" : "text-ink-2")}>{r.note}</span> : <span className="text-faint">-</span>),
+    render: (r) =>
+      taskOf(r) && r.note ? (
+        <span className="flex min-w-0 max-w-[130px] items-center gap-1.5" title={r.note}>
+          <FileBadge type={fileType(r.note)} className="h-5 w-9 text-[10px]" />
+          <span className="min-w-0 truncate text-ink-2">{r.note}</span>
+        </span>
+      ) : r.note ? (
+        <span className={cn("block max-w-[130px] truncate", r.state === "bad" ? "font-medium text-bad" : r.state === "soon" ? "text-warn" : "text-ink-2")}>{r.note}</span>
+      ) : (
+        <span className="text-faint">-</span>
+      ),
   };
 
   const filingCols: Column<ClientFiling>[] = [
@@ -304,7 +364,18 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
       label: f.form,
       dot: "",
       rows: shown.filter((r) => r.filing.id === f.id),
-      head: <FilingBand day={f.due.getDate()} month={MONTHS[fyIndex(f.due)]} tone={F_DATE[f.status]} name={f.form} sub={`${f.period} · due ${dm(f.due)}`} area={f.area} filed={all.filter((r) => r.state === "done").length} total={all.length} />,
+      head: (
+        <FilingBand
+          day={f.due.getDate()}
+          month={MONTHS[fyIndex(f.due)]}
+          tone={F_DATE[f.status]}
+          name={f.form}
+          sub={`${f.period} · due ${dm(f.due)}`}
+          area={f.area}
+          filed={all.filter((r) => r.state === "done").length}
+          total={all.length}
+        />
+      ),
     };
   });
   const byClient: GridGroup<ClientFiling>[] = clients.map((c) => {
@@ -337,22 +408,27 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
         <span className="block min-w-0">
           <span className="flex min-w-0 items-center gap-1">
             <b className="truncate text-14 font-medium text-ink">{f.form}</b>
-            <PortalLink area={f.area} />
+            {!isTaskFiling(f) && <PortalLink area={f.area} />}
           </span>
           <span className="block truncate text-12.5 text-muted">
-            {f.period} · {f.frequency}
+            {isTaskFiling(f) ? `${f.tasks.map((t) => clientById(t.client)?.short ?? t.client).join(", ")} · ${f.frequency}` : `${f.period} · ${f.frequency}`}
           </span>
         </span>
       ),
     },
-    { key: "filed", label: "Filed on", width: 112, render: (f) => <span className={f.status === "Overdue" ? "font-medium text-bad" : f.status === "Filed" ? "text-ink" : "text-muted"}>{f.filedOn}</span> },
+    {
+      key: "filed",
+      label: "Filed on",
+      width: 112,
+      render: (f) => <span className={f.status === "Overdue" ? "font-medium text-bad" : f.status === "Filed" ? "text-ink" : "text-muted"}>{f.filedOn}</span>,
+    },
     {
       key: "status",
       label: "Status",
       width: 128,
       render: (f) => (
         <Chip tone={F_TONE[f.status]} fixed>
-          {f.status}
+          {isTaskFiling(f) ? "Done" : f.status}
         </Chip>
       ),
     },
@@ -362,12 +438,20 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
       width: 124,
       align: "right",
       render: (f) =>
-        f.proof === "file" ? (
+        isTaskFiling(f) ? (
+          <TaskDeliverable f={f} onDownload={(t) => toast.show(t)} />
+        ) : f.proof === "file" ? (
           <span className="inline-flex items-center gap-1.5">
             <Button size="sm" variant="soft" onClick={() => openProof(f)}>
               <FileCheck size={14} strokeWidth={1.6} /> Proof
             </Button>
-            <Button size="iconSm" variant="outline" aria-label={`Download proof of ${f.form}`} title="Download" onClick={() => toast.show(`Downloaded ${f.form} proof · ${f.period}`)}>
+            <Button
+              size="iconSm"
+              variant="outline"
+              aria-label={`Download proof of ${f.form}`}
+              title="Download"
+              onClick={() => toast.show(`Downloaded ${f.form} proof · ${f.period}`)}
+            >
               <Download size={14} strokeWidth={1.6} />
             </Button>
           </span>
@@ -382,14 +466,30 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
   ];
 
   const exportCsv = () => {
-    if (view === "all") return download("filings.csv", ["Due", "Area", "Filing", "Period", "Frequency", "Filed on", "Status"], flat.map((f) => [dm(f.due), f.area, f.form, f.period, f.frequency, f.filedOn, f.status]));
-    download("filings-by-client.csv", ["Due", "Area", "Filing", "Period", "Client", "Lead", "Note", "Status"], shown.map((r) => [dm(r.filing.due), r.filing.area, r.filing.form, r.filing.period, clientName(r.client), leadOfFiling(r), r.note, STATE[r.state].label]));
+    if (view === "all")
+      return download(
+        "filings.csv",
+        ["Due", "Area", "Filing", "Period", "Frequency", "Filed on", "Status"],
+        flat.map((f) => [dm(f.due), f.area, f.form, f.period, f.frequency, f.filedOn, f.status]),
+      );
+    download(
+      "filings-by-client.csv",
+      ["Due", "Area", "Filing", "Period", "Client", "Lead", "Note", "Status"],
+      shown.map((r) => [dm(r.filing.due), r.filing.area, r.filing.form, r.filing.period, clientName(r.client), leadOfFiling(r), r.note, STATE[r.state].label]),
+    );
   };
 
   /* ---------- Rail ---------- */
 
   const onTime = ANALYTICS[portal].filings.slice(-5);
-  const onTimePct = Math.round((onTime.reduce((a, m) => a + m.onTime, 0) / Math.max(1, onTime.reduce((a, m) => a + m.onTime + m.late, 0))) * 100);
+  const onTimePct = Math.round(
+    (onTime.reduce((a, m) => a + m.onTime, 0) /
+      Math.max(
+        1,
+        onTime.reduce((a, m) => a + m.onTime + m.late, 0),
+      )) *
+      100,
+  );
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
@@ -450,6 +550,15 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
         <Col className="gap-3.5">
           {/* R-10 filter chips. Set chips are soft blurple with an ×; unset chips are dashed "+ Label". */}
           <div className="flex flex-wrap items-center gap-2">
+            <Tabs
+              items={cats}
+              value={cat}
+              onChange={(k) => {
+                setCat(k as CatFilter);
+                if (k === "non-statutory") setArea("");
+              }}
+              className="max-w-full"
+            />
             <span ref={searchRef} className="relative w-full sm:w-[260px]">
               <Search size={16} strokeWidth={1.6} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" aria-hidden />
               <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search filings or clients" aria-label="Search filings or clients" className="h-9 pl-9" />
@@ -467,7 +576,19 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
 
           <section ref={listRef} className="min-w-0">
             {view === "all" ? (
-              <DataGrid title="Filings" meta={`${label} · ${flat.length} filings`} icon={{ Icon: Calendar, tone: "teal" }} columns={flatCols} rows={flat} rowKey={(f) => f.id} pageSize={20} empty="No filings match" selectable actions={flatActions} notify={toast.show} />
+              <DataGrid
+                title="Filings"
+                meta={`${label} · ${flat.length} filings`}
+                icon={{ Icon: Calendar, tone: "teal" }}
+                columns={flatCols}
+                rows={flat}
+                rowKey={(f) => f.id}
+                pageSize={20}
+                empty="No filings match"
+                selectable
+                actions={flatActions}
+                notify={toast.show}
+              />
             ) : (
               <GroupedGrid
                 title={view === "filing" ? "Filings" : "Clients"}
@@ -492,9 +613,9 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
           <SectionCard title="On time vs late" meta={`${onTimePct}% on time`} icon={{ Icon: CircleCheck, tone: "green" }}>
             <OnTimeColumns data={onTime.map((m) => ({ label: m.m, onTime: m.onTime, late: m.late }))} />
           </SectionCard>
-          <SectionCard title="By regulator" meta={short}>
+          <SectionCard title={showTasks(cat) ? "By area" : "By regulator"} meta={short}>
             <div className="grid gap-1">
-              {FILING_REGULATORS.map((a) => {
+              {(showStat(cat) ? FILING_REGULATORS : []).map((a) => {
                 const list = winRows.filter((r) => r.filing.area === a);
                 const filed = list.filter((r) => r.state === "done").length;
                 const pct = list.length ? Math.round((filed / list.length) * 100) : 0;
@@ -518,19 +639,24 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
                   </button>
                 );
               })}
+              {showTasks(cat) && <InternalBar rows={winRows.filter((r) => !!taskOf(r))} />}
             </div>
           </SectionCard>
-          <SectionCard title="Filings by status" meta={short}>
+          <SectionCard title={cat === "non-statutory" ? "Tasks by status" : "Filings by status"} meta={short}>
             <Donut
               size={84}
               className="w-full [&>div:last-child]:flex-1"
               total={
                 <span className="grid place-items-center leading-none">
-                  {winFilings.length}
-                  <small className="mt-0.5 text-11.5 font-normal text-muted">filings</small>
+                  {cat === "non-statutory" ? winRows.length : winFilings.length}
+                  <small className="mt-0.5 text-11.5 font-normal text-muted">{cat === "non-statutory" ? "tasks" : "filings"}</small>
                 </span>
               }
-              segments={F_STATUSES.map((s) => ({ label: s, value: winFilings.filter((f) => f.status === s).length, tone: F_BAR[s] }))}
+              segments={F_STATUSES.map((s) => ({
+                label: s === "Filed" ? (cat === "non-statutory" ? "Done" : cat === "all" ? "Filed or done" : s) : s,
+                value: cat === "non-statutory" ? (s === "Filed" ? winRows.length : 0) : winFilings.filter((f) => f.status === s).length,
+                tone: F_BAR[s],
+              }))}
             />
           </SectionCard>
         </Col>
@@ -538,6 +664,42 @@ export function FilingsScreen({ portal }: { portal: StaffPortal }) {
 
       <ProofDialog proof={proof} onOpenChange={(v) => !v && setProof(null)} />
       {toast.node}
+    </div>
+  );
+}
+
+/** F-2: the deliverable of a done task band, with a download. */
+function TaskDeliverable({ f, onDownload }: { f: TaskFiling; onDownload: (text: string) => void }) {
+  const name = f.tasks.find((t) => t.deliverable)?.deliverable;
+  if (!name) return <span className="text-faint">-</span>;
+  return (
+    <span className="inline-flex items-center gap-1.5" title={name}>
+      <FileBadge type={fileType(name)} />
+      <Button
+        size="iconSm"
+        variant="outline"
+        aria-label={`Download ${name}`}
+        title="Download"
+        onClick={() => onDownload(f.tasks.length > 1 ? `Downloaded ${name} · ${f.tasks.length} clients` : `Downloaded ${name}`)}
+      >
+        <Download size={14} strokeWidth={1.6} />
+      </Button>
+    </span>
+  );
+}
+
+/** F-3: the non-statutory row of the area bars. It has no regulator, so its swatch is the hollow task mark. */
+function InternalBar({ rows }: { rows: ClientFiling[] }) {
+  return (
+    <div className="-mx-1.5 flex items-center gap-2.5 px-1.5 py-1" aria-label={`${INTERNAL}: ${rows.length} of ${rows.length} done`}>
+      <i className="h-2 w-2 flex-none rounded-[2px] border-1.5 border-ink-2" aria-hidden />
+      <span className="flex-1 text-13.5 text-ink">{INTERNAL}</span>
+      <span className={cn("text-13 tabular-nums", rows.length ? "text-muted" : "text-faint")}>
+        {rows.length} / {rows.length}
+      </span>
+      <span className="relative h-1.5 w-[90px] flex-none overflow-hidden rounded-bar bg-raised" aria-hidden>
+        <i className="absolute inset-y-0 left-0 rounded-bar bg-ink-2" style={{ width: rows.length ? "100%" : "0%" }} />
+      </span>
     </div>
   );
 }

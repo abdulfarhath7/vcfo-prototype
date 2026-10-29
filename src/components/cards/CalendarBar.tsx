@@ -189,7 +189,7 @@ export function CalendarBar({
         <MonthNav value={month} onChange={onMonth} now={now} />
       </span>
       <span className="inline-flex h-8 flex-none items-center rounded-md bg-warn-soft px-2 text-12 font-medium text-warn">{fy}</span>
-      <Tabs items={areas} value={area} onChange={onArea} className="min-w-0 xl:flex-shrink [&_button]:px-2 xl:[&_button]:px-[7px]" />
+      {areas.length > 0 && <Tabs items={areas} value={area} onChange={onArea} className="min-w-0 xl:flex-shrink [&_button]:px-2 xl:[&_button]:px-[7px]" />}
       <span className="ml-auto flex flex-none items-center gap-1.5">
         <Tabs
           items={[

@@ -17,6 +17,10 @@ import { useUndoToast } from "@/components/ui/UndoToast";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { StackedBar } from "@/components/cards/StackedBar";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
+import { useRouter } from "next/navigation";
+import { FileBadge, fileType } from "@/components/ui/FileBadge";
+import { CLIENT_TASKS, clientVisible, taskHref } from "@/data/compliance-tasks";
+import { INTERNAL, catTabs, clientTaskRows, isTaskRow, showStat, showTasks, type CatFilter } from "@/data/compliance-tasks-views";
 import { ComplianceDrill, FilterChip, FilingPanel, PortalLink, type DrillRow } from "./comp-parts";
 
 const MONTHS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
@@ -68,13 +72,25 @@ function PeriodSwitch({ fy, value, onChange }: { fy: string; value: number; onCh
   const cur = full ? DEFAULT_WINDOW : value;
   return (
     <span className="inline-flex h-[30px] items-center overflow-hidden rounded-md border-1.5 border-line-2 bg-surface">
-      <button type="button" className="grid h-7 w-7 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink disabled:opacity-40" aria-label="Previous period" disabled={!full && cur === 0} onClick={() => onChange(full ? DEFAULT_WINDOW - 1 : cur - 1)}>
+      <button
+        type="button"
+        className="grid h-7 w-7 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink disabled:opacity-40"
+        aria-label="Previous period"
+        disabled={!full && cur === 0}
+        onClick={() => onChange(full ? DEFAULT_WINDOW - 1 : cur - 1)}
+      >
         <ChevronLeft size={15} strokeWidth={1.6} />
       </button>
       <b className="whitespace-nowrap px-1 text-center text-13 font-medium" aria-live="polite">
         {full ? `FY ${fy}` : windowOf(fy, cur).label}
       </b>
-      <button type="button" className="grid h-7 w-7 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink disabled:opacity-40" aria-label="Next period" disabled={!full && cur === WINDOWS - 1} onClick={() => onChange(full ? DEFAULT_WINDOW + 1 : cur + 1)}>
+      <button
+        type="button"
+        className="grid h-7 w-7 place-items-center rounded-sm text-muted hover:bg-raised hover:text-ink disabled:opacity-40"
+        aria-label="Next period"
+        disabled={!full && cur === WINDOWS - 1}
+        onClick={() => onChange(full ? DEFAULT_WINDOW + 1 : cur + 1)}
+      >
         <ChevronRight size={15} strokeWidth={1.6} />
       </button>
       <button
@@ -111,7 +127,10 @@ function MonthChart({ rows, onDrill }: { rows: Filing[]; onDrill: (title: string
               const i = typeof e?.activeTooltipIndex === "number" ? e.activeTooltipIndex : Number(e?.activeTooltipIndex);
               if (Number.isNaN(i) || i < 0) return;
               const month = (i + 3) % 12;
-              onDrill(`Filings · ${MONTHS[i]}`, rows.filter((f) => f.due.getMonth() === month));
+              onDrill(
+                `Filings · ${MONTHS[i]}`,
+                rows.filter((f) => f.due.getMonth() === month),
+              );
             }}
             className="cursor-pointer"
           >
@@ -133,17 +152,25 @@ function MonthChart({ rows, onDrill }: { rows: Filing[]; onDrill: (title: string
   );
 }
 
-function AreaCard({ rows, onDrill }: { rows: Filing[]; onDrill: (title: string, list: Filing[]) => void }) {
+function AreaCard({ rows, onDrill, cat }: { rows: Filing[]; onDrill: (title: string, list: Filing[]) => void; cat: CatFilter }) {
+  /* F-3: the areas follow the filter. Non-statutory rows sit under "Internal". */
+  const areas: string[] = [...(showStat(cat) ? BAR_AREAS : []), ...(showTasks(cat) ? [INTERNAL] : [])];
   return (
     <SectionCard title="Progress by area">
       <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
-        {BAR_AREAS.map((a) => {
+        {areas.map((a) => {
           const list = rows.filter((f) => f.area === a);
           const filed = list.filter((f) => f.status === "Filed").length;
           return (
-            <button key={a} type="button" onClick={() => onDrill(`${a} filings`, list)} className="-m-1.5 rounded-md p-1.5 text-left hover:bg-raised" aria-label={`${a}: ${filed} of ${list.length} filed. Show the rows`}>
+            <button
+              key={a}
+              type="button"
+              onClick={() => onDrill(a === INTERNAL ? "Internal tasks" : `${a} filings`, list)}
+              className="-m-1.5 rounded-md p-1.5 text-left hover:bg-raised"
+              aria-label={`${a}: ${filed} of ${list.length} filed. Show the rows`}
+            >
               <StackedBar
-                title={`${a} · ${filed} of ${list.length} filed`}
+                title={a === INTERNAL ? `${a} · ${filed} of ${list.length} done` : `${a} · ${filed} of ${list.length} filed`}
                 height={6}
                 segments={FILING_STATUSES.map((s) => ({ label: s, value: list.filter((f) => f.status === s).length, tone: FILING_STATUS_BAR[s] })).filter((s) => s.value > 0)}
               />
@@ -172,9 +199,34 @@ const NotifyCtx = React.createContext<(text: string) => void>(() => {});
 
 function ProofCell({ f }: { f: Filing }) {
   const notify = React.useContext(NotifyCtx);
+  if (isTaskRow(f)) {
+    const name = f.task.deliverable;
+    if (!name) return <span className="text-faint">-</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap" title={name}>
+        <FileBadge type={fileType(name)} />
+        <Button
+          size="iconSm"
+          variant="ghost"
+          aria-label={`Download ${name}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            notify(`Downloaded ${name}`);
+          }}
+        >
+          <Download size={16} strokeWidth={1.6} />
+        </Button>
+      </span>
+    );
+  }
   if (f.status !== "Filed") return <span className="text-faint">-</span>;
   const files = filingProofs(f);
-  if (files.length === 0) return <Chip tone="warn" fixed>Proof pending</Chip>;
+  if (files.length === 0)
+    return (
+      <Chip tone="warn" fixed>
+        Proof pending
+      </Chip>
+    );
   return (
     <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
       <span className="text-13 text-ink-2">{files.length === 1 ? "1 file" : `${files.length} files`}</span>
@@ -202,26 +254,41 @@ const columns: Column<Filing>[] = [
     render: (f) => (
       <span className="flex items-center gap-1 whitespace-nowrap">
         <span className="min-w-0">
-          <span className="block font-medium leading-tight"><Term>{f.form}</Term></span>
+          <span className="block font-medium leading-tight">{isTaskRow(f) ? f.form : <Term>{f.form}</Term>}</span>
           <span className="block text-12.5 leading-tight text-muted">{f.period}</span>
         </span>
-        <PortalLink area={f.area} name={f.form} />
+        {!isTaskRow(f) && <PortalLink area={f.area} name={f.form} />}
       </span>
     ),
   },
   { key: "frequency", label: "Frequency", width: 104, render: (f) => <span className="text-muted">{f.frequency}</span> },
   { key: "filed", label: "Filed on", width: 116, render: (f) => <FiledCell f={f} /> },
-  { key: "status", label: "Status", width: 124, render: (f) => <Chip tone={FILING_STATUS_TONE[f.status]} fixed>{f.status}</Chip> },
+  {
+    key: "status",
+    label: "Status",
+    width: 124,
+    render: (f) => (
+      <Chip tone={FILING_STATUS_TONE[f.status]} fixed>
+        {isTaskRow(f) ? "Done" : f.status}
+      </Chip>
+    ),
+  },
   {
     key: "assist",
     label: "VCFO Assist",
     width: 140,
     render: (f) => {
+      if (isTaskRow(f)) return <span className="text-faint">-</span>;
       const a = filingAssist(f);
       return <Chip tone={a.tone}>{a.label}</Chip>;
     },
   },
-  { key: "arn", label: "Reference", width: 190, render: (f) => (f.arn ? <span className="whitespace-nowrap font-mono text-12.5">{f.arn}</span> : <span className="text-faint">-</span>) },
+  {
+    key: "arn",
+    label: "Reference",
+    width: 190,
+    render: (f) => (f.arn ? <span className="whitespace-nowrap font-mono text-12.5">{f.arn}</span> : <span className="text-faint">-</span>),
+  },
   { key: "proof", label: "Proof", width: 128, align: "right", render: (f) => <ProofCell f={f} /> },
 ];
 
@@ -252,11 +319,21 @@ export function FilingsScreen() {
     } catch {}
   }, []);
 
-  const fyRows = FILINGS.filter((f) => f.fy === fy);
+  const router = useRouter();
+  const [cat, setCat] = React.useState<CatFilter>("all");
+  /* F-2: completed tasks shared with the client, with their deliverable. */
+  const taskRows = clientTaskRows(CLIENT_TASKS.filter(clientVisible));
+  const statFy = FILINGS.filter((f) => f.fy === fy);
+  const taskFy = taskRows.filter((f) => f.fy === fy);
+  /* F-1 and F-3: the charts, the period counts and the grid follow the filter. */
+  const fyRows: Filing[] = [...(showStat(cat) ? statFy : []), ...(showTasks(cat) ? taskFy : [])];
+  const openRow = (f: Filing) => (isTaskRow(f) ? router.push(taskHref("client", f.task.id)) : setPick(f));
   const w = win < 0 ? null : windowOf(fy, win);
   const winRows = w ? fyRows.filter((f) => f.due >= w.start && f.due <= w.end) : fyRows;
   const rows = winRows.filter((f) => inPeriod(f, period) && (!area || f.area === area) && (!status || f.status === status));
   const count = (p: string) => winRows.filter((f) => inPeriod(f, p)).length;
+  const inWin = (f: Filing) => !w || (f.due >= w.start && f.due <= w.end);
+  const cats = catTabs(statFy.filter(inWin).length, taskFy.filter(inWin).length);
   const onDrill = (title: string, list: Filing[]) => setDrill({ title, rows: list.map(toDrill) });
 
   return (
@@ -264,7 +341,7 @@ export function FilingsScreen() {
       <div className="grid grid-cols-1 gap-5">
         <Row>
           <MonthChart rows={fyRows} onDrill={onDrill} />
-          <AreaCard rows={fyRows} onDrill={onDrill} />
+          <AreaCard rows={fyRows} onDrill={onDrill} cat={cat} />
         </Row>
         <DataGrid
           title="Filings"
@@ -272,7 +349,7 @@ export function FilingsScreen() {
           rows={rows}
           rowKey={(f) => f.id}
           rowLate={isLate}
-          onRowClick={setPick}
+          onRowClick={openRow}
           selectedKey={pick?.id}
           pageSize={10}
           empty="None"
@@ -292,8 +369,20 @@ export function FilingsScreen() {
           }
           filters={
             <>
+              <Tabs
+                items={cats}
+                value={cat}
+                onChange={(k) => {
+                  setCat(k as CatFilter);
+                  if (k === "non-statutory") setArea(null);
+                }}
+              />
               <PeriodSwitch fy={fy} value={win} onChange={setWin} />
-              <Tabs items={["all", "Monthly", "Quarterly", "Annual"].map((p) => ({ key: p, label: p === "all" ? "All" : p, count: count(p) }))} value={period} onChange={setPeriod} />
+              <Tabs
+                items={["all", "Monthly", "Quarterly", "Annual"].map((p) => ({ key: p, label: p === "all" ? "All" : p, count: count(p) }))}
+                value={period}
+                onChange={setPeriod}
+              />
               <FilterChip label="Area" value={area} onChange={setArea} options={AREAS.map((a) => ({ value: a, label: a }))} />
               <FilterChip label="Status" value={status} onChange={setStatus} options={FILING_STATUSES.map((s) => ({ value: s, label: s }))} />
               <Select
@@ -313,7 +402,6 @@ export function FilingsScreen() {
                   <Calendar size={16} strokeWidth={1.6} />
                 </Link>
               </Button>
-
             </>
           }
         />
@@ -325,7 +413,9 @@ export function FilingsScreen() {
           rows={drill?.rows ?? []}
           onPick={(r) => {
             setDrill(null);
-            setPick(FILINGS.find((f) => f.id === r.id) ?? null);
+            const t = taskRows.find((f) => f.id === r.id);
+            if (t) openRow(t);
+            else setPick(FILINGS.find((f) => f.id === r.id) ?? null);
           }}
         />
         {toast.node}

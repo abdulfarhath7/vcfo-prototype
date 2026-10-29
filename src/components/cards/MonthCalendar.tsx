@@ -17,6 +17,10 @@ export interface CalItem {
   date: Date;
   label: string;
   status: CalStatus;
+  /** A non-statutory task (C-3): a hollow square before the label. */
+  task?: boolean;
+  /** Hover text, for example "Starts 12 Oct · High". */
+  hint?: string;
 }
 
 /** Worst first: the day takes the tint of its worst item (old RANK: over, due, up, ok). */
@@ -69,13 +73,18 @@ export function CalStatusChip({ status, className, compact }: { status: CalStatu
 const CAL_CHIP_SOFT: Record<string, string> = { ok: "bg-ok-soft", warn: "bg-warn-soft", bad: "bg-bad-soft", idle: "bg-idle-soft", prog: "bg-accent-soft", teal: "bg-teal-soft", violet: "bg-violet-soft" };
 const CAL_CHIP_DOT: Record<string, string> = { ok: "bg-ok-mid", warn: "bg-warn-mid", bad: "bg-bad-mid", idle: "bg-idle-mid", prog: "bg-accent-mid", teal: "bg-teal-mid", violet: "bg-violet-mid" };
 
-/** Short area tag for tight spots (IT, GST, PAY, FEMA, MCA): the R-43 swatch and the short word. */
-export function AreaShort({ children, title }: { children: React.ReactNode; title?: string }) {
+/** C-3: the non-statutory mark. An 8 px hollow square in ink-2; statutory items keep the solid regulator swatch. */
+export function TaskMark({ className }: { className?: string }) {
+  return <i className={cn("h-2 w-2 flex-none rounded-[2px] border-1.5 border-ink-2", className)} aria-hidden />;
+}
+
+/** Short area tag for tight spots (IT, GST, PAY, FEMA, MCA): the R-43 swatch and the short word. `task` shows the hollow task mark. */
+export function AreaShort({ children, title, task }: { children: React.ReactNode; title?: string; task?: boolean }) {
   const word = typeof children === "string" ? children : "";
   const r = regOf(word === "PAY" ? "Payroll" : word === "IT" ? "Income tax" : title ?? word);
   return (
     <span title={title} className="inline-flex h-5 flex-none items-center gap-1 rounded-sm border-1.5 border-line bg-surface px-1.5 text-11 font-medium text-ink-2">
-      <i className={cn("h-1.5 w-1.5 flex-none rounded-[2px]", r ? REG_DOT[r] : "bg-idle-mid")} aria-hidden />
+      {task ? <TaskMark /> : <i className={cn("h-1.5 w-1.5 flex-none rounded-[2px]", r ? REG_DOT[r] : "bg-idle-mid")} aria-hidden />}
       {children}
     </span>
   );
@@ -185,17 +194,16 @@ export function MonthCalendar({
                   {head}
                   <span className="hidden min-w-0 flex-col gap-1 md:flex">
                     {list.slice(0, 2).map((x) => (
-                      <span key={x.id} className="flex h-5 min-w-0 items-center gap-1.5 overflow-hidden rounded-[3px] bg-navy-tint pr-1.5 text-11 font-semibold text-ink">
+                      <span key={x.id} title={x.hint} className="flex h-5 min-w-0 items-center gap-1.5 overflow-hidden rounded-[3px] bg-navy-tint pr-1.5 text-11 font-semibold text-ink">
                         <i className={cn("w-[3px] flex-none self-stretch rounded-l-[3px]", CAL_FILL[x.status])} aria-hidden />
+                        {x.task && <TaskMark />}
                         <span className="truncate">{x.label}</span>
                       </span>
                     ))}
                     {list.length > 2 && <span className="pl-0.5 text-11 font-bold text-accent">+{list.length - 2} more</span>}
                   </span>
                   <span className="flex flex-wrap gap-0.5 md:hidden" aria-hidden>
-                    {list.map((x) => (
-                      <i key={x.id} className={cn("h-1.5 w-1.5 rounded-[2px]", CAL_FILL[x.status])} />
-                    ))}
+                    {list.map((x) => (x.task ? <TaskMark key={x.id} className="h-1.5 w-1.5 border" /> : <i key={x.id} className={cn("h-1.5 w-1.5 rounded-[2px]", CAL_FILL[x.status])} />))}
                   </span>
                 </button>
               }

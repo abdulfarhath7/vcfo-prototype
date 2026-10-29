@@ -80,6 +80,10 @@ export interface NextDeadline {
   /** Area tag and state chip under the title. */
   area: string;
   areaTitle?: string;
+  /** A non-statutory task: the hollow mark in place of the regulator swatch (C-3). */
+  task?: boolean;
+  /** The primary button word; "Open filing" by default. */
+  openLabel?: string;
   state?: { label: string; tone: "ok" | "warn" | "idle" };
   /** More tags after the state chip, for example the client. */
   extra?: React.ReactNode;
@@ -109,7 +113,9 @@ export function NextDeadlineCard({ next, onOpen, onRemind, onTile, reminded }: {
               {next.link}
             </div>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
-              <AreaShort title={next.areaTitle}>{next.area}</AreaShort>
+              <AreaShort title={next.areaTitle} task={next.task}>
+                {next.area}
+              </AreaShort>
               {next.state && (
                 <Chip tone={next.state.tone}>{next.state.label}</Chip>
               )}
@@ -119,7 +125,7 @@ export function NextDeadlineCard({ next, onOpen, onRemind, onTile, reminded }: {
         </div>
         <div className="mt-3.5 flex gap-2">
           <Button variant="primary" size="sm" className="flex-1" onClick={onOpen}>
-            Open filing <ArrowRight size={13} strokeWidth={1.6} />
+            {next.openLabel ?? "Open filing"} <ArrowRight size={13} strokeWidth={1.6} />
           </Button>
           {reminded ? (
             <Chip tone="ok" className="h-[30px]">
@@ -151,6 +157,10 @@ export interface ComingItem {
   areaTitle?: string;
   name: string;
   status: CalStatus;
+  /** A non-statutory task (C-3). */
+  task?: boolean;
+  /** Hover text, for example "Starts 12 Oct · High". */
+  hint?: string;
 }
 
 /** Old agendaRail "Coming up": one date tile per day, each filing with its area and status chip. */
@@ -177,8 +187,10 @@ export function ComingUpCard({ items, onPick, title = "Coming up" }: { items: Co
             <ul className="grid min-w-0 flex-1 grid-cols-1 gap-1.5">
               {list.map((x) => (
                 <li key={x.id} className="min-w-0">
-                  <button type="button" onClick={() => onPick?.(x.id)} className="flex w-full min-w-0 items-center gap-2 text-left hover:text-accent">
-                    <AreaShort title={x.areaTitle}>{x.area}</AreaShort>
+                  <button type="button" onClick={() => onPick?.(x.id)} title={x.hint} className="flex w-full min-w-0 items-center gap-2 text-left hover:text-accent">
+                    <AreaShort title={x.areaTitle} task={x.task}>
+                      {x.area}
+                    </AreaShort>
                     <span className="min-w-0 flex-1 truncate text-13 font-medium">{x.name}</span>
                     <CalStatusChip status={x.status} compact />
                   </button>

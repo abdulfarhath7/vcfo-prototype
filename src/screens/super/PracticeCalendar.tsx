@@ -16,6 +16,7 @@ export function PracticeCalendar() {
       client={client}
       onClient={setClient}
       hrefFor={(e) => `/super/clients/${e.client}`}
+      taskHrefFor={(t) => `/super/clients/${t.client}`}
       filingsHref="/super/practice/filings"
     />
   );
