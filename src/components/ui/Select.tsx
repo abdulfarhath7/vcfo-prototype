@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size"> {
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string; disabled?: boolean }>;
   size?: "sm" | "md";
 }
 
@@ -19,7 +19,7 @@ export function Select({ options, className, size = "sm", ...rest }: SelectProps
         {...rest}
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} disabled={o.disabled}>
             {o.label}
           </option>
         ))}
@@ -38,7 +38,7 @@ export function SelectOnNavy({ options, className, ...rest }: Omit<SelectProps, 
         {...rest}
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} disabled={o.disabled}>
             {o.label}
           </option>
         ))}

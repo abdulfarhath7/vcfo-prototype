@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Upload } from "lucide-react";
+import { Clock, List, ShieldCheck, Upload } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt } from "@/lib/dates";
 import {
@@ -235,7 +235,7 @@ export function StatDetail({ role, name, client, area, input, rule, assist, revi
               </ul>
             </SectionCard>
 
-            <SectionCard title="Filled by SBC" meta={done ? "Read only" : undefined} flush>
+            <SectionCard title="Filled by SBC" icon={{ Icon: List, tone: "blue" }} meta={done ? "Read only" : undefined} flush>
               {base.filledBySbc.map((f) => (
                 <KV key={f.label} k={f.label} sub={f.who ? `${f.who} · ${f.when}` : undefined}>
                   <b className={cn("font-medium", f.value === "-" && "font-normal text-faint", isId(f.value) && "font-mono text-13.5")}>{f.value}</b>
@@ -255,7 +255,7 @@ export function StatDetail({ role, name, client, area, input, rule, assist, revi
               }}
             />
 
-            <SectionCard title="Rule" flush>
+            <SectionCard title="Rule" icon={{ Icon: ShieldCheck, tone: "green" }} flush>
               <KV k="Due rule">{rule.dueRule}</KV>
               {rule.applies && <KV k="Applies to">{rule.applies}</KV>}
               <KV k="Penalty">{rule.penalty || "-"}</KV>
@@ -287,6 +287,7 @@ export function StatDetail({ role, name, client, area, input, rule, assist, revi
             />
             <DataGrid
               title="Previous periods"
+              icon={{ Icon: Clock, tone: "violet" }}
               rows={base.past}
               rowKey={(p) => `${p.period}-${p.due}`}
               columns={[

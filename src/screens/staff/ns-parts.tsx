@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
-import { fmt, daysFrom } from "@/lib/dates";
+import { CalendarDays } from "lucide-react";
+import { fmt, fmtYear, daysFrom } from "@/lib/dates";
 import { NON_STATUTORY, activity } from "@/data/activity-master";
 import { REPEATS, URGENCIES, WEEK_GROUPS, taskWord, weekOf, type NsTask, type Repeats, type TaskUrgency, type Visibility } from "@/data/compliance-tasks";
 import { REG_CLIENTS } from "@/data/staff-regs-table";
@@ -150,6 +151,66 @@ const fromIso = (s: string) => {
   return new Date(y, m - 1, d);
 };
 
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+const plain = (s: string) => (s ? fmtYear(fromIso(s)) : "");
+/** "16 Oct 2026", "16 october" (this year) or "16/10/2026" to "2026-10-16". */
+function parsePlain(t: string): string | undefined {
+  const m = t.trim().match(/^(\d{1,2})[\s/-]+([a-z]{3,}|\d{1,2})[\s/-]*(\d{4})?$/i);
+  if (!m) return undefined;
+  const mi = /^\d+$/.test(m[2]) ? Number(m[2]) - 1 : MONTHS.indexOf(m[2].slice(0, 3).toLowerCase());
+  const dt = new Date(m[3] ? Number(m[3]) : 2026, mi, Number(m[1]));
+  return mi < 0 || mi > 11 || dt.getMonth() !== mi ? undefined : iso(dt);
+}
+
+/** R-29: the field shows "16 Oct 2026". Typing a date works; the button opens the browser's picker. */
+function DateField({ label, value, onChange, min, invalid }: { label: string; value: string; onChange: (v: string) => void; min?: string; invalid?: boolean }) {
+  const pick = React.useRef<HTMLInputElement>(null);
+  const [text, setText] = React.useState(plain(value));
+  React.useEffect(() => setText(plain(value)), [value]);
+  return (
+    <span className="relative block">
+      <Input
+        aria-label={label}
+        value={text}
+        placeholder="16 Oct 2026"
+        aria-invalid={invalid}
+        className="pr-10"
+        onChange={(ev) => {
+          setText(ev.target.value);
+          const v = parsePlain(ev.target.value);
+          if (v) onChange(v);
+          else if (!ev.target.value.trim()) onChange("");
+        }}
+        onBlur={() => setText(plain(value))}
+      />
+      <button
+        type="button"
+        aria-label={`Pick the ${label.toLowerCase()}`}
+        onClick={() => {
+          try {
+            pick.current?.showPicker();
+          } catch {
+            pick.current?.focus();
+          }
+        }}
+        className="absolute right-1.5 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-muted hover:bg-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus"
+      >
+        <CalendarDays size={16} strokeWidth={1.6} aria-hidden />
+      </button>
+      <input
+        ref={pick}
+        type="date"
+        tabIndex={-1}
+        aria-hidden
+        value={value}
+        min={min}
+        onChange={(ev) => onChange(ev.target.value)}
+        className="pointer-events-none absolute bottom-0 right-0 h-px w-px opacity-0"
+      />
+    </span>
+  );
+}
+
 interface Form {
   act: string;
   name: string;
@@ -186,20 +247,19 @@ export function NewTaskDialog({
   by: string;
 }) {
   const blank = React.useCallback((): Form => {
-    const a = NON_STATUTORY[0];
     const [owner, reviewer] = defaultClient ? ownerOf(defaultClient) : ["", "Pranay"];
     return {
-      act: a.id,
+      act: "",
       name: "",
       client: defaultClient,
       start: iso(today),
       end: "",
       urgency: "Medium",
-      vis: a.visibility,
+      vis: "both",
       owner,
       reviewer,
-      repeats: REPEAT_OF[a.frequency] ?? "One-time",
-      notify: String(a.notifyDays),
+      repeats: "One-time",
+      notify: "5",
     };
   }, [defaultClient, ownerOf, today]);
   const [f, setF] = React.useState<Form>(blank);
@@ -213,6 +273,7 @@ export function NewTaskDialog({
   const set = (p: Partial<Form>) => setF((x) => ({ ...x, ...p }));
 
   const pickAct = (id: string) => {
+    if (!id) return set({ act: "" });
     const a = activity(id === OTHER ? "ACT-013" : id)!;
     set({ act: id, vis: a.visibility, repeats: id === OTHER ? "One-time" : (REPEAT_OF[a.frequency] ?? "One-time"), notify: String(a.notifyDays) });
   };
@@ -222,6 +283,7 @@ export function NewTaskDialog({
   };
 
   const err = {
+    act: !f.act ? "Pick an activity" : undefined,
     name: f.act === OTHER && !f.name.trim() ? "Give the task a name" : undefined,
     client: !f.client ? "Pick a client" : undefined,
     start: !f.start ? "Pick a start date" : undefined,
@@ -294,14 +356,21 @@ export function NewTaskDialog({
         }}
         className="grid grid-cols-1 gap-4 sm:grid-cols-2"
       >
-        <Field label="Activity" className="sm:col-span-2">
+        <Field label="Activity" className="sm:col-span-2" error={e("act")}>
           <Select
             aria-label="Activity"
             size="md"
             className="w-full [&>select]:w-full"
             value={f.act}
             onChange={(ev) => pickAct(ev.target.value)}
-            options={[...NON_STATUTORY.map((a) => ({ value: a.id, label: a.name })), { value: OTHER, label: "Other…" }]}
+            aria-invalid={!!e("act")}
+            options={[
+              { value: "", label: "Pick an activity" },
+              ...NON_STATUTORY.filter((a) => a.kind === "Non-statutory").map((a) => ({ value: a.id, label: a.name })),
+              { value: "divider", label: "──────────", disabled: true },
+              ...NON_STATUTORY.filter((a) => a.kind !== "Non-statutory").map((a) => ({ value: a.id, label: a.name })),
+              { value: OTHER, label: "Other…" },
+            ]}
           />
         </Field>
         {f.act === OTHER ? (
@@ -332,10 +401,10 @@ export function NewTaskDialog({
           />
         </Field>
         <Field label="Start date" error={e("start")}>
-          <Input aria-label="Start date" type="date" value={f.start} onChange={(ev) => set({ start: ev.target.value })} aria-invalid={!!e("start")} />
+          <DateField label="Start date" value={f.start} onChange={(v) => set({ start: v })} invalid={!!e("start")} />
         </Field>
         <Field label="End date" error={e("end")}>
-          <Input aria-label="End date" type="date" value={f.end} min={f.start || undefined} onChange={(ev) => set({ end: ev.target.value })} aria-invalid={!!e("end")} />
+          <DateField label="End date" value={f.end} min={f.start || undefined} onChange={(v) => set({ end: v })} invalid={!!e("end")} />
         </Field>
         <Field label="Urgency">
           <Select

@@ -528,7 +528,7 @@ export function statDetail(x: StatInput): StatDetail {
             : x.owner;
     const evidence =
       i === 0 && i < doneN
-        ? `${clientInputs.filter((c) => c.status === "Accepted").length} files accepted`
+        ? accepted(clientInputs.filter((c) => c.status === "Accepted").length)
         : i === 1 && i < doneN
           ? "Working paper"
           : i === 4 && i < doneN
@@ -569,6 +569,8 @@ export function statDetail(x: StatInput): StatDetail {
     reviewNote: stage === "review" ? `${x.reviewer}: figures tie to the books. Approve after the challan check.` : undefined,
   };
 }
+
+const accepted = (n: number) => `${n} file${n === 1 ? "" : "s"} accepted`;
 
 /** "14 Oct" as a sortable number, for the history order. */
 const dayNum = (s: string) => {

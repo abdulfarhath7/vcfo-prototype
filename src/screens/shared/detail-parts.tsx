@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { Bell, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt, urgency } from "@/lib/dates";
 import { clientById } from "@/data/staff-clients";
@@ -109,6 +110,7 @@ export function RemindersCard({ rows, days, onDays, canEdit, client }: { rows: R
   return (
     <SectionCard
       title="Reminders"
+      icon={{ Icon: Bell, tone: "amber" }}
       meta={`First ${days} day${days === 1 ? "" : "s"} before`}
       flush
       right={
@@ -170,7 +172,7 @@ export function ActivityCard({ rows }: { rows: HistoryEntry[] }) {
 /** D-3 Progress: ST5 steps with who, when and evidence, then the stage, the owner and the reviewer. */
 export function ProgressCard({ steps, stage, owner, reviewer, note }: { steps: Step[]; stage: string; owner: string; reviewer: string; note?: string }) {
   return (
-    <SectionCard title="Progress" meta={`${steps.filter((s) => s.state === "done").length} of ${steps.length}`} flush>
+    <SectionCard title="Progress" icon={{ Icon: ClipboardCheck, tone: "teal" }} meta={`${steps.filter((s) => s.state === "done").length} of ${steps.length}`} flush>
       <ol className="px-4 py-3 md:px-5">
         {steps.map((s, i) => (
           <li key={s.label} className="relative flex gap-3 pb-3.5 last:pb-0">
