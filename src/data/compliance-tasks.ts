@@ -474,7 +474,9 @@ function pastPeriods(freq: string, due: Date, key: string): PastPeriod[] {
   const step = /^m/i.test(freq) ? 1 : /^q/i.test(freq) ? 3 : /^h/i.test(freq) ? 6 : 12;
   const lateAt = Number(code(key, 6)) % 6;
   return Array.from({ length: 6 }, (_, i) => {
-    const dd = new Date(due.getFullYear(), due.getMonth() - step * (i + 1), due.getDate());
+    // Clamp to the month's last day: 31 Jul minus 3 months is 30 Apr, not 1 May.
+    const first = new Date(due.getFullYear(), due.getMonth() - step * (i + 1), 1);
+    const dd = new Date(first.getFullYear(), first.getMonth(), Math.min(due.getDate(), new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate()));
     const late = i === lateAt && i > 0;
     const filed = plus(dd, late ? 3 : -1 - (i % 3));
     return { period: periodOf(freq, dd), due: `${fmt(dd)} ${dd.getFullYear()}`, filed: `${fmt(filed)} ${filed.getFullYear()}`, late, ref: `${code(key, 10 + i)}` };
@@ -545,7 +547,9 @@ export function statDetail(x: StatInput): StatDetail {
   steps.slice(1).forEach((s) => s.state === "done" && history.push({ when: s.when!, who: s.who!, what: s.label }));
   const reminders = remindersFor(a, due, x.state === "done", x.today);
   reminders.forEach(
-    (r) => (r.state === "sent" || r.state === "acknowledged") && history.push({ when: fmt(r.date), who: "VCFO", what: `${r.label} reminder to ${r.to.toLowerCase()}` }),
+    (r) =>
+      (r.state === "sent" || r.state === "acknowledged") &&
+      history.push({ when: fmt(r.date), who: "VCFO", what: `${r.label.replace(/ reminder$/, "")} reminder to ${r.to.toLowerCase()}` }),
   );
 
   return {
@@ -578,3 +582,6 @@ export function dueText(due: Date, today: Date, done: boolean) {
   const n = daysFrom(due, today);
   return n < 0 ? `${-n} day${n === -1 ? "" : "s"} overdue` : n === 0 ? "Due today" : `Due in ${n} day${n === 1 ? "" : "s"}`;
 }
+
+/** Non-statutory detail page (4.3). Staff: /<portal>/compliances/obligations/tasks/<id>. Client: /client/obligations/tasks/<id>. */
+export const taskHref = (portal: string, id: string) => (portal === "client" ? `/client/obligations/tasks/${id}` : `/${portal}/compliances/obligations/tasks/${id}`);
