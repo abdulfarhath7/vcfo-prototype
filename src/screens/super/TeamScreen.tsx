@@ -10,6 +10,7 @@ import { Chip } from "@/components/ui/Chip";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
+import { AvatarStack } from "@/components/ui/AvatarStack";
 import { SectionCard, ListRow } from "@/components/cards/SectionCard";
 import { CAP, FIRM_CLIENTS, MANAGERS, REASSIGN, STAFF, type Staff } from "@/data/super";
 import { ADMINS, ADMIN_FEED, MANAGER_ROWS, clientsOfAdmin, type Admin, type ManagerRow } from "@/data/super-firm";
@@ -50,7 +51,7 @@ const columns: Column<Staff>[] = [
 
 const adminCols: Column<Admin>[] = [
   { key: "name", label: "Admin", render: (a) => person(a.name, "Admin") },
-  { key: "managers", label: "Managers", render: (a) => a.managers.join(", ") },
+  { key: "managers", label: "Managers", width: 120, render: (a) => <AvatarStack names={a.managers} label={`Managers: ${a.managers.join(", ")}`} /> },
   { key: "clients", label: "Clients", align: "right", width: 76, render: (a) => clientsOfAdmin(a) },
   { key: "assigned", label: "Assigned", align: "right", width: 84 },
   { key: "reassigned", label: "Reassigned", align: "right", width: 96 },

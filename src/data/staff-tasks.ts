@@ -236,3 +236,26 @@ export const APPROVALS: Record<"manager" | "admin", Approval[]> = {
     { id: "a3", client: "banyan", title: "Escalation: new name options after RUN rejection", by: "Arjun Mehta", sent: d(2026, 10, 14) },
   ],
 };
+
+/** E-08: the staff user's previous visit, when the browser has none stored (Thu 15 Oct, end of day). */
+export const PREVIOUS_VISIT = new Date(2026, 9, 15, 18, 20);
+
+/** E-08: when a task last changed (status, owner, note or file). Only a few rows; the rest changed before the previous visit. */
+const at = (day: number, h: number, m: number) => new Date(2026, 9, day, h, m);
+export const TASK_CHANGED: Record<string, Date> = {
+  // Pranay's team (manager Today)
+  mt01: at(16, 9, 12),
+  mt04: at(16, 10, 5),
+  mt09: at(16, 11, 40),
+  mt05: at(15, 16, 10),
+  // Bharath's work (lead and manager Work)
+  t13: at(16, 9, 30),
+  t02: at(16, 10, 48),
+  t06: at(16, 8, 55),
+  t16: at(15, 17, 5),
+  // The firm (admin Work)
+  p09: at(16, 9, 20),
+  p16: at(16, 11, 2),
+  p23: at(16, 10, 15),
+};
+export const taskChanged = (t: { id: string }) => TASK_CHANGED[t.id];

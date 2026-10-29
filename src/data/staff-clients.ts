@@ -183,3 +183,13 @@ export const CONTACTS: Record<string, ClientContact> = {
 
 /** Sort order for the Clients grid: worst health first (old admin Clients). */
 export const HEALTH_ORDER: Record<Health, number> = { Stuck: 0, Overdue: 1, "Due this week": 2, "With client": 3, "In progress": 4, "Not started": 5 };
+
+/** E-08: when a client last changed (step moved, document in, holder changed). Times on Fri 16 Oct match the task changes. */
+export const CLIENT_CHANGED: Record<string, Date> = {
+  brightwave: new Date(2026, 9, 16, 9, 20),
+  tidewater: new Date(2026, 9, 16, 9, 30),
+  northwind: new Date(2026, 9, 16, 10, 48),
+  monsoon: new Date(2026, 9, 16, 10, 15),
+  kestrel: new Date(2026, 9, 15, 15, 40),
+};
+export const clientChanged = (c: { id: string }) => CLIENT_CHANGED[c.id];

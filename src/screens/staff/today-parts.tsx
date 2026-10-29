@@ -1,8 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import * as DM from "@radix-ui/react-dropdown-menu";
-import { AlertTriangle, Building2, CalendarDays, Check, CheckCheck, Clock, ListChecks, Plus, Rocket, ShieldCheck, User, X } from "lucide-react";
+import { AlertTriangle, Building2, CalendarDays, CheckCheck, Clock, ListChecks, Rocket, ShieldCheck, User, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { STAFF_TODAY as TODAY, fmt, relative } from "@/lib/dates";
 import { clientById, clientsFor, PHASE_TOTALS, type StaffClient } from "@/data/staff-clients";
@@ -69,58 +68,8 @@ export function ScopeTabs({ portal, value, onChange }: { portal: StaffPortal; va
   return <Tabs size="md" items={items.map(([key, label, n]) => ({ key, label, count: n }))} value={value} onChange={(k) => onChange(k as Scope)} />;
 }
 
-export interface FilterOption {
-  value: string;
-  label: string;
-}
-
-/**
- * R-10 filter chip. Set: soft blurple fill, "Label Value" and an ×. Not set: dashed edge, "+ Label".
- * A click opens a light menu (34 px rows) with the options.
- */
-export function FilterChip({ label, value, options, onChange }: { label: string; value: string; options: FilterOption[]; onChange: (v: string) => void }) {
-  const picked = options.find((o) => o.value === value);
-  const menu = (
-    <DM.Portal>
-      <DM.Content align="start" sideOffset={4} collisionPadding={12} className="z-50 max-h-[320px] min-w-[180px] overflow-y-auto rounded-md border border-line bg-surface p-1 text-14 text-ink shadow-float">
-        {options.map((o) => (
-          <DM.Item key={o.value} onSelect={() => onChange(o.value)} className="flex h-[34px] cursor-pointer select-none items-center gap-2 rounded-sm px-2.5 outline-none data-[highlighted]:bg-hover">
-            <span className="min-w-0 flex-1 truncate">{o.label}</span>
-            {o.value === value && <Check size={14} strokeWidth={1.6} className="text-accent" aria-hidden />}
-          </DM.Item>
-        ))}
-      </DM.Content>
-    </DM.Portal>
-  );
-  if (picked)
-    return (
-      <span className="inline-flex h-7 max-w-full flex-none items-center gap-1.5 rounded-md border-1.5 border-accent-line bg-accent-soft pl-2.5 pr-1.5 text-13 text-accent">
-        <DM.Root modal={false}>
-          <DM.Trigger asChild>
-            <button type="button" className="inline-flex min-w-0 items-center gap-1.5">
-              <span className="text-ink-2">{label}</span>
-              <b className="truncate font-medium">{picked.label}</b>
-            </button>
-          </DM.Trigger>
-          {menu}
-        </DM.Root>
-        <button type="button" aria-label={`Remove ${label} filter`} onClick={() => onChange("")} className="grid h-[18px] w-[18px] flex-none place-items-center rounded-sm text-accent hover:bg-surface">
-          <X size={13} strokeWidth={1.6} />
-        </button>
-      </span>
-    );
-  return (
-    <DM.Root modal={false}>
-      <DM.Trigger asChild>
-        <button type="button" className="inline-flex h-7 flex-none items-center gap-1.5 rounded-md border-1.5 border-dashed border-line-2 px-2.5 text-13 font-medium text-ink-2 hover:bg-hover data-[state=open]:bg-hover">
-          <Plus size={14} strokeWidth={1.6} aria-hidden />
-          {label}
-        </button>
-      </DM.Trigger>
-      {menu}
-    </DM.Root>
-  );
-}
+// R-10 filter chip: one shared part (B-05). Staff screens import it from here.
+export { FilterChip, FilterChipRow, type FilterOption } from "@/components/ui/FilterChip";
 
 /** Client identity colour, as the company tile uses it. */
 const codeTone: Record<StaffClient["tone"], string> = {
@@ -168,6 +117,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "Clients",
         value: cl.length,
+        how: "Every client of the firm, incorporating or in compliance.",
         Icon: Building2,
         tone: "blue",
         href: `${b}/clients`,
@@ -175,6 +125,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "Incorporating",
         value: cl.filter((c) => c.stage === "incorporating").length,
+        how: "Clients that do not have the certificate of incorporation yet.",
         Icon: Rocket,
         tone: "violet",
         href: `${b}/clients`,
@@ -182,6 +133,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "In compliance",
         value: cl.filter((c) => c.stage === "compliance").length,
+        how: "Incorporated clients with a filing calendar.",
         Icon: ShieldCheck,
         tone: "green",
         href: `${b}/clients`,
@@ -189,15 +141,17 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       {
         label: "Overdue",
         value: overdue.length,
+        how: "Open tasks past their due date, across all managers.",
         note: `${new Set(overdue.map((t) => t.client)).size} clients`,
         Icon: AlertTriangle,
         tone: "red",
         bad: true,
-        href: `${b}/work`,
+        href: `${b}/work?view=overdue`,
       },
       {
         label: "Stuck",
         value: stuck.length,
+        how: "Clients whose current step has not moved for three days or more.",
         Icon: Clock,
         tone: "amber",
         bad: true,
@@ -216,43 +170,48 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     {
       label: "Needs action",
       value: queue.length,
+      how: "Open tasks in the queue that need a step from SBC.",
       note: scope === "all" && NEW_TODAY[portal] ? `${NEW_TODAY[portal]} new` : undefined,
       spark: trend.action,
       Icon: ListChecks,
       tone: "blue",
-      href: `${b}/work`,
+      href: `${b}/work?view=all`,
     },
     {
       label: "Overdue",
       value: late,
+      how: "Tasks and filings past their due date.",
       note: lateClients ? `${lateClients} ${lateClients === 1 ? "client" : "clients"}` : undefined,
       spark: trend.overdue,
       Icon: AlertTriangle,
       tone: "red",
       bad: late > 0,
-      href: `${b}/work`,
+      href: `${b}/work?view=overdue`,
     },
     {
       label: "Waiting on clients",
       value: waits.length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length,
+      how: "Steps waiting on a client, plus SRNs waiting on MCA.",
       note: oldest ? `oldest ${oldest}d` : undefined,
       spark: trend.waiting,
       sparkTone: "teal",
       Icon: User,
       tone: "amber",
-      href: `${b}/work`,
+      href: `${b}/work?view=waiting`,
     },
     {
       label: "Due this week",
       value: week,
+      how: "Open steps, filings and reminders due from Monday to Friday.",
       note: "by Fri",
       Icon: CalendarDays,
       tone: "teal",
-      href: `${b}/work`,
+      href: `${b}/work?view=week`,
     },
     {
       label: "Done today",
       value: DONE_TODAY[portal],
+      how: "Tasks marked done today.",
       spark: trend.done,
       Icon: CheckCheck,
       tone: "green",

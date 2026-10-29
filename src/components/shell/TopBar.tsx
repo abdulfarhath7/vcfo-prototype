@@ -9,8 +9,10 @@ import { useTheme } from "./ThemeProvider";
 import { Palette } from "./Palette";
 import { StaffAnnouncementsBell, StaffBellMenu } from "./StaffBellMenu";
 import { BeforeAfter } from "./BeforeAfter";
+import { Tip } from "@/components/ui/Tip";
 
-function IconBtn({ label, onClick, href, children, dot, count }: { label: string; onClick?: () => void; href?: string; children: React.ReactNode; dot?: boolean; count?: number }) {
+/** Icon-only top bar button with a TP3 dark tip (name and shortcut, when there is one). */
+function IconBtn({ label, onClick, href, children, dot, count, keys }: { label: string; onClick?: () => void; href?: string; children: React.ReactNode; dot?: boolean; count?: number; keys?: string[] }) {
   const cls = "relative grid h-9 w-9 place-items-center rounded-md text-ink-2 hover:bg-ghost";
   const inner = (
     <>
@@ -23,14 +25,18 @@ function IconBtn({ label, onClick, href, children, dot, count }: { label: string
       )}
     </>
   );
-  return href ? (
-    <Link href={href} aria-label={label} title={label} className={cls}>
-      {inner}
-    </Link>
-  ) : (
-    <button type="button" aria-label={label} title={label} onClick={onClick} className={cls}>
-      {inner}
-    </button>
+  return (
+    <Tip label={label} keys={keys}>
+      {href ? (
+        <Link href={href} aria-label={label} className={cls}>
+          {inner}
+        </Link>
+      ) : (
+        <button type="button" aria-label={label} onClick={onClick} className={cls}>
+          {inner}
+        </button>
+      )}
+    </Tip>
   );
 }
 
@@ -78,16 +84,18 @@ export function TopBar({ portal, incorporated, onMenu, updatesBase }: { portal: 
           ))}
         </ol>
       </div>
-      <button
-        type="button"
-        onClick={() => setSearch(true)}
-        className="ml-auto flex h-9 w-9 items-center gap-2 rounded-md border-1.5 border-line bg-raised px-0 text-14 text-muted hover:border-line-2 md:w-[380px] md:pl-3 md:pr-2"
-        aria-label="Search (Ctrl K)"
-      >
-        <Search size={16} strokeWidth={1.6} className="mx-auto md:mx-0" />
-        <span className="hidden flex-1 text-left md:inline">Search clients, filings, documents</span>
-        <kbd className="ml-auto hidden rounded-sm border border-line bg-raised px-[5px] text-11 font-medium leading-[18px] text-muted md:inline">Ctrl K</kbd>
-      </button>
+      <Tip label="Search" keys={["Ctrl", "K"]}>
+        <button
+          type="button"
+          onClick={() => setSearch(true)}
+          className="ml-auto flex h-9 w-9 items-center gap-2 rounded-md border-1.5 border-line bg-raised px-0 text-14 text-muted hover:border-line-2 md:w-[380px] md:pl-3 md:pr-2"
+          aria-label="Search (Ctrl K)"
+        >
+          <Search size={16} strokeWidth={1.6} className="mx-auto md:mx-0" />
+          <span className="hidden flex-1 text-left md:inline">Search clients, filings, documents</span>
+          <kbd className="ml-auto hidden rounded-sm border border-line bg-raised px-[5px] text-11 font-medium leading-[18px] text-muted md:inline">Ctrl K</kbd>
+        </button>
+      </Tip>
       {/* shell.js: Before | After sits in the desktop top bar, before Announcements. Phones get it in the drawer. */}
       {portal === "client" && <BeforeAfter className="hidden sm:grid" />}
       {portal === "lead" || portal === "manager" || portal === "admin" ? (

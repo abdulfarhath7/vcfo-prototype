@@ -2,7 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { tile, urgency, type Urgency } from "@/lib/dates";
+import { daysFrom, fmt, tile, urgency, type Urgency } from "@/lib/dates";
 import { Chip, type ChipTone } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { Empty } from "./SectionCard";
@@ -30,20 +30,37 @@ const tileTone: Record<Urgency, string> = {
   idle: "border-line bg-surface text-ink",
 };
 
-/** 44 px date tile tinted by urgency. */
+const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+/** "Mon 19 Oct 2026": the exact date for tooltips (E-11). */
+export const fullDate = (d: Date) => `${WD[d.getDay()]} ${fmt(d)} ${d.getFullYear()}`;
+
+/** E-11: relative due words for attention lists. Plain dates stay in tables (R-29). */
+export function dueWords(date: Date, today: Date) {
+  const n = daysFrom(date, today);
+  if (n < -1) return `${-n} days late`;
+  if (n === -1) return "1 day late";
+  if (n === 0) return "Due today";
+  if (n === 1) return "Due tomorrow";
+  return `In ${n} days`;
+}
+
+/** 44 px date tile tinted by urgency. The exact date shows as a tooltip. */
 export function DateTile({ date, tint, className }: { date: Date; tint?: Urgency; className?: string }) {
   const t = tile(date);
   const u = tint ?? urgency(date);
   return (
-    <span className={cn("grid w-11 flex-none place-items-center rounded-md border-1.5 py-1 leading-none", tileTone[u], className)} aria-hidden>
+    <span title={fullDate(date)} className={cn("grid w-11 flex-none place-items-center rounded-md border-1.5 py-1 leading-none", tileTone[u], className)}>
       <b className="text-16 font-medium">{t.day}</b>
       <span className={cn("text-[10.5px] font-medium uppercase tracking-wider", u === "idle" ? "text-muted" : "opacity-80")}>{t.mon}</span>
     </span>
   );
 }
 
-/** R-20: full-width rows, 44 px date tile, chip on the right, urgent row soft red with a navy action. */
-export function AttentionList({ rows, className }: { rows: AttentionRow[]; className?: string }) {
+/**
+ * R-20: full-width rows, 44 px date tile, chip on the right, urgent row soft red with a navy action.
+ * With `today` (due lists only), the sub line starts with relative words: "In 3 days", "2 days late" (E-11).
+ */
+export function AttentionList({ rows, className, today }: { rows: AttentionRow[]; className?: string; today?: Date }) {
   if (rows.length === 0) return <Empty />;
   return (
     <ul className={className}>
@@ -62,7 +79,17 @@ export function AttentionList({ rows, className }: { rows: AttentionRow[]; class
               {r.alert ? (
                 <Chip tone={r.chip.tone} className="mt-1">{r.chip.label}</Chip>
               ) : (
-                r.sub && <span className="block truncate text-12.5 text-muted">{r.sub}</span>
+                (r.sub || today) && (
+                  <span className="block truncate text-12.5 text-muted">
+                    {today && (
+                      <span title={fullDate(r.date)} className={cn(daysFrom(r.date, today) < 0 ? "text-bad" : daysFrom(r.date, today) <= 3 ? "text-warn" : undefined)}>
+                        {dueWords(r.date, today)}
+                      </span>
+                    )}
+                    {today && r.sub && " · "}
+                    {r.sub}
+                  </span>
+                )
               )}
             </span>
             <span className="flex flex-none items-center gap-2">

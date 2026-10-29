@@ -1,8 +1,8 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import * as M from "@radix-ui/react-dropdown-menu";
-import { CalendarPlus, Check, Download, ExternalLink, Eye, Plus, Search, Upload, X } from "lucide-react";
+import { FilterChip as SharedFilterChip } from "@/components/ui/FilterChip";
+import { CalendarPlus, Check, Download, ExternalLink, Eye, Search, Upload, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TODAY, fmt, fmtYear, daysFrom } from "@/lib/dates";
 import { FILINGS, FILING_STATUS_TONE, obligation, obHref, type Area, type Filing, type FilingStatus } from "@/data/compliance";
@@ -651,43 +651,8 @@ export function HeadSearch({ value, onChange, onEnter, label }: { value: string;
   );
 }
 
-/**
- * R-10 filter chip for a card head. Set: soft blurple fill with the value and an ×. Not set: a dashed "+ Area" chip that opens a menu.
- */
+/** R-10 filter chip for a card head: the shared part (B-05). Here null means "not set". */
 export function FilterChip({ label, value, options, onChange }: { label: string; value: string | null; options: Array<{ value: string; label: string }>; onChange: (v: string | null) => void }) {
-  const cur = options.find((o) => o.value === value);
-  const chip = "inline-flex h-[30px] items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-13 font-medium";
-  return (
-    <M.Root modal={false}>
-      {cur ? (
-        <span className={cn(chip, "border-1.5 border-accent-line bg-accent-soft pr-1 text-accent")}>
-          <M.Trigger asChild>
-            <button type="button" className="outline-none" aria-label={`${label}: ${cur.label}. Change`}>
-              {cur.label}
-            </button>
-          </M.Trigger>
-          <button type="button" onClick={() => onChange(null)} className="grid h-5 w-5 place-items-center rounded-sm hover:bg-surface" aria-label={`Clear ${label}`}>
-            <X size={13} strokeWidth={1.8} />
-          </button>
-        </span>
-      ) : (
-        <M.Trigger asChild>
-          <button type="button" className={cn(chip, "border-1.5 border-dashed border-line-2 text-ink-2 hover:bg-hover hover:text-ink")}>
-            <Plus size={14} strokeWidth={1.8} aria-hidden /> {label}
-          </button>
-        </M.Trigger>
-      )}
-      <M.Portal>
-        <M.Content align="start" sideOffset={4} collisionPadding={12} className="z-50 min-w-[180px] overflow-hidden rounded-md border border-line bg-surface p-1 text-14 text-ink shadow-float">
-          {options.map((o) => (
-            <M.Item key={o.value} onSelect={() => onChange(o.value)} className="flex h-[34px] cursor-pointer select-none items-center gap-3 rounded-sm px-2.5 outline-none data-[highlighted]:bg-hover">
-              <span className="min-w-0 flex-1 truncate">{o.label}</span>
-              {o.value === value && <Check size={14} strokeWidth={1.8} className="text-accent" />}
-            </M.Item>
-          ))}
-        </M.Content>
-      </M.Portal>
-    </M.Root>
-  );
+  return <SharedFilterChip<string | null> label={label} value={value} options={options} onChange={onChange} none={null} />;
 }
 

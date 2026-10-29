@@ -10,6 +10,7 @@ import { filingAssist, filingProofs } from "@/data/compliance-detail";
 import { Row } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { AreaPill, Chip } from "@/components/ui/Chip";
+import { Term } from "@/components/ui/Term";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
@@ -201,7 +202,7 @@ const columns: Column<Filing>[] = [
     render: (f) => (
       <span className="flex items-center gap-1 whitespace-nowrap">
         <span className="min-w-0">
-          <span className="block font-medium leading-tight">{f.form}</span>
+          <span className="block font-medium leading-tight"><Term>{f.form}</Term></span>
           <span className="block text-12.5 leading-tight text-muted">{f.period}</span>
         </span>
         <PortalLink area={f.area} name={f.form} />

@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { cn } from "@/lib/cn";
-import { AlertTriangle, Award, Building2, CalendarCheck, Download, FileText, IdCard, ShieldCheck, Upload, User } from "lucide-react";
+import { AlertTriangle, Award, Building2, CalendarCheck, Check, Download, FileText, IdCard, ShieldCheck, Upload, User } from "lucide-react";
 import { TODAY, daysFrom, fmt } from "@/lib/dates";
 import { NORTHWIND } from "@/data/people";
 import { COI_EXPECTED } from "@/data/incorporation";
@@ -55,7 +55,9 @@ const DAY = 86400000;
 const SBC_STEP = HOLDS.find((h) => h.key === "sbc")?.rows[0];
 const LATE_NEED = NEEDS_BEFORE.find((n) => n.tint === "bad");
 
-function AlertsCard({ rows, today, className }: { rows: AttentionRow[]; today: Date; className?: string }) {
+function AlertsCard({ rows: all, today, className }: { rows: AttentionRow[]; today: Date; className?: string }) {
+  // C-02: the sent-back passport already leads "Needs from Northwind" and the Overdue tile. Do not repeat it here.
+  const rows = all.filter((a) => !a.alert);
   const [tab, setTab] = React.useState("15");
   const in15 = rows.filter((a) => a.date.getTime() - today.getTime() < 15 * DAY);
   return (
@@ -74,7 +76,7 @@ function AlertsCard({ rows, today, className }: { rows: AttentionRow[]; today: D
         />
       }
     >
-      <AttentionList rows={tab === "15" ? in15 : rows} />
+      <AttentionList rows={tab === "15" ? in15 : rows} today={today} />
     </SectionCard>
   );
 }
@@ -105,7 +107,15 @@ function ActivityCard({ rows, className }: { rows: ActivityRow[]; className?: st
   );
 }
 
-function DocsCard({ docs, today, className }: { docs: Doc[]; today: Date; className?: string }) {
+/** A file the person uploads from the home card. pct runs to 100, then the row shows Uploaded (U1). */
+interface UploadRow {
+  id: string;
+  name: string;
+  size: string;
+  pct: number;
+}
+
+function DocsCard({ docs, today, uploads = [], className }: { docs: Doc[]; today: Date; uploads?: UploadRow[]; className?: string }) {
   const age = (x: Doc) => (today.getTime() - x.date.getTime()) / DAY;
   const groups = [
     { label: "This week", docs: docs.filter((x) => age(x) < 7) },
@@ -114,6 +124,36 @@ function DocsCard({ docs, today, className }: { docs: Doc[]; today: Date; classN
   ].filter((g) => g.docs.length > 0);
   return (
     <SectionCard title="Recent documents" flush className={className} right={<HeadLink href="/client/documents">Documents ›</HeadLink>}>
+      {uploads.length > 0 && (
+        <ul aria-label="Recent uploads" className="border-b border-line-soft">
+          {uploads.map((u) => {
+            const done = u.pct >= 100;
+            return (
+              <li key={u.id} className="flex items-center gap-3 border-t border-line-soft px-4 py-2.5 first:border-t-0 md:px-5">
+                <FileText size={16} strokeWidth={1.6} className="flex-none text-muted" aria-hidden />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline gap-2">
+                    <b className="min-w-0 truncate text-13.5 font-medium">{u.name}</b>
+                    <span className="flex-none text-12 text-muted">{u.size}</span>
+                  </span>
+                  {done ? (
+                    <span className="mt-0.5 flex items-center gap-1 text-12.5 text-ok">
+                      <Check size={13} strokeWidth={2} aria-hidden /> Uploaded
+                    </span>
+                  ) : (
+                    <span className="mt-1.5 flex items-center gap-2" role="progressbar" aria-label={`Uploading ${u.name}`} aria-valuenow={u.pct} aria-valuemin={0} aria-valuemax={100}>
+                      <span className="block h-1.5 flex-1 overflow-hidden rounded-bar bg-raised">
+                        <i className="block h-full rounded-bar bg-primary transition-[width] duration-200" style={{ width: `${u.pct}%` }} />
+                      </span>
+                      <span className="w-9 flex-none text-right text-12 tabular-nums text-muted">{u.pct}%</span>
+                    </span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
       <DocList groups={groups} />
     </SectionCard>
   );
@@ -145,15 +185,22 @@ export function HomeScreen() {
   const drill = useDrill();
   const toast = useUndoToast();
   const [upload, setUpload] = React.useState(false);
+  const [fileRows, setFileRows] = React.useState<UploadRow[]>([]);
+  // B-20 (U1): each new file shows a progress row, then a tick.
+  React.useEffect(() => {
+    if (!fileRows.some((u) => u.pct < 100)) return;
+    const h = window.setTimeout(() => setFileRows((l) => l.map((u) => (u.pct < 100 ? { ...u, pct: Math.min(100, u.pct + 20) } : u))), 220);
+    return () => window.clearTimeout(h);
+  }, [fileRows]);
   const today = after ? AFTER_TODAY : TODAY;
   const open = (spec: DrillSpec, tab = 0) => drill.open(spec, tab);
 
   const statsBefore: StatItem[] = [
-    { label: "Waiting on Northwind", value: 4, note: "oldest 5d", spark: [5, 6, 4, 4, 4], sparkTone: "teal", Icon: User, tone: "amber", href: "#dd-you" },
-    { label: "With SBC", value: 1, note: "KYC + DSC", sub: SBC_STEP?.title, Icon: Building2, tone: "blue", href: "#dd-sbc" },
-    { label: "Overdue", value: 1, note: "passport", sub: LATE_NEED?.title, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
-    { label: "Documents in", value: "4/6", bar: 67, Icon: FileText, tone: "teal", href: "#dd-docs" },
-    { label: "Expected COI", value: fmt(COI_EXPECTED), note: `${daysFrom(COI_EXPECTED)} days`, sub: `in ${daysFrom(COI_EXPECTED)} days`, Icon: Award, tone: "green", href: "/client/incorporation" },
+    { label: "Waiting on Northwind", value: 4, note: "oldest 5d", how: "Uploads, details and approvals that SBC needs from Northwind.", spark: [5, 6, 4, 4, 4], sparkTone: "teal", Icon: User, tone: "amber", href: "#dd-you" },
+    { label: "With SBC", value: 1, note: "KYC + DSC", how: "Steps that SBC is working on now.", sub: SBC_STEP?.title, Icon: Building2, tone: "blue", href: "#dd-sbc" },
+    { label: "Overdue", value: 1, note: "passport", how: "Items from Northwind past their due date.", sub: LATE_NEED?.title, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
+    { label: "Documents in", value: "4/6", bar: 67, how: "Documents received out of the six this phase needs.", Icon: FileText, tone: "teal", href: "#dd-docs" },
+    { label: "Expected COI", value: fmt(COI_EXPECTED), how: "The date MCA is expected to issue the certificate, from the current plan.", note: `${daysFrom(COI_EXPECTED)} days`, sub: `in ${daysFrom(COI_EXPECTED)} days`, Icon: Award, tone: "green", href: "/client/incorporation" },
   ];
   const statsAfter: StatItem[] = [
     { label: "Waiting on Northwind", value: NEEDS_AFTER.length, Icon: User, tone: "amber", href: "#dd-needs" },
@@ -231,7 +278,7 @@ export function HomeScreen() {
               <IncTimelineCard after className="max-lg:order-[9]" />
               <AreaCard onDrill={open} className="max-lg:order-[8]" />
               <PostIncCard onDrill={open} className="max-lg:order-6" />
-              <DocsCard docs={AFTER_DOCS} today={AFTER_TODAY} className="max-lg:order-[11]" />
+              <DocsCard docs={AFTER_DOCS} today={AFTER_TODAY} uploads={fileRows} className="max-lg:order-[11]" />
               <ActivityCard rows={AFTER_ACTIVITY} className="max-lg:order-[13]" />
             </Col>
             <Col className="max-lg:contents">
@@ -250,7 +297,7 @@ export function HomeScreen() {
           <Col className="max-lg:contents">
             <St5Card after={false} link={{ href: "/client/incorporation", label: "All steps" }} className="max-lg:order-2" />
             <IncTimelineCard className="max-lg:order-5" />
-            <DocsCard docs={DOCS} today={TODAY} className="max-lg:order-6" />
+            <DocsCard docs={DOCS} today={TODAY} uploads={fileRows} className="max-lg:order-6" />
             <ActivityCard rows={ACTIVITY} className="max-lg:order-8" />
           </Col>
           <Col className="max-lg:contents">
@@ -269,7 +316,9 @@ export function HomeScreen() {
         requests={uploads.map((r) => ({ id: r.id, name: r.title, due: r.due, sentBack: r.kind === "correct" }))}
         onUpload={(_, files) => {
           setUpload(false);
-          toast.show(`Uploaded · ${files.length} ${files.length === 1 ? "file" : "files"}`);
+          const now = Date.now();
+          setFileRows((l) => [...files.map((f, k) => ({ id: `${now}-${k}`, name: f.name, size: `${Math.max(1, Math.round(f.size / 1024))} KB`, pct: 0 })), ...l]);
+          toast.show(`Uploading · ${files.length} ${files.length === 1 ? "file" : "files"}`);
         }}
       />
       {drill.node}

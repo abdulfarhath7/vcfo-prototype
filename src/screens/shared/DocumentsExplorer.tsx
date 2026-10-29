@@ -14,6 +14,7 @@ import { FileBadge } from "@/components/ui/FileBadge";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { ActionMenu, type ActionItem } from "@/components/ui/ActionMenu";
+import { DangerConfirm } from "@/components/ui/DangerConfirm";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { UploadDialog, type UploadRequest } from "@/components/cards/UploadDialog";
 import { Empty } from "@/components/cards/SectionCard";
@@ -103,6 +104,7 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
   const [sel, setSel] = React.useState(TREE_SELECTED);
   const [files, setFiles] = React.useState<TreeFile[]>(TREE_FILES);
   const [upload, setUpload] = React.useState<{ open: boolean; id?: string }>({ open: false });
+  const [del, setDel] = React.useState<TreeFile | null>(null);
   const toast = useUndoToast();
 
   // Only Northwind has sample files. Other clients show the empty state.
@@ -160,18 +162,25 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
       { label: "Expand all", onSelect: () => setOpen((o) => new Set([...o, n.id, ...folderIds(n.id)])) },
       { label: "Collapse all", onSelect: () => setOpen((o) => new Set([...o].filter((x) => x !== n.id && !folderIds(n.id).includes(x)))) },
       "separator",
-      { label: "Copy link to folder", onSelect: () => copy(`${portal === "client" ? "/client/documents" : portal === "super" ? "/super/documents" : `${base}/docs/vault`}?folder=${n.id}`) },
+      { label: "Copy link to folder", key: "C", onSelect: () => copy(`${portal === "client" ? "/client/documents" : portal === "super" ? "/super/documents" : `${base}/docs/vault`}?folder=${n.id}`) },
     ];
   };
   const fileMenu = (f: TreeFile): ActionItem[] =>
     f.status === "Missing"
-      ? [{ label: "Upload", onSelect: () => setUpload({ open: true, id: f.id }) }, "separator", { label: "Copy link", onSelect: () => copy(viewHref(f.id)) }]
+      ? [{ label: "Upload", onSelect: () => setUpload({ open: true, id: f.id }) }, "separator", { label: "Copy link", key: "C", onSelect: () => copy(viewHref(f.id)) }]
       : [
           { label: "Download", onSelect: () => download(f) },
           { label: "Open in viewer", onSelect: () => router.push(viewHref(f.id)) },
           "separator",
-          { label: "Copy link", onSelect: () => copy(viewHref(f.id)) },
+          { label: "Copy link", key: "C", onSelect: () => copy(viewHref(f.id)) },
+          // D1/M1: danger sits last, after a rule. Staff only; the client asks SBC to remove a file.
+          ...(staff ? (["separator", { label: "Delete", danger: true, onSelect: () => setDel(f) }] satisfies ActionItem[]) : []),
         ];
+  const remove = (f: TreeFile) => {
+    const before = files;
+    setFiles((l) => l.filter((x) => x.id !== f.id));
+    toast.show(`Deleted ${f.file}`, () => setFiles(before));
+  };
 
   const requests: UploadRequest[] = missing.map((f) => ({ id: f.id, name: f.label, due: f.date }));
   const onUploaded = (id: string | undefined, picked: Array<{ name: string }>) => {
@@ -179,7 +188,8 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
     const before = files;
     setFiles((l) => l.map((f) => (f.id === id ? { ...f, status: "In review", type: "PDF", file: picked[0].name.toLowerCase(), from: "Northwind", due: undefined } : f)));
     setSel(id);
-    toast.show(`Uploaded ${picked.length === 1 ? picked[0].name : `${picked.length} files`} · SBC reviews it`, () => setFiles(before));
+    // A1: white toast with a status tile for an upload.
+    toast.show(`Uploaded ${picked.length === 1 ? picked[0].name : `${picked.length} files`}`, { kind: "uploaded", sub: "SBC reviews it.", onUndo: () => setFiles(before) });
   };
 
   /* ---------- Tree rows ---------- */
@@ -433,6 +443,15 @@ export function DocumentsExplorer({ portal }: { portal: Portal; title?: string }
       </section>
 
       <UploadDialog open={upload.open} onOpenChange={(v) => setUpload((u) => ({ ...u, open: v }))} requests={requests} initialId={upload.id} onUpload={onUploaded} />
+      <DangerConfirm
+        open={!!del}
+        onOpenChange={(v) => !v && setDel(null)}
+        title={del ? `Delete ${del.label}?` : "Delete document?"}
+        body={del ? `${del.file} leaves the documents of ${CLIENTS[0].short}.` : undefined}
+        word="DELETE"
+        confirm="Delete document"
+        onConfirm={() => del && remove(del)}
+      />
       {toast.node}
     </div>
   );

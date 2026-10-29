@@ -153,7 +153,7 @@ export function ObligationsScreen() {
           {before ? (
             <Empty>After the certificate</Empty>
           ) : (
-            <AttentionList rows={due} />
+            <AttentionList rows={due} today={TODAY} />
           )}
         </SectionCard>
         <SectionCard title="Waiting on client" flush>

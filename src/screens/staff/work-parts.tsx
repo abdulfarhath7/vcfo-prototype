@@ -4,8 +4,11 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Lock, Pause, Play, Repeat, UserPlus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { STAFF_TODAY as TODAY, d, fmt, fmtYear } from "@/lib/dates";
-import { clientById } from "@/data/staff-clients";
-import type { StaffTask } from "@/data/staff-tasks";
+import { CONTACTS, clientById } from "@/data/staff-clients";
+import type { StaffTask, TaskStatus } from "@/data/staff-tasks";
+import type { GridActions, GridStatus } from "@/components/cards/DataGrid";
+import type { SixWord } from "@/components/cards/StatusMenu";
+import { reassignTask, taskOwner, useAssignments } from "./record-parts";
 import { BOARD_COLS, CAL_ALLDAY, type TimelineRow, DAY_SHORT, ESTIMATE, MGR_DELEGATED, NEXT_WEEK, PLAN_BLOCKS, RECURRING, SPAN, SPAN_DAYS, WEEK, boardColOf, extraFor, isToday, sameDay, type CalBlock, type Todo } from "@/data/staff-work";
 import { HourWeek, spanOf, useBlockMoves, type Slot } from "./HourWeek";
 import { Button } from "@/components/ui/Button";
@@ -1186,4 +1189,50 @@ export function NewTodoDialog({ open, onOpenChange, clients, onAdd, title = "New
       </div>
     </Modal>
   );
+}
+
+/** E-03: a six-word pick as a task status. */
+const TASK_OF: Record<SixWord, TaskStatus> = { "Not started": "Not started", "In progress": "In progress", Waiting: "With client", "Due soon": "Due this week", Overdue: "Overdue", Done: "Done" };
+
+const many = (n: number, one: string, more: string) => `${n} ${n === 1 ? one : more}`;
+const taskName = (t: StaffTask) => `${t.title} · ${clientById(t.client)?.short ?? ""}`;
+
+/**
+ * Session edits to tasks from the grids (E-01, E-02, E-03): status picks and reassignments.
+ * Returns the tasks with the edits applied, and the DataGrid `actions` and `statusMenu` for them.
+ */
+export function useTaskEdits({ base, portal, people, file }: { base: StaffTask[]; portal: StaffPortal; people: string[]; file: string }) {
+  const s = useAssignments();
+  const [over, setOver] = React.useState<Record<string, TaskStatus>>({});
+  const tasks = base.map((t) => ({ ...t, status: over[t.id] ?? t.status, owner: taskOwner(t, s) }));
+  const setStatus = (rows: StaffTask[], st: TaskStatus) => {
+    const before = Object.fromEntries(rows.map((r) => [r.id, r.status]));
+    setOver((o) => ({ ...o, ...Object.fromEntries(rows.map((r) => [r.id, st])) }));
+    return () => setOver((o) => ({ ...o, ...before }));
+  };
+  const actions: GridActions<StaffTask> = {
+    people,
+    peopleLabel: "Project lead",
+    noun: ["task", "tasks"],
+    ownerOf: (t) => t.owner,
+    assign: (rows, person) => {
+      const before = rows.map((r) => [r.id, r.owner] as const);
+      rows.forEach((r) => reassignTask(r.id, person));
+      return { text: rows.length === 1 ? `Assigned to ${person} · ${taskName(rows[0])}` : `${many(rows.length, "task", "tasks")} assigned to ${person}`, undo: () => before.forEach(([id, o]) => reassignTask(id, o)) };
+    },
+    // The lead reminds the client; a manager or admin reminds the project lead.
+    remind: (rows) => {
+      const to = [...new Set(rows.map((r) => (portal === "lead" ? (CONTACTS[r.client]?.name ?? clientById(r.client)?.short ?? "") : r.owner)))];
+      return { text: rows.length === 1 ? `Reminder sent to ${to[0]} · ${rows[0].title}` : `Reminders sent to ${many(to.length, "person", "people")} · ${many(rows.length, "task", "tasks")}`, undo: () => undefined };
+    },
+    done: (rows) => ({ text: rows.length === 1 ? `Marked done · ${rows[0].title}` : `${many(rows.length, "task", "tasks")} marked done`, undo: setStatus(rows, "Done") }),
+    export: (rows) => ({ text: `Exported ${many(rows.length, "task", "tasks")} to ${file}` }),
+  };
+  const statusMenu: GridStatus<StaffTask> = {
+    column: "status",
+    get: (t) => t.status,
+    label: taskName,
+    set: (t, w) => ({ text: `${w} · ${t.title}`, undo: setStatus([t], TASK_OF[w]) }),
+  };
+  return { tasks, actions, statusMenu, setStatus };
 }

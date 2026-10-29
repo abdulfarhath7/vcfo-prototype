@@ -6,6 +6,7 @@ import { TopBar } from "./TopBar";
 import { AskButton } from "./AskButton";
 import { PrototypeBar } from "./PrototypeBar";
 import { TabBar } from "./TabBar";
+import { ShortcutSheet } from "./ShortcutSheet";
 import type { Portal } from "@/data/nav";
 
 /** R-39: the sidebar stays fixed when the page scrolls. On phones it is a drawer. */
@@ -61,6 +62,7 @@ export function Shell({ portal, incorporated = false, children }: { portal: Port
       </div>
       <TabBar portal={portal} incorporated={incorporated} onMore={() => setDrawer(true)} />
       <AskButton portal={portal} />
+      <ShortcutSheet />
       <PrototypeBar portal={portal} incorporated={incorporated} />
     </div>
   );

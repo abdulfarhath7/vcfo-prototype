@@ -2,7 +2,7 @@
 import { waitWord } from "@/data/status-words";
 import * as React from "react";
 import Link from "next/link";
-import { MoreHorizontal, Plus, Sparkles } from "lucide-react";
+import { MoreHorizontal, Plus, Sparkles, UserMinus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { STAFF_TODAY as TODAY, d, fmt } from "@/lib/dates";
 import { LEAD_WORK, TASKS, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
@@ -16,7 +16,8 @@ import { AreaPill, Chip } from "@/components/ui/Chip";
 import { Chevron } from "@/components/ui/Chevron";
 import { Checkbox, Field, Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
-import { PopoverCard } from "@/components/ui/PopoverCard";
+import { ActionMenu } from "@/components/ui/ActionMenu";
+import { DangerConfirm } from "@/components/ui/DangerConfirm";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
@@ -244,10 +245,13 @@ interface Todo {
   done: boolean;
 }
 
+/** The manager of these leads (sample data). */
+const MANAGER = "Pranay";
+
 export function LeadsScreen({ portal }: { portal: StaffPortal }) {
   const s = useAssignments();
   // Static sample data: keep one array so the hash effect below runs once, not on every render.
-  const rows = React.useMemo(() => leadRows("Pranay"), []);
+  const rows = React.useMemo(() => leadRows(MANAGER), []);
   const [pick, setPick] = React.useState(rows[0].name);
   // The sidebar picks the lead (/manager/leads#sneha), as in the old s/mgr/Leads.dc.html. No picker on the page (R-09).
   React.useEffect(() => {
@@ -287,6 +291,7 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
   const [clientF, setClientF] = React.useState("");
   const toast = useUndoToast();
   const [moved, move] = useBlockMoves();
+  const [removing, setRemoving] = React.useState(false);
 
   const [view, setView] = React.useState<"planner" | "list" | "board">("planner");
   const [kindF, setKindF] = React.useState("all");
@@ -349,6 +354,19 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
     toast.show(`${b.title} · ${DAY_SHORT[x.getDay()]} ${fmt(x)} · ${spanOf({ ...b, ...to })}`, undo);
   };
 
+  const copyLeadLink = () => {
+    try {
+      navigator.clipboard?.writeText(`${window.location.origin}${base(portal)}/leads#${pick.split(" ")[0].toLowerCase()}`).catch(() => undefined);
+    } catch {}
+    toast.show("Link copied");
+  };
+  // M1 Remove lead: the lead's open tasks move to the manager until a new lead is set. Undo moves them back.
+  const removeLead = () => {
+    const ids = open.map((t) => t.id);
+    ids.forEach((id) => reassignTask(id, MANAGER));
+    toast.show(`${pick} removed · ${ids.length} open tasks moved to ${MANAGER}`, () => ids.forEach((id) => reassignTask(id, pick)));
+  };
+
   const addTodo = (title: string, client: string, due: Date, to = pick) => {
     // Bharath's planner shows his Work to-do card, which reads mgrTodos.
     if (to === "Bharath") {
@@ -368,6 +386,16 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
 
   return (
     <div className="grid grid-cols-1 gap-5">
+      <DangerConfirm
+        open={removing}
+        onOpenChange={setRemoving}
+        title={`Remove ${pick} as project lead?`}
+        body={open.length ? `${open.length} open ${open.length === 1 ? "task moves" : "tasks move"} to ${MANAGER} until a new lead is set.` : `${pick} has no open tasks.`}
+        word="REMOVE"
+        confirm="Remove lead"
+        icon={UserMinus}
+        onConfirm={removeLead}
+      />
       {/* Plain page head (R-02): face, 28 px name, muted meta; actions right. Views and filter chips under it (R-10, R-11). */}
       <div className="flex flex-wrap items-center gap-3">
         <Avatar name={lead.name} size={44} />
@@ -397,24 +425,22 @@ export function LeadsScreen({ portal }: { portal: StaffPortal }) {
           >
             <Plus size={16} strokeWidth={1.6} /> Assign to-do
           </Button>
-          <PopoverCard
-            align="end"
-            width={200}
+<ActionMenu
+            label="More actions"
             trigger={
               <Button size="icon" variant="secondary" aria-label="More actions">
                 <MoreHorizontal size={16} strokeWidth={1.6} />
               </Button>
             }
-          >
-            <div role="menu" className="grid p-1">
-              <button type="button" role="menuitem" className="flex h-[34px] w-full items-center rounded-sm px-2.5 text-14 hover:bg-hover" onClick={() => toast.show(`To-do templates for ${lead.name}`)}>
-                Templates
-              </button>
-              <button type="button" role="menuitem" className="flex h-[34px] w-full items-center rounded-sm px-2.5 text-14 hover:bg-hover" onClick={() => toast.show(`Exported ${lead.name}'s work`)}>
-                Export
-              </button>
-            </div>
-          </PopoverCard>
+            items={[
+              { label: "Templates", onSelect: () => toast.show(`To-do templates for ${lead.name}`) },
+              { label: "Export", onSelect: () => toast.show(`Exported ${lead.name}'s work`) },
+              { label: "Copy link", key: "C", onSelect: () => copyLeadLink() },
+              // D1/M1: danger sits last, after a rule.
+              "separator",
+              { label: "Remove lead", danger: true, onSelect: () => setRemoving(true) },
+            ]}
+          />
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">

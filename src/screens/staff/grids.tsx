@@ -10,7 +10,10 @@ import { Chip } from "@/components/ui/Chip";
 import { Bar } from "@/components/ui/Bar";
 import { Select } from "@/components/ui/Select";
 import { SectionCard, ListRow, Empty } from "@/components/cards/SectionCard";
-import { DataGrid, type Column } from "@/components/cards/DataGrid";
+import { DataGrid, GRID_SUB, type Column, type DataGridProps } from "@/components/cards/DataGrid";
+import { SavedViews } from "@/components/cards/SavedViews";
+import { AvatarStack } from "@/components/ui/AvatarStack";
+import { TASKS } from "@/data/staff-tasks";
 import { clientHref, type StaffPortal } from "./parts";
 import { identityTag } from "./filters";
 import { managerOf, leadOf, useAssignments } from "./record-parts";
@@ -128,6 +131,11 @@ export function FirmClientsGrid({ title, rows }: { title: string; rows: StaffCli
   return <ClientsGrid portal="admin" title={title} rows={shown} filters={filters} pageSize={Math.max(1, rows.length)} meta={String(shown.length)} />;
 }
 
+/** B-25 (V3): who works on this client. Manager, project lead, then the other leads with tasks on it. */
+export function teamOf(c: StaffClient, s: ReturnType<typeof useAssignments>) {
+  return [...new Set([leadOf(c, s), managerOf(c, s), ...TASKS.filter((t) => t.client === c.id).map((t) => t.owner)])];
+}
+
 export function ClientsGrid({
   portal,
   title = "Clients",
@@ -136,6 +144,7 @@ export function ClientsGrid({
   pageSize = 8,
   meta,
   showLead,
+  grid,
 }: {
   portal: StaffPortal;
   title?: string;
@@ -144,6 +153,8 @@ export function ClientsGrid({
   pageSize?: number;
   meta?: React.ReactNode;
   showLead?: boolean;
+  /** Opt-in DataGrid features (bulk bar, row actions, views, density, change marks). */
+  grid?: Partial<DataGridProps<StaffClient>>;
 }) {
   const s = useAssignments();
   const nameCol: Column<StaffClient> = {
@@ -156,7 +167,7 @@ export function ClientsGrid({
         <span className="min-w-0">
           <b className={cn("block font-medium", portal !== "admin" && "truncate")}>{c.name.replace(/( India)? Pvt Ltd$/, "")}</b>
           {/* Old admin Today and Clients show no contact line. */}
-          {portal !== "admin" && <span className="block truncate text-12 text-muted">{CONTACTS[c.id]?.name}</span>}
+          {portal !== "admin" && <span className={cn("block truncate text-12 text-muted", GRID_SUB)}>{CONTACTS[c.id]?.name}</span>}
         </span>
       </span>
     ),
@@ -164,6 +175,8 @@ export function ClientsGrid({
   const nowCol: Column<StaffClient> = {
     key: "step",
     label: portal === "admin" ? "Now at" : "Now",
+    // Takes the space left and truncates, so the table fits the card.
+    className: "max-w-0",
     render: (c) => (
       <span className="flex min-w-0 items-center gap-2">
         {portal !== "admin" && <HolderDot c={c} />}
@@ -173,7 +186,7 @@ export function ClientsGrid({
             {portal === "admin" ? <b className="font-medium">{c.step}</b> : c.step}
           </span>
           {portal === "admin" && (
-            <span className="block truncate text-12 text-muted">
+            <span className={cn("block truncate text-12 text-muted", GRID_SUB)}>
               <span className="font-mono">{c.code}</span>
               {!showLead && <> · {leadOf(c, s)}</>}
             </span>
@@ -224,7 +237,7 @@ export function ClientsGrid({
         ),
       },
     ];
-    return <ClientsGridFrame portal={portal} title={title} meta={meta} rows={rows} filters={filters} pageSize={pageSize} cols={adminCols} />;
+    return <ClientsGridFrame portal={portal} title={title} meta={meta} rows={rows} filters={filters} pageSize={pageSize} cols={adminCols} grid={grid} />;
   }
   // Lead and manager (reference/old-screens/s/lead/Clients.dc.html): phases, now, steps, status.
   // R-22: in client lists the phases are the ST5 compact form, four bars in one column.
@@ -233,11 +246,21 @@ export function ClientsGrid({
     { ...stageCol, width: 124 },
     { key: "phases", label: "Phases", width: 210, render: (c) => <PhaseBar c={c} portal={portal} stuck={STUCK_CLIENTS.has(c.id)} /> },
     nowCol,
+    {
+      key: "team",
+      label: "Team",
+      width: 96,
+      render: (c) => {
+        const team = teamOf(c, s);
+        return <AvatarStack names={team} label={`Team: ${team.join(", ")}`} />;
+      },
+    },
     { key: "steps", label: "Steps", width: 64, align: "right", render: (c) => <span className="text-13 text-muted">{incDone(c)}/25</span> },
     {
       key: "status",
       label: "Status",
       width: 124,
+      skeleton: "chip",
       render: (c) => (
         <Chip tone={statusTone[clientStatus(c)]} fixed>
           {clientStatus(c)}
@@ -245,22 +268,41 @@ export function ClientsGrid({
       ),
     },
   ];
-  return <ClientsGridFrame portal={portal} title={title} meta={meta} rows={rows} filters={filters} pageSize={pageSize} cols={leadCols} />;
+  return <ClientsGridFrame portal={portal} title={title} meta={meta} rows={rows} filters={filters} pageSize={pageSize} cols={leadCols} grid={grid} />;
 }
 
-function ClientsGridFrame({ portal, title, rows, filters, pageSize, meta, cols }: { portal: StaffPortal; title: string; rows: StaffClient[]; filters?: React.ReactNode; pageSize: number; meta?: React.ReactNode; cols: Column<StaffClient>[] }) {
+function ClientsGridFrame({
+  portal,
+  title,
+  rows,
+  filters,
+  pageSize,
+  meta,
+  cols,
+  grid,
+}: {
+  portal: StaffPortal;
+  title: string;
+  rows: StaffClient[];
+  filters?: React.ReactNode;
+  pageSize: number;
+  meta?: React.ReactNode;
+  cols: Column<StaffClient>[];
+  grid?: Partial<DataGridProps<StaffClient>>;
+}) {
   const s = useAssignments();
   return (
     <>
       <div className="hidden md:block">
-        <DataGrid title={title} meta={meta ?? `${rows.length}`} columns={cols} rows={rows} rowKey={(c) => c.id} rowHref={(c) => clientHref(portal, c.id)} filters={filters} pageSize={pageSize} footer={<Legend />} />
+        <DataGrid {...grid} title={title} meta={meta ?? `${rows.length}`} columns={cols} rows={rows} rowKey={(c) => c.id} rowHref={(c) => clientHref(portal, c.id)} filters={filters} pageSize={pageSize} footer={<Legend />} />
       </div>
       {/* Phone: one card per client (old Clients phone list). */}
       <div className="md:hidden">
         <SectionCard title={title} meta={meta ?? `${rows.length}`} flush>
           {filters && <div className="flex flex-wrap items-center gap-2 border-b border-line-soft px-4 py-2.5">{filters}</div>}
+          {grid?.views && <SavedViews {...grid.views} className="border-b border-line-soft px-4 py-2.5" />}
           {rows.length === 0 ? (
-            <Empty />
+            <Empty action={grid?.emptyAction}>{grid?.empty}</Empty>
           ) : (
             rows.map((c) => (
               <ListRow key={c.id} href={clientHref(portal, c.id)} className="items-start">
@@ -282,8 +324,11 @@ function ClientsGridFrame({ portal, title, rows, filters, pageSize, meta, cols }
                     <PhaseBar c={c} portal={portal} plain />
                     <span className="flex-none text-12 text-muted">{incDone(c)}/25</span>
                   </span>
-                  <span className="truncate text-12 text-muted">
-                    {c.stage === "incorporating" ? "Incorporating" : "Compliance"} · {portal === "lead" ? `Next ${fmt(c.next)}` : `${leadOf(c, s)} · Next ${fmt(c.next)}`}
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="min-w-0 truncate text-12 text-muted">
+                      {c.stage === "incorporating" ? "Incorporating" : "Compliance"} · {portal === "lead" ? `Next ${fmt(c.next)}` : `${leadOf(c, s)} · Next ${fmt(c.next)}`}
+                    </span>
+                    {portal !== "admin" && <AvatarStack names={teamOf(c, s)} label={`Team: ${teamOf(c, s).join(", ")}`} className="ml-auto" />}
                   </span>
                 </span>
                 <ChevronRight size={16} strokeWidth={1.6} className="mt-1 flex-none text-faint" aria-hidden />

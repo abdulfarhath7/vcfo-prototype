@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/Input";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { KeyValue } from "@/components/cards/KeyValue";
-import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
+import { DangerConfirm } from "@/components/ui/DangerConfirm";
+import { RotateCw } from "lucide-react";
 import { CloseButton, FilterChip, PickCell, StatusChip, ident, logAudit, nowToday, useRevealRef } from "./parts";
 import { ConnSections, ConnectFlow } from "./conn-detail";
 
@@ -90,14 +91,24 @@ function Summary({ c, rotating, setRotating, onRotate, onAccount, onClose }: { c
               Edit account
             </Button>
             {c.hasKey && (
-              <Button size="sm" onClick={() => setRotating(true)} disabled={c.off} aria-expanded={rotating}>
+              <Button size="sm" onClick={() => setRotating(true)} disabled={c.off} aria-haspopup="dialog">
                 Rotate key
               </Button>
             )}
           </div>
         )
       )}
-      {rotating && <ChangeConfirm question={`Rotate the key for ${c.name}?`} confirm="Rotate" before={c.secret ?? "Current key"} after="New key. The old key works for 24 hours." onConfirm={onRotate} onCancel={() => setRotating(false)} />}
+      {/* M1: type the word before the key changes. */}
+      <DangerConfirm
+        open={rotating}
+        onOpenChange={setRotating}
+        title={`Rotate the key for ${c.name}?`}
+        body={`${c.secret ? `The key ${c.secret} gets a new value. ` : ""}The old key works for 24 hours.`}
+        word="ROTATE"
+        confirm="Rotate key"
+        icon={RotateCw}
+        onConfirm={onRotate}
+      />
     </SectionCard>
   );
 }

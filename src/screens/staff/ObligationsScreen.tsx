@@ -1,6 +1,5 @@
 "use client";
 import * as React from "react";
-import { cn } from "@/lib/cn";
 import { AlertTriangle, Calendar, CalendarClock, CircleCheck, User } from "lucide-react";
 import { staffObHref } from "@/data/staff-compliance";
 import { itemExists } from "@/data/staff-item";
@@ -16,6 +15,7 @@ import { type Column } from "@/components/cards/DataGrid";
 import { type StaffPortal } from "./parts";
 import { ClientTile } from "./grids";
 import { KeyHint, useListKeys } from "./comp-parts";
+import { FilingBand, type DateTone } from "@/components/cards/FilingBand";
 import { FilterStrip, FlowCard, GroupedGrid, RailCard, type GridGroup, type StripItem } from "./register-parts";
 
 // Staff Obligations, as in reference/old-screens/s/lead/Register.dc.html (kind "ob", who "staff"):
@@ -34,43 +34,8 @@ const dayKey = (s: string) => {
   const [d, m, y] = s.split(" ");
   return Number(y) * 10000 + MON.indexOf(m) * 100 + Number(d);
 };
-const TILE = { bad: "bg-bad-soft text-bad", soon: "bg-warn-soft text-warn", later: "bg-accent-soft text-accent" } as const;
-
-/** 44 px date tile: day over month. Red when a client is overdue, amber when due in 15 days, blurple later. */
-function DateTile({ date, tone }: { date: string; tone: keyof typeof TILE }) {
-  const [d, m] = date.split(" ");
-  return (
-    <span className={cn("inline-flex h-11 w-11 flex-none flex-col items-center justify-center rounded-md", TILE[tone])} aria-label={`Due ${date}`}>
-      <b className="text-16 font-medium leading-none">{d}</b>
-      <span className="mt-[3px] text-[10.5px] font-medium uppercase tracking-[.06em]">{m}</span>
-    </span>
-  );
-}
-
-/** Band of one filing: date tile, name and due date, area pill, filed count with a green bar. */
-function FilingHead({ ob, rows }: { ob: ObRow["ob"]; rows: ObRow[] }) {
-  const filed = rows.filter((x) => x.state === "done").length;
-  const tone = rows.some((x) => x.state === "bad") ? "bad" : rows.some(dueSoon) ? "soon" : "later";
-  const area = LAW_AREA[ob.law];
-  return (
-    <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3.5 gap-y-2">
-      <DateTile date={ob.next} tone={tone} />
-      <span className="flex min-w-0 flex-[1_1_200px] flex-col gap-0.5">
-        <span className="truncate text-14.5 font-medium text-ink">{ob.name}</span>
-        <span className="text-12.5 text-muted">Due {ob.next.replace(/ 20\d\d$/, "")}</span>
-      </span>
-      <AreaPill area={area ?? ob.law} />
-      <span className="flex w-[190px] items-center gap-2.5">
-        <span className="whitespace-nowrap text-12.5 font-normal text-muted">
-          {filed} of {rows.length} filed
-        </span>
-        <span className="relative h-2 min-w-0 flex-1 overflow-hidden rounded-bar bg-surface" aria-hidden>
-          <i className="absolute inset-y-0 left-0 rounded-bar bg-ok-mid" style={{ width: `${Math.round((filed / rows.length) * 100)}%` }} />
-        </span>
-      </span>
-    </span>
-  );
-}
+/** Band tint: red when a client is overdue, amber when due in 15 days, blurple later. */
+const bandTone = (rows: ObRow[]): DateTone => (rows.some((x) => x.state === "bad") ? "bad" : rows.some(dueSoon) ? "warn" : "accent");
 
 export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
   const [view, setView] = React.useState("filing");
@@ -100,7 +65,11 @@ export function ObligationsScreen({ portal }: { portal: StaffPortal }) {
           .sort((a, b) => dayKey(a.next) - dayKey(b.next))
           .map((ob) => {
             const rows = shown.filter((x) => x.ob.id === ob.id);
-            return { id: ob.id, label: ob.name, dot: "", rows, head: rows.length ? <FilingHead ob={ob} rows={rows} /> : undefined };
+            const [day, mon] = ob.next.split(" ");
+            const head = rows.length ? (
+              <FilingBand day={day} month={mon} tone={bandTone(rows)} name={ob.name} sub={`Due ${ob.next.replace(/ 20\d\d$/, "")}`} area={LAW_AREA[ob.law] ?? ob.law} filed={rows.filter((x) => x.state === "done").length} total={rows.length} />
+            ) : undefined;
+            return { id: ob.id, label: ob.name, dot: "", rows, head };
           })
       : view === "law"
         ? LAW_GROUPS.map((g) => ({ id: g.area, label: g.label, dot: AREA_DOT[g.area], rows: shown.filter((x) => LAW_AREA[x.ob.law] === g.area) }))

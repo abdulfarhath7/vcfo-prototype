@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { iconFor, type Tone } from "@/components/icons";
 import { IconTile } from "@/components/ui/IconTile";
+import { CardBody } from "@/components/ui/CardLoad";
 
 export interface SectionCardProps {
   title: string;
@@ -23,10 +24,15 @@ export interface SectionCardProps {
   id?: string;
   /** Small element before the title text, after the tile: a client colour dot (R-35). */
   titleLead?: React.ReactNode;
+  /** L1: grey shapes for 300 ms on first load and on a tab switch inside the card. On by default; off for bare cards. */
+  skeleton?: boolean;
 }
 
-/** R-15, R-16: white card, 1.5 px line, 6 px corners, 52 px head with a 28 px tinted icon tile. Title 15 px weight 500. */
-export const SectionCard = React.forwardRef<HTMLElement, SectionCardProps>(function SectionCard({ title, meta, right, icon, flush, bare, className, bodyClassName, children, id, titleLead }, ref) {
+/**
+ * R-15, R-16: white card, 1.5 px line, 6 px corners, 52 px head with a 28 px tinted icon tile. Title 15 px weight 500.
+ * R-48 L1: the body shows grey shapes for 300 ms on first load and on a tab switch (`skeleton={false}` turns it off).
+ */
+export const SectionCard = React.forwardRef<HTMLElement, SectionCardProps>(function SectionCard({ title, meta, right, icon, flush, bare, className, bodyClassName, children, id, titleLead, skeleton = true }, ref) {
   const { Icon, tone } = icon ?? iconFor(title);
   return (
     <section ref={ref} id={id} className={cn("min-w-0 overflow-hidden rounded-md border-1.5 border-line bg-surface", className)} aria-label={title}>
@@ -39,7 +45,13 @@ export const SectionCard = React.forwardRef<HTMLElement, SectionCardProps>(funct
           {right && <div className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">{right}</div>}
         </header>
       )}
-      <div className={cn(!flush && "px-4 py-4 md:px-5", bodyClassName)}>{children}</div>
+      {skeleton && !bare ? (
+        <CardBody name={id ?? title} flush={flush} className={cn(!flush && "px-4 py-4 md:px-5", bodyClassName)}>
+          {children}
+        </CardBody>
+      ) : (
+        <div className={cn(!flush && "px-4 py-4 md:px-5", bodyClassName)}>{children}</div>
+      )}
     </section>
   );
 });

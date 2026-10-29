@@ -10,6 +10,9 @@ import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { InlineConfirm } from "@/components/cards/InlineConfirm";
 import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
+import { DangerConfirm } from "@/components/ui/DangerConfirm";
+import { useUndoToast } from "@/components/ui/UndoToast";
+import { RotateCw } from "lucide-react";
 import { StackedBar, type Segment } from "@/components/cards/StackedBar";
 import { Cols, Col } from "@/components/shell/Page";
 import { ChoiceRow, SettingRow, StatusChip, SwitchRow, ident, logAudit, useSwitch } from "./parts";
@@ -84,6 +87,7 @@ export function AccessScreen() {
   const [ask, setAsk] = React.useState<Ask>(null);
   const [sessions, setSessions] = React.useState<Session[]>(SESSIONS);
   const [revoke, setRevoke] = React.useState<string | null>(null);
+  const toast = useUndoToast();
 
   const target = ask ? (keys.find((k) => k.id === ask.id) ?? null) : null;
   const sessTarget = sessions.find((s) => s.id === revoke) ?? null;
@@ -93,6 +97,7 @@ export function AccessScreen() {
     if (ask.kind === "rotate" || ask.kind === "set") {
       setKeys((ks) => ks.map((k) => (k.id === target.id ? { ...k, created: STAFF_TODAY, missing: false, prefix: k.missing ? "••••a7f0" : k.prefix, expires: k.expires ? new Date(STAFF_TODAY.getTime() + 180 * 86400000) : null } : k)));
       logAudit(ask.kind === "set" ? "Set key" : "Rotate key", target.name, "Done", target.missing ? "Not set" : "Current value", "New value");
+      if (ask.kind === "rotate") toast.show("Key rotated", { kind: "saved", sub: `${target.name} has a new value.` });
     } else if (ask.kind === "purge") {
       setKeys((ks) => ks.map((k) => (k.id === target.id ? { ...k, purged: true } : k)));
       logAudit("Purge", target.name, "Done", target.scope, "Removed");
@@ -241,7 +246,7 @@ export function AccessScreen() {
 
       <SectionCard title="Secrets and API keys" bare flush>
         <DataGrid inset title="Secrets and API keys" meta="Values never shown" columns={keyColumns} rows={keys} rowKey={(k) => k.id} pageSize={15} selectedKey={ask?.id} />
-        {target && ask && (
+        {target && ask && ask.kind !== "rotate" && (
           <ChangeConfirm
             question={question(target, ask.kind)}
             confirm={ask.kind === "set" ? "Set" : ask.kind === "purge" ? "Purge" : ask.kind === "revoke" ? "Revoke" : "Rotate"}
@@ -253,6 +258,18 @@ export function AccessScreen() {
         )}
       </SectionCard>
 
+      {/* M1: rotating a key breaks every app that still holds the old value, so the word is typed. */}
+      <DangerConfirm
+        open={ask?.kind === "rotate" && !!target}
+        onOpenChange={(v) => !v && setAsk(null)}
+        title={target ? `Rotate ${target.name}?` : "Rotate key?"}
+        body={target ? `The value ${target.prefix} stops working. Apps that read ${target.name} need the new value.` : undefined}
+        word="ROTATE"
+        confirm="Rotate key"
+        icon={RotateCw}
+        onConfirm={confirm}
+      />
+      {toast.node}
       <DataGrid title="Users with console access" columns={userColumns} rows={CONSOLE_USERS} rowKey={(u) => u.id} />
       <DataGrid title="Service accounts" columns={saColumns} rows={SERVICE_ACCOUNTS} rowKey={(a) => a.id} />
     </div>

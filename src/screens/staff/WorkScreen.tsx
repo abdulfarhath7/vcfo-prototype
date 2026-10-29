@@ -1,9 +1,11 @@
 "use client";
 import * as React from "react";
+import { cn } from "@/lib/cn";
 import { MoreHorizontal, Plus, Sparkles } from "lucide-react";
-import { STAFF_TODAY, fmt, urgency } from "@/lib/dates";
+import { STAFF_TODAY, d, fmt, urgency } from "@/lib/dates";
 import { clientById, clientsFor } from "@/data/staff-clients";
-import { LEAD_WORK, tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
+import { LEAD_WORK, PREVIOUS_VISIT, taskChanged, tasksFor, type StaffTask, type TaskStatus } from "@/data/staff-tasks";
+import { LEADS } from "@/data/staff-team";
 import { CAL_BLOCKS, TIMELINE_ROWS, TODOS, type CalBlock, type Todo } from "@/data/staff-work";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
@@ -12,10 +14,11 @@ import { AreaPill } from "@/components/ui/Chip";
 import { PopoverCard } from "@/components/ui/PopoverCard";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
-import { ClientName, TaskChip, type StaffPortal } from "./parts";
+import type { SavedView, ViewFilters } from "@/components/cards/SavedViews";
+import { ClientName, TaskChip, personOf, type StaffPortal } from "./parts";
 import { FilterChip } from "./today-parts";
 import { AdminWorkItems } from "./AdminWorkItems";
-import { NewTodoDialog, PlanCalendar, PlanWeekDialog, RequestChangeDialog, SessionButton, PlanTimeline, TodoCard, WorkBoard, WorkDrawer, WorkStatus, WorkTimeline, type Timer } from "./work-parts";
+import { NewTodoDialog, PlanCalendar, PlanWeekDialog, RequestChangeDialog, SessionButton, PlanTimeline, TodoCard, WorkBoard, WorkDrawer, WorkStatus, WorkTimeline, useTaskEdits, type Timer } from "./work-parts";
 
 // Staff Work. Old sources: reference/old-screens/s/lead/Work.dc.html (Planner, List, Board), WorkPlan.dc.html,
 // WorkBoard.dc.html, WorkDrawer.dc.html, WorkPhone.dc.html; the same under s/mgr; s/admin/Work.dc.html and
@@ -23,6 +26,27 @@ import { NewTodoDialog, PlanCalendar, PlanWeekDialog, RequestChangeDialog, Sessi
 
 type View = "planner" | "list" | "board";
 type Show = "all" | "steps" | "filings";
+
+/** Status filter: the six words (R-13) as task statuses. */
+const STATUS_OPTS: Array<{ value: TaskStatus; label: string }> = [
+  { value: "Overdue", label: "Overdue" },
+  { value: "Due this week", label: "Due soon" },
+  { value: "In progress", label: "In progress" },
+  { value: "With client", label: "Waiting" },
+  { value: "Not started", label: "Not started" },
+  { value: "Done", label: "Done" },
+];
+/** Due filter: the staff week of Fri 16 Oct runs Mon 12 to Sun 18 Oct. */
+const WEEKS: Record<string, [Date, Date]> = { week: [d(2026, 10, 12), d(2026, 10, 18)], next: [d(2026, 10, 19), d(2026, 10, 25)] };
+const inWeek = (t: StaffTask, w: string) => !w || (t.due >= WEEKS[w][0] && t.due <= WEEKS[w][1]);
+
+/** E-06: the default views. A view is a set of filters; "+ Save view" adds the user's own. */
+const VIEWS: SavedView[] = [
+  { key: "all", label: "All", filters: {} },
+  { key: "overdue", label: "My overdue", filters: { status: "Overdue" } },
+  { key: "week", label: "This week", filters: { when: "week" } },
+  { key: "waiting", label: "Waiting on clients", filters: { status: "With client" } },
+];
 
 export function WorkScreen({ portal }: { portal: StaffPortal }) {
   const [view, setView] = React.useState<View>("planner");
@@ -32,6 +56,9 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
   const [owner, setOwner] = React.useState("");
   const [client, setClient] = React.useState("");
   const [show, setShow] = React.useState<Show>("all");
+  const [status, setStatus] = React.useState("");
+  const [when, setWhen] = React.useState("");
+  const [viewTick, setViewTick] = React.useState(0);
   const [nextBlocks, setNextBlocks] = React.useState<CalBlock[]>([]);
   const [todos, setTodos] = React.useState<Todo[]>(TODOS[portal]);
   const [timers, setTimers] = React.useState<Record<string, Timer>>({});
@@ -65,14 +92,41 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
     });
 
   // Lead and manager Work show Bharath's planner, as in the old s/lead and s/mgr Work.dc.html. Admin's Project leads tab shows the firm.
-  const all = (portal === "admin" ? tasksFor("admin") : LEAD_WORK).map((t) => (doneIds.has(t.id) ? { ...t, status: "Done" as TaskStatus } : t));
+  const me = personOf(portal);
+  // E-01, E-02, E-03: status picks and reassignments from the list last for the session.
+  const edits = useTaskEdits({
+    base: (portal === "admin" ? tasksFor("admin") : LEAD_WORK).map((t) => (doneIds.has(t.id) ? { ...t, status: "Done" as TaskStatus } : t)),
+    portal,
+    people: LEADS.filter((l) => portal === "admin" || l.manager === "Pranay").map((l) => l.name),
+    file: "Work.xlsx",
+  });
+  const all = edits.tasks;
   const owners = [...new Set(all.map((t) => t.owner))];
   const myClients = clientsFor(portal).filter((c) => all.some((t) => t.client === c.id));
-  const tasks = all.filter((t) => (!owner || t.owner === owner) && (!client || t.client === client) && (show === "all" || (show === "filings") === !t.code)).sort((a, b) => a.due.getTime() - b.due.getTime());
+  const tasks = all
+    .filter((t) => (!owner || t.owner === owner) && (!client || t.client === client) && (show === "all" || (show === "filings") === !t.code) && (!status || t.status === status) && inWeek(t, when))
+    .sort((a, b) => a.due.getTime() - b.due.getTime());
+  const current: ViewFilters = { owner, client, show: show === "all" ? "" : show, status, when };
+  const applyView = (f: ViewFilters) => {
+    setOwner(f.owner ?? "");
+    setClient(f.client ?? "");
+    setShow((f.show || "all") as Show);
+    setStatus(f.status ?? "");
+    setWhen(f.when ?? "");
+    setViewTick((n) => n + 1);
+  };
+  // E-05: a home card tile opens Work on the list with one saved view ("?view=overdue").
+  React.useEffect(() => {
+    const key = new URLSearchParams(window.location.search).get("view");
+    const v = VIEWS.find((x) => x.key === key);
+    if (!v) return;
+    setView("list");
+    applyView(v.filters);
+  }, []);
   const open = all.find((t) => t.id === openId) ?? null;
   const openCount = tasks.filter((t) => t.status !== "Done").length;
   const clientCount = new Set(tasks.filter((t) => t.status !== "Done").map((t) => t.client)).size;
-  const any = owner || client || show !== "all";
+  const any = owner || client || show !== "all" || status || when;
 
   // List view keys (WorkBoard.dc.html): J and K move, Enter opens.
   React.useEffect(() => {
@@ -119,6 +173,7 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
       key: "area",
       label: "Area",
       width: 128,
+      skeleton: "chip",
       render: (t) => <AreaPill area={t.area} />,
     },
     ...(portal !== "admin" ? [] : [{ key: "owner", label: "Owner", width: 120 } as Column<StaffTask>]),
@@ -126,12 +181,13 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
       key: "due",
       label: "Due",
       width: 80,
-      render: (t) => <span className={urgency(t.due, STAFF_TODAY) === "bad" && t.status !== "Done" ? "font-medium text-bad" : undefined}>{fmt(t.due)}</span>,
+      render: (t) => <span className={cn("whitespace-nowrap", urgency(t.due, STAFF_TODAY) === "bad" && t.status !== "Done" && "font-medium text-bad")}>{fmt(t.due)}</span>,
     },
     {
       key: "status",
       label: "Status",
       width: 130,
+      skeleton: "chip",
       render: (t) => <TaskChip status={t.status} />,
     },
     {
@@ -169,16 +225,18 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
           { value: "filings", label: "Filings only" },
         ]}
       />
+      <FilterChip label="Status" value={status} onChange={setStatus} options={STATUS_OPTS} />
+      <FilterChip
+        label="Due"
+        value={when}
+        onChange={setWhen}
+        options={[
+          { value: "week", label: "This week" },
+          { value: "next", label: "Next week" },
+        ]}
+      />
       {any && (
-        <Button
-          variant="link"
-          size="sm"
-          onClick={() => {
-            setOwner("");
-            setClient("");
-            setShow("all");
-          }}
-        >
+        <Button variant="link" size="sm" onClick={() => applyView({})}>
           Clear
         </Button>
       )}
@@ -278,7 +336,37 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
         </>
       )}
 
-      {view === "list" && <DataGrid title="Tasks" meta={`${openCount} open`} columns={cols} rows={tasks} rowKey={(t) => t.id} rowLate={(t) => t.status === "Overdue"} pageSize={12} onRowClick={(t) => setCursor(t.id)} selectedKey={cursor} />}
+      {view === "list" && (
+        <DataGrid
+          title="Tasks"
+          meta={`${openCount} open`}
+          columns={cols}
+          rows={tasks}
+          rowKey={(t) => t.id}
+          rowLate={(t) => t.status === "Overdue"}
+          pageSize={12}
+          onRowClick={(t) => setCursor(t.id)}
+          selectedKey={cursor}
+          views={{ storageKey: `${portal}:work`, views: VIEWS, current, onApply: applyView }}
+          selectable
+          quickActions
+          actions={{ ...edits.actions, open: openTask }}
+          statusMenu={edits.statusMenu}
+          user={me}
+          density
+          changedAt={taskChanged}
+          visitKey={`${portal}:work`}
+          visitSeed={PREVIOUS_VISIT}
+          empty="No tasks match these filters"
+          emptyAction={
+            <Button size="sm" variant="secondary" onClick={() => applyView({})}>
+              Clear filters
+            </Button>
+          }
+          loadKey={viewTick}
+          notify={toast.show}
+        />
+      )}
 
       {view === "board" && <WorkBoard portal={portal} tasks={tasks} onOpen={openTask} notify={toast.show} />}
 

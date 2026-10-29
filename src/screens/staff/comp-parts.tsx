@@ -67,9 +67,13 @@ export function useListKeys(ref: React.RefObject<HTMLElement | null>, filterRef:
       if (!el) return;
       const tag = (document.activeElement?.tagName ?? "").toLowerCase();
       const typing = tag === "input" || tag === "textarea" || tag === "select";
-      if (e.key === "/" && !typing) {
+      if (e.key === "/" && !typing && !e.ctrlKey && !e.metaKey) {
+        const target = filterRef.current?.querySelector<HTMLElement>("select, input");
+        if (!target) return;
+        // On a list page "/" goes to the list filter, not to Ask VCFO (the shell listens on window).
         e.preventDefault();
-        filterRef.current?.querySelector<HTMLElement>("select, input")?.focus();
+        e.stopPropagation();
+        target.focus();
         return;
       }
       if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -84,8 +88,9 @@ export function useListKeys(ref: React.RefObject<HTMLElement | null>, filterRef:
       const next = e.key === "ArrowDown" ? Math.min(links.length - 1, at + 1) : Math.max(0, at - 1);
       links[next]?.focus();
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // Capture on document runs before the shell's window listener.
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
   }, [ref, filterRef]);
 }
 
@@ -111,6 +116,9 @@ const PORTAL: Record<Area, [string, string]> = {
   Labour: ["Labour portal", "https://shramsuvidha.gov.in/"],
 };
 
+/** Address of the government portal for an area. */
+export const portalUrl = (area: Area) => PORTAL[area][1];
+
 /** Small link to the government portal of a filing. */
 export function PortalLink({ area }: { area: Area }) {
   const [label, href] = PORTAL[area];
@@ -118,6 +126,35 @@ export function PortalLink({ area }: { area: Area }) {
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-grid h-6 w-6 flex-none place-items-center rounded-sm text-faint hover:bg-raised hover:text-accent" aria-label={`Open ${label}`} title={`Open ${label}`}>
       <ExternalLink size={14} strokeWidth={1.6} />
     </a>
+  );
+}
+
+/**
+ * Row action of a filing row (Compliances.dc.html): "File now" or "Open", 30 px.
+ * Overdue rows get the blurple main button; every other row gets the white one.
+ * `href` opens the record page; `external` opens the government portal in a new tab; else `onClick`.
+ */
+export function FilingAction({ label, urgent, href, external, onClick, context }: { label: "File now" | "Open"; urgent?: boolean; href?: string; external?: boolean; onClick?: () => void; context: string }) {
+  const variant = urgent ? "primary" : "outline";
+  const aria = `${label}: ${context}`;
+  if (href)
+    return (
+      <Button size="sm" variant={variant} asChild>
+        {external ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${aria} (opens the portal)`}>
+            {label}
+          </a>
+        ) : (
+          <Link href={href} aria-label={aria}>
+            {label}
+          </Link>
+        )}
+      </Button>
+    );
+  return (
+    <Button size="sm" variant={variant} onClick={onClick} aria-label={aria}>
+      {label}
+    </Button>
   );
 }
 

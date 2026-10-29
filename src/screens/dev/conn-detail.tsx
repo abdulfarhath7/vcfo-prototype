@@ -8,7 +8,8 @@ import { Checkbox, Input, Switch } from "@/components/ui/Input";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { SectionCard } from "@/components/cards/SectionCard";
-import { InlineConfirm } from "@/components/cards/InlineConfirm";
+import { DangerConfirm } from "@/components/ui/DangerConfirm";
+import { Unplug } from "lucide-react";
 import { ChangeConfirm } from "@/components/cards/ChangeConfirm";
 import { cn } from "@/lib/cn";
 import { Segmented, SettingRow, StatusChip, ident, logAudit, nowToday, useChoice, useSwitch } from "./parts";
@@ -234,22 +235,22 @@ function DisconnectCard({ name, effect, off, onConfirm }: { name: string; effect
         {off ? (
           <StatusChip wide tone="idle">Disconnected</StatusChip>
         ) : (
-          <Button size="sm" onClick={() => setAsk(true)} aria-expanded={ask}>
+          <Button size="sm" onClick={() => setAsk(true)} aria-haspopup="dialog">
             Disconnect
           </Button>
         )}
       </SettingRow>
-      {ask && !off && (
-        <InlineConfirm
-          question={`Disconnect ${name}? ${effect}`}
-          confirm="Disconnect"
-          onConfirm={() => {
-            onConfirm();
-            setAsk(false);
-          }}
-          onCancel={() => setAsk(false)}
-        />
-      )}
+      {/* M1: disconnecting stops the service, so the word is typed. */}
+      <DangerConfirm
+        open={ask && !off}
+        onOpenChange={setAsk}
+        title={`Disconnect ${name}?`}
+        body={effect}
+        word="DISCONNECT"
+        confirm="Disconnect"
+        icon={Unplug}
+        onConfirm={onConfirm}
+      />
     </SectionCard>
   );
 }

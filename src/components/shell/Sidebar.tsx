@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronRight, Headphones, LogOut, Mail, MessageCircle, MessagesSquare, Phone, Sparkles, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Headphones, Keyboard, LogOut, Mail, MessageCircle, MessagesSquare, Phone, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui/Avatar";
 import { CLIENT_TEAM, PORTALS, navFor, type NavItem, type Portal, type TeamContact } from "@/data/nav";
@@ -10,6 +10,8 @@ import { ClientsFold, FoldButton, LeadsFold, ManagersFold, MiniCalendar, NewTag,
 import { SuperClientsFold, SuperManagersFold, useSuperFold } from "./SuperSidebarExtras";
 import { BeforeAfter } from "./BeforeAfter";
 import { openAsk } from "./AskButton";
+import { openShortcuts } from "./ShortcutSheet";
+import { Tip } from "@/components/ui/Tip";
 
 type StaffPortal = "lead" | "manager" | "admin";
 const isStaff = (p: Portal): p is StaffPortal => p === "lead" || p === "manager" || p === "admin";
@@ -243,17 +245,19 @@ export function Sidebar({ portal, incorporated, onClose }: { portal: Portal; inc
       {client && <TeamBlock />}
       {/* R-45: Ask VCFO is a sidebar button, never a floating bubble. "/" opens it too. */}
       <div className="flex-none px-3 pb-2.5 pt-2">
-        <button
-          type="button"
-          onClick={openAsk}
-          className="flex h-[38px] w-full items-center gap-2.5 rounded-md border-1.5 border-navy-line bg-navy px-2.5 text-14 font-medium text-white hover:bg-navy-hover"
-        >
-          <span className="grid h-[22px] w-[22px] flex-none place-items-center rounded-sm bg-primary text-white" aria-hidden>
-            <Sparkles size={13} strokeWidth={1.6} />
-          </span>
-          <span className="flex-1 text-left">Ask VCFO</span>
-          <kbd className="rounded-sm border border-navy-line bg-white/[.07] px-[5px] font-sans text-11 font-medium leading-[18px] text-navy-faint">/</kbd>
-        </button>
+        <Tip label="Ask VCFO" keys={["/"]} side="right">
+          <button
+            type="button"
+            onClick={openAsk}
+            className="flex h-[38px] w-full items-center gap-2.5 rounded-md border-1.5 border-navy-line bg-navy px-2.5 text-14 font-medium text-white hover:bg-navy-hover"
+          >
+            <span className="grid h-[22px] w-[22px] flex-none place-items-center rounded-sm bg-primary text-white" aria-hidden>
+              <Sparkles size={13} strokeWidth={1.6} />
+            </span>
+            <span className="flex-1 text-left">Ask VCFO</span>
+            <kbd className="rounded-sm border border-navy-line bg-white/[.07] px-[5px] font-sans text-11 font-medium leading-[18px] text-navy-faint">/</kbd>
+          </button>
+        </Tip>
       </div>
       <div className="flex flex-none items-center gap-2.5 border-t-1.5 border-navy-line px-2.5 pb-3 pt-2">
         <Link href={meta.profile} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md p-1.5 hover:bg-navy-hover" title="Your profile">
@@ -263,6 +267,9 @@ export function Sidebar({ portal, incorporated, onClose }: { portal: Portal; inc
             <span className="block truncate text-12 text-navy-faint">{meta.role}</span>
           </span>
         </Link>
+        <button type="button" onClick={openShortcuts} className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-navy-faint hover:bg-white/[.12] hover:text-white" aria-label="Keyboard shortcuts (?)" title="Keyboard shortcuts (?)">
+          <Keyboard size={16} strokeWidth={1.6} />
+        </button>
         <Link href="/sign-in" className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md text-navy-faint hover:bg-white/[.12] hover:text-white" aria-label="Sign out" title="Sign out">
           <LogOut size={16} strokeWidth={1.6} />
         </Link>

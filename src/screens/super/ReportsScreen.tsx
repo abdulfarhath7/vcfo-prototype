@@ -5,6 +5,7 @@ import { STAFF_TODAY, d, fmt } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
 import { AreaPill } from "@/components/ui/Chip";
+import { Term } from "@/components/ui/Term";
 import { Checkbox, Field } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
@@ -127,7 +128,7 @@ const lateCols: Column<LateRow>[] = [
     label: "Filing",
     render: (x) => (
       <span>
-        <span className="block font-medium">{x.form}</span>
+        <span className="block font-medium"><Term>{x.form}</Term></span>
         <span className="block text-12 text-muted">
           {x.statute} · due {fmt(x.due)}
         </span>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Download, Search } from "lucide-react";
 import { TODAY, fmt, fmtLong, daysFrom } from "@/lib/dates";
 import { AUDIT_LOG, portalHref, type AuditCat, type AuditRow } from "@/data/updates-team";
+import { useLiveAudit } from "@/data/audit-live";
 import { Button } from "@/components/ui/Button";
 import { AreaPill, Chip, type ChipTone } from "@/components/ui/Chip";
 import { Select } from "@/components/ui/Select";
@@ -64,6 +65,9 @@ function Facts({ e }: { e: AuditRow }) {
 
 /** C-0029: no bar chart. Events in an e-Filing grid with filters in the head bar. A row opens its details; a date opens that day. */
 export function AuditScreen({ portal }: { portal: Portal }) {
+  // E-03: status changes made from table chips in this session come first.
+  const live = useLiveAudit();
+  const log = [...live, ...AUDIT_LOG];
   const [q, setQ] = React.useState("");
   const [cat, setCat] = React.useState("all");
   const [who, setWho] = React.useState("all");
@@ -72,8 +76,8 @@ export function AuditScreen({ portal }: { portal: Portal }) {
   const [day, setDay] = React.useState<string | null>(null);
   const client = portal === "client";
 
-  const inRange = AUDIT_LOG.filter((e) => older || daysFrom(e.date, TODAY) >= -30);
-  const olderN = AUDIT_LOG.length - AUDIT_LOG.filter((e) => daysFrom(e.date, TODAY) >= -30).length;
+  const inRange = log.filter((e) => older || daysFrom(e.date, TODAY) >= -30);
+  const olderN = log.length - log.filter((e) => daysFrom(e.date, TODAY) >= -30).length;
   const needle = q.trim().toLowerCase();
   const rows = inRange
     .filter((e) => (cat === "all" || e.cat === cat) && (who === "all" || e.side === who))

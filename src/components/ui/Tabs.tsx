@@ -1,6 +1,13 @@
 "use client";
 import * as React from "react";
 import { cn } from "@/lib/cn";
+import { TAB_EVENT } from "@/components/ui/CardLoad";
+
+/** Tell the card around the tabs that the view changes (L1 loading shapes in SectionCard). */
+function pick(e: React.MouseEvent<HTMLButtonElement>, on: boolean, key: string, onChange: (k: string) => void) {
+  if (!on) e.currentTarget.dispatchEvent(new CustomEvent(TAB_EVENT, { bubbles: true }));
+  onChange(key);
+}
 
 export interface TabItem {
   key: string;
@@ -37,7 +44,7 @@ export function Tabs({
               key={t.key}
               role="tab"
               aria-selected={on}
-              onClick={() => onChange(t.key)}
+              onClick={(e) => pick(e, on, t.key, onChange)}
               className={cn(
                 "-mb-[1.5px] inline-flex h-10 items-center gap-1.5 whitespace-nowrap border-b-2 text-14 font-medium transition-colors",
                 on ? "border-primary text-ink" : "border-transparent text-muted hover:text-ink",
@@ -59,7 +66,7 @@ export function Tabs({
             key={t.key}
             role="tab"
             aria-selected={on}
-            onClick={() => onChange(t.key)}
+            onClick={(e) => pick(e, on, t.key, onChange)}
             className={cn(
               "inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm px-3 text-13 font-medium transition-colors",
               size === "sm" ? "h-[22px]" : "h-7",

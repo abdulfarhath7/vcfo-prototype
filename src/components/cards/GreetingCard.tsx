@@ -1,5 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
+import * as Tip from "@radix-ui/react-tooltip";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { fmt } from "@/lib/dates";
@@ -20,6 +21,8 @@ export interface StatItem {
   sub?: string;
   /** Home card only: a short note after the number ("3 new", "2 clients"). */
   note?: string;
+  /** E-04: "How is this counted?" One sentence, shown in a white info card on hover and focus. */
+  how?: string;
   /** Sparkline points. */
   spark?: number[];
   /** Sparkline colour; default from bad/good, else blurple. */
@@ -131,11 +134,13 @@ export function GreetingCard({ date, name, eyebrow, tag, lead, sub, actions, sta
           )}
         </div>
       </div>
-      <div className="flex min-w-0 flex-[999_1_520px] flex-wrap gap-2">
-        {stats.slice(0, 5).map((s) => (
-          <MiniTile key={s.label} s={s} />
-        ))}
-      </div>
+      <Tip.Provider>
+        <div className="flex min-w-0 flex-[999_1_520px] flex-wrap gap-2">
+          {stats.slice(0, 5).map((s) => (
+            <MiniTile key={s.label} s={s} />
+          ))}
+        </div>
+      </Tip.Provider>
       {actions && <div className="flex flex-none items-center gap-2">{actions}</div>}
     </section>
   );
@@ -168,12 +173,26 @@ function MiniTile({ s }: { s: StatItem }) {
     "mini-tile h-14 min-w-[104px] flex-[1_1_120px] rounded-md border border-wash-tile-line bg-wash-tile pl-3 pr-2.5 shadow-mini",
     s.href && "transition-colors hover:border-line-2",
   );
-  return s.href ? (
-    <Link href={s.href} className={cls}>
+  const tile = s.href ? (
+    <Link href={s.href} className={cls} aria-label={`${s.label}: ${s.value}${note ? `, ${note}` : ""}. Open the list`}>
       {inner}
     </Link>
   ) : (
     <div className={cls}>{inner}</div>
+  );
+  if (!s.how) return tile;
+  // E-04 (TP2): a white info card says how the number is counted and which list the tile opens (E-05).
+  return (
+    <Tip.Root delayDuration={350}>
+      <Tip.Trigger asChild>{tile}</Tip.Trigger>
+      <Tip.Portal>
+        <Tip.Content side="bottom" align="start" sideOffset={6} collisionPadding={12} className="z-50 max-w-[260px] rounded-md border border-line bg-surface px-3 py-2.5 text-13 text-ink shadow-float">
+          <b className="block text-12 font-medium text-muted">How is this counted?</b>
+          <span className="mt-0.5 block leading-snug">{s.how}</span>
+          {s.href && <span className="mt-1.5 block text-12 font-medium text-accent">Click to open the list</span>}
+        </Tip.Content>
+      </Tip.Portal>
+    </Tip.Root>
   );
 }
 

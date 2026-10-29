@@ -1,8 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import * as M from "@radix-ui/react-dropdown-menu";
-import { Plus, X } from "lucide-react";
+import { FilterChip, FilterChipRow } from "@/components/ui/FilterChip";
 import { cn } from "@/lib/cn";
 import { barFill } from "@/components/ui/Bar";
 import type { Client } from "@/data/people";
@@ -69,66 +68,18 @@ export interface FilterDef {
   onChange: (v: string) => void;
 }
 
-const menuCls = "z-50 min-w-[180px] max-h-[320px] overflow-y-auto rounded-md border border-line bg-surface p-1 text-14 text-ink shadow-float";
-const itemCls = "flex h-[34px] cursor-pointer select-none items-center gap-3 rounded-sm px-2.5 outline-none data-[highlighted]:bg-hover";
-
-function FilterMenu({ f, trigger }: { f: FilterDef; trigger: React.ReactNode }) {
-  return (
-    <M.Root modal={false}>
-      <M.Trigger asChild>{trigger}</M.Trigger>
-      <M.Portal>
-        <M.Content align="start" sideOffset={4} collisionPadding={12} className={menuCls}>
-          {f.options.map((o) => (
-            <M.Item key={o} onSelect={() => f.onChange(o)} className={cn(itemCls, o === f.value && "font-medium text-accent")}>
-              <span className="min-w-0 flex-1 truncate">{o}</span>
-            </M.Item>
-          ))}
-        </M.Content>
-      </M.Portal>
-    </M.Root>
-  );
-}
-
-/** R-10: set filters are soft blurple chips with an ×; unset ones are dashed "+ Label" chips. "Clear all" when any is set. */
+/** R-10: set filters are soft blurple chips with an ×; unset ones are dashed "+ Label" chips. "Clear all" when any is set; "More filters" after 4. Shared parts (B-05). */
 export function FilterChips({ filters, onClear, className }: { filters: FilterDef[]; onClear?: () => void; className?: string }) {
-  const any = filters.some((f) => f.value);
   return (
-    <div className={cn("flex flex-wrap items-center gap-2", className)}>
-      {filters.map((f) =>
-        f.value ? (
-          <span key={f.key} className="inline-flex h-7 items-center gap-1.5 rounded-md border-1.5 border-accent-line bg-accent-soft pl-2.5 pr-1.5 text-13 text-accent">
-            <FilterMenu
-              f={f}
-              trigger={
-                <button type="button" className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-                  <span className="text-ink-2">{f.label}</span>
-                  <b className="max-w-[140px] truncate font-medium">{f.value}</b>
-                </button>
-              }
-            />
-            <button type="button" aria-label={`Remove ${f.label} filter`} onClick={() => f.onChange("")} className="grid h-[18px] w-[18px] place-items-center rounded-sm hover:bg-surface">
-              <X size={13} strokeWidth={1.6} />
-            </button>
-          </span>
-        ) : (
-          <FilterMenu
-            key={f.key}
-            f={f}
-            trigger={
-              <button type="button" className="inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-md border-1.5 border-dashed border-line-2 px-2.5 text-13 font-medium text-ink-2 hover:bg-hover">
-                <Plus size={13} strokeWidth={1.6} />
-                {f.label}
-              </button>
-            }
-          />
-        ),
-      )}
-      {any && onClear && (
-        <button type="button" onClick={onClear} className="inline-flex h-7 items-center whitespace-nowrap rounded-md border-1.5 border-line bg-surface px-2.5 text-13 font-medium text-ink-2 hover:bg-hover">
-          Clear all
-        </button>
-      )}
-    </div>
+    <FilterChipRow
+      className={className}
+      onClear={onClear}
+      chips={filters.map((f) => ({
+        key: f.key,
+        set: !!f.value,
+        node: <FilterChip label={f.label} value={f.value} onChange={f.onChange} options={f.options.map((o) => ({ value: o, label: o }))} />,
+      }))}
+    />
   );
 }
 

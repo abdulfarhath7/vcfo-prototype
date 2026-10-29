@@ -5,8 +5,8 @@ import { Plus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { STAFF_TODAY as TODAY, fmt } from "@/lib/dates";
 import { clientById, clientsFor } from "@/data/staff-clients";
-import { tasksFor, type StaffTask } from "@/data/staff-tasks";
-import { managerRows } from "@/data/staff-team";
+import { PREVIOUS_VISIT, taskChanged, tasksFor, type StaffTask } from "@/data/staff-tasks";
+import { LEADS, managerRows } from "@/data/staff-team";
 import { Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
@@ -16,10 +16,10 @@ import { barFill } from "@/components/ui/Bar";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { GreetingCard } from "@/components/cards/GreetingCard";
-import { DataGrid, type Column } from "@/components/cards/DataGrid";
+import { DataGrid, GRID_SUB, type Column } from "@/components/cards/DataGrid";
 import { TaskChip, personOf, plainName, taskHref, type StaffPortal } from "./parts";
 import { FirmClientsGrid, ManagersGrid } from "./grids";
-import { NewTodoDialog } from "./work-parts";
+import { NewTodoDialog, useTaskEdits } from "./work-parts";
 import {
   ActionQueue,
   ApprovalsWaiting,
@@ -85,7 +85,7 @@ function TaskCell({ t, portal, link }: { t: StaffTask; portal: StaffPortal; link
         ) : (
           <span className="truncate font-medium text-ink">{t.title}</span>
         )}
-        <span className="truncate text-12.5 text-muted">{c ? plainName(c) : ""}</span>
+        <span className={cn("truncate text-12.5 text-muted", GRID_SUB)}>{c ? plainName(c) : ""}</span>
       </span>
     </span>
   );
@@ -94,10 +94,13 @@ function TaskCell({ t, portal, link }: { t: StaffTask; portal: StaffPortal; link
 const dueClass = (t: StaffTask) => (t.status === "Done" ? undefined : t.due < TODAY || t.status === "Overdue" ? "font-medium text-bad" : t.status === "Due this week" ? "font-medium text-warn" : undefined);
 
 /** Team tasks (ManagerToday.dc.html): R-10 filter chips, List or Board, a T1 table with 104 px area and status columns. */
-function TeamTasks({ portal, scope, scopeTabs }: { portal: StaffPortal; scope: Scope; scopeTabs?: React.ReactNode }) {
-  const all = tasksFor(portal).filter((t) => inScope(scope, t.client));
+function TeamTasks({ portal, scope, scopeTabs, notify }: { portal: StaffPortal; scope: Scope; scopeTabs?: React.ReactNode; notify: (text: string, undo?: () => void) => void }) {
+  const me = personOf(portal);
+  // E-01, E-02, E-03: status picks and reassignments from the table last for the session.
+  const edits = useTaskEdits({ base: tasksFor(portal), portal, people: LEADS.filter((l) => l.manager === me).map((l) => l.name), file: "Team-tasks.xlsx" });
+  const all = edits.tasks.filter((t) => inScope(scope, t.client));
   const [lead, setLead] = React.useState("");
-  const [status, setStatus] = React.useState("");
+  const [status, setStatus] = React.useState("open");
   const [client, setClient] = React.useState("");
   const [area, setArea] = React.useState("");
   const [view, setView] = React.useState("list");
@@ -105,11 +108,19 @@ function TeamTasks({ portal, scope, scopeTabs }: { portal: StaffPortal; scope: S
   const areas = [...new Set(all.map((t) => t.area))];
   const st = STATUS_FILTER.find((x) => x.value === status);
   const rows = all.filter((t) => (!lead || t.owner === lead) && (!st || st.test(t)) && (!client || t.client === client) && (!area || t.area === area)).sort((a, b) => a.due.getTime() - b.due.getTime());
-  // C-0031: one status mark per row, no checkbox.
+  const clear = () => {
+    setLead("");
+    setStatus("");
+    setClient("");
+    setArea("");
+  };
+  // C-0031 removed the checkboxes because they did nothing. E-01 brings them back with the bulk bar (ManagerToday.dc.html).
   const cols: Column<StaffTask>[] = [
     {
       key: "title",
       label: "Task",
+      // Takes the space left and truncates, so the checkbox and row-action columns fit the card.
+      className: "max-w-0",
       render: (t) => <TaskCell t={t} portal={portal} />,
     },
     {
@@ -124,23 +135,25 @@ function TeamTasks({ portal, scope, scopeTabs }: { portal: StaffPortal; scope: S
       label: "Area",
       width: 128,
       hideOnPhone: true,
+      skeleton: "chip",
       render: (t) => <AreaPill area={t.area} />,
     },
     {
       key: "due",
       label: "Due",
       width: 76,
-      render: (t) => <span className={dueClass(t)}>{fmt(t.due)}</span>,
+      render: (t) => <span className={cn("whitespace-nowrap", dueClass(t))}>{fmt(t.due)}</span>,
     },
     {
       key: "status",
       label: "Status",
       width: 128,
+      skeleton: "chip",
       render: (t) => <TaskChip status={t.status} />,
     },
   ];
   return (
-    <SectionCard title="Team tasks" meta={String(rows.length)} flush>
+    <SectionCard title="Team tasks" meta={String(rows.length)} flush className="overflow-clip">
       <div className="flex flex-wrap items-center gap-2 px-4 py-3 md:px-5">
         <FilterChip
           label="Status"
@@ -174,7 +187,32 @@ function TeamTasks({ portal, scope, scopeTabs }: { portal: StaffPortal; scope: S
         </span>
       </div>
       {view === "list" ? (
-        <DataGrid inset columns={cols} rows={rows} rowKey={(t) => t.id} rowHref={(t) => taskHref(portal, t)} pageSize={10} empty="No tasks match these filters" className="border-t border-line-soft" />
+        <DataGrid
+          inset
+          columns={cols}
+          rows={rows}
+          rowKey={(t) => t.id}
+          rowHref={(t) => taskHref(portal, t)}
+          pageSize={10}
+          empty="No tasks match these filters"
+          emptyAction={
+            <Button size="sm" variant="secondary" onClick={clear}>
+              Clear filters
+            </Button>
+          }
+          className="border-t border-line-soft"
+          selectable
+          quickActions
+          actionsColumn="title"
+          actions={edits.actions}
+          statusMenu={edits.statusMenu}
+          user={me}
+          density
+          changedAt={taskChanged}
+          visitKey={`${portal}:today`}
+          visitSeed={PREVIOUS_VISIT}
+          notify={notify}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-3 border-t border-line-soft p-4 sm:grid-cols-2 md:p-5 xl:grid-cols-3">
           {STATUS_ORDER.map((x) => {
@@ -262,7 +300,7 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
       {portal === "manager" && (
         // ManagerToday.dc.html: Team tasks beside Approvals, Task status and Workload by lead.
         <div className={GRID}>
-          <TeamTasks portal={portal} scope={scope} scopeTabs={scopeTabs} />
+          <TeamTasks portal={portal} scope={scope} scopeTabs={scopeTabs} notify={toast.show} />
           <Col>
             <ApprovalsWaiting portal={portal} notify={toast.show} />
             <TaskStatusCard portal={portal} scope={scope} />

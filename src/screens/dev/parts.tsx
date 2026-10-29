@@ -1,14 +1,14 @@
 "use client";
 import * as React from "react";
 import { InlineConfirm } from "@/components/cards/InlineConfirm";
-import { Check, ChevronDown, Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 import { STAFF_TODAY } from "@/lib/dates";
 import { AUDIT, type AuditAction, type AuditEntry, type AuditResult } from "@/data/dev";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Input";
 import { Chip, type ChipTone } from "@/components/ui/Chip";
 import { cn } from "@/lib/cn";
-import * as M from "@radix-ui/react-dropdown-menu";
+import { FilterChip as SharedFilterChip } from "@/components/ui/FilterChip";
 
 // ---------- Audit log for this session (R-40: risky changes and settings are logged) ----------
 
@@ -271,57 +271,9 @@ export function StatusChip({ tone, children, wide, loose }: { tone?: ChipTone; c
 
 // ---------- Filter chips (R-10) ----------
 
-/**
- * R-10 filter chip. Set: soft blurple fill with the value and an ×. Not set: a dashed "+ Label" chip.
- * Both open a light menu with 34 px rows (R-48).
- */
+/** R-10 filter chip: the shared part (B-05). Here "all" means "not set". */
 export function FilterChip({ label, value, options, onChange, all = "all" }: { label: string; value: string; options: Array<{ value: string; label: string }>; onChange: (v: string) => void; all?: string }) {
-  const set = value !== all;
-  const cur = options.find((o) => o.value === value);
-  return (
-    <span
-      className={cn(
-        "inline-flex h-7 flex-none items-center rounded-md border-1.5 text-13",
-        set ? "border-accent-line bg-accent-soft text-accent" : "border-dashed border-line-2 text-ink-2",
-      )}
-    >
-      <M.Root modal={false}>
-        <M.Trigger asChild>
-          <button type="button" className={cn("inline-flex h-full items-center gap-1.5 whitespace-nowrap font-medium outline-none focus-visible:ring-4 focus-visible:ring-focus", set ? "rounded-l-md pl-2.5 pr-1" : "rounded-md px-2.5")}>
-            {set ? (
-              <>
-                <span className="text-ink-2">{label}</span>
-                <b className="font-medium">{cur?.label ?? value}</b>
-              </>
-            ) : (
-              <>
-                <Plus size={14} strokeWidth={1.6} aria-hidden />
-                {label}
-                <ChevronDown size={13} strokeWidth={1.6} className="text-muted" aria-hidden />
-              </>
-            )}
-          </button>
-        </M.Trigger>
-        <M.Portal>
-          <M.Content align="start" sideOffset={4} collisionPadding={12} className="z-50 max-h-[320px] min-w-[200px] overflow-y-auto rounded-md border border-line bg-surface p-1 text-14 text-ink shadow-float">
-            {options
-              .filter((o) => o.value !== all)
-              .map((o) => (
-                <M.Item key={o.value} onSelect={() => onChange(o.value)} className="flex h-[34px] cursor-pointer select-none items-center gap-3 rounded-sm px-2.5 outline-none data-[highlighted]:bg-hover">
-                  <span className="min-w-0 flex-1 truncate">{o.label}</span>
-                  {o.value === value && <Check size={15} strokeWidth={1.6} className="text-accent" aria-hidden />}
-                </M.Item>
-              ))}
-          </M.Content>
-        </M.Portal>
-      </M.Root>
-      {set && (
-        <button type="button" onClick={() => onChange(all)} aria-label={`Remove ${label} filter`} className="mr-1 grid h-[18px] w-[18px] place-items-center rounded-sm text-accent hover:bg-accent-line">
-          <X size={13} strokeWidth={1.6} />
-        </button>
-      )}
-    </span>
-  );
+  return <SharedFilterChip label={label} value={value} options={options} onChange={onChange} none={all} />;
 }
 
 /**

@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AlertTriangle, Building2, CircleCheck, User } from "lucide-react";
 import type { BarTone } from "@/components/ui/Bar";
 import { clientsFor, type Health } from "@/data/staff-clients";
@@ -12,6 +12,7 @@ import { Tag } from "@/components/ui/Chip";
 import { NumberStrip, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard } from "@/components/cards/SectionCard";
 import { Donut } from "@/components/cards/Donut";
+import { OnTimeColumns } from "@/components/cards/OnTimeColumns";
 import { ProgressList } from "@/components/cards/ProgressList";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import type { StaffPortal } from "./parts";
@@ -52,25 +53,14 @@ const AXIS_Y = {
   tick: { fill: "var(--faint)", fontSize: 11.5 },
 } as const;
 
+/** C4 (Data.dc.html "Filings per month"): stacked on-time and late columns, the same part as on Filings. */
 function FilingsOnTime({ portal, span }: { portal: StaffPortal; span: number }) {
-  const data = ANALYTICS[portal].filings.slice(-span).map((f) => ({ m: f.m, "On time": f.onTime, Late: f.late }));
-  const onTime = data.reduce((a, f) => a + f["On time"], 0);
-  const total = data.reduce((a, f) => a + f["On time"] + f.Late, 0);
+  const data = ANALYTICS[portal].filings.slice(-span);
+  const onTime = data.reduce((a, f) => a + f.onTime, 0);
+  const total = data.reduce((a, f) => a + f.onTime + f.late, 0);
   return (
     <SectionCard title="Filings on time" meta={`${Math.round((onTime / total) * 100)}%`}>
-      <div className="h-[232px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -24 }} barCategoryGap="28%">
-            <CartesianGrid vertical={false} stroke="var(--line-soft)" />
-            <XAxis dataKey="m" {...AXIS_X} />
-            <YAxis {...AXIS_Y} />
-            <Tooltip {...TOOLTIP} />
-            <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize: 12.5, color: "var(--ink-2)" }} />
-            <Bar dataKey="On time" stackId="a" fill="var(--ok-mid)" isAnimationActive={false} maxBarSize={28} />
-            <Bar dataKey="Late" stackId="a" fill="var(--bad-mid)" isAnimationActive={false} maxBarSize={28} radius={[3, 3, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <OnTimeColumns data={data.map((f) => ({ label: f.m, onTime: f.onTime, late: f.late }))} height={180} />
     </SectionCard>
   );
 }
