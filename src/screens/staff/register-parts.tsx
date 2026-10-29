@@ -90,8 +90,11 @@ export function GroupedGrid<T>({
   empty = "None",
   count,
   phoneFit,
+  bar,
 }: {
   title: string;
+  /** A row under the head for a segmented switch (as SavedViews in DataGrid). */
+  bar?: React.ReactNode;
   meta?: React.ReactNode;
   right?: React.ReactNode;
   columns: Column<T>[];
@@ -130,6 +133,7 @@ export function GroupedGrid<T>({
         {meta && <span className="ml-auto truncate text-12.5 text-muted">{meta}</span>}
         {right && <div className="ml-auto flex flex-wrap items-center gap-2">{right}</div>}
       </header>
+      {bar && <div className="flex flex-wrap items-center gap-2 border-b border-line-soft px-4 py-2.5 md:px-5">{bar}</div>}
       <div className="overflow-x-auto">
         <table className={cn("grid-table", phoneFit ? "md:min-w-[720px]" : "min-w-[720px]")}>
           <thead>
@@ -154,7 +158,12 @@ export function GroupedGrid<T>({
                 return (
                   <tr key={`g-${e.g.id}`} className="[&>td]:!bg-raised">
                     <td colSpan={columns.length} className={cn("!h-auto !border-t-1.5 !border-t-line !p-0", i === 0 && "!border-t-0")}>
-                      <button type="button" aria-expanded={e.open} onClick={() => setClosed({ ...closed, [e.g.id]: e.open })} className={cn("flex w-full items-center gap-2 px-3 text-left", e.g.head ? "py-3" : "h-10 text-13 font-medium")}>
+                      <button
+                        type="button"
+                        aria-expanded={e.open}
+                        onClick={() => setClosed({ ...closed, [e.g.id]: e.open })}
+                        className={cn("flex w-full items-center gap-2 px-3 text-left", e.g.head ? "py-3" : "h-10 text-13 font-medium")}
+                      >
                         {e.g.head ?? (
                           <>
                             <i className={cn("h-2 w-2 flex-none rounded-[2px]", e.g.dot)} aria-hidden />
@@ -202,15 +211,33 @@ export function GroupedGrid<T>({
         {footer}
         {pages > 1 && (
           <nav className="ml-auto flex items-center gap-1" aria-label="Pages">
-            <button type="button" onClick={() => setPage(Math.max(1, cur - 1))} disabled={cur === 1} className="grid h-7 w-7 place-items-center rounded-md hover:bg-ghost disabled:opacity-40" aria-label="Previous page">
+            <button
+              type="button"
+              onClick={() => setPage(Math.max(1, cur - 1))}
+              disabled={cur === 1}
+              className="grid h-7 w-7 place-items-center rounded-md hover:bg-ghost disabled:opacity-40"
+              aria-label="Previous page"
+            >
               <ChevronLeft size={14} strokeWidth={1.6} />
             </button>
             {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
-              <button key={p} type="button" onClick={() => setPage(p)} aria-current={p === cur ? "page" : undefined} className={cn("h-7 min-w-7 rounded-md px-1.5 font-medium", p === cur ? "bg-primary text-primary-on" : "hover:bg-ghost")}>
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPage(p)}
+                aria-current={p === cur ? "page" : undefined}
+                className={cn("h-7 min-w-7 rounded-md px-1.5 font-medium", p === cur ? "bg-primary text-primary-on" : "hover:bg-ghost")}
+              >
                 {p}
               </button>
             ))}
-            <button type="button" onClick={() => setPage(Math.min(pages, cur + 1))} disabled={cur === pages} className="grid h-7 w-7 place-items-center rounded-md hover:bg-ghost disabled:opacity-40" aria-label="Next page">
+            <button
+              type="button"
+              onClick={() => setPage(Math.min(pages, cur + 1))}
+              disabled={cur === pages}
+              className="grid h-7 w-7 place-items-center rounded-md hover:bg-ghost disabled:opacity-40"
+              aria-label="Next page"
+            >
               <ChevronRight size={14} strokeWidth={1.6} />
             </button>
           </nav>
