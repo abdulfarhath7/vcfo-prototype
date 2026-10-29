@@ -106,7 +106,7 @@ export function BoardResolutionScreen() {
               disabled={!dirty}
               onClick={() => {
                 setDirty(false);
-                toast.show("Changes saved");
+                toast.show("Changes saved", { kind: "saved", sub: "The resolution has the new text." });
               }}
             >
               Save changes

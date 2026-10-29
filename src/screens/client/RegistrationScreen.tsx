@@ -45,9 +45,7 @@ export function RegistrationScreen({ id }: { id: string }) {
   const detailsRef = React.useRef<HTMLDivElement>(null);
   const starts = r.obligations.map((oid) => obligation(oid)).filter((o) => !!o);
   const uploaded = (n: number) =>
-    toast.show(
-      `${n} ${n === 1 ? "file" : "files"} uploaded · SBC reviews them next`,
-    );
+    toast.show(`${n} ${n === 1 ? "file" : "files"} uploaded`, { kind: "uploaded", sub: "SBC reviews them next." });
 
   const action =
     r.status === "Waiting on client" ? (

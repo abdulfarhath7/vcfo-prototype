@@ -392,7 +392,7 @@ export function StepView({ portal, id, n }: { portal: StepPortal; id: string; n:
                 if (editWin) {
                   setWin({ from: editWin.from ? fromIso(editWin.from) : win.from, to: editWin.to ? fromIso(editWin.to) : win.to });
                   log(`Window moved to ${editWin.to ? fmt(fromIso(editWin.to)) : ""}`, "sbc");
-                  toast.show("Window saved. The client sees the new date.");
+                  toast.show("Window saved", { kind: "saved", sub: "The client sees the new date." });
                 }
                 setEditWin(null);
               }}

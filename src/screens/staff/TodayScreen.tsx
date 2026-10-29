@@ -268,8 +268,9 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
       actions={
         <>
           {portal !== "admin" && <ScopeTabs portal={portal} value={scope} onChange={setScope} />}
-          <Button variant="primary" onClick={() => setAssign(true)}>
-            <Plus size={16} strokeWidth={1.6} aria-hidden /> {portal === "lead" ? "New to-do" : "Assign task"}
+          {/* M-30: on a phone the button is a 36 px icon, so it fits beside the scope switch. */}
+          <Button variant="primary" onClick={() => setAssign(true)} className="max-sm:w-9 max-sm:px-0" title={portal === "lead" ? "New to-do" : "Assign task"}>
+            <Plus size={16} strokeWidth={1.6} aria-hidden /> <span className="max-sm:sr-only">{portal === "lead" ? "New to-do" : "Assign task"}</span>
           </Button>
         </>
       }

@@ -134,13 +134,15 @@ export function GreetingCard({ date, name, eyebrow, tag, lead, sub, actions, sta
     <section className="bg-wash flex flex-col gap-3 rounded-md border-1.5 border-line px-4 pb-4 pt-3.5 md:px-5" aria-label="Summary">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         {lead ? (
-          <div className="flex min-w-0 flex-[1_1_360px] flex-wrap items-center gap-x-3 gap-y-1.5">
-            <span className="flex min-w-0 max-w-full items-center gap-3">
+          // M-30: on a phone the name takes the first line; the chip, step count and actions share the second.
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-2 sm:gap-x-3">
+            <span className="flex min-w-0 max-w-full items-center gap-3 max-sm:basis-full">
               {lead}
               <h1 className="min-w-0 truncate text-22 font-medium leading-7 tracking-[-0.01em] text-ink">{title}</h1>
             </span>
             {tag}
             {sub && <span className="whitespace-nowrap text-12.5 text-wash-ink-2">{sub}</span>}
+            {actions && <div className="ml-auto flex items-center gap-2 sm:gap-2.5">{actions}</div>}
           </div>
         ) : (
           <div className="flex min-w-0 flex-[1_1_300px] flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -150,12 +152,12 @@ export function GreetingCard({ date, name, eyebrow, tag, lead, sub, actions, sta
             {sub && <span className="whitespace-nowrap text-12.5 text-wash-ink-2">{sub}</span>}
           </div>
         )}
-        {actions && <div className="flex flex-wrap items-center gap-2.5">{actions}</div>}
+        {actions && !lead && <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">{actions}</div>}
       </div>
       <Tip.Provider>
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-[repeat(auto-fit,minmax(170px,1fr))]">
-          {stats.map((s) => (
-            <WashTile key={s.label} s={s} />
+          {stats.map((s, i) => (
+            <WashTile key={s.label} s={s} strip={stats.length % 2 === 1 && i === stats.length - 1} />
           ))}
         </div>
       </Tip.Provider>
@@ -167,7 +169,7 @@ export function GreetingCard({ date, name, eyebrow, tag, lead, sub, actions, sta
  * R-18 (home card): KP1 tile on the wash. A 14 px icon and 12.5 px label, the number in 22 px, a 12 px sub line,
  * and a 64 x 26 trend line beside the number where history exists (48 x 22 on phones), in the colour of what it measures.
  */
-function WashTile({ s }: { s: StatItem }) {
+function WashTile({ s, strip }: { s: StatItem; /** M-30: the odd last tile spans both phone columns as one short line. */ strip?: boolean }) {
   const line = s.note ?? s.sub;
   const inner = (
     <>
@@ -175,9 +177,9 @@ function WashTile({ s }: { s: StatItem }) {
         <s.Icon size={14} strokeWidth={1.6} className="flex-none text-muted" aria-hidden />
         <span className="truncate">{s.label}</span>
       </span>
-      <span className="flex min-w-0 items-start gap-2 sm:gap-2.5">
-        <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <b className={cn("whitespace-nowrap text-22 font-medium leading-none tabular-nums", s.bad ? "text-bad" : s.good ? "text-ok" : "text-ink")}>
+      <span className={cn("flex min-w-0 items-start gap-2 sm:gap-2.5", strip && "max-sm:flex-none")}>
+        <span className={cn("flex min-w-0 flex-1 flex-col gap-1", strip && "max-sm:flex-row max-sm:items-baseline max-sm:gap-2")}>
+          <b className={cn("whitespace-nowrap text-22 font-medium leading-none tabular-nums", strip && "max-sm:text-18", s.bad ? "text-bad" : s.good ? "text-ok" : "text-ink")}>
             {s.value}
             {s.of && <small className="ml-1 text-13 font-medium text-muted">{s.of}</small>}
           </b>
@@ -188,12 +190,13 @@ function WashTile({ s }: { s: StatItem }) {
           )}
           {line && <span className="truncate text-12 text-muted">{line}</span>}
         </span>
-        {s.spark && <WashSpark points={s.spark} className={SPARK[s.sparkTone ?? (s.bad ? "bad" : s.good ? "ok" : "accent")]} />}
+        {s.spark && <WashSpark points={s.spark} className={cn(SPARK[s.sparkTone ?? (s.bad ? "bad" : s.good ? "ok" : "accent")], strip && "max-sm:hidden")} />}
       </span>
     </>
   );
   const cls = cn(
     "flex min-w-0 flex-col gap-1 rounded-md border border-wash-tile-line bg-wash-tile px-3 py-2.5 shadow-tile sm:px-3.5",
+    strip && "max-sm:col-span-2 max-sm:flex-row max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-2",
     s.href && "transition-colors hover:border-line-2",
   );
   const tile = s.href ? (

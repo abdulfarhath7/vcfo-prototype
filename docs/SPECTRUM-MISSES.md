@@ -42,10 +42,10 @@ Key: ✓ = fixed and checked in the running app. ✗ = still missing.
 
 | No. | Miss | Design (canvas) | What the build did | Found by | Action | Status |
 |---|---|---|---|---|---|---|
-| M-27 | Shortcut keys in menus | Row menus show the key for each action (E Edit, A Reassign, C Copy link) | The parity table says ✓, but `ActionMenu` shows no keys | Design chat | Show the keys at the right of each menu row | ✗ |
-| M-28 | White "Saved" toast (A1) | A white toast with a green status tile for Saved, Filed and Uploaded | Only the dark Undo toast exists | Design chat | Add the white toast. Use it when an action has no Undo. | ✗ |
-| M-29 | Empty gap on the landing page | No large empty space between sections | Removing the big logo left an empty gap of about 200 px above the comparison table | Design chat | Remove the gap. Use the normal section spacing. | ✗ |
-| M-30 | Client home on phones | The home card stays short on phones, with no empty half-rows | On a 390 px screen the card is about 430 px tall. The fifth tile sits alone in its row, so half of that row is empty. | Design chat | Make Report an icon button. Let the fifth tile span both columns as a short strip (label and value on one line). Aim for about 340 px. | ✗ |
+| M-27 | Shortcut keys in menus | Row menus show the key for each action (E Edit, A Reassign, C Copy link) | The parity table says ✓, but `ActionMenu` shows no keys | Design chat | Done: the Work row menu shows Edit E, Reassign A and Copy link C, each with an icon. Today › Team tasks shows Reassign and Copy link. Reassign opens a side list of people. The keys work while the menu is open and on a focused row. Checked against Overlays D1. | ✓ |
+| M-28 | White "Saved" toast (A1) | A white toast with a green status tile for Saved, Filed and Uploaded | Only the dark Undo toast exists | Design chat | Done: every A1 kind shows the 22 px green tile with a tick. Saved and Uploaded toasts without Undo use A1: timeline, window, board resolution, signed copy and obligation and registration uploads. Checked against Feedback A1. | ✓ |
+| M-29 | Empty gap on the landing page | No large empty space between sections | Removing the big logo left an empty gap of about 200 px above the comparison table | Design chat | Done: the comparison section top padding is 40 px (24 px on phones). The gap above the kicker is 153 px at 1440 and 97 px at 390, as between Facts and Journey. | ✓ |
+| M-30 | Client home on phones | The home card stays short on phones, with no empty half-rows | On a 390 px screen the card is about 430 px tall. The fifth tile sits alone in its row, so half of that row is empty. | Design chat | Done: on a phone, Report is a 36 px icon button, and the chip, step count and actions share one line. An odd last tile spans both columns as one line. The client card is 358 px, the staff cards 357 to 375 px. | ✓ |
 
 ## C. Why the misses happened
 

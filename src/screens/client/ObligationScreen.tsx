@@ -148,9 +148,7 @@ export function ObligationScreen({ id }: { id: string }) {
   const about = aboutObligation(o);
   const detailsRef = React.useRef<HTMLDivElement>(null);
   const uploaded = (n: number) =>
-    toast.show(
-      `${n} ${n === 1 ? "file" : "files"} uploaded · SBC reviews them next`,
-    );
+    toast.show(`${n} ${n === 1 ? "file" : "files"} uploaded`, { kind: "uploaded", sub: "SBC reviews them next." });
 
   const action =
     o.owner === "client" && !filed ? (

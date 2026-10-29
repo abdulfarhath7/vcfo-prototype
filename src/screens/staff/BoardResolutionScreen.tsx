@@ -176,7 +176,7 @@ export function BoardResolutionScreen({ portal }: { portal: StaffPortal }) {
                   onChange={(e) => {
                     if (!e.target.files?.[0]) return;
                     setStage(4);
-                    show(`Signed copy uploaded · ${e.target.files[0].name}`);
+                    show("Signed copy uploaded", { kind: "uploaded", sub: e.target.files[0].name });
                   }}
                 />
               </>

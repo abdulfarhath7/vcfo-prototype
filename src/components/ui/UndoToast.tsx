@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Check, FileCheck2, Upload, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
@@ -24,10 +24,11 @@ interface ToastState extends ToastOptions {
   text: string;
 }
 
+// A1: every kind is a success, so each gets the 22 px green status tile with a tick.
 const KIND: Record<ToastKind, { Icon: LucideIcon; tile: string }> = {
   saved: { Icon: Check, tile: "bg-ok-soft text-ok" },
-  filed: { Icon: FileCheck2, tile: "bg-ok-soft text-ok" },
-  uploaded: { Icon: Upload, tile: "bg-accent-soft text-accent" },
+  filed: { Icon: Check, tile: "bg-ok-soft text-ok" },
+  uploaded: { Icon: Check, tile: "bg-ok-soft text-ok" },
 };
 
 const PLACE = "fixed bottom-[132px] left-1/2 z-[80] max-w-[calc(100vw-32px)] -translate-x-1/2 md:bottom-16 md:left-[calc(248px+20px)] md:translate-x-0";

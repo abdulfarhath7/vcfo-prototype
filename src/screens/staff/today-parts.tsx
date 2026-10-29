@@ -65,7 +65,8 @@ export function ScopeTabs({ portal, value, onChange }: { portal: StaffPortal; va
     ["incorporating", "Incorporating", inc],
     ["compliance", "Compliance", cl.length - inc],
   ];
-  return <Tabs size="md" items={items.map(([key, label, n]) => ({ key, label, count: n }))} value={value} onChange={(k) => onChange(k as Scope)} />;
+  // M-30: tighter tabs on a phone, so the home card's icon button fits on the same line.
+  return <Tabs size="md" className="max-sm:[&>button]:px-2" items={items.map(([key, label, n]) => ({ key, label, count: n }))} value={value} onChange={(k) => onChange(k as Scope)} />;
 }
 
 // R-10 filter chip: one shared part (B-05). Staff screens import it from here.

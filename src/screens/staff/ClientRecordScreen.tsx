@@ -480,7 +480,7 @@ function Record({ portal }: { portal: StaffPortal }) {
                   }),
                 );
                 setEditing(false);
-                toast.show("Timeline saved. The client sees the new dates.");
+                toast.show("Timeline saved", { kind: "saved", sub: "The client sees the new dates." });
               }}
             >
               Save

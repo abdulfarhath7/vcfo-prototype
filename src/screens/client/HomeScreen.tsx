@@ -258,11 +258,13 @@ export function HomeScreen() {
           sub={progress}
           actions={
             <>
-              <Button variant="secondary" onClick={report}>
-                <Download size={16} strokeWidth={1.6} aria-hidden /> Report
+              {/* M-30: on a phone, Report is a 36 px icon button and Upload drops "document". */}
+              <Button variant="secondary" onClick={report} className="max-sm:w-9 max-sm:px-0" title="Report">
+                <Download size={16} strokeWidth={1.6} aria-hidden /> <span className="max-sm:sr-only">Report</span>
               </Button>
               <Button variant="primary" onClick={() => setUpload(true)}>
-                <Upload size={16} strokeWidth={1.6} aria-hidden /> Upload document
+                <Upload size={16} strokeWidth={1.6} aria-hidden /> <span className="sm:hidden">Upload</span>
+                <span className="max-sm:hidden">Upload document</span>
               </Button>
             </>
           }

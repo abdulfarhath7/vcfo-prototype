@@ -15,7 +15,7 @@ import { PopoverCard } from "@/components/ui/PopoverCard";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import type { SavedView, ViewFilters } from "@/components/cards/SavedViews";
-import { ClientName, TaskChip, personOf, type StaffPortal } from "./parts";
+import { ClientName, TaskChip, personOf, taskHref, type StaffPortal } from "./parts";
 import { FilterChip } from "./today-parts";
 import { AdminWorkItems } from "./AdminWorkItems";
 import { NewTodoDialog, PlanCalendar, PlanWeekDialog, RequestChangeDialog, SessionButton, PlanTimeline, TodoCard, WorkBoard, WorkDrawer, WorkStatus, WorkTimeline, useTaskEdits, type Timer } from "./work-parts";
@@ -350,7 +350,7 @@ export function WorkScreen({ portal }: { portal: StaffPortal }) {
           views={{ storageKey: `${portal}:work`, views: VIEWS, current, onApply: applyView }}
           selectable
           quickActions
-          actions={{ ...edits.actions, open: openTask }}
+          actions={{ ...edits.actions, open: openTask, edit: openTask, link: (t) => taskHref(portal, t) }}
           statusMenu={edits.statusMenu}
           user={me}
           density

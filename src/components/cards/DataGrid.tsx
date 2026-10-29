@@ -3,10 +3,11 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as M from "@radix-ui/react-dropdown-menu";
-import { ArrowUpRight, Bell, Check, ChevronLeft, ChevronRight, Rows3, Rows4, UserPlus } from "lucide-react";
+import { ArrowUpRight, Bell, Check, ChevronLeft, ChevronRight, Copy, MoreHorizontal, Pencil, Rows3, Rows4, UserPlus, Users } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { iconFor, type Tone } from "@/components/icons";
 import { IconTile } from "@/components/ui/IconTile";
+import { ActionMenu, type ActionItem } from "@/components/ui/ActionMenu";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { Empty } from "@/components/cards/SectionCard";
@@ -48,6 +49,10 @@ export interface GridActions<T> {
   export?: (rows: T[]) => GridResult;
   /** Row Open. Default: the row link (rowHref), else onRowClick. */
   open?: (row: T) => void;
+  /** D1 row menu: Edit (key E). */
+  edit?: (row: T) => void;
+  /** D1 row menu: the page to copy for Copy link (key C). Default: rowHref. */
+  link?: (row: T) => string | undefined;
   /** Singular and plural for the bar ("task", "tasks"). */
   noun?: [string, string];
 }
@@ -88,7 +93,7 @@ export interface DataGridProps<T> {
   // Opt-in features (Spectrum parity). Without them the grid looks and works as before.
   /** E-01: a checkbox column; picked rows show the bulk bar in place of the head. Uses `actions`. */
   selectable?: boolean;
-  /** E-02: Open, Remind and Reassign at the row end on hover or focus. Keys on a focused row: Enter opens, R reminds, A assigns. */
+  /** E-02: Open, Remind and Reassign at the row end on hover or focus. Keys on a focused row: Enter opens, R reminds, A assigns, E edits, C copies the link. */
   quickActions?: boolean;
   /** E-02: show the row actions over the right end of this column (a text column) instead of in a column of their own. For tables tight on width. The density switch then sits in this column's head. */
   actionsColumn?: string;
@@ -368,6 +373,22 @@ export function DataGrid<T>({
     if (href) return router.push(href);
     onRowClick?.(r);
   };
+  const canAssign = !!actions?.assign && !!actions.people?.length;
+  const linkOf = (r: T) => actions?.link?.(r) ?? rowHref?.(r);
+  const copyLink = (r: T) => {
+    const href = linkOf(r);
+    if (!href) return;
+    navigator.clipboard?.writeText(`${window.location.origin}${href}`).catch(() => undefined);
+    say("Link copied");
+  };
+  /** D1: the row menu, with a key at the right of each item. The keys also work on a focused row. */
+  const menuItems = (r: T): ActionItem[] => [
+    ...(actions?.edit ? [{ label: "Edit", key: "E", Icon: Pencil, onSelect: () => actions.edit!(r) }] : []),
+    ...(canAssign
+      ? [{ label: "Reassign", key: "A", Icon: Users, people: { label: actions!.peopleLabel, names: actions!.people!, current: actions!.ownerOf?.(r), onPick: (p: string) => report(actions!.assign!([r], p)) } }]
+      : []),
+    ...(linkOf(r) ? [{ label: "Copy link", key: "C", Icon: Copy, onSelect: () => copyLink(r) }] : []),
+  ];
 
   // Inside a sideways-scrolling wrapper the head cannot stick to the page; it stays at the top of the table.
   const headTop = sticky.fits ? sticky.top : 0;
@@ -423,6 +444,17 @@ export function DataGrid<T>({
             <UserPlus size={15} strokeWidth={1.6} />
           </button>
         </PeopleMenu>
+      )}
+      {menuItems(r).length > 0 && (
+        <ActionMenu
+          label="More actions"
+          items={menuItems(r)}
+          trigger={
+            <button type="button" data-grid-ctl tabIndex={-1} className={iconBtn} aria-label="More actions" title="More actions" onClick={(e) => e.stopPropagation()}>
+              <MoreHorizontal size={15} strokeWidth={1.6} />
+            </button>
+          }
+        />
       )}
     </span>
   );
@@ -581,7 +613,7 @@ export function DataGrid<T>({
                           : undefined
                     }
                     tabIndex={rowKeys ? 0 : undefined}
-                    aria-keyshortcuts={rowKeys ? "Enter R A" : undefined}
+                    aria-keyshortcuts={rowKeys ? "Enter R A E C" : undefined}
                     onKeyDown={
                       rowKeys
                         ? (e) => {
@@ -595,10 +627,18 @@ export function DataGrid<T>({
                               e.preventDefault();
                               e.stopPropagation();
                               report(actions.remind([r]));
-                            } else if (k === "a" && actions?.assign && actions.people?.length) {
+                            } else if (k === "a" && canAssign) {
                               e.preventDefault();
                               e.stopPropagation();
                               setAssignFor(key);
+                            } else if (k === "e" && actions?.edit) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              actions.edit(r);
+                            } else if (k === "c" && linkOf(r)) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              copyLink(r);
                             }
                           }
                         : undefined
