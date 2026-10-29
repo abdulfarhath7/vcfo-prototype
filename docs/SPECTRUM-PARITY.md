@@ -41,7 +41,7 @@ Source: the Spectrum canvas (https://claude.ai/artifact/Mthtcsro8KnEd5xHyJ9pTi),
 | B-19 | Loading (L1) | Grey shapes of the content | `Skeleton.tsx` exists. No screen uses it. | ✓ | Done: `SectionCard` shows grey shapes for 300 ms on first load and on a tab switch. Reduced motion stops the pulse. |
 | B-20 | Upload U1 / U2 / U3 | Per-file progress; compact chips; big drop zone | Drop zone present. No per-file progress row on Client Home. | ✓ | Done: Client Home › Recent documents shows each new upload with a progress bar, then an Uploaded tick. |
 | B-21 | Table T1 | Clean rows, 44 px, uppercase head | Present | ✓ | None |
-| B-22 | Number tile (KP1) | Label, number, note, trend line | Notes and trend lines missing on staff homes | ✓ | Done: home cards use the compact tile with a note and a trend line (D-01). |
+| B-22 | Number tile (KP1) | Label, number, note, trend line | Notes and trend lines missing on staff homes | ✓ | Done: home card tiles have a sub line and a trend line (D-01, H3 tight). |
 | B-23 | Charts C1 / C2 / C4 | Donut, stacked person bars, on-time vs late columns | C1 and C2 present. C4 not found. | ✓ | Done: `OnTimeColumns` (C4) on Filings and on Analytics › Filings on time. |
 | B-24 | Progress G1 | 10 px, 3 px corners, shine | Present | ✓ | None |
 | B-25 | People and companies | People are circles; stacks with a ring; companies are 6 px squares | Present. Stacked avatars (V3) not used. | ✓ | Done: `AvatarStack` (V3) shows who works on each client in the Clients lists, and the managers of each admin on super admin Team. |
@@ -53,10 +53,10 @@ Source: the Spectrum canvas (https://claude.ai/artifact/Mthtcsro8KnEd5xHyJ9pTi),
 
 | No. | Screen | Design | Prototype | Status | Action |
 |---|---|---|---|---|---|
-| C-01 | Client Home · home card | One compact card (D-01) | Tall card, 5 tiles without trend lines | ✓ | Done: compact card with a 40 px company tile, stage chip, step count, five tiles, Report icon and Upload. |
+| C-01 | Client Home · home card | One compact card (D-01) | Tall card, 5 tiles without trend lines | ✓ | Done: H3 tight card with a 36 px company tile, the full name, stage chip, step count, five tiles (three with trend lines), Report and Upload document. |
 | C-02 | Client Home · cards | Incorporation (ST5), Timeline, Needs from Northwind, Who holds it now, Recent uploads (U1) | All present except Recent uploads with progress. Extra cards: Important alerts, What SBC is doing, Recent documents, Recent activity. | ✓ | Done: the extra cards stay. Uploads show progress (B-20). The sent-back passport no longer repeats in Important alerts; it leads Needs and the Overdue tile. |
-| C-03 | Manager Today | Compact card; Team tasks with chips; Approvals; Task status; Workload | Present. Tall card. | ✓ | Done: compact card. The All / Incorporating / Compliance switch is in the Team tasks head. |
-| C-04 | Other staff homes (Lead, Admin, Super admin, Developer) | Same compact card, each with its own five numbers | Tall card | ✓ | Done: lead, admin, super admin and developer use the compact card with their own five numbers. The lead switch is in the Action queue head. |
+| C-03 | Manager Today | Compact card; Team tasks with chips; Approvals; Task status; Workload | Present. Tall card. | ✓ | Done: H3 tight card. The All / Incorporating / Compliance switch is back in the home card. |
+| C-04 | Other staff homes (Lead, Admin, Super admin, Developer) | Same compact card, each with its own five numbers | Tall card | ✓ | Done: lead, admin, super admin and developer use the H3 tight card with their own numbers and trend data. The lead switch is back in the card. |
 | C-05 | Compliances · Filings | Tabs By filing / By client / Calendar; four KPI tiles; filter chips; rows grouped by filing (date tile, area pill, "3 of 5 filed" bar), client rows under each group with Lead, Note, Status and a File now / Open action | Flat grid of filings. Area tabs and a status switch instead of chips. No grouping. No row action. | ✓ | Done: staff Filings has underline tabs By filing (default), By client and All filings. Filings are grouped (date tile, name, area pill, "x of y filed" bar) with client rows, Lead, Note, Status and File now / Open. Filter chips replace the area tabs and status switch. |
 | C-06 | Compliances · KPI row | Due this month, Filed, Due in 7 days, Overdue | Donut only | ✓ | Done: four tiles above the list: Due this month, Filed, Due in 7 days, Overdue. Each tile toggles its filter. |
 | C-07 | Compliances · charts | On time vs late (C4); By regulator bars with all six regulators | By area bars without Labour; donut | ✓ | Done: "On time vs late" columns (C4) and "By regulator" bars with all six regulators. Labour shows 0 / 0: the sample data has no Labour filing. |
@@ -67,7 +67,7 @@ Source: the Spectrum canvas (https://claude.ai/artifact/Mthtcsro8KnEd5xHyJ9pTi),
 
 | No. | Decision | Status | Action |
 |---|---|---|---|
-| D-01 | Home card: one row, about 84 px. Greeting or company on the left, five mini tiles (label, number, short note, 52 × 24 trend line where history exists), one action on the right. | ✓ | Done: `GreetingCard` copies OptH3c. Tiles are 56 px; the trend line hides when a tile is too narrow. |
+| D-01 | Home card: H3 tight (owner pick, 29 Oct, replaces the one-row card). Two rows, about 160 px. Row 1: greeting and date, or company; scope switch and actions. Row 2: KP1 tiles with a 64 × 26 trend line where history exists. | ✓ | Done: `GreetingCard` copies OptH3t. Every home has its own trend data in `src/data/`. See D-17 in `DECISIONS.md`. |
 | D-02 | Keep R-38: no "Your next action" bars on pages | ✓ | None |
 
 ## E. New ideas (my additions, approved by the owner's "bring all your ideas")

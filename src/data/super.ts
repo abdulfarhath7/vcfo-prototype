@@ -738,3 +738,14 @@ export function auditOf(c: FirmClient): ClientAudit[] {
     { id: "a6", date: c.since, time: "12:00", text: "Client added to VCFO Suite", who: MANAGERS.find((m) => m.name === c.manager)?.admin ?? "Krishna" },
   ];
 }
+
+/**
+ * Home card trend lines (R-18): month-end counts for June to September. The screen adds October's live count.
+ * September matches the change against September that each tile shows (+2, −3, +4 pts, +1).
+ */
+export const SUPER_TRENDS = {
+  clients: [12, 13, 14, 15],
+  registrations: [19, 21, 22, 23],
+  onTime: [78, 81, 79, 80],
+  overdue: [5, 4, 2, 3],
+};

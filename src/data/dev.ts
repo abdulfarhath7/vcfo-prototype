@@ -1374,3 +1374,17 @@ export const AUDIT: AuditEntry[] = [
   { id: "a17", at: at(9, 28, 11, 40), actor: "Farhath", action: "Revoke key", target: "Old partner key vk_live_pd19", result: "Done" },
   { id: "a18", at: at(9, 20, 15, 0), actor: "Farhath", action: "Rotate key", target: "RDS master password", result: "Done" },
 ];
+
+/** Home card trend lines (R-18): counts at the end of 12 to 15 Oct. The screen adds today's live count. */
+export const DEV_TRENDS = {
+  /** Tally went offline on 13 Oct at 23:00. */
+  healthy: [13, 12, 12, 12],
+  messages: [2, 1, 3, 2],
+};
+
+/** Failed job runs on each of the four days before today, from the failure log. */
+export const jobFailsBefore = (today: Date) =>
+  [4, 3, 2, 1].map((n) => {
+    const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() - n).toDateString();
+    return JOB_FAILURES.filter((f) => f.status === "Failed" && f.at.toDateString() === day).length;
+  });

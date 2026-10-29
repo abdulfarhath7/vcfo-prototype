@@ -204,11 +204,14 @@ export const DONE_TODAY: Record<StaffPortal, number> = { lead: 2, manager: 2, ad
 /** Home card notes (R-17): tasks new in the queue today. Lead and manager share Bharath's queue. */
 export const NEW_TODAY: Record<StaffPortal, number> = { lead: 3, manager: 3, admin: 0 };
 
-/** Home card trend lines (R-18): the last five working days, ending today. Lead and manager share Bharath's queue. Admin has no history. */
-export const TODAY_TRENDS: Record<StaffPortal, { action?: number[]; overdue?: number[]; waiting?: number[]; done?: number[] }> = {
-  lead: { action: [6, 8, 7, 10, 11], overdue: [3, 2, 4, 3, 4], waiting: [9, 9, 6, 6, 6], done: [1, 3, 2, 4, 2] },
-  manager: { action: [6, 8, 7, 10, 11], overdue: [3, 2, 4, 3, 4], waiting: [9, 9, 6, 6, 6], done: [1, 3, 2, 4, 2] },
-  admin: {},
+/**
+ * Home card trend lines (R-18): counts at the end of the four working days before today (12 to 15 Oct).
+ * The screen adds today's live count as the last point. Lead and manager share Bharath's queue.
+ */
+export const TODAY_TRENDS: Record<StaffPortal, Partial<Record<"action" | "overdue" | "waiting" | "done" | "incorporating" | "stuck", number[]>>> = {
+  lead: { action: [6, 8, 7, 10], overdue: [3, 2, 4, 3], waiting: [9, 9, 6, 6], done: [1, 3, 2, 4] },
+  manager: { action: [6, 8, 7, 10], overdue: [3, 2, 4, 3], waiting: [9, 9, 6, 6], done: [1, 3, 2, 4] },
+  admin: { incorporating: [8, 8, 7, 7], overdue: [5, 3, 4, 3], stuck: [1, 1, 2, 3] },
 };
 
 /** Week strip default: today. */

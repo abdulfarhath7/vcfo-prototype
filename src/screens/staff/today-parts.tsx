@@ -39,7 +39,7 @@ import { Bar, barFill, type BarTone } from "@/components/ui/Bar";
 import { Avatar } from "@/components/ui/Avatar";
 import { Input, Checkbox } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
-import type { StatItem } from "@/components/cards/GreetingCard";
+import { trail, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, ListRow, HeadLink, Empty } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { Donut } from "@/components/cards/Donut";
@@ -113,6 +113,8 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     const open = tasksFor(portal).filter((t) => t.status !== "Done" && inScope(scope, t.client));
     const overdue = open.filter((t) => t.status === "Overdue");
     const stuck = cl.filter((c) => c.health === "Stuck");
+    const inc = cl.filter((c) => c.stage === "incorporating").length;
+    const trend = scope === "all" ? TODAY_TRENDS.admin : {};
     return [
       {
         label: "Clients",
@@ -124,8 +126,9 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       },
       {
         label: "Incorporating",
-        value: cl.filter((c) => c.stage === "incorporating").length,
+        value: inc,
         how: "Clients that do not have the certificate of incorporation yet.",
+        spark: trail(trend.incorporating, inc),
         Icon: Rocket,
         tone: "violet",
         href: `${b}/clients`,
@@ -142,6 +145,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
         label: "Overdue",
         value: overdue.length,
         how: "Open tasks past their due date, across all managers.",
+        spark: trail(trend.overdue, overdue.length),
         note: `${new Set(overdue.map((t) => t.client)).size} clients`,
         Icon: AlertTriangle,
         tone: "red",
@@ -152,6 +156,8 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
         label: "Stuck",
         value: stuck.length,
         how: "Clients whose current step has not moved for three days or more.",
+        spark: trail(trend.stuck, stuck.length),
+        sparkTone: "warn",
         Icon: Clock,
         tone: "amber",
         bad: true,
@@ -161,18 +167,21 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
   }
   const queue = queueFor(portal).filter((t) => inScope(scope, t.client));
   const late = queue.filter((t) => t.status === "Overdue").length + filingCounts(clientsFor(portal).filter((c) => inScope(scope, c.id))).overdue;
-  const week = weekItems(portal).filter((w) => w.kind !== "done" && inScope(scope, w.client)).length;
+  const weekOpen = weekItems(portal).filter((w) => w.kind !== "done" && inScope(scope, w.client));
+  const week = weekOpen.length;
+  const lastDue = weekOpen.reduce<Date | null>((a, w) => (!a || w.day > a ? w.day : a), null);
   const lateClients = new Set(queue.filter((t) => t.status === "Overdue").map((t) => t.client)).size;
   const waits = waitingOnClient(portal).filter((t) => inScope(scope, t.client));
   const oldest = Math.max(0, ...waits.map((t) => t.days));
+  const waiting = waits.length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length;
   const trend = scope === "all" ? TODAY_TRENDS[portal] : {};
   return [
     {
       label: "Needs action",
       value: queue.length,
       how: "Open tasks in the queue that need a step from SBC.",
-      note: scope === "all" && NEW_TODAY[portal] ? `${NEW_TODAY[portal]} new` : undefined,
-      spark: trend.action,
+      note: scope === "all" && NEW_TODAY[portal] ? `${NEW_TODAY[portal]} new today` : undefined,
+      spark: trail(trend.action, queue.length),
       Icon: ListChecks,
       tone: "blue",
       href: `${b}/work?view=all`,
@@ -182,7 +191,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       value: late,
       how: "Tasks and filings past their due date.",
       note: lateClients ? `${lateClients} ${lateClients === 1 ? "client" : "clients"}` : undefined,
-      spark: trend.overdue,
+      spark: trail(trend.overdue, late),
       Icon: AlertTriangle,
       tone: "red",
       bad: late > 0,
@@ -190,10 +199,10 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
     },
     {
       label: "Waiting on clients",
-      value: waits.length + WAIT_MCA.filter((w) => inScope(scope, w.client)).length,
+      value: waiting,
       how: "Steps waiting on a client, plus SRNs waiting on MCA.",
-      note: oldest ? `oldest ${oldest}d` : undefined,
-      spark: trend.waiting,
+      note: oldest ? `oldest ${oldest} ${oldest === 1 ? "day" : "days"}` : undefined,
+      spark: trail(trend.waiting, waiting),
       sparkTone: "teal",
       Icon: User,
       tone: "amber",
@@ -203,7 +212,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       label: "Due this week",
       value: week,
       how: "Open steps, filings and reminders due from Monday to Friday.",
-      note: "by Fri",
+      note: lastDue ? `by ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][lastDue.getDay()]} ${fmt(lastDue)}` : undefined,
       Icon: CalendarDays,
       tone: "teal",
       href: `${b}/work?view=week`,
@@ -212,7 +221,7 @@ export function todayStats(portal: StaffPortal, scope: Scope): StatItem[] {
       label: "Done today",
       value: DONE_TODAY[portal],
       how: "Tasks marked done today.",
-      spark: trend.done,
+      spark: trail(trend.done, DONE_TODAY[portal]),
       Icon: CheckCheck,
       tone: "green",
       good: DONE_TODAY[portal] > 0,
@@ -357,7 +366,7 @@ interface HeatRow {
 }
 
 /** Action queue: a clients × status heatmap (Main.dc.html) or the e-Filing list. Click a count to list its tasks. */
-export function ActionQueue({ portal, scope, scopeTabs }: { portal: StaffPortal; scope: Scope; /** Lead Today: the All / Incorporating / Compliance switch (R-17 moved it here). */ scopeTabs?: React.ReactNode }) {
+export function ActionQueue({ portal, scope }: { portal: StaffPortal; scope: Scope }) {
   const [view, setView] = React.useState<"map" | "list">("map");
   const [pick, setPick] = React.useState<string | null>(null);
   const all = queueFor(portal).filter((t) => inScope(scope, t.client));
@@ -457,7 +466,6 @@ export function ActionQueue({ portal, scope, scopeTabs }: { portal: StaffPortal;
 
   const head = (
     <>
-      {scopeTabs}
       {stuck.length > 0 && (
         <Link href={clientHref(portal, stuck[0].client)} className="hidden items-center gap-1.5 rounded-sm bg-bad-soft px-2 py-0.5 text-12 font-medium text-bad hover:underline md:inline-flex">
           <i className="h-[7px] w-[7px] rounded-[2px] bg-bad-mid" aria-hidden />

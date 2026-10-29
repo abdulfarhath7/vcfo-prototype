@@ -20,3 +20,4 @@ One row for each owner decision. Add rows at the end.
 | D-14 | 28 Oct 2026 | Admin Work status | Show Status as a donut, as in the old screen. This is an exception to R-25. |
 | D-15 | 28 Oct 2026 | Client record documents | The Northwind Documents tab shows 18, as in the old screen. No file list is behind the number. |
 | D-16 | 28 Oct 2026 | Other open questions | Keep the current state for the board resolution dates and signer, client-only fields, the 12 quick answers, the dark main button, the developer strip and copy, the missing staff preview switch and the credentials counts. |
+| D-17 | 29 Oct 2026 | Home card | Use H3 tight on every portal home: the tall H3 card at about 160 px, with a trend line inside each number tile where history exists. It replaces the one-row card. The scope switch goes back into the card. |

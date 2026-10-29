@@ -2,6 +2,8 @@
 import { CircleAlert, Gauge, KeyRound, MessageSquareWarning, Plug, Server } from "lucide-react";
 import { STAFF_TODAY, fmt, urgency } from "@/lib/dates";
 import {
+  DEV_TRENDS,
+  jobFailsBefore,
   API_KEYS,
   CHANNEL_TEMPLATES,
   CONNECTIONS,
@@ -26,7 +28,7 @@ import {
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { Cols, Col } from "@/components/shell/Page";
 import { Chip, Tag } from "@/components/ui/Chip";
-import { GreetingCard, type StatItem } from "@/components/cards/GreetingCard";
+import { GreetingCard, trail, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, HeadLink, ListRow } from "@/components/cards/SectionCard";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
 import { StackedBar, type Segment } from "@/components/cards/StackedBar";
@@ -107,9 +109,9 @@ export function OverviewScreen() {
   // R-17 (H3): the home card on the wash, with KP1 tiles.
   const stats: StatItem[] = [
     { label: "Services working", value: working, of: `/ ${SERVICES.length}`, Icon: Server, tone: "green" },
-    { label: "Connections healthy", value: healthy, of: `/ ${live.length}`, Icon: Plug, tone: "blue", href: "/dev/connections" },
-    { label: "Jobs failed today", value: failed, Icon: CircleAlert, tone: "red", bad: failed > 0, href: "/dev/jobs" },
-    { label: "Messages failed today", value: msgFailed, Icon: MessageSquareWarning, tone: "amber", bad: msgFailed > 0, href: "/dev/messages" },
+    { label: "Connections healthy", value: healthy, of: `/ ${live.length}`, spark: trail(DEV_TRENDS.healthy, healthy), sparkTone: "ok", Icon: Plug, tone: "blue", href: "/dev/connections" },
+    { label: "Jobs failed today", value: failed, spark: trail(jobFailsBefore(STAFF_TODAY), failed), Icon: CircleAlert, tone: "red", bad: failed > 0, href: "/dev/jobs" },
+    { label: "Messages failed today", value: msgFailed, spark: trail(DEV_TRENDS.messages, msgFailed), Icon: MessageSquareWarning, tone: "amber", bad: msgFailed > 0, href: "/dev/messages" },
     { label: "Secrets to fix", value: secrets, Icon: KeyRound, tone: "violet", bad: secrets > 0, href: "/dev/access" },
     { label: "Error rate, 24 hours", value: "0.4%", Icon: Gauge, tone: "teal", href: "/dev/logs" },
   ];

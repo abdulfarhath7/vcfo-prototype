@@ -349,3 +349,10 @@ export const NEEDS_DRILL_AFTER: DrillSpec = {
   rows: NEEDS_AFTER.map((n) => ({ name: n.title, meta: n.when, status: NEED_ACTION[n.kind], tone: (n.tint === "bad" ? "bad" : "warn") as ChipTone, tab: NEED_TABS.findIndex((t) => t.key === n.kind) + 1, href: n.href })),
   link: { name: "Obligations", href: "/client/obligations" },
 };
+
+/** Home card trend lines (R-18): counts at the end of 2 to 5 Oct. The screen adds today's count (6 Oct). */
+export const HOME_TRENDS = {
+  waiting: [5, 6, 4, 4],
+  sbc: [2, 1, 1, 1],
+  docs: [1, 2, 3, 3],
+};

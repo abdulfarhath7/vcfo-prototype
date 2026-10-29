@@ -25,13 +25,14 @@ import {
   REG_DRILL,
   HOME_REGS,
   HOLDS,
+  HOME_TRENDS,
 } from "@/data/client-home-extra";
 import { useClientState } from "@/components/shell/ClientState";
 import { Cols, Col } from "@/components/shell/Page";
 import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
 import { useUndoToast } from "@/components/ui/UndoToast";
-import { GreetingCard, type StatItem } from "@/components/cards/GreetingCard";
+import { GreetingCard, trail, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, HeadLink } from "@/components/cards/SectionCard";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
 import { ProgressList, type ProgressItem } from "@/components/cards/ProgressList";
@@ -53,7 +54,6 @@ import { St5Card } from "./st5";
 const DAY = 86400000;
 /** Tile sub lines, read from the sample data: the step with SBC and the overdue request. */
 const SBC_STEP = HOLDS.find((h) => h.key === "sbc")?.rows[0];
-const LATE_NEED = NEEDS_BEFORE.find((n) => n.tint === "bad");
 
 function AlertsCard({ rows: all, today, className }: { rows: AttentionRow[]; today: Date; className?: string }) {
   // C-02: the sent-back passport already leads "Needs from Northwind" and the Overdue tile. Do not repeat it here.
@@ -196,11 +196,11 @@ export function HomeScreen() {
   const open = (spec: DrillSpec, tab = 0) => drill.open(spec, tab);
 
   const statsBefore: StatItem[] = [
-    { label: "Waiting on Northwind", value: 4, note: "oldest 5d", how: "Uploads, details and approvals that SBC needs from Northwind.", spark: [5, 6, 4, 4, 4], sparkTone: "teal", Icon: User, tone: "amber", href: "#dd-you" },
-    { label: "With SBC", value: 1, note: "KYC + DSC", how: "Steps that SBC is working on now.", sub: SBC_STEP?.title, Icon: Building2, tone: "blue", href: "#dd-sbc" },
-    { label: "Overdue", value: 1, note: "passport", how: "Items from Northwind past their due date.", sub: LATE_NEED?.title, Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
-    { label: "Documents in", value: "4/6", bar: 67, how: "Documents received out of the six this phase needs.", Icon: FileText, tone: "teal", href: "#dd-docs" },
-    { label: "Expected COI", value: fmt(COI_EXPECTED), how: "The date MCA is expected to issue the certificate, from the current plan.", note: `${daysFrom(COI_EXPECTED)} days`, sub: `in ${daysFrom(COI_EXPECTED)} days`, Icon: Award, tone: "green", href: "/client/incorporation" },
+    { label: "Waiting on Northwind", value: 4, note: "oldest 5 days", how: "Uploads, details and approvals that SBC needs from Northwind.", spark: trail(HOME_TRENDS.waiting, 4), sparkTone: "teal", Icon: User, tone: "amber", href: "#dd-you" },
+    { label: "With SBC", value: 1, note: SBC_STEP?.title, how: "Steps that SBC is working on now.", spark: trail(HOME_TRENDS.sbc, 1), Icon: Building2, tone: "blue", href: "#dd-sbc" },
+    { label: "Overdue", value: 1, note: "passport copy", how: "Items from Northwind past their due date.", Icon: AlertTriangle, tone: "red", bad: true, href: "#dd-late" },
+    { label: "Documents in", value: "4/6", note: "2 to go", spark: trail(HOME_TRENDS.docs, 4), sparkTone: "ok", how: "Documents received out of the six this phase needs.", Icon: FileText, tone: "teal", href: "#dd-docs" },
+    { label: "Expected COI", value: fmt(COI_EXPECTED), how: "The date MCA is expected to issue the certificate, from the current plan.", note: `in ${daysFrom(COI_EXPECTED)} days`, Icon: Award, tone: "green", href: "/client/incorporation" },
   ];
   const statsAfter: StatItem[] = [
     { label: "Waiting on Northwind", value: NEEDS_AFTER.length, Icon: User, tone: "amber", href: "#dd-needs" },
@@ -244,9 +244,9 @@ export function HomeScreen() {
       <div onClickCapture={onStrip}>
         <GreetingCard
           date={today}
-          name={NORTHWIND.name.replace(/ India Pvt Ltd$/, "")}
+          name={NORTHWIND.name}
           lead={
-            <span className="grid h-10 w-10 flex-none place-items-center rounded-md bg-accent-soft text-13 font-medium text-accent" aria-hidden>
+            <span className="grid h-9 w-9 flex-none place-items-center rounded-md bg-accent-soft text-13 font-display text-accent" aria-hidden>
               NT
             </span>
           }
@@ -258,11 +258,11 @@ export function HomeScreen() {
           sub={progress}
           actions={
             <>
-              <Button variant="secondary" size="icon" onClick={report} aria-label="Report" title="Report">
-                <Download size={16} strokeWidth={1.6} />
+              <Button variant="secondary" onClick={report}>
+                <Download size={16} strokeWidth={1.6} aria-hidden /> Report
               </Button>
               <Button variant="primary" onClick={() => setUpload(true)}>
-                <Upload size={16} strokeWidth={1.6} /> Upload
+                <Upload size={16} strokeWidth={1.6} aria-hidden /> Upload document
               </Button>
             </>
           }

@@ -94,7 +94,7 @@ function TaskCell({ t, portal, link }: { t: StaffTask; portal: StaffPortal; link
 const dueClass = (t: StaffTask) => (t.status === "Done" ? undefined : t.due < TODAY || t.status === "Overdue" ? "font-medium text-bad" : t.status === "Due this week" ? "font-medium text-warn" : undefined);
 
 /** Team tasks (ManagerToday.dc.html): R-10 filter chips, List or Board, a T1 table with 104 px area and status columns. */
-function TeamTasks({ portal, scope, scopeTabs, notify }: { portal: StaffPortal; scope: Scope; scopeTabs?: React.ReactNode; notify: (text: string, undo?: () => void) => void }) {
+function TeamTasks({ portal, scope, notify }: { portal: StaffPortal; scope: Scope; notify: (text: string, undo?: () => void) => void }) {
   const me = personOf(portal);
   // E-01, E-02, E-03: status picks and reassignments from the table last for the session.
   const edits = useTaskEdits({ base: tasksFor(portal), portal, people: LEADS.filter((l) => l.manager === me).map((l) => l.name), file: "Team-tasks.xlsx" });
@@ -175,7 +175,6 @@ function TeamTasks({ portal, scope, scopeTabs, notify }: { portal: StaffPortal; 
         />
         <FilterChip label="Area" value={area} onChange={setArea} options={areas.map((a) => ({ value: a, label: a }))} />
         <span className="ml-auto flex flex-wrap items-center gap-2">
-          {scopeTabs}
         <Tabs
           items={[
             { key: "list", label: "List" },
@@ -252,7 +251,6 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
   const cl = clientsFor(portal);
   const showInc = scope !== "compliance" && cl.some((c) => c.stage === "incorporating");
   const showCmp = scope !== "incorporating" && cl.some((c) => c.stage === "compliance");
-  const scopeTabs = <ScopeTabs portal={portal} value={scope} onChange={setScope} />;
   const dialog = (
     <NewTodoDialog
       open={assign}
@@ -268,9 +266,12 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
       time="12:31 PM"
       name={`Good afternoon, ${personOf(portal)}`}
       actions={
-        <Button variant="primary" onClick={() => setAssign(true)}>
-          <Plus size={16} strokeWidth={1.6} aria-hidden /> {portal === "lead" ? "New to-do" : "Assign task"}
-        </Button>
+        <>
+          {portal !== "admin" && <ScopeTabs portal={portal} value={scope} onChange={setScope} />}
+          <Button variant="primary" onClick={() => setAssign(true)}>
+            <Plus size={16} strokeWidth={1.6} aria-hidden /> {portal === "lead" ? "New to-do" : "Assign task"}
+          </Button>
+        </>
       }
       stats={todayStats(portal, scope)}
     />
@@ -300,7 +301,7 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
       {portal === "manager" && (
         // ManagerToday.dc.html: Team tasks beside Approvals, Task status and Workload by lead.
         <div className={GRID}>
-          <TeamTasks portal={portal} scope={scope} scopeTabs={scopeTabs} notify={toast.show} />
+          <TeamTasks portal={portal} scope={scope} notify={toast.show} />
           <Col>
             <ApprovalsWaiting portal={portal} notify={toast.show} />
             <TaskStatusCard portal={portal} scope={scope} />
@@ -310,7 +311,7 @@ export function TodayScreen({ portal }: { portal: StaffPortal }) {
       )}
       <div className={GRID}>
         <Col>
-          <ActionQueue portal={portal} scope={scope} scopeTabs={portal === "lead" ? scopeTabs : undefined} />
+          <ActionQueue portal={portal} scope={scope} />
           {showInc && <PhaseProgress portal={portal} scope={scope} />}
           {showCmp && <ClientsFilings portal={portal} scope={scope} />}
         </Col>

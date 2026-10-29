@@ -9,12 +9,12 @@ import { Bar } from "@/components/ui/Bar";
 import { Button } from "@/components/ui/Button";
 import { useUndoToast } from "@/components/ui/UndoToast";
 import { Chip, Tag } from "@/components/ui/Chip";
-import { GreetingCard, type StatItem } from "@/components/cards/GreetingCard";
+import { GreetingCard, trail, type StatItem } from "@/components/cards/GreetingCard";
 import { SectionCard, HeadLink, ListRow } from "@/components/cards/SectionCard";
 import { DataGrid, type Column } from "@/components/cards/DataGrid";
 import { AttentionList, type AttentionRow } from "@/components/cards/AttentionList";
 import { StackedBar } from "@/components/cards/StackedBar";
-import { AREA_HEALTH_TONE, AREA_ROWS, CAP, FILINGS, FIRM_CLIENTS, HEALTH_TONE, REGS, type AreaRow } from "@/data/super";
+import { AREA_HEALTH_TONE, AREA_ROWS, CAP, FILINGS, FIRM_CLIENTS, HEALTH_TONE, REGS, SUPER_TRENDS, type AreaRow } from "@/data/super";
 import {
   ADMINS,
   ADMIN_FEED,
@@ -103,10 +103,10 @@ export function OverviewScreen() {
 
   // Change against September (old DELTA) in the strip's small text.
   const stats: StatItem[] = [
-    { label: "Clients", value: FIRM_CLIENTS.length, of: "+2", Icon: Building2, tone: "blue", href: "/super/clients" },
-    { label: "Registrations open", value: regProg + regWait, of: "−3", Icon: IdCard, tone: "violet", href: "/super/practice/registrations" },
-    { label: "Filed on time", value: `${onTimePct}%`, of: "+4 pts", Icon: ShieldCheck, tone: "green", href: "/super/practice/compliances" },
-    { label: "Filings overdue", value: overdueFilings, of: "+1", Icon: AlertTriangle, tone: "red", bad: overdueFilings > 0, href: "/super/practice/filings" },
+    { label: "Clients", value: FIRM_CLIENTS.length, of: "+2", spark: trail(SUPER_TRENDS.clients, FIRM_CLIENTS.length), Icon: Building2, tone: "blue", href: "/super/clients" },
+    { label: "Registrations open", value: regProg + regWait, of: "−3", spark: trail(SUPER_TRENDS.registrations, regProg + regWait), Icon: IdCard, tone: "violet", href: "/super/practice/registrations" },
+    { label: "Filed on time", value: `${onTimePct}%`, of: "+4 pts", spark: trail(SUPER_TRENDS.onTime, onTimePct), sparkTone: "ok", Icon: ShieldCheck, tone: "green", href: "/super/practice/compliances" },
+    { label: "Filings overdue", value: overdueFilings, of: "+1", spark: trail(SUPER_TRENDS.overdue, overdueFilings), Icon: AlertTriangle, tone: "red", bad: overdueFilings > 0, href: "/super/practice/filings" },
   ];
 
   const attention: AttentionRow[] = FIRM_CLIENTS.filter((c) => c.health === "Stuck" || c.health === "Overdue" || c.health === "Due soon" || c.health === "With client")
