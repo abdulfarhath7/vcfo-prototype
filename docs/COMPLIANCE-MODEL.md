@@ -223,3 +223,48 @@ Each build step adds a row here and a row in `docs/CHANGES.md`. Each row names t
 | Date | Change | Files |
 |---|---|---|
 | 29 Oct 2026 | Activity master from the two owner documents; this model | `src/data/activity-master.ts`, `docs/COMPLIANCE-MODEL.md` |
+| 29 Oct 2026 | Sample occurrences: 29 staff tasks, 6 client tasks, the statutory-to-activity map, the detail builder (C-0124) | `src/data/compliance-tasks.ts` |
+| 30 Oct 2026 | Staff Obligations: switch, task table, New task (C-0125) | `src/screens/staff/ObligationsScreen.tsx`, `ns-parts.tsx`, `src/components/ui/TaskMarks.tsx` |
+| 30 Oct 2026 | Statutory detail page for staff and client (C-0126) | `src/screens/shared/StatDetail.tsx`, `detail-parts.tsx` |
+| 30 Oct 2026 | Non-statutory detail page and its routes (C-0127) | `src/screens/shared/TaskDetail.tsx`, `app/(*)/…/obligations/tasks/[id]` |
+| 30 Oct 2026 | Calendar and Filings filter (C-0128) | staff, client and super Calendar and Filings screens, `src/data/compliance-tasks-views.ts` |
+| 30 Oct 2026 | Client Obligations with both categories (C-0129) | `src/screens/client/ObligationsScreen.tsx` |
+| 30 Oct 2026 | Review fixes: activity list, plain dates, plurals, icons (C-0130) | `ns-parts.tsx`, `StatDetail.tsx`, `detail-parts.tsx` |
+
+## 9. Build notes for the real product
+
+- Tasks made in the New task form live in page state only. They have no detail page in the prototype.
+- Overdue staff rows show the last due date that passed. Done rows show the period before the next due date.
+- The calendar judges tasks on its own date (8 Oct on the client calendar).
+- In the calendar, the donut uses its four states. A done task counts as "Filed".
+- "On time vs late" on Filings uses fixed sample data. It does not follow the filter.
+- Super admin has no Obligations list. Its Practice · Compliances page is the calendar, and it has the filter.
+
+## 10. Check of each spec item
+
+Checked on 30 Oct 2026 at 1440 px light, 1440 px dark and 390 px light. Every route returned 200 with no page errors and no sideways scroll. Click scripts are in the session scratchpad.
+
+| Spec | Result | How it was checked |
+|---|---|---|
+| S-1 | ✓ | Manager, lead and admin lists in each category; counts follow the client filter. |
+| S-2 | ✓ | By filing, By frequency and By law still work; rows open the detail page. |
+| S-3 | ✓ | Task table grouped by end week; rows open the task page; phone keeps Task, End and Status. |
+| S-4 | ✓ | Click script: no New task button for the lead, one for the manager and the admin. |
+| S-5 | ✓ | Click script: empty save shows errors, Esc closes, plain dates, Enter saves, toast "Task created", row and counts update. |
+| S-6 | ✓ | Urgency pill with bars on every task row; Critical bars in warn-mid. |
+| S-7 | ✓ | Visibility tag with icon and word on every task row. |
+| S-8 | ✓ | Strip labels and counts change with the category. |
+| D-1 | ✓ | Header on manager, lead and admin pages; the role action changes steps and shows a toast. |
+| D-2 | ✓ | Click script: accept, send back, edit reminder days; confirm note on the admin page only. |
+| D-3 | ✓ | Progress steps with who, when and evidence; stage, owner, reviewer; six previous periods. |
+| D-4 | ✓ | Click script on the client page: no escalations, reviewer note, confirm note or staff controls. |
+| 4.3 | ✓ | Click script: tick a checklist item, add a comment, approve; the firm-only client task returns 404. |
+| C-1 | ✓ | Staff, super and client calendars show the filter with counts. |
+| C-2 | ✓ | Statutory events keep the regulator swatch. |
+| C-3 | ✓ | Hollow square on the end date; hover shows the start and urgency; click opens the task page. |
+| C-4 | ✓ | Month, year and timeline views, donut, Next deadline and Coming up follow the filter. |
+| F-1 | ✓ | Staff, client and super Filings show the filter. |
+| F-2 | ✓ | Done tasks list with their file and an Internal area. |
+| F-3 | ✓ | Tiles, donut and area bars follow the filter. |
+| K-1 | ✓ | Client list shows 5 tasks; the firm-only task is absent. Before the certificate the page is unchanged. |
+| K-2 | ✓ | No New task button and no reviewer on the client pages. |

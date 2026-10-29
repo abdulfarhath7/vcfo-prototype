@@ -153,3 +153,13 @@ Routes for manager (`mgr-`), admin (`admin-`) and super admin (`super-`) reuse t
 | dev-search | Developer · Search | s/dev/Palette.dc.html |
 | dev-chat | Developer · Ask VCFO chat | s/dev/Chat.dc.html |
 | dev-profile | Developer · Profile | s/dev/ProfilePage.dc.html |
+
+## New screens (not in the old prototype)
+
+| Route | Title | Source |
+|---|---|---|
+| `/<portal>/compliances/obligations/tasks/<id>` | Staff · Non-statutory task | `docs/COMPLIANCE-MODEL.md` 4.3 |
+| `/client/obligations/tasks/<id>` | Client · Non-statutory task (shared tasks only) | `docs/COMPLIANCE-MODEL.md` 4.3, K-1 |
+
+The statutory detail routes keep their old paths: `/<portal>/compliances/obligations/<client>-<id>` and `/client/obligations/<id>`. They now show the layout of `docs/COMPLIANCE-MODEL.md` 4.2.
+
