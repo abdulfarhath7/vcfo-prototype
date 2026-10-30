@@ -158,6 +158,62 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .kbd{font:500 11px var(--mono);border:1.5px solid var(--line-2);border-bottom-width:2.5px;border-radius:var(--r-bar);padding:0 5px;color:var(--ink-2);background:var(--surface)}
 
+/* Version 2: sub-points, create task, circulation, letterhead */
+.subrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin-left:34px;padding:6px 10px;border-left:1.5px solid var(--line-2);border-radius:0 var(--r) var(--r) 0;background:var(--surface)}
+.subrow .num{font:500 11.5px var(--mono);color:var(--faint);min-width:28px}
+.subrow .tt{display:grid;gap:4px;min-width:0}
+.subrow .tt b{font-weight:400;font-size:13px}
+.subrow .meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+[hidden]{display:none!important}
+.subrow.edit{gap:8px}
+.subrow.edit input{flex:1;width:100%}
+.sub-b{font:inherit;font-size:11.5px;font-weight:500;height:24px;padding:0 7px;border-radius:var(--r-mark);border:1.5px dashed var(--line-2);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
+.sub-b:hover{color:var(--primary);border-color:var(--primary)}
+.t-circ{background:var(--teal-soft);color:var(--teal)}
+.t-file{background:var(--line-soft);color:var(--ink-2);font-family:var(--mono);font-size:11px}
+.t-new{background:var(--primary);color:var(--on-primary)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+.form{display:grid;gap:12px;padding:18px}
+.field{display:grid;gap:5px;min-width:0}
+.field label,.field .lbl{font-size:12px;font-weight:500;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%}
+textarea{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line-2);border-radius:var(--r);padding:8px 10px;min-height:84px;resize:vertical}
+textarea:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+input[type=date],input[type=time]{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line-2);border-radius:var(--r);height:34px;padding:0 10px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:inline-flex;padding:3px;gap:2px;background:var(--line-soft);border-radius:var(--r);border:1.5px solid var(--line)}
+.seg button{font:inherit;font-size:13px;font-weight:500;height:28px;padding:0 14px;border:0;border-radius:var(--r-mark);background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.guard{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:9px 11px;border-radius:var(--r);background:var(--ok-soft);color:var(--ok)}
+.guard.late{background:var(--bad-soft);color:var(--bad)}
+.dirs{display:grid;gap:6px}
+.dir{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border:1.5px solid var(--line-2);border-radius:var(--r);cursor:pointer}
+.dir:has(input:checked){border-color:var(--primary);background:var(--accent-soft)}
+.dir input{accent-color:var(--primary);width:15px;height:15px}
+.dir .din{font:500 12px var(--mono);color:var(--muted)}
+.files{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.paper{--p-bg:#FFFFFF;--p-ink:#16181D;--p-mute:#5D6470;--p-line:#D9DDE3;background:var(--p-bg);color:var(--p-ink);border-radius:var(--r);box-shadow:var(--shadow-float);border:1.5px solid var(--line);padding:28px clamp(16px,4vw,40px) 32px;font-size:13px;line-height:1.6;min-width:0}
+.lh-head{display:flex;gap:14px;align-items:center;padding-bottom:12px;border-bottom:2px solid var(--reg-mca)}
+.lh-logo{width:40px;height:40px;border-radius:var(--r);background:var(--reg-mca);color:#fff;display:grid;place-items:center;font-weight:700;font-size:18px;flex:none}
+.lh-head b{display:block;font-size:14px;letter-spacing:.02em}
+.lh-head span{display:block;color:var(--p-mute);font-size:11.5px}
+.lh-tag{display:inline-flex;margin:8px 0 0;font-size:11px;color:var(--p-mute);border:1px dashed var(--p-line);border-radius:var(--r-mark);padding:1px 6px}
+.paper h4{margin:18px 0 2px;text-align:center;font-size:14px;letter-spacing:.06em}
+.paper .lh-sub{margin:0 0 14px;text-align:center;color:var(--p-mute);font-size:12px}
+.paper .p-title{font-weight:700;margin:0 0 8px;text-transform:uppercase;font-size:12.5px}
+#c-body{white-space:pre-wrap;outline:none;border-radius:var(--r-mark);padding:4px 6px;margin:0 -6px;border:1.5px dashed transparent}
+#c-body:hover,#c-body:focus{border-color:var(--p-line)}
+.paper table{font-size:12px;margin-top:14px;border:1px solid var(--p-line)}
+.paper th{background:transparent;color:var(--p-mute);border-bottom:1px solid var(--p-line);height:30px}
+.paper td{border-bottom:1px solid var(--p-line);padding:8px 10px}
+.paper .foot{margin-top:18px;color:var(--p-mute);font-size:12px}
+.chain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+.chain .step{border-right:1px solid var(--line-soft)}
+.chain .step:last-child{border-right:0}
+.rlist td .btn{height:28px;font-size:12px}
+@media (max-width:860px){.two{grid-template-columns:1fr}.chain{grid-template-columns:1fr}.chain .step{border-right:0;border-bottom:1px solid var(--line-soft)}}
+@media (max-width:480px){.row2{grid-template-columns:1fr}}
+
 /* Flow */
 .flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;counter-reset:s}
 .step{padding:16px 14px;border-right:1px solid var(--line-soft);display:grid;gap:6px;align-content:start;min-width:0}
@@ -187,14 +243,14 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
     <h1>Board meeting agendas</h1>
     <p class="lede">This page shows what I understood from the request. It lists the meetings, the agenda template and the two-box agenda picker. <b>Read it, try the picker, and answer the questions at the end.</b> We build it in VCFO after you confirm.</p>
     <div class="status">
-      <span class="chip dark"><span class="dot" style="background:var(--reg-pay)"></span>Idea stage</span>
+      <span class="chip dark"><span class="dot" style="background:var(--reg-pay)"></span>Version 2 · 30 Oct 2026</span>
       <span class="chip dark"><span class="dot" style="background:var(--reg-mca)"></span>Not in the prototype yet</span>
       <span class="chip dark"><span class="dot" style="background:var(--reg-gst)"></span>Law: Companies Act 2013, SS-1, SS-2</span>
     </div>
   </div>
 </header>
 <nav class="toc" aria-label="Sections"><div class="wrap">
-  <a href="#understood">What I understood</a><a href="#picker">Agenda picker</a><a href="#meetings">Meetings</a><a href="#template">Agenda template</a><a href="#flow">Meeting flow</a><a href="#ideas">Ideas</a><a href="#words">Words</a><a href="#questions">Questions</a>
+  <a href="#understood">What I understood</a><a href="#picker">Agenda picker</a><a href="#create">Create a meeting</a><a href="#circulation">Resolution by circulation</a><a href="#letterhead">Letterhead</a><a href="#meetings">Meetings</a><a href="#template">Agenda template</a><a href="#flow">Meeting flow</a><a href="#ideas">Ideas</a><a href="#words">Words</a><a href="#decisions">Decisions</a><a href="#questions">Questions</a>
 </div></nav>
 
 <main><div class="wrap">
@@ -208,7 +264,12 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
     <div class="u-row"><b>Meetings</b><span>Types include the first board meeting, quarterly board meetings, the annual accounts meeting, the AGM, the EGM and special meetings. Section 3 gives the full list.</span></div>
     <div class="u-row"><b>The screen</b><span>The SBC team showed a Zoho pop-up with two boxes. The <strong>right box</strong> holds all the agenda items. The <strong>left box</strong> holds this meeting's agenda. An arrow between them moves items from right to left. Drag and drop does the same.</span></div>
     <div class="u-row"><b>When it opens</b><span>The user opens an existing meeting or creates a new meeting. The pop-up opens with all the items on the right.</span></div>
-    <div class="u-row"><b>Next step</b><span>The SBC team checks this page and sends changes. Then we build the feature in the prototype and in VCFO Suite.</span></div>
+    <div class="u-row"><b>Sub-points</b><span>An agenda point can have sub-points, one level deep. Example: 4, then 4.1 and 4.2. <span class="tag t-new">New</span></span></div>
+    <div class="u-row"><b>Draft</b><span>VCFO makes the agenda document from the agenda points. The minutes come next. Nobody types the draft. <span class="tag t-new">New</span></span></div>
+    <div class="u-row"><b>Where meetings live</b><span>Upcoming board meetings are <strong>non-statutory</strong> items. Non-statutory › Create task › Type: <strong>Meeting</strong> or <strong>Task</strong>. A meeting opens the agenda picker. A task has no agenda. <span class="tag t-new">New</span></span></div>
+    <div class="u-row"><b>The chain</b><span>A board meeting passes resolutions. Between meetings, the board can pass a <strong>resolution by circulation</strong>. The next board meeting notes and confirms it. <span class="tag t-new">New</span></span></div>
+    <div class="u-row"><b>Letterhead</b><span>Post-incorporation step 1 collects the company letterhead. VCFO puts every generated document on it. <span class="tag t-new">New</span></span></div>
+    <div class="u-row"><b>Next step</b><span>Farhath sends SBC's resolution document. We keep its wording and layout and build the feature in the prototype, then in VCFO Suite.</span></div>
   </div>
   <div class="note"><span class="dot"></span><span>I prepared the legal references from the Companies Act 2013 and the Secretarial Standards SS-1 (board meetings) and SS-2 (general meetings). SBC's company secretary must check them before we build.</span></div>
 </section>
@@ -222,11 +283,12 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
     <span><span class="tag t-note">Noting</span>The board takes note</span>
     <span><span class="tag t-form">PAS-3</span>Form that follows</span>
     <span><span class="kbd">Double-click</span> moves an item</span>
+    <span><span class="sub-b" style="cursor:default">+ Sub-point</span>Adds a sub-point under a point</span>
   </div>
   <div class="stage">
     <div class="dlg" role="dialog" aria-labelledby="dlg-title">
       <div class="dlg-h">
-        <div class="dlg-t"><h3 id="dlg-title">Agenda · <span id="dlg-type">Quarterly board meeting</span></h3><span>Northwind Technologies Pvt Ltd · Thu 12 Nov 2026 · 11:00 · Registered office</span></div>
+        <div class="dlg-t"><h3 id="dlg-title">Agenda · <span id="dlg-type">Quarterly board meeting</span></h3><span>Northwind Technologies Pvt Ltd · <span id="dlg-date">Thu 12 Nov 2026 · 11:00 · Registered office</span></span></div>
         <div class="ctl">
           <span class="tag ex">Example</span>
           <label for="mtype" class="code" style="color:var(--muted)">Meeting</label>
@@ -260,8 +322,93 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
   </div>
 </section>
 
+<section id="create">
+  <div class="sec-head"><div class="kicker">3 · Non-statutory</div><h2>Create a meeting</h2>
+    <p>Upcoming meetings are non-statutory items. Compliances › Obligations › Non-statutory › New task. The type decides the form.</p></div>
+  <div class="two">
+    <div class="card"><div class="dlg-h"><div class="dlg-t"><h3>New task</h3><span>Northwind Technologies Pvt Ltd</span></div><span class="tag ex">Example</span></div>
+      <div class="form">
+        <div class="field"><span class="lbl">Type</span><div class="seg" role="group" aria-label="Type"><button type="button" id="t-task" aria-pressed="false">Task</button><button type="button" id="t-meet" aria-pressed="true">Meeting</button></div></div>
+        <div id="f-meet" class="form" style="padding:0">
+          <div class="field"><label for="m-kind">Meeting</label><select id="m-kind"></select></div>
+          <div class="row2"><div class="field"><label for="m-date">Date</label><input type="date" id="m-date" value="2026-11-12"></div><div class="field"><label for="m-time">Time</label><input type="time" id="m-time" value="11:00"></div></div>
+          <div class="field"><label for="m-place">Place</label><select id="m-place"><option>Registered office</option><option>Video conference</option><option>Registered office and video conference</option></select></div>
+          <div class="guard" id="m-guard"></div>
+          <div class="ctl"><button class="btn pri" type="button" id="m-go">Build agenda</button></div>
+        </div>
+        <div id="f-task" class="form" style="padding:0" hidden>
+          <div class="field"><label for="k-title">Title</label><input type="text" id="k-title" value="Collect signed board minutes"></div>
+          <div class="row2"><div class="field"><label for="k-start">Start</label><input type="date" id="k-start" value="2026-11-02"></div><div class="field"><label for="k-end">End</label><input type="date" id="k-end" value="2026-11-06"></div></div>
+          <div class="row2"><div class="field"><label for="k-urg">Urgency</label><select id="k-urg"><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select></div><div class="field"><label for="k-vis">Visible to</label><select id="k-vis"><option>Firm</option><option>Client</option><option selected>Both</option></select></div></div>
+          <div class="ctl"><button class="btn pri" type="button" id="k-go">Create task</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>The form shows</th><th>After saving</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Meeting</td><td>Meeting type, date, time, place and the 120-day check</td><td>The agenda picker opens. The meeting shows in Non-statutory and in the Calendar.</td></tr>
+        <tr><td class="k">Task</td><td>Title, start, end, urgency and who sees it (no agenda)</td><td>The task shows in Non-statutory. Nothing else changes.</td></tr>
+        <tr><td class="k">120-day check</td><td>The last board meeting date and the last allowed date for the next one</td><td>A date after that limit shows in red (Sec 173(1)).</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="circulation">
+  <div class="sec-head"><div class="kicker">4 · Between meetings</div><h2>Resolution by circulation</h2>
+    <p>The board can approve a resolution in writing without a meeting (Sec 175). VCFO makes the document on the letterhead. The next board meeting notes and confirms it, with its description and documents.</p></div>
+  <div class="card chain">
+    <div class="step"><span class="n">01</span><b>Draft</b><span>Enter the date and the description. Select the directors.</span></div>
+    <div class="step"><span class="n">02</span><b>Document</b><span>VCFO puts the resolution on the letterhead with each DIN. Edit the text if necessary.</span></div>
+    <div class="step"><span class="n">03</span><b>Approval</b><span>The directors sign. Upload the signed copy.</span></div>
+    <div class="step"><span class="n">04</span><b>Next meeting</b><span>VCFO adds it to the next board meeting's agenda as a sub-point of R1.</span></div>
+  </div>
+  <div class="two">
+    <div class="card"><div class="dlg-h"><div class="dlg-t"><h3>Add resolution</h3><span>Northwind Technologies Pvt Ltd</span></div><span class="tag ex">Example</span></div>
+      <div class="form">
+        <div class="row2"><div class="field"><label for="c-date">Date</label><input type="date" id="c-date" value="2026-11-03"></div><div class="field"><label for="c-title">Title</label><input type="text" id="c-title" value="Opening of a current account"></div></div>
+        <div class="field"><label for="c-desc">Description</label><textarea id="c-desc">the Company opens a current account with HDFC Bank Limited, Banjara Hills branch, Hyderabad, and that the directors selected below operate the account jointly</textarea></div>
+        <div class="field"><span class="lbl">Directors</span><div class="dirs" id="c-dirs"></div></div>
+        <div class="field"><span class="lbl">Documents</span><div class="files" id="c-files"></div><label class="btn" for="c-up" style="justify-self:start">Attach files</label><input type="file" id="c-up" multiple hidden></div>
+        <div class="ctl"><button class="btn pri" type="button" id="c-add">Add resolution</button><button class="btn" type="button" id="c-reset">Reset the text</button></div>
+      </div>
+    </div>
+    <div class="paper" aria-label="Resolution document preview">
+      <div class="lh-head"><div class="lh-logo" aria-hidden="true">N</div><div><b>NORTHWIND TECHNOLOGIES PRIVATE LIMITED</b><span>CIN U00000TG2026PTC000000 · Plot 12, Hitec City, Hyderabad 500081</span></div></div>
+      <span class="lh-tag">Letterhead from Post-incorporation step 1 · example</span>
+      <h4>RESOLUTION PASSED BY CIRCULATION</h4>
+      <p class="lh-sub">by the Board of Directors under Section 175 of the Companies Act, 2013 · <span id="p-date"></span></p>
+      <p class="p-title" id="p-title"></p>
+      <div id="c-body" contenteditable="true" spellcheck="true" aria-label="Resolution text, editable"></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Director</th><th>DIN</th><th>Assent</th><th>Signature</th></tr></thead><tbody id="p-dirs"></tbody></table></div>
+      <p class="foot">Certified true copy · For Northwind Technologies Private Limited · <span id="p-sign"></span></p>
+    </div>
+  </div>
+  <div class="tw rlist"><table>
+    <thead><tr><th>Date</th><th>Resolution</th><th>Directors</th><th>Documents</th><th>Status</th><th></th></tr></thead>
+    <tbody id="c-list"></tbody>
+  </table></div>
+  <div class="note"><span class="dot"></span><span>The final wording and layout come from SBC's resolution document. VCFO keeps them and fills the date, the description, the directors and their DINs.</span></div>
+</section>
+
+<section id="letterhead">
+  <div class="sec-head"><div class="kicker">5 · Post-incorporation</div><h2>Company letterhead</h2>
+    <p>The first post-incorporation step collects the letterhead. Every document that VCFO makes for the company uses it.</p></div>
+  <div class="tw"><table>
+    <thead><tr><th>Item</th><th>Rule</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Step</td><td>Post-incorporation › Step 1 · Submit the company letterhead</td></tr>
+      <tr><td class="k">Who</td><td>The client uploads it. The lead checks it.</td></tr>
+      <tr><td class="k">File</td><td>Word file (.docx), so that the documents stay editable. VCFO shows a PDF copy.</td></tr>
+      <tr><td class="k">Used in</td><td>Resolution by circulation · notice · agenda · minutes · certified true copies</td></tr>
+      <tr><td class="k">Until it is uploaded</td><td>Documents use a plain page with the company name and CIN, marked "No letterhead yet".</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
 <section id="meetings">
-  <div class="sec-head"><div class="kicker">3 · List</div><h2>Meetings that VCFO tracks</h2>
+  <div class="sec-head"><div class="kicker">6 · List</div><h2>Meetings that VCFO tracks</h2>
     <p>All the meetings that a company can hold after incorporation. <span class="tag t-core">Core</span> rows apply to most SBC clients. <span class="tag t-ask">Ask</span> rows apply only to larger or listed companies. The SBC team must confirm them.</p></div>
   <div class="tw"><table>
     <thead><tr><th>Meeting</th><th>Who meets</th><th>When</th><th>Law</th><th>Notice</th><th>Quorum</th><th>Applies to</th><th>After the meeting</th><th>VCFO</th></tr></thead>
@@ -270,7 +417,7 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
 </section>
 
 <section id="template">
-  <div class="sec-head"><div class="kicker">4 · Template</div><h2>The agenda template</h2>
+  <div class="sec-head"><div class="kicker">7 · Template</div><h2>The agenda template</h2>
     <p>The library holds every agenda item once. Each meeting type marks some items as common and some as suggested. The same data drives the picker above.</p></div>
   <div class="tw"><table>
     <thead><tr><th>Code</th><th>Agenda item</th><th>Section</th><th>Law</th><th>Result</th><th>Form</th><th>Suggested for</th></tr></thead>
@@ -279,7 +426,7 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
 </section>
 
 <section id="flow">
-  <div class="sec-head"><div class="kicker">5 · Sequence</div><h2>One meeting from start to end</h2>
+  <div class="sec-head"><div class="kicker">8 · Sequence</div><h2>One meeting from start to end</h2>
     <p>The agenda picker is step 2. The other steps show where the agenda goes next.</p></div>
   <div class="card flow">
     <div class="step"><span class="n">01</span><b>Plan</b><span>Create the meeting. Set the type, date and place.</span><span class="tag t-note">Max 120 days gap</span></div>
@@ -293,7 +440,7 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
 </section>
 
 <section id="ideas">
-  <div class="sec-head"><div class="kicker">6 · Proposals</div><h2>Ideas for the SBC team</h2>
+  <div class="sec-head"><div class="kicker">9 · Proposals</div><h2>Ideas for the SBC team</h2>
     <p>These ideas add to the two-box picker. Tell us which ones to keep.</p></div>
   <div class="tw"><table>
     <thead><tr><th>Idea</th><th>What it does</th><th>Why it helps</th></tr></thead>
@@ -313,7 +460,7 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
 </section>
 
 <section id="words">
-  <div class="sec-head"><div class="kicker">7 · Glossary</div><h2>Words on this page</h2></div>
+  <div class="sec-head"><div class="kicker">10 · Glossary</div><h2>Words on this page</h2></div>
   <div class="tw"><table>
     <thead><tr><th>Word</th><th>Meaning</th></tr></thead>
     <tbody>
@@ -332,8 +479,25 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
   </table></div>
 </section>
 
+<section id="decisions">
+  <div class="sec-head"><div class="kicker">11 · Decided</div><h2>Decisions</h2>
+    <p>Farhath accepted these proposals on 30 Oct 2026. The SBC team can still change them.</p></div>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Question</th><th>Decision</th></tr></thead>
+    <tbody>
+      <tr><td class="code">D1</td><td class="k">How deep can sub-agendas go?</td><td>One level only: 4.1, not 4.1.1.</td></tr>
+      <tr><td class="code">D2</td><td class="k">Who approves a resolution by circulation in VCFO?</td><td>The manager approves it. The client sees it.</td></tr>
+      <tr><td class="code">D3</td><td class="k">How do the directors give approval?</td><td>Phase 1: upload the signed copy.</td></tr>
+      <tr><td class="code">D4</td><td class="k">How many directors does a resolution show?</td><td>Select every director who approves it. VCFO lists each one with the DIN.</td></tr>
+      <tr><td class="code">D5</td><td class="k">In what format is the letterhead?</td><td>A Word file (.docx).</td></tr>
+      <tr><td class="code">D6</td><td class="k">Which draft does VCFO make from the agenda?</td><td>The agenda document first. The minutes next.</td></tr>
+      <tr><td class="code">D7</td><td class="k">Does a meeting count in the 120-day board meeting gap?</td><td>Yes. VCFO warns when the gap nears 120 days.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
 <section id="questions">
-  <div class="sec-head"><div class="kicker">8 · For the SBC team</div><h2>Questions before we build</h2>
+  <div class="sec-head"><div class="kicker">12 · For the SBC team</div><h2>Questions before we build</h2>
     <p>Each answer changes what we build. My proposal is in the last column.</p></div>
   <div class="tw"><table>
     <thead><tr><th>#</th><th>Question</th><th>Why we ask</th><th>My proposal</th></tr></thead>
@@ -359,7 +523,7 @@ select:focus-visible,input:focus-visible,button:focus-visible,.row:focus-visible
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const G={S:'Common (board)',M:'Common (members)',D:'Disclosures',F:'First meeting',Q:'Quarterly review',A:'Annual accounts',C:'Shares and capital',K:'Directors and KMP',B:'Banking and finance',T:'Contracts and operations',G:'General meeting',X:'Your own items'};
+const G={S:'Common (board)',M:'Common (members)',D:'Disclosures',F:'First meeting',Q:'Quarterly review',A:'Annual accounts',C:'Shares and capital',K:'Directors and KMP',B:'Banking and finance',T:'Contracts and operations',G:'General meeting',R:'Circular resolutions',X:'Your own items'};
 // k: R = resolution, N = noting
 const ITEMS=[
  ['S1','S','Elect the chairperson of the meeting','SS-1','R'],
@@ -442,18 +606,22 @@ const ITEMS=[
  ['G7','G','Confirm an additional director as a director','Sec 152','R','DIR-12'],
  ['G8','G','Approve borrowing over the Sec 180 limit (special resolution)','Sec 180(1)(c)','R','MGT-14'],
  ['G9','G','Approve the annual return','Sec 92','N','MGT-7'],
+ ['R1','R','Note and confirm the resolutions passed by circulation','Sec 175(2)','R'],
 ].map(([id,g,t,ref,k,form])=>({id,g,t,ref,k,form}));
 const BY=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 const BOARD_STD=['S1','S2','S3','S4','S5','S7','S8'];
 const TYPES=[
  {id:'first',name:'First board meeting',std:['S1','S2','S3','S7','S8'],sug:['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','F13','D1','D2','Q7']},
- {id:'q',name:'Quarterly board meeting',std:BOARD_STD,sug:['Q1','Q2','Q3','Q4','Q5','Q6','Q7','D1','D2']},
- {id:'annual',name:'Annual accounts board meeting',std:BOARD_STD,sug:['A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','A11','A12','Q7']},
- {id:'special',name:'Special board meeting',std:['S1','S2','S3','S7','S8'],sug:['C1','C2','K1','K2','K3','B1','B2','B3','T1','T3','T6']},
+ {id:'q',name:'Quarterly board meeting',std:BOARD_STD,sug:['R1','Q1','Q2','Q3','Q4','Q5','Q6','Q7','D1','D2']},
+ {id:'annual',name:'Annual accounts board meeting',std:BOARD_STD,sug:['R1','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','A11','A12','Q7']},
+ {id:'special',name:'Special board meeting',std:['S1','S2','S3','S7','S8'],sug:['C1','C2','K1','K2','K3','B1','B2','B3','T1','T3','T6','R1']},
  {id:'agm',name:'Annual general meeting',std:['M1','M2','M3','M4'],sug:['G1','G2','G3','G4','G7','G9']},
  {id:'egm',name:'Extraordinary general meeting',std:['M1','M2','M4'],sug:['G5','G6','G7','G8']},
 ];
-const START={q:['Q1','Q2','Q7']};
+const START={q:['R1','Q1','Q2','Q7']};
+// Sub-points by parent item, one level (D1). R1 starts with one resolution that circulated before this meeting.
+const subs={R1:[{t:'Resolution by circulation of 21 Oct 2026: lease of the office at Hitec City',files:['Resolution-21-Oct-2026.docx','Signed-copy.pdf','Lease-deed.pdf'],circ:true}],Q2:[{t:'GST returns for September and October'},{t:'TDS return for Q2'}]};
+let editingSub=null;
 
 const MEETINGS=[
  ['First board meeting','Board','Once, within 30 days of incorporation','Sec 173(1)','7 days, in writing','⅓ of directors or 2, whichever is more','All companies','Minutes in 30 days. Share certificates in 2 months. INC-20A in 180 days.','core'],
@@ -518,11 +686,19 @@ function rowHTML(i,side,n){
   const lk=side==='L'&&locked(i.id), s=(side==='L'?selL:selR).has(i.id);
   const meta=`<span class="ref">${esc(i.ref)}</span><span class="tag ${i.k==='R'?'t-res':'t-note'}">${i.k==='R'?'Resolution':'Noting'}</span>${i.form?`<span class="tag t-form">${i.form}</span>`:''}`;
   const lead=side==='L'?`<span style="display:flex;gap:6px;align-items:center"><span class="num">${n}</span>${lk?'':`<span class="grip">${SVG.grip}</span>`}</span>`:`<span class="box" aria-hidden="true"></span>`;
-  const end=side==='L'?(lk?`<span class="lock" title="Common item">${SVG.lock}</span>`:`<button class="icon-b" type="button" data-rm="${i.id}" aria-label="Remove ${esc(i.t)}">${SVG.x}</button>`):`<button class="icon-b" type="button" data-add="${i.id}" aria-label="Add ${esc(i.t)}">${SVG.plus}</button>`;
+  const end=side==='L'?(lk?`<span class="lock" title="Common item">${SVG.lock}</span>`:`<button class="sub-b" type="button" data-sub="${i.id}" aria-label="Add a sub-point to ${esc(i.t)}">+ Sub-point</button><button class="icon-b" type="button" data-rm="${i.id}" aria-label="Remove ${esc(i.t)}">${SVG.x}</button>`):`<button class="icon-b" type="button" data-add="${i.id}" aria-label="Add ${esc(i.t)}">${SVG.plus}</button>`;
   return `<div class="row${s?' sel':''}${lk?' locked':''}" role="option" aria-selected="${s}" tabindex="0" data-id="${i.id}" data-side="${side}" draggable="${!lk}">${lead}<span class="tt"><b>${esc(i.t)}</b><span class="meta">${meta}</span></span><span class="end">${end}</span></div>`;
 }
+function subHTML(id,n){
+  const list=subs[id]||[];
+  let h=list.map((x,k)=>`<div class="subrow"><span class="num">${n}.${k+1}</span><span class="tt"><b>${esc(x.t)}</b>${x.circ||x.files?`<span class="meta">${x.circ?'<span class="tag t-circ">By circulation</span>':''}${(x.files||[]).map(f=>`<span class="tag t-file">${esc(f)}</span>`).join('')}</span>`:''}</span><button class="icon-b" type="button" data-rmsub="${id}:${k}" aria-label="Remove sub-point ${n}.${k+1}">${SVG.x}</button></div>`).join('');
+  if(editingSub===id)h+=`<div class="subrow edit"><span class="num">${n}.${list.length+1}</span><input type="text" id="subin" placeholder="Sub-point" aria-label="New sub-point"><button class="btn" type="button" data-savesub="${id}">Add</button></div>`;
+  return h;
+}
+function saveSub(id){const f=$('#subin');const v=f&&f.value.trim();if(v)(subs[id]=subs[id]||[]).push({t:v});editingSub=null;render()}
 function render(){
-  $('#left').innerHTML=left.length?left.map((id,n)=>rowHTML(BY[id],'L',n+1)).join(''):'<div class="empty">No items yet</div>';
+  $('#left').innerHTML=left.length?left.map((id,n)=>rowHTML(BY[id],'L',n+1)+subHTML(id,n+1)).join(''):'<div class="empty">No items yet</div>';
+  if(editingSub){const f=$('#subin');f&&f.focus()}
   $('#lcount').textContent=left.length;
   const q=query.trim().toLowerCase();
   const other=type.std.includes('S1')?'M':'S';
@@ -547,7 +723,8 @@ function render(){
   $('#allSug').disabled=!sug.length; $('#clear').disabled=!left.some(id=>!locked(id));
   const chosen=left.map(id=>BY[id]); const res=chosen.filter(i=>i.k==='R').length;
   const forms=[...new Set(chosen.map(i=>i.form).filter(Boolean))];
-  $('#creates').innerHTML=`<strong>${left.length} items</strong><span>·</span><span>${res} resolutions</span><span>·</span><span>Forms:</span>${forms.length?forms.map(f=>`<span class="tag t-form">${f}</span>`).join(''):'<span>none</span>'}`;
+  const nsub=left.reduce((a,id)=>a+(subs[id]||[]).length,0);
+  $('#creates').innerHTML=`<strong>${left.length} items</strong><span>·</span><span>${nsub} sub-points</span><span>·</span><span>${res} resolutions</span><span>·</span><span>Forms:</span>${forms.length?forms.map(f=>`<span class="tag t-form">${f}</span>`).join(''):'<span>none</span>'}`;
 }
 function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>el.hidden=true,2400)}
 
@@ -568,6 +745,11 @@ function toggle(row){const id=row.dataset.id,side=row.dataset.side;if(side==='L'
 ['#left','#right'].forEach(sid=>{
   const el=$(sid);
   el.addEventListener('click',e=>{
+    const sb=e.target.closest('[data-sub]'),rs=e.target.closest('[data-rmsub]'),sv=e.target.closest('[data-savesub]');
+    if(sb){editingSub=sb.dataset.sub;render();return}
+    if(rs){const [pid,k]=rs.dataset.rmsub.split(':');subs[pid].splice(+k,1);render();return}
+    if(sv){saveSub(sv.dataset.savesub);return}
+    if(e.target.closest('.subrow'))return;
     const a=e.target.closest('[data-add]'),r=e.target.closest('[data-rm]');
     if(a){add([a.dataset.add]);return} if(r){remove([r.dataset.rm]);return}
     const row=e.target.closest('.row'); if(row)toggle(row);
@@ -593,5 +775,63 @@ $('#right').addEventListener('dragover',e=>{if(!drag||drag.side!=='L')return;e.p
 $('#right').addEventListener('dragleave',e=>{if(!$('#right').contains(e.relatedTarget))$('#right').classList.remove('drop')});
 $('#right').addEventListener('drop',e=>{if(!drag||drag.side!=='L')return;e.preventDefault();$('#right').classList.remove('drop');remove(selL.has(drag.id)?[...selL]:[drag.id])});
 
+$('#left').addEventListener('keydown',e=>{if(e.target.id!=='subin')return;if(e.key==='Enter'){e.preventDefault();saveSub(editingSub)}if(e.key==='Escape'){editingSub=null;render()}});
+
+/* ---------- create a meeting ---------- */
+const LAST_BM=new Date(2026,7,18), LIMIT=new Date(LAST_BM.getTime()+120*864e5);
+const fmtD=d=>d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+$('#m-kind').innerHTML=TYPES.map(t=>`<option value="${t.id}"${t.id==='q'?' selected':''}>${t.name}</option>`).join('');
+function guard(){
+  const v=$('#m-date').value, kind=$('#m-kind').value, g=$('#m-guard');
+  if(kind==='agm'||kind==='egm'){g.className='guard';g.textContent='General meetings need 21 clear days of notice (Sec 101).';return}
+  const d=v?new Date(v+'T00:00'):null, late=d&&d>LIMIT;
+  g.className='guard'+(late?' late':'');
+  g.textContent=`Last board meeting: ${fmtD(LAST_BM)}. Hold the next one by ${fmtD(LIMIT)}.`+(late?' This date is over the 120-day gap.':'');
+}
+['#m-date','#m-kind'].forEach(id=>$(id).addEventListener('change',guard));guard();
+function setType(meet){$('#t-meet').setAttribute('aria-pressed',meet);$('#t-task').setAttribute('aria-pressed',!meet);$('#f-meet').hidden=!meet;$('#f-task').hidden=meet}
+$('#t-meet').addEventListener('click',()=>setType(true));$('#t-task').addEventListener('click',()=>setType(false));
+$('#m-go').addEventListener('click',()=>{const t=TYPES.find(x=>x.id===$('#m-kind').value);sel.value=t.id;load(t);const d=$('#m-date').value?new Date($('#m-date').value+'T00:00'):null;$('#dlg-date').textContent=d?`${fmtD(d)} · ${$('#m-time').value} · ${$('#m-place').value}`:'';document.getElementById('picker').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
+$('#k-go').addEventListener('click',()=>toast('Example only. The task form is the existing New task form.'));
+
+/* ---------- resolution by circulation ---------- */
+const DIRS=[{n:'Rahul Verma',din:'0000 1101'},{n:'Sana Iqbal',din:'0000 1102'},{n:'Arvind Menon',din:'0000 1103'}];
+let cFiles=['Bank-KYC.pdf'], bodyEdited=false, rlist=[];
+$('#c-dirs').innerHTML=DIRS.map((d,i)=>`<label class="dir"><input type="checkbox" id="dir${i}" value="${i}"${i<2?' checked':''}><span>${esc(d.n)}</span><span class="din">DIN ${d.din}</span></label>`).join('');
+const chosen=()=>[...document.querySelectorAll('#c-dirs input:checked')].map(i=>DIRS[+i.value]);
+const cDate=()=>{const v=$('#c-date').value;return v?new Date(v+'T00:00'):null};
+function genBody(){return `RESOLVED THAT ${$('#c-desc').value.trim()||'…'}.\n\nRESOLVED FURTHER THAT any director of the Company is authorised to sign the documents and to do all acts necessary to give effect to this resolution.`}
+function paint(){
+  const d=cDate(), ds=chosen();
+  $('#p-date').textContent=d?d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'date';
+  $('#p-title').textContent=$('#c-title').value||'Title';
+  if(!bodyEdited)$('#c-body').textContent=genBody();
+  $('#p-dirs').innerHTML=ds.length?ds.map(x=>`<tr><td>${esc(x.n)}</td><td style="font-family:var(--mono)">${x.din}</td><td>For</td><td></td></tr>`).join(''):'<tr><td colspan="4" style="color:var(--p-mute)">Select the directors</td></tr>';
+  $('#p-sign').textContent=ds[0]?`${ds[0].n}, Director, DIN ${ds[0].din}`:'Director';
+  $('#c-files').innerHTML=cFiles.length?cFiles.map((f,k)=>`<span class="tag t-file">${esc(f)} <button class="icon-b" style="width:18px;height:18px" type="button" data-rf="${k}" aria-label="Remove ${esc(f)}">${SVG.x}</button></span>`).join(''):'<span style="color:var(--muted);font-size:12.5px">No files</span>';
+}
+['#c-date','#c-title','#c-desc'].forEach(id=>$(id).addEventListener('input',paint));
+$('#c-dirs').addEventListener('change',paint);
+$('#c-body').addEventListener('input',()=>{bodyEdited=true});
+$('#c-reset').addEventListener('click',()=>{bodyEdited=false;paint()});
+$('#c-up').addEventListener('change',e=>{cFiles.push(...[...e.target.files].map(f=>f.name));e.target.value='';paint()});
+$('#c-files').addEventListener('click',e=>{const b=e.target.closest('[data-rf]');if(b){cFiles.splice(+b.dataset.rf,1);paint()}});
+function paintList(){
+  $('#c-list').innerHTML=rlist.length?rlist.map((r,k)=>`<tr><td style="white-space:nowrap">${r.d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</td><td class="k">${esc(r.title)}</td><td>${r.dirs.map(x=>esc(x.n)).join(', ')}</td><td>${r.files.map(f=>`<span class="tag t-file">${esc(f)}</span>`).join(' ')||'—'}</td><td><span class="tag ${r.sent?'t-circ':'t-note'}">${r.sent?'In next agenda':'Waiting'}</span></td><td>${r.sent?'':`<button class="btn" type="button" data-pass="${k}">Pass to next board meeting</button>`}</td></tr>`).join(''):'<tr><td colspan="6" style="color:var(--muted)">No resolutions yet</td></tr>';
+}
+$('#c-add').addEventListener('click',()=>{
+  const d=cDate(), ds=chosen();
+  if(!d||!ds.length){toast('Enter the date and select at least one director.');return}
+  rlist.push({d,title:$('#c-title').value.trim()||'Resolution',dirs:ds,files:[...cFiles],sent:false});paintList();toast('Resolution added. Example only.');
+});
+$('#c-list').addEventListener('click',e=>{
+  const b=e.target.closest('[data-pass]');if(!b)return;const r=rlist[+b.dataset.pass];
+  (subs.R1=subs.R1||[]).push({t:`Resolution by circulation of ${r.d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}: ${r.title.toLowerCase()}`,files:[`Resolution-${r.d.getDate()}-${r.d.toLocaleDateString('en-GB',{month:'short'})}-${r.d.getFullYear()}.docx`,...r.files],circ:true});
+  r.sent=true;paintList();
+  if(type.std.includes('M1')){const t=TYPES[1];sel.value=t.id;load(t)}
+  if(!left.includes('R1'))add(['R1']);else render();
+  toast('Added to the next board meeting agenda as a sub-point of R1.');
+});
+paint();paintList();
 load(type);
 </script>
