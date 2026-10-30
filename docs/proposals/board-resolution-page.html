@@ -176,6 +176,36 @@ td .sub{display:block;color:var(--muted);font-size:12px}
 .warn-chip{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:500;color:var(--warn);background:var(--warn-soft);border-radius:var(--r-mark);padding:2px 8px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 14px;border-radius:var(--r);font-size:13px;box-shadow:var(--shadow-float);z-index:20;max-width:calc(100vw - 32px)}
 .t-done{background:var(--ok-soft);color:var(--ok)}
+.why{display:grid;gap:0}
+.why .ch p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.treebox{overflow-x:auto;padding:12px 16px 4px}
+.treebox svg{display:block;min-width:760px;width:100%;height:auto}
+.tn rect{fill:var(--surface);stroke:var(--line-2);stroke-width:1.5}
+.tn text{fill:var(--muted);font:500 13px var(--sans)}
+.tn.dash rect{stroke-dasharray:5 4;fill:var(--raised)}
+.tn.root rect{fill:var(--ink);stroke:var(--ink)}
+.tn.root text{fill:var(--surface)}
+.tn.on rect{stroke:var(--primary);stroke-width:2;fill:var(--accent-soft)}
+.tn.on text{fill:var(--primary)}
+.tn.end.on rect{fill:var(--primary)}
+.tn.end.on text{fill:var(--on-primary)}
+.tn rect,.tn text,.te{transition:fill .25s,stroke .25s,opacity .25s}
+.te{fill:none;stroke:var(--line-2);stroke-width:1.5}
+.te.on{stroke:var(--primary);stroke-width:2.5}
+.tlbl{font:500 10.5px var(--sans);letter-spacing:.06em;fill:var(--faint)}
+.tlbl.on{fill:var(--primary)}
+.badge circle{fill:var(--primary)}
+.badge text{fill:var(--on-primary);font:700 11px var(--sans)}
+.chosen rect{fill:var(--primary)}
+.chosen text{fill:var(--on-primary);font:700 10px var(--sans);letter-spacing:.06em}
+.tree-dim .tn.on rect{fill:var(--surface);stroke:var(--line-2);stroke-width:1.5}
+.tree-dim .tn.on text{fill:var(--muted)}
+.tree-dim .te.on{stroke:var(--line-2);stroke-width:1.5}
+.tree-dim .badge,.tree-dim .chosen{opacity:0}
+.ev td:first-child{width:44px}
+.ev .ans{font-weight:500;color:var(--ink)}
+.result{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--line-soft);font-size:13px}
+@media (prefers-reduced-motion:reduce){.tn rect,.tn text,.te{transition:none}}
 @media (max-width:900px){.cols{grid-template-columns:1fr}.track{grid-template-columns:repeat(3,minmax(0,1fr))}.tk:nth-child(3){border-right:0}.tk:nth-child(-n+3){border-bottom:1px solid var(--line-soft)}}
 @media (max-width:480px){.track{grid-template-columns:repeat(2,minmax(0,1fr))}.tk{border-right:0!important;border-bottom:1px solid var(--line-soft)}.sec{grid-template-columns:1fr;gap:2px}.sec .ml{border-top:0}}
 </style>
@@ -189,7 +219,7 @@ td .sub{display:block;color:var(--muted);font-size:12px}
     <div class="status">
       <span class="chip dark"><span class="dot" style="background:var(--reg-pay)"></span>Version 1 · 30 Oct 2026</span>
       <span class="chip dark"><span class="dot" style="background:var(--reg-mca)"></span>Not built yet</span>
-      <span class="chip dark"><span class="dot" style="background:var(--reg-gst)"></span>9 fixes · 12 ideas · 4 decisions</span>
+      <span class="chip dark"><span class="dot" style="background:var(--reg-gst)"></span>9 fixes · 13 ideas · 5 decisions</span>
     </div>
   </div>
 </header>
@@ -288,7 +318,6 @@ td .sub{display:block;color:var(--muted);font-size:12px}
 
         <div class="card staff-view" hidden>
           <div class="ch"><h4>Template</h4><button class="btn" type="button" id="chg">Change template</button></div>
-          <div class="chain" aria-label="How the template was chosen"><span>Ownership</span><em>›</em><span>Subsidiary</span><em>›</em><span>Foreign subsidiary</span><em>›</em><span class="on">NOC for a foreign subsidiary</span></div>
           <div class="chain" style="padding-top:0"><span class="tag t-file" style="font-family:var(--mono)">noc-foreign-parent.docx</span><span class="warn-chip" id="stale" hidden>Answers changed after release</span><button class="btn" type="button" id="regen">Make the draft again</button><button class="btn" type="button" id="cmp">Compare versions</button></div>
         </div>
         <div class="card staff-view" hidden id="recv">
@@ -297,6 +326,21 @@ td .sub{display:block;color:var(--muted);font-size:12px}
           <div class="foot"><button class="btn bad" type="button" id="sendback">Send back</button><button class="btn pri" type="button" id="accept">Accept</button></div>
         </div>
       </div>
+    </div>
+
+    <div class="card why" id="why">
+      <div class="ch"><div><h4>Why VCFO chose this template</h4><p>VCFO checked every option against 3 of your answers.</p></div>
+        <div class="ctl"><button class="btn" type="button" id="replay">Replay</button><button class="btn staff-view" type="button" id="chg2" hidden>Change template</button></div></div>
+      <div class="treebox"><svg id="tree" viewBox="0 0 1200 500" role="img" aria-label="Decision tree. Ownership: Subsidiary. Subsidiary type: Foreign subsidiary. Result: NOC for a foreign subsidiary."></svg></div>
+      <div class="tw ev" style="margin:4px 16px 0;border-radius:var(--r)"><table>
+        <thead><tr><th>#</th><th>VCFO asked</th><th>The client answered</th><th>So VCFO chose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag t-res">1</span></td><td>Pre-1 · Who will own the new company?<span class="sub">Ownership</span></td><td class="ans">Northwind Inc., a company</td><td>Subsidiary, not standalone</td></tr>
+          <tr><td><span class="tag t-res">2</span></td><td>Pre-1 · Where is the parent company registered?<span class="sub">Subsidiary type</span></td><td class="ans">United States</td><td>Foreign subsidiary, not Indian</td></tr>
+          <tr><td><span class="tag t-res">3</span></td><td>Step 1 · Proposed name<span class="sub">Name check</span></td><td class="ans">Northwind Technologies India Pvt Ltd, which uses the parent's name</td><td>NOC for a foreign subsidiary</td></tr>
+        </tbody>
+      </table></div>
+      <div class="result"><span>This choice adds</span><span class="tag t-res">2 documents</span><span class="tag t-note">Board resolution · NOC</span><span>and</span><span class="tag t-res">2 steps</span><span class="tag t-note">Notarise · Apostille</span></div>
     </div>
   </div>
   <div class="note"><span class="dot"></span><span>The highlighted values come from the client's answers. In the product, a click opens the question that holds the value. Here it shows the question's name.</span></div>
@@ -310,7 +354,7 @@ td .sub{display:block;color:var(--muted);font-size:12px}
       <tr><td class="code">P1</td><td>The page does not say that the parent's board passes the resolution.</td><td>"Passed by: Board of Northwind Inc. (the parent)" under the title.</td><td><span class="tag t-done">Decided</span></td></tr>
       <tr><td class="code">P2</td><td>The track says Released 28 Sep. Files says Released 26 Sep.</td><td>All dates come from one record. Drafted 26 Sep, released 28 Sep.</td><td><span class="tag t-done">Decided</span></td></tr>
       <tr><td class="code">P3</td><td>"Passed on 24 Sep" and "Date: 30 Sep" have no labels.</td><td>Two labels on the document: Meeting · 24 Sep and Certified · 30 Sep.</td><td><span class="tag t-done">Decided</span></td></tr>
-      <tr><td class="code">P4</td><td>The client sees the full decision tree, with amber "not chosen" branches, on a page marked Done.</td><td>The client sees one line: the template name. Staff see the path and can change it.</td><td><span class="tag t-done">Decided</span></td></tr>
+      <tr><td class="code">P4</td><td>The decision tree shows amber "Not chosen yet" branches on a page marked Done, and it does not say which answers led to the choice.</td><td>Keep the full tree for everyone. The chosen path lights up. Each decision shows the client's answer. Other branches stay grey, never amber.</td><td><span class="tag t-done">Decided</span></td></tr>
       <tr><td class="code">P5</td><td>The client sees the internal file name.</td><td>The file name shows to staff only.</td><td><span class="tag t-done">Decided</span></td></tr>
       <tr><td class="code">P6</td><td>The page covers steps 2 and 3 but links to separate step pages.</td><td>One page. "Previous step" and "Next step" only.</td><td><span class="tag t-done">Decided</span></td></tr>
       <tr><td class="code">P7</td><td>The preview draws a signature and a seal.</td><td>The Draft tab shows the generated text. The Signed copy tab shows the uploaded PDF only.</td><td><span class="tag t-done">Decided</span></td></tr>
@@ -330,6 +374,7 @@ td .sub{display:block;color:var(--muted);font-size:12px}
       <tr><td class="code">U3</td><td class="k">"What you do" list</td><td>Five numbered steps. The current step has a blue fill. Done steps have a tick.</td></tr>
       <tr><td class="code">U4</td><td class="k">One main button for each state</td><td>Released: Download the Word files. Signed: Upload signed copy. Accepted: no button.</td></tr>
       <tr><td class="code">U5</td><td class="k">Margin labels on the legal text</td><td>Purpose · Decision · Who signs · Filing agent · Certifies.</td></tr>
+      <tr><td class="code">U7</td><td class="k">"Why VCFO chose this template"</td><td>The full tree with the chosen path lit, numbered decisions, the client's answer for each, and what the choice adds: 2 documents and 2 steps. A Replay button runs the path again.</td></tr>
       <tr><td class="code">U6</td><td class="k">Red only when late</td><td>Waiting on the client shows in teal. After the due date it shows "Overdue · 2 days" in red.</td></tr>
     </tbody>
   </table></div>
@@ -391,6 +436,7 @@ td .sub{display:block;color:var(--muted);font-size:12px}
       <tr><td class="code">D2</td><td class="k">Is the NOC separate from the board resolution?</td><td>Yes. Two files under one step.</td></tr>
       <tr><td class="code">D3</td><td class="k">Who certifies the true copy?</td><td>A director selected from the parent's director list.</td></tr>
       <tr><td class="code">D4</td><td class="k">Does an Indian parent follow the same steps?</td><td>Yes, without the notary and apostille steps.</td></tr>
+      <tr><td class="code">D5</td><td class="k">Does the client see how VCFO chose the template?</td><td>Yes. The full tree, with the chosen path and the answers behind it.</td></tr>
     </tbody>
   </table></div>
   <div class="note"><span class="dot"></span><span>Next: SBC sends changes, if any. Then we build the new page in the prototype, then in VCFO Suite, with the shared document part.</span></div>
@@ -444,5 +490,50 @@ $('#chg').addEventListener('click',()=>toast('Change template opens the list of 
 document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;toast({dl:'Downloads the two Word files. Example only.',up:'Opens the file picker. Example only.',open:'Opens the file. Example only.'}[a.dataset.act])});
 document.querySelectorAll('.fv').forEach(el=>{const go=()=>toast('Opens '+el.dataset.q+' to correct it. Example only.');el.addEventListener('click',go);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
 setTimeout(()=>{$('#stale').hidden=false},0);
+/* decision tree */
+const W=124,H=40;
+const N=[
+ {id:'own',x:590,y:40,t:['Ownership'],c:'root',w:170},
+ {id:'sa',x:230,y:135,t:['Standalone']},
+ {id:'sub',x:830,y:135,t:['Subsidiary'],on:1,badge:1},
+ {id:'nonoc',x:230,y:240,t:['No NOC']},
+ {id:'for',x:660,y:240,t:['Foreign subsidiary'],on:2,w:170,badge:2},
+ {id:'ind',x:990,y:240,t:['Indian subsidiary'],w:160},
+ {id:'nocf',x:660,y:350,t:['NOC for a','foreign subsidiary'],on:3,w:190,h:50,c:'end',badge:3},
+ {id:'nu',x:850,y:350,t:['Name use only']},
+ {id:'inv',x:990,y:350,t:['Investing']},
+ {id:'nc',x:1125,y:350,t:['Not chosen yet'],c:'dash'},
+ {id:'ni1',x:850,y:450,t:['NOC: Indian','(name use)'],h:50},
+ {id:'ni2',x:990,y:450,t:['NOC: Indian','(investing)'],h:50},
+ {id:'ni3',x:1125,y:450,t:['No NOC yet'],c:'dash'},
+];
+const E=[['own','sa'],['own','sub',1],['sa','nonoc'],['sub','for',2],['sub','ind'],['for','nocf',3],['ind','nu'],['ind','inv'],['ind','nc'],['nu','ni1'],['inv','ni2'],['nc','ni3']];
+const LB=[{x:830,y:178,t:'SUBSIDIARY TYPE',on:2},{x:990,y:283,t:"PARENT'S ROLE"},{x:660,y:192,t:''}];
+const byId=Object.fromEntries(N.map(n=>[n.id,n]));
+function svg(){
+  const nh=n=>n.h||H, nw=n=>n.w||W;
+  let h='';
+  E.forEach(([a,b,on])=>{const A=byId[a],B=byId[b];const y1=A.y+nh(A)/2,y2=B.y-nh(B)/2,my=(y1+y2)/2;h+=`<path class="te" data-on="${on||0}" d="M${A.x} ${y1} V${my} H${B.x} V${y2}"/>`});
+  LB.forEach(l=>{if(l.t)h+=`<text class="tlbl" data-on="${l.on||0}" x="${l.x}" y="${l.y}" text-anchor="middle">${l.t}</text>`});
+  N.forEach(n=>{const w=nw(n),hh=nh(n);h+=`<g class="tn ${n.c||''}" data-on="${n.on||0}"><rect x="${n.x-w/2}" y="${n.y-hh/2}" width="${w}" height="${hh}" rx="6"/>`+n.t.map((t,i)=>`<text x="${n.x}" y="${n.y+5+(i-(n.t.length-1)/2)*16}" text-anchor="middle">${t}</text>`).join('')+'</g>';
+    if(n.badge)h+=`<g class="badge" data-on="${n.on}"><circle cx="${n.x-w/2-14}" cy="${n.y}" r="10"/><text x="${n.x-w/2-14}" y="${n.y+4}" text-anchor="middle">${n.badge}</text></g>`;
+    if(n.c==='end')h+=`<g class="chosen" data-on="${n.on}"><rect x="${n.x-36}" y="${n.y+hh/2+6}" width="72" height="18" rx="4"/><text x="${n.x}" y="${n.y+hh/2+19}" text-anchor="middle">CHOSEN</text></g>`;
+  });
+  $('#tree').innerHTML=h;
+}
+let timers=[];
+function light(k,instant){
+  $('#tree').querySelectorAll('[data-on]').forEach(el=>{const v=+el.dataset.on;if(v)el.classList.toggle('on',v<=k)});
+  const badges=$('#tree').querySelectorAll('.badge,.chosen');badges.forEach(b=>b.style.opacity=+b.dataset.on<=k?1:0);
+}
+function play(){
+  timers.forEach(clearTimeout);timers=[];
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){light(3);return}
+  light(0);[1,2,3].forEach((k,i)=>timers.push(setTimeout(()=>light(k),350+i*380)));
+}
+svg();light(3);
+$('#replay').addEventListener('click',play);
+$('#chg2').addEventListener('click',()=>toast('Change template opens the list of templates, with a reason box. Example only.'));
 paint();
 </script>
