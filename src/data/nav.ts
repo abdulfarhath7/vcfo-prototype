@@ -9,6 +9,7 @@ import {
   FolderOpen,
   History,
   KeyRound,
+  Landmark,
   LayoutDashboard,
   Library,
   ListChecks,
@@ -24,6 +25,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { clientsFor } from "@/data/staff-clients";
 
 export type Portal = "client" | "lead" | "manager" | "admin" | "super" | "dev";
 
@@ -68,7 +70,7 @@ export function clientNav(incorporated: boolean): NavItem[] {
       { label: "Filings", href: "/client/filings" },
     ],
   };
-  const incorporation: NavItem = { label: "Incorporation", href: "/client/incorporation", icon: Building2, count: "6/25" };
+  const incorporation: NavItem = { label: "Incorporation", href: "/client/incorporation", icon: Landmark, count: "6/25" };
   return [
     { label: "Home", href: "/client/home", icon: LayoutDashboard },
     ...(incorporated ? [compliances, incorporation] : [incorporation, compliances]),
@@ -98,6 +100,8 @@ interface StaffOpts {
   /** Rows after Clients (admin: Managers). */
   after?: NavItem[];
   compliances?: number;
+  /** Clients still incorporating, from clientsFor(portal). */
+  incorporating?: number;
   tail?: NavItem[];
 }
 
@@ -109,6 +113,8 @@ function staffNav(base: string, o: StaffOpts): NavItem[] {
     ...(o.before ?? []),
     { label: "Clients", href: `${base}/clients`, icon: Building2, count: o.clients },
     ...(o.after ?? []),
+    // R-51: the practice block, in the client's order: Incorporation, Compliances, Registrations.
+    { label: "Incorporation", href: `${base}/incorporation`, icon: Landmark, count: o.incorporating },
     {
       label: "Compliances",
       icon: CalendarCheck,
@@ -144,10 +150,13 @@ function staffNav(base: string, o: StaffOpts): NavItem[] {
   ];
 }
 
+const incorporating = (p: "lead" | "manager" | "admin") => clientsFor(p).filter((c) => c.stage === "incorporating").length;
+
 export const NAV: Record<Exclude<Portal, "client">, NavItem[]> = {
-  lead: staffNav("/lead", { work: 9, clients: 8, compliances: 4 }),
-  manager: staffNav("/manager", { work: 9, clients: 8, compliances: 4, before: [{ label: "Project leads", href: "/manager/leads", icon: Users, count: 3 }] }),
+  lead: staffNav("/lead", { work: 9, clients: 8, compliances: 4, incorporating: incorporating("lead") }),
+  manager: staffNav("/manager", { work: 9, clients: 8, compliances: 4, incorporating: incorporating("manager"), before: [{ label: "Project leads", href: "/manager/leads", icon: Users, count: 3 }] }),
   admin: staffNav("/admin", {
+    incorporating: incorporating("admin"),
     clients: 14,
     after: [{ label: "Managers", href: "/admin/managers", icon: Users, count: 3 }],
     tail: [{ label: "Firm settings", href: "/admin/settings", icon: Settings }],
@@ -156,16 +165,17 @@ export const NAV: Record<Exclude<Portal, "client">, NavItem[]> = {
     { label: "Overview", href: "/super/overview", icon: LayoutDashboard },
     { label: "Risks", href: "/super/risks", icon: TriangleAlert, count: 10 },
     { label: "Clients", href: "/super/clients", icon: Building2, count: 17 },
+    // R-51: the same practice block as every other role.
+    { label: "Incorporation", href: "/super/practice/incorporation", icon: Landmark },
     {
-      label: "Practice areas",
-      icon: ChartColumn,
+      label: "Compliances",
+      icon: CalendarCheck,
       kids: [
-        { label: "Incorporation", href: "/super/practice/incorporation" },
-        { label: "Registrations", href: "/super/practice/registrations" },
-        { label: "Compliances", href: "/super/practice/compliances" },
+        { label: "Obligations", href: "/super/practice/compliances" },
         { label: "Filings", href: "/super/practice/filings" },
       ],
     },
+    { label: "Registrations", href: "/super/practice/registrations", icon: BadgeCheck },
     { label: "Team", href: "/super/team", icon: Users },
     { label: "Growth", href: "/super/growth", icon: TrendingUp },
     { label: "Reports", href: "/super/reports", icon: FileText },
