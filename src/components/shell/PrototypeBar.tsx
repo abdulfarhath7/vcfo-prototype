@@ -5,6 +5,8 @@ import { ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { PORTALS, screensFor, type Portal } from "@/data/nav";
 import { useClientState } from "./ClientState";
+import { setNocSample, useNocSample } from "./NocSample";
+import { BR_STAGES, NOC_CASES, type BrStage, type NocCase } from "@/data/board-resolution";
 
 // The floating prototype control (old reference/old-screens/proto.js, buildBar).
 // It is prototype chrome, not product UI. It shows on every portal page, not on the landing and sign-in pages.
@@ -22,7 +24,14 @@ const ROLE_ORDER: Array<[Portal, React.ReactNode]> = [
   ["lead", "Lead"],
   ["manager", "Manager"],
   ["admin", "Admin"],
-  ["super", <>Super<br />admin</>],
+  [
+    "super",
+    <>
+      Super
+      <br />
+      admin
+    </>,
+  ],
   ["dev", "Developer"],
 ];
 
@@ -54,7 +63,19 @@ function useInFrame() {
   return inFrame;
 }
 
-function Seg<T extends string | boolean>({ opts, value, onPick, pickedCls, label }: { opts: Array<[T, React.ReactNode]>; value: T; onPick: (v: T) => void; pickedCls: string; label: string }) {
+function Seg<T extends string | boolean>({
+  opts,
+  value,
+  onPick,
+  pickedCls,
+  label,
+}: {
+  opts: Array<[T, React.ReactNode]>;
+  value: T;
+  onPick: (v: T) => void;
+  pickedCls: string;
+  label: string;
+}) {
   return (
     <div role="group" aria-label={label} className="flex flex-none rounded-lg bg-white/[.1] p-0.5">
       {opts.map(([v, text]) => (
@@ -79,13 +100,78 @@ function CoiSeg() {
     <Seg
       label="Company state"
       opts={[
-        [false, <>Before<br />COI</>],
-        [true, <>After<br />COI</>],
+        [
+          false,
+          <>
+            Before
+            <br />
+            COI
+          </>,
+        ],
+        [
+          true,
+          <>
+            After
+            <br />
+            COI
+          </>,
+        ],
       ]}
       value={incorporated}
       onPick={set}
       pickedCls="bg-surface text-ink"
     />
+  );
+}
+
+/** Small select in the bar's style. */
+function BarSelect<T extends string>({
+  label,
+  value,
+  opts,
+  onPick,
+  width,
+}: {
+  label: string;
+  value: T;
+  opts: Array<{ key: T; label: string }>;
+  onPick: (v: T) => void;
+  width: number;
+}) {
+  return (
+    <span className="relative flex-none">
+      <select
+        aria-label={label}
+        value={value}
+        onChange={(e) => onPick(e.target.value as T)}
+        style={{ width }}
+        className="h-[30px] appearance-none truncate rounded-md border-0 bg-white/[.12] pl-2 pr-7 text-12 font-semibold text-white"
+      >
+        {opts.map((o) => (
+          <option key={o.key} value={o.key} className="bg-surface text-ink">
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown size={14} strokeWidth={1.6} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" aria-hidden />
+    </span>
+  );
+}
+
+/** Board resolution (NOC) page only: the sample case (one per tree path) and the stage. */
+function NocSeg({ portal }: { portal: Portal }) {
+  const { noc, stage } = useNocSample();
+  return (
+    <>
+      <BarSelect<NocCase>
+        label="NOC sample case"
+        value={noc}
+        opts={NOC_CASES.map((c) => ({ key: c.key, label: `NOC · ${c.label}` }))}
+        onPick={(v) => setNocSample({ noc: v })}
+        width={150}
+      />
+      <BarSelect<BrStage> label="Stage" value={stage ?? (portal === "client" ? "accepted" : "received")} opts={BR_STAGES} onPick={(v) => setNocSample({ stage: v })} width={110} />
+    </>
   );
 }
 
@@ -172,22 +258,31 @@ export function PrototypeBar({ portal, incorporated = false }: { portal: Portal;
         )}
       >
         <span className="flex-none px-2 text-11 font-extrabold uppercase tracking-[.08em] text-brand">Prototype</span>
-        <button type="button" onClick={() => (window.history.length > 1 ? router.back() : router.push(PORTALS[portal].home))} aria-label="Back to the previous screen" className="h-[30px] flex-none rounded-md bg-white/[.12] px-2.5 text-12 font-bold leading-[1.05] hover:bg-white/[.2]">
-          &lsaquo;<br />Back
+        <button
+          type="button"
+          onClick={() => (window.history.length > 1 ? router.back() : router.push(PORTALS[portal].home))}
+          aria-label="Back to the previous screen"
+          className="h-[30px] flex-none rounded-md bg-white/[.12] px-2.5 text-12 font-bold leading-[1.05] hover:bg-white/[.2]"
+        >
+          &lsaquo;
+          <br />
+          Back
         </button>
-        <Seg
-          label="Portal"
-          opts={ROLE_ORDER}
-          value={portal}
-          onPick={(v) => v !== portal && router.push(PORTALS[v].home)}
-          pickedCls="bg-brand text-navy"
-        />
+        <Seg label="Portal" opts={ROLE_ORDER} value={portal} onPick={(v) => v !== portal && router.push(PORTALS[v].home)} pickedCls="bg-brand text-navy" />
         {portal === "client" && <CoiSeg />}
+        {path.endsWith("/board-resolution") && <NocSeg portal={portal} />}
         <Seg
           label="Device"
           opts={[
             ["desktop", "Desktop"],
-            ["mobile", <>Mobile<br />390</>],
+            [
+              "mobile",
+              <>
+                Mobile
+                <br />
+                390
+              </>,
+            ],
           ]}
           value={device}
           onPick={pickDevice}
@@ -210,7 +305,12 @@ export function PrototypeBar({ portal, incorporated = false }: { portal: Portal;
           </select>
           <ChevronDown size={14} strokeWidth={1.6} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" aria-hidden />
         </span>
-        <button type="button" onClick={() => hide(true)} aria-label="Hide prototype controls" className="grid h-[26px] w-[26px] flex-none place-items-center rounded-md text-white/[.7] hover:text-white">
+        <button
+          type="button"
+          onClick={() => hide(true)}
+          aria-label="Hide prototype controls"
+          className="grid h-[26px] w-[26px] flex-none place-items-center rounded-md text-white/[.7] hover:text-white"
+        >
           <X size={14} strokeWidth={1.6} />
         </button>
       </div>
