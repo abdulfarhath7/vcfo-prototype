@@ -43,3 +43,9 @@ npm run check      # typecheck, lint, test
 ## Status
 
 Built on 27 Oct 2026: shell, 16 shared cards, all six portals. See `docs/STATUS.md` for open items and `docs/CHANGES.md` for each round 5 row (C-0001 to C-0040). `docs/BUILD-BRIEF.md` is the brief for screen-building agents.
+
+## How to answer the owner (owner, 30 Oct 2026)
+
+- Always answer in **tables**, written in **ASD-STE100** (Simplified Technical English): short sentences, active voice, one instruction per sentence.
+- Use ✓ and ✗ for done and not done. Put the next action first.
+- This applies to every chat on this project: the hub, the prototype chat and the builder.
